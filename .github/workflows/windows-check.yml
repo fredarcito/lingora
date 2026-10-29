@@ -20,9 +20,11 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      # prefix-key nuevo: la caché anterior tenía llama.cpp configurado con /MD.
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          prefix-key: "crt-mt"
 
       # Mismo espeak-ng (versión y SHA-256) que scripts/build-espeak.sh, compilado
       # con MSVC. Solo el programa: los datos ya están en src-tauri/resources.
@@ -78,6 +80,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
+          prefix-key: "crt-mt"
 
       - name: espeak-ng para Windows
         shell: bash
