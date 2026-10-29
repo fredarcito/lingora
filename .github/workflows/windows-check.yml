@@ -30,7 +30,8 @@ jobs:
           mkdir -p "$WORK"
           curl -fsSL -o "$WORK/espeak.tar.gz" "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/$VERSION.tar.gz"
           echo "$SHA256  $WORK/espeak.tar.gz" | sha256sum -c -
-          tar xzf "$WORK/espeak.tar.gz" -C "$WORK"
+          # --force-local: el tar de Git Bash tomaría «D:» de la ruta por un equipo remoto.
+          tar --force-local -xzf "$WORK/espeak.tar.gz" -C "$WORK"
           cmake -S "$WORK/espeak-ng-$VERSION" -B "$WORK/build" \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=OFF \
