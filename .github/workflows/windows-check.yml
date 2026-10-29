@@ -48,3 +48,57 @@ jobs:
       - name: cargo check (Windows)
         working-directory: src-tauri
         run: cargo check --target x86_64-pc-windows-msvc
+
+  installer:
+    runs-on: windows-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: espeak-ng para Windows
+        shell: bash
+        run: |
+          VERSION=1.52.0
+          SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
+          WORK="espeak-build"
+          mkdir -p "$WORK"
+          curl -fsSL -o "$WORK/espeak.tar.gz" "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/$VERSION.tar.gz"
+          echo "$SHA256  $WORK/espeak.tar.gz" | sha256sum -c -
+          tar --force-local -xzf "$WORK/espeak.tar.gz" -C "$WORK"
+          cmake -S "$WORK/espeak-ng-$VERSION" -B "$WORK/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_TESTING=OFF \
+            -DUSE_MBROLA=OFF -DUSE_LIBSONIC=OFF -DUSE_LIBPCAUDIO=OFF \
+            -DUSE_ASYNC=OFF -DUSE_KLATT=OFF -DUSE_SPEECHPLAYER=OFF
+          cmake --build "$WORK/build" --config Release
+          EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
+          mkdir -p src-tauri/binaries
+          cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+
+      # Instalador NSIS sin firmar (demo). El destino se pide aquí y no en
+      # tauri.conf.json, para no tocar la configuración de macOS.
+      - name: Instalador .exe
+        run: pnpm tauri build --target x86_64-pc-windows-msvc --bundles nsis
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lingora-windows-installer
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
