@@ -22,7 +22,11 @@ pub fn supported() -> bool {
     {
         imp::supported()
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
+    {
+        imp::supported()
+    }
+    #[cfg(not(any(target_os = "macos", windows)))]
     {
         false
     }
@@ -30,7 +34,7 @@ pub fn supported() -> bool {
 
 /// Captura en curso; se detiene al soltarla.
 pub struct Capture {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", windows))]
     _inner: imp::Tap,
     pub sample_rate: u32,
 }
@@ -38,12 +42,12 @@ pub struct Capture {
 /// Empieza a capturar. `on_block` recibe bloques mono de `BLOCK_FRAMES`
 /// muestras a `sample_rate`, desde un hilo propio.
 pub fn start(on_block: impl Fn(Vec<f32>) + Send + 'static) -> Result<Capture> {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", windows))]
     {
         let (tap, sample_rate) = imp::Tap::start(Box::new(on_block))?;
         Ok(Capture { _inner: tap, sample_rate })
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", windows)))]
     {
         let _ = on_block;
         Err(Error::Audio("solo macOS por ahora".into()))
@@ -319,6 +323,233 @@ mod imp {
                 destroy_tap(self.tap);
                 // Al soltar el emisor termina el hilo de entrega.
                 drop(Box::from_raw(self.shared));
+            }
+        }
+    }
+}
+
+/// Windows: captura de proceso de WASAPI (Windows 10 2004+). Excluye el árbol
+/// de procesos de Lingora, igual que la tap de Mac, y rellena con ceros los
+/// huecos en silencio, porque WASAPI no entrega nada cuando no suena.
+#[cfg(windows)]
+mod imp {
+    use super::*;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::{mpsc, Arc};
+    use std::thread::JoinHandle;
+    use std::time::{Duration, Instant};
+
+    use windows::core::{implement, IUnknown, Interface, Ref, Result as WinResult, HRESULT};
+    use windows::Win32::Foundation::{CloseHandle, HANDLE};
+    use windows::Win32::Media::Audio::{
+        ActivateAudioInterfaceAsync, IActivateAudioInterfaceAsyncOperation,
+        IActivateAudioInterfaceCompletionHandler, IActivateAudioInterfaceCompletionHandler_Impl,
+        IAudioCaptureClient, IAudioClient, AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_SHAREMODE_SHARED,
+        AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+        AUDCLNT_STREAMFLAGS_LOOPBACK, AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
+        AUDIOCLIENT_ACTIVATION_PARAMS, AUDIOCLIENT_ACTIVATION_PARAMS_0,
+        AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK, AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS,
+        PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE, WAVEFORMATEX,
+    };
+    use windows::Win32::Media::Multimedia::WAVE_FORMAT_IEEE_FLOAT;
+    use windows::Win32::System::Com::StructuredStorage::{PROPVARIANT, PROPVARIANT_0, PROPVARIANT_0_0, PROPVARIANT_0_0_0};
+    use windows::Win32::System::Com::{CoInitializeEx, COINIT_MULTITHREADED};
+    use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
+    use windows::Win32::System::Variant::VT_BLOB;
+
+    /// Frecuencia y canales que pide la captura de proceso (no hay mezcla del sistema).
+    const RATE: u32 = 48_000;
+    const CHANNELS: usize = 2;
+
+    /// Recibe el resultado de `ActivateAudioInterfaceAsync`, que es asíncrono.
+    #[implement(IActivateAudioInterfaceCompletionHandler)]
+    struct Activated {
+        tx: mpsc::Sender<Option<IAudioClient>>,
+    }
+
+    impl IActivateAudioInterfaceCompletionHandler_Impl for Activated_Impl {
+        fn ActivateCompleted(&self, operation: Ref<IActivateAudioInterfaceAsyncOperation>) -> WinResult<()> {
+            let mut client = None;
+            if let Some(operation) = operation.as_ref() {
+                let mut status = HRESULT(0);
+                let mut unknown: Option<IUnknown> = None;
+                unsafe { operation.GetActivateResult(&mut status, &mut unknown)? };
+                if status.is_ok() {
+                    client = unknown.and_then(|u| u.cast::<IAudioClient>().ok());
+                }
+            }
+            let _ = self.tx.send(client);
+            Ok(())
+        }
+    }
+
+    /// Los errores de Windows llegan con su propio tipo: se pasan a texto.
+    fn win(e: windows::core::Error) -> Error {
+        Error::Audio(format!("captura del sistema: {e}"))
+    }
+
+    /// Activa el cliente de captura de este proceso, con su árbol excluido.
+    unsafe fn activate_client() -> Result<IAudioClient> {
+        let mut params = AUDIOCLIENT_ACTIVATION_PARAMS {
+            ActivationType: AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK,
+            Anonymous: AUDIOCLIENT_ACTIVATION_PARAMS_0 {
+                ProcessLoopbackParams: AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS {
+                    TargetProcessId: std::process::id(),
+                    ProcessLoopbackMode: PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE,
+                },
+            },
+        };
+        // Los parámetros viajan dentro de un PROPVARIANT de tipo blob.
+        let blob = windows::Win32::System::Com::BLOB {
+            cbSize: std::mem::size_of::<AUDIOCLIENT_ACTIVATION_PARAMS>() as u32,
+            pBlobData: &mut params as *mut AUDIOCLIENT_ACTIVATION_PARAMS as *mut u8,
+        };
+        let prop = PROPVARIANT {
+            Anonymous: PROPVARIANT_0 {
+                Anonymous: std::mem::ManuallyDrop::new(PROPVARIANT_0_0 {
+                    vt: VT_BLOB,
+                    Anonymous: PROPVARIANT_0_0_0 { blob },
+                    ..Default::default()
+                }),
+            },
+        };
+
+        let (tx, rx) = mpsc::channel();
+        let handler: IActivateAudioInterfaceCompletionHandler = Activated { tx }.into();
+        ActivateAudioInterfaceAsync(
+            windows::core::w!("VAD\\Process_Loopback"),
+            &IAudioClient::IID,
+            Some(&prop as *const PROPVARIANT),
+            &handler,
+        )
+        .map_err(win)?;
+        rx.recv_timeout(Duration::from_secs(5))
+            .ok()
+            .flatten()
+            .ok_or_else(|| Error::Audio("Windows no dejó capturar el audio del sistema".into()))
+    }
+
+    /// Lo necesario para leer la captura; se libera al soltarlo.
+    struct Session {
+        client: IAudioClient,
+        capture: IAudioCaptureClient,
+        event: HANDLE,
+    }
+
+    impl Drop for Session {
+        fn drop(&mut self) {
+            unsafe {
+                let _ = self.client.Stop();
+                let _ = CloseHandle(self.event);
+            }
+        }
+    }
+
+    unsafe fn open() -> Result<Session> {
+        // Cada hilo de captura necesita COM; si ya estaba iniciado, da igual.
+        let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+        let client = activate_client()?;
+        // En captura de proceso no vale GetMixFormat: hay que pedir el formato.
+        let format = WAVEFORMATEX {
+            wFormatTag: WAVE_FORMAT_IEEE_FLOAT as u16,
+            nChannels: CHANNELS as u16,
+            nSamplesPerSec: RATE,
+            nAvgBytesPerSec: RATE * CHANNELS as u32 * 4,
+            nBlockAlign: (CHANNELS * 4) as u16,
+            wBitsPerSample: 32,
+            cbSize: 0,
+        };
+        let event = CreateEventW(None, false, false, None).map_err(win)?;
+        let flags = AUDCLNT_STREAMFLAGS_LOOPBACK
+            | AUDCLNT_STREAMFLAGS_EVENTCALLBACK
+            | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+            | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
+        client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 0, 0, &format, None).map_err(win)?;
+        client.SetEventHandle(event).map_err(win)?;
+        let capture: IAudioCaptureClient = client.GetService().map_err(win)?;
+        client.Start().map_err(win)?;
+        Ok(Session { client, capture, event })
+    }
+
+    /// Lee lo que llega y entrega bloques mono hasta que `stop` se active.
+    unsafe fn pump(session: &Session, on_block: &dyn Fn(Vec<f32>), stop: &AtomicBool) {
+        let started = Instant::now();
+        let mut delivered: u64 = 0;
+        let mut pending: Vec<f32> = Vec::with_capacity(BLOCK_FRAMES * 2);
+        while !stop.load(Ordering::Relaxed) {
+            WaitForSingleObject(session.event, 20);
+            while let Ok(packet) = session.capture.GetNextPacketSize() {
+                if packet == 0 {
+                    break;
+                }
+                let mut data = std::ptr::null_mut();
+                let mut frames = 0u32;
+                let mut flags = 0u32;
+                if session.capture.GetBuffer(&mut data, &mut frames, &mut flags, None, None).is_err() {
+                    break;
+                }
+                if flags & AUDCLNT_BUFFERFLAGS_SILENT.0 as u32 != 0 {
+                    pending.extend(std::iter::repeat(0.0).take(frames as usize));
+                } else {
+                    let samples = std::slice::from_raw_parts(data as *const f32, frames as usize * CHANNELS);
+                    pending.extend(samples.chunks_exact(CHANNELS).map(|f| (f[0] + f[1]) / 2.0));
+                }
+                delivered += frames as u64;
+                let _ = session.capture.ReleaseBuffer(frames);
+            }
+            // Si el reloj va por delante de lo recibido, ese tramo fue silencio.
+            let expected = (started.elapsed().as_secs_f64() * RATE as f64) as u64;
+            if expected > delivered {
+                pending.extend(std::iter::repeat(0.0).take((expected - delivered) as usize));
+                delivered = expected;
+            }
+            while pending.len() >= BLOCK_FRAMES {
+                on_block(pending.drain(..BLOCK_FRAMES).collect());
+            }
+        }
+    }
+
+    /// Si la versión de Windows no admite la captura, `start` lo dice con un error.
+    pub fn supported() -> bool {
+        true
+    }
+
+    pub struct Tap {
+        stop: Arc<AtomicBool>,
+        thread: Option<JoinHandle<()>>,
+    }
+
+    impl Tap {
+        pub fn start(on_block: Box<dyn Fn(Vec<f32>) + Send>) -> Result<(Tap, u32)> {
+            let stop = Arc::new(AtomicBool::new(false));
+            let (ready_tx, ready_rx) = mpsc::channel::<Result<()>>();
+            let thread_stop = stop.clone();
+            let thread = std::thread::Builder::new()
+                .name("lingora-system-audio".into())
+                .spawn(move || unsafe {
+                    match open() {
+                        Ok(session) => {
+                            let _ = ready_tx.send(Ok(()));
+                            pump(&session, &*on_block, &thread_stop);
+                        }
+                        Err(e) => {
+                            let _ = ready_tx.send(Err(e));
+                        }
+                    }
+                })
+                .map_err(|e| Error::Audio(format!("no se pudo arrancar la captura: {e}")))?;
+            ready_rx
+                .recv()
+                .map_err(|_| Error::Audio("la captura del sistema no arrancó".into()))??;
+            Ok((Tap { stop, thread: Some(thread) }, RATE))
+        }
+    }
+
+    impl Drop for Tap {
+        fn drop(&mut self) {
+            self.stop.store(true, Ordering::Relaxed);
+            if let Some(thread) = self.thread.take() {
+                let _ = thread.join();
             }
         }
     }
