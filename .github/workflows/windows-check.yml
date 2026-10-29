@@ -26,7 +26,8 @@ jobs:
         run: |
           VERSION=1.52.0
           SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
-          WORK="$RUNNER_TEMP/espeak"
+          # Ruta relativa: las herramientas de Windows no entienden /d/... ni D:\... de Git Bash.
+          WORK="espeak-build"
           mkdir -p "$WORK"
           curl -fsSL -o "$WORK/espeak.tar.gz" "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/$VERSION.tar.gz"
           echo "$SHA256  $WORK/espeak.tar.gz" | sha256sum -c -
