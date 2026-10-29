@@ -1,0 +1,32 @@
+:global(.lanes) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Con un solo carril en marcha, el otro se queda en su control. */
+:global(.lanes).focus-remote_to_local {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+}
+
+:global(.lanes).focus-local_to_remote {
+  grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+}
+
+/* Modo vídeo: un solo carril, subtítulos más grandes. */
+:global(.lanes):global(.single) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 860px) {
+  :global(.lanes),
+  :global(.lanes)[class*="focus-"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+:global(.lanes):global(.single) :global(.captions-text) {
+  font-size: 28px;
+}

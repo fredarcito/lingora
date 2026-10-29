@@ -1,0 +1,5 @@
+{
+  "title": "Generate the interface in {language}?",
+  "hint": "Lingora is in English. It can translate its own texts with the local model; it's optional and takes a few minutes.",
+  "no": "No, thanks"
+}

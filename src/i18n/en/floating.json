@@ -1,0 +1,13 @@
+{
+  "pause": "Pause",
+  "start": "Start",
+  "smaller": "Smaller text",
+  "larger": "Larger text",
+  "opacity": "Background opacity",
+  "hideLive": "Hide what is being heard",
+  "showLive": "Show what is being heard",
+  "live": "Live",
+  "openApp": "Open Lingora",
+  "close": "Close the floating captions",
+  "connecting": "Connecting to Lingora…"
+}

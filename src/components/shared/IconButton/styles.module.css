@@ -1,0 +1,23 @@
+.icon-button {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  transition: background 0.15s, color 0.15s;
+}
+
+.icon-button:hover,
+.icon-button.is-active {
+  color: var(--text);
+  background: var(--surface-3);
+}
+
+.icon-button.small {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}

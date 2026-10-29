@@ -1,0 +1,22 @@
+/* Fila de clave dentro de la tarjeta de Notas en Ajustes. */
+.prefs-key {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--n-border);
+}
+
+.prefs-about {
+  gap: 4px;
+  font-size: 14px;
+}
+
+.prefs-about span {
+  color: var(--text-3);
+}
+
+/* El diagnóstico va dentro de la página: sin márgenes propios de la cabecera. */
+.prefs-view .prefs-diagnostics {
+  margin: 0;
+}

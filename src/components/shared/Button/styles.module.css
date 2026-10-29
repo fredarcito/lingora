@@ -1,0 +1,106 @@
+.note-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--n-input);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.note-action:hover {
+  background: var(--n-hover);
+}
+
+.note-action:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.note-action.primary {
+  border-color: transparent;
+  background: var(--text);
+  color: #0b0c10;
+}
+
+.note-action.primary:hover {
+  background: #d6d9e0;
+}
+
+.note-action.danger {
+  margin-left: auto;
+  border-color: transparent;
+  color: var(--text-3);
+}
+
+.note-action.danger:hover {
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.1);
+}
+
+@media (max-width: 560px) {
+  .note-action.danger {
+    margin-left: 0;
+  }
+}
+
+.note-action:disabled {
+  cursor: not-allowed;
+}
+
+/* Botones de los paneles: el estilo de los ajustes de Escuchar (fondo
+   `--surface-2`, borde fino, esquinas de 9 px, borde de acento al pasar) en
+   todos los botones y controles segmentados de la app. Los botones
+   principales y destructivos conservan su énfasis. */
+.note-action {
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.note-action:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.note-action.primary,
+.note-action.primary:hover:not(:disabled) {
+  border-color: transparent;
+}
+
+.note-action.primary {
+  background: var(--text);
+}
+
+.note-action.primary:hover:not(:disabled) {
+  background: #d6d9e0;
+}
+
+.note-action.danger {
+  border-color: transparent;
+  background: none;
+}
+
+.note-action.danger:hover:not(:disabled) {
+  border-color: transparent;
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.note-action {
+  min-height: var(--control-h);
+}
+
+.note-action {
+  height: var(--control-h);
+}
+
+.note-action {
+  padding: 0 16px;
+}

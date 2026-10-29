@@ -1,0 +1,713 @@
+.notes-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 56px 16px;
+  border: 1px dashed var(--n-border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.notes-empty-state p:first-of-type {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.note-icon.big {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: var(--text-2);
+  background: var(--n-muted);
+}
+
+.notes-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Separador del día: una línea con la fecha centrada en una pastilla. */
+.notes-day {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.notes-day::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--n-border);
+}
+
+.notes-day span {
+  position: relative;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--n-border);
+  background: var(--bg);
+}
+
+.notes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Cada nota, una tarjeta con un tinte suave del acento. */
+.note-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, var(--n-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, transparent), color-mix(in srgb, var(--accent) 3%, transparent));
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.note-item:hover {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--n-border));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.note-item:hover .note-chevron {
+  color: var(--text);
+  transform: translateX(2px);
+}
+
+.note-item:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.note-item-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.note-item-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.note-item-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.note-item-meta {
+  font-size: 13px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-item-preview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.note-chevron {
+  flex: none;
+  display: grid;
+  color: var(--text-3);
+  transition: transform 0.12s, color 0.12s;
+}
+
+.notes-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  margin-left: -10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+}
+
+.notes-back:hover {
+  color: var(--text);
+  background: var(--n-hover);
+}
+
+.note-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--n-border);
+}
+
+.note-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.note-title-block h2 {
+  margin: 0;
+  min-width: 0;
+}
+
+.note-title {
+  max-width: 100%;
+  padding: 2px 6px;
+  margin-left: -6px;
+  border-radius: 6px;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.note-title:hover {
+  background: var(--n-hover);
+}
+
+.note-title-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 8px;
+  margin-left: -8px;
+  border-radius: 6px;
+  border: 1px solid var(--n-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.note-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-menu-wrap {
+  position: relative;
+}
+
+/* Avisos cortos ("Copiado"), abajo, sin mover el contenido. */
+.note-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 40;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: var(--n-radius);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: #111317;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  color: var(--text);
+  animation: global(fade-in) 0.15s ease-out;
+}
+
+.note-notice:empty {
+  display: none;
+}
+
+/* Pestañas como las de shadcn: un carril gris y la elegida en relieve. */
+.note-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.note-tabs-group {
+  display: inline-flex;
+  height: 36px;
+  padding: 3px;
+  border-radius: var(--n-radius);
+  background: var(--n-muted);
+}
+
+.note-tabs-group button {
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+  transition: color 0.12s, background 0.12s;
+}
+
+.note-tabs-group button:hover {
+  color: var(--text);
+}
+
+.note-tabs-group button.is-selected {
+  color: var(--text);
+  background: #1b1e24;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border);
+}
+
+.note-tabs-group button:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 1px;
+}
+
+/* Personas de la nota: una pastilla por persona, con su color. */
+.speaker-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.speaker-wrap {
+  position: relative;
+}
+
+.speaker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--n-input);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.speaker-chip:hover:not(:disabled),
+.speaker-chip.is-open {
+  background: var(--n-hover);
+  border-color: var(--n-ring);
+}
+
+.speaker-chip:disabled {
+  opacity: 0.7;
+}
+
+.speaker-chip:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.speaker-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--who, var(--accent));
+  flex: none;
+}
+
+.speaker-count {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.speaker-menu {
+  min-width: 240px;
+  gap: 6px;
+  padding: 10px;
+}
+
+.speaker-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.speaker-name input {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--n-input);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.speaker-name input:focus {
+  border-color: var(--n-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* La clase dos veces: la especificidad de antes (.speaker-menu .note-action.primary). */
+.speaker-menu .speaker-save.speaker-save {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.speaker-menu-title {
+  margin-top: 6px;
+  padding: 6px 2px 2px;
+  border-top: 1px solid var(--n-border);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.speaker-menu button[role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-summary {
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-notice {
+    animation: none;
+  }
+
+  .note-item,
+  .note-chevron {
+    transition: none;
+  }
+}
+
+.note-working {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+
+/* El resumen en Markdown: los elementos llevan su propio espaciado. */
+.note-summary .summary-md {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.note-summary {
+  white-space: normal;
+}
+
+.note-summary-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.note-summary-lang select {
+  width: auto;
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: var(--n-radius);
+}
+
+.speaker-chip {
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.speaker-chip:hover:not(:disabled),
+.speaker-chip.is-open {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.note-tabs-group {
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.note-tabs-group button {
+  border-radius: 7px;
+}
+
+.note-tabs-group button.is-selected {
+  color: var(--text);
+  background: #1b1e24;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border, var(--hairline));
+}
+
+.note-tabs-group,
+.note-summary-lang select {
+  min-height: var(--control-h);
+}
+
+.note-tabs-group,
+.note-summary-lang select {
+  height: var(--control-h);
+}
+
+.note-tabs-group button {
+  min-height: calc(var(--control-h) - 8px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Lo del resumen vive en su pestaña: idioma, resumir y copiar para resumir. */
+.note-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.note-summary-hint {
+  font-size: 13.5px;
+}
+
+.note-summary-hint :global(.link) {
+  font-size: inherit;
+  color: var(--accent);
+}
+
+/* Página de la nota: arriba «← Todas las notas» y el día; el resumen en una
+   tarjeta; la transcripción en filas con la persona sobre su texto. */
+.note-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.note-day {
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.note-summary-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.note-summary {
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--n-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.note-summary .summary-md h3:first-child::before {
+  content: "✳";
+  margin-right: 10px;
+  color: var(--accent);
+}
+
+.note-summary-foot {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--n-border);
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.speaker-bar {
+  align-items: center;
+}
+
+.speaker-bar-label {
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* El título a la izquierda y el menú ⋯ a la derecha, en la misma fila. */
+.note-head.note-head-row {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/* El título ocupa lo que deja el menú y va en una sola línea; si no cabe,
+   termina en «…» (al pulsarlo para editar se ve entero). */
+.note-head-row .note-title-block {
+  flex: 1;
+}
+
+.note-head-row .note-title {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+}
+
+.note-more {
+  width: 32px;
+  padding: 0;
+  flex-shrink: 0;
+  color: var(--text-2);
+}
+
+.note-more:hover,
+.note-more[aria-expanded="true"] {
+  color: var(--text);
+  background: var(--n-hover);
+}
+
+/* El icono de copiar arriba a la derecha; la primera línea le deja sitio. */
+.note-summary.note-summary-card {
+  position: relative;
+}
+
+.note-summary-copy {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  padding: 0;
+  color: var(--text-2);
+}
+
+.note-summary-copy:hover {
+  color: var(--text);
+}
+
+.note-summary-copy + .summary-md > :first-child {
+  padding-right: 40px;
+}
+
+.note-summary-stale {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* El ☰ a la izquierda y el buscador centrado sobre la columna de la lista
+   (760 px), aunque el ☰ ocupe sitio; si la ventana es estrecha, se juntan. */
+.notes-brand {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, 760px) 1fr;
+}
+
+/* La clase dos veces: la especificidad de antes (.notes-searchbox.notes-topsearch). */
+.notes-topsearch.notes-topsearch {
+  grid-column: 2;
+}
+
+.notes-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.notes-head-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notes-head-title h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.notes-head-title p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.notes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* La marca de un rato sin guardar: una línea discontinua con el texto en medio. */
+.note-gap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+.note-gap::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px dashed var(--n-border);
+}
+
+.note-gap span {
+  position: relative;
+  padding: 0 10px;
+  background: var(--bg);
+}

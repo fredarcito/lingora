@@ -1,0 +1,17 @@
+{
+  "title": "Idioma de la interfaz",
+  "hint": "No cambia los idiomas en que traduces.",
+  "auto": "traducción automática",
+  "generateOption": "Generar otro idioma…",
+  "generateTitle": "Generar la interfaz en otro idioma",
+  "generateHint": "Lingora traduce sus textos con el modelo de traducción de tu Mac. Tarda unos minutos y solo se hace una vez.",
+  "generate": "Generar",
+  "cancel": "Cancelar",
+  "progress": "Traduciendo la interfaz… {done} de {total}",
+  "noModel": "Falta el modelo de traducción local. Descárgalo en «Diagnóstico y descargas», abajo.",
+  "partial_one": "Listo. {count} texto no se pudo traducir y se queda en inglés.",
+  "partial_other": "Listo. {count} textos no se pudieron traducir y se quedan en inglés.",
+  "autoNote": "Traducción automática: puede tener errores.",
+  "regenerate": "Volver a generar",
+  "remove": "Borrar"
+}

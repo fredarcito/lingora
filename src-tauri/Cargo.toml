@@ -1,0 +1,43 @@
+[package]
+name = "lingora"
+version = "0.1.0"
+description = "Traductor bidireccional para videollamadas"
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "lingora_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["macos-private-api"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "process"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+dotenvy = "0.15"
+thiserror = "2"
+hound = "3.5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+cpal = "0.15"
+sherpa-onnx = "2.0.1"
+# Traducción local dentro de la app (sin `llama-server` aparte). Sin las
+# opciones por defecto: `openmp` pediría libomp de Homebrew.
+llama-cpp-2 = { version = "0.1.160", default-features = false, features = ["metal"] }
+# Clave de Groq para los resúmenes: se guarda en el llavero, nunca en un archivo.
+keyring = { version = "3", features = ["apple-native"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "0.2"
+core-foundation = "0.10"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

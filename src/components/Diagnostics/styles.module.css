@@ -1,0 +1,242 @@
+.diagnostics {
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diagnostics.is-error {
+  background: rgba(248, 113, 113, 0.04);
+  border-color: rgba(248, 113, 113, 0.22);
+}
+
+.diagnostics.is-warning {
+  background: rgba(251, 191, 36, 0.04);
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.diag-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 4px;
+  font-size: 13px;
+}
+
+.diag-bar strong {
+  flex: 1;
+  font-weight: 550;
+  color: var(--text-2);
+}
+
+/* Icono de estado: círculo con ✓, ✕, ! o – */
+.diag-icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.diag-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.diag-icon.ok {
+  color: var(--ok);
+  background: rgba(52, 211, 153, 0.12);
+}
+
+.diag-icon.error {
+  color: var(--danger);
+  background: rgba(248, 113, 113, 0.14);
+}
+
+.diag-icon.warning {
+  color: var(--warn);
+  background: rgba(251, 191, 36, 0.14);
+}
+
+.diag-icon.optional {
+  color: var(--text-3);
+  background: var(--surface-2);
+}
+
+/* Problemas que impiden traducir: arriba y en grande. */
+.diag-problems {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diag-problem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--hairline);
+}
+
+.diag-problem .primary.small {
+  align-self: center;
+}
+
+.diag-problem-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.diag-effect {
+  font-size: 14.5px;
+  font-weight: 650;
+  color: var(--text);
+  line-height: 22px;
+}
+
+.diag-why {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.diag-cause {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Grupos plegables */
+.diag-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diag-group {
+  border-radius: 10px;
+}
+
+.diag-group.is-open {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.diag-group-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 10px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.diag-group-head:hover {
+  background: var(--surface-2);
+}
+
+.diag-group-title {
+  flex: 1;
+  font-weight: 550;
+}
+
+.diag-group-summary {
+  color: var(--text-3);
+  font-size: 12.5px;
+}
+
+.diag-group-summary.error {
+  color: var(--danger);
+}
+
+.diag-group-summary.warning {
+  color: var(--warn);
+}
+
+.diag-chevron {
+  color: var(--text-3);
+  transition: transform 0.15s ease;
+}
+
+.diag-group.is-open .diag-chevron {
+  transform: rotate(90deg);
+}
+
+.diag-items {
+  list-style: none;
+  margin: 0;
+  padding: 2px 10px 10px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.diag-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.diag-item > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.diag-item .diag-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.diag-item .diag-icon svg {
+  width: 11px;
+  height: 11px;
+}
+
+.diag-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+.diag-badge {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--text-3);
+  background: var(--surface-2);
+  vertical-align: 1px;
+}
+
+.diag-recheck {
+  align-self: flex-end;
+  margin-top: 4px;
+}
+
+button.primary.small {
+  flex: none;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a1204;
+  background: var(--warn);
+  white-space: nowrap;
+}
+
+button.primary.small:hover:not(:disabled) {
+  filter: brightness(1.08);
+}

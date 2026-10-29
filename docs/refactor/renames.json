@@ -1,0 +1,54 @@
+[
+  {
+    "from": ".prefs-view .diagnostics",
+    "to": ".prefs-view .prefs-diagnostics"
+  },
+  {
+    "from": ".note-summary .md",
+    "to": ".note-summary .summary-md"
+  },
+  {
+    "from": ".note-summary .md h3:first-child::before",
+    "to": ".note-summary .summary-md h3:first-child::before"
+  },
+  {
+    "from": ".note-summary-copy + .md > :first-child",
+    "to": ".note-summary-copy + .summary-md > :first-child"
+  },
+  {
+    "from": ".notes-searchbox.notes-topsearch",
+    "to": ".notes-topsearch.notes-topsearch"
+  },
+  {
+    "from": ".notes-switch.lane-save",
+    "to": ".lane-save.lane-save"
+  },
+  {
+    "from": ".notes-switch.lane-save input:not(:checked)",
+    "to": ".lane-save.lane-save input:not(:checked)"
+  },
+  {
+    "from": ".notes-switch.lane-save input:not(:checked)::after",
+    "to": ".lane-save.lane-save input:not(:checked)::after"
+  },
+  {
+    "from": ".dialog .note-action.danger:hover:not(:disabled)",
+    "to": ".dialog .confirm.is-danger:hover:not(:disabled)"
+  },
+  {
+    "from": ".dialog .note-action.danger:hover",
+    "to": ".dialog .confirm.is-danger:hover"
+  },
+  {
+    "from": ".dialog .note-action.danger",
+    "to": ".dialog .confirm.is-danger"
+  },
+  {
+    "from": ".dialog .note-action.primary",
+    "to": ".dialog .confirm.is-primary"
+  },
+  {
+    "from": ".speaker-menu .note-action.primary",
+    "to": ".speaker-menu .speaker-save.speaker-save"
+  }
+]

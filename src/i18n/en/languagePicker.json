@@ -1,0 +1,17 @@
+{
+  "title": "Interface language",
+  "hint": "It doesn't change the languages you translate between.",
+  "auto": "machine translated",
+  "generateOption": "Generate another language…",
+  "generateTitle": "Generate the interface in another language",
+  "generateHint": "Lingora translates its own texts with the translation model on your Mac. It takes a few minutes and only happens once.",
+  "generate": "Generate",
+  "cancel": "Cancel",
+  "progress": "Translating the interface… {done} of {total}",
+  "noModel": "The local translation model is missing. Download it in “Diagnostics and downloads” below.",
+  "partial_one": "Done. {count} text couldn't be translated and stays in English.",
+  "partial_other": "Done. {count} texts couldn't be translated and stay in English.",
+  "autoNote": "Machine translation: it may contain mistakes.",
+  "regenerate": "Generate again",
+  "remove": "Delete"
+}

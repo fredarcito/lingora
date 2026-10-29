@@ -1,0 +1,135 @@
+.floating {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 22px 14px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, var(--floating-bg, 0.55));
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.floating :global(.captions) {
+  min-height: 0;
+  gap: 0;
+}
+
+.floating :global(.captions-text) {
+  font-size: var(--floating-font, 28px);
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: center;
+  /* Legible aunque el fondo sea casi transparente y el vídeo claro. */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+.floating :global(.caption-source) {
+  font-size: 0.55em;
+  color: var(--text-2);
+}
+
+.floating :global(.captions-empty) {
+  color: var(--text-2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* Los controles solo aparecen al pasar el ratón. */
+.floating-tools {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.floating:hover .floating-tools {
+  opacity: 1;
+}
+
+.floating-tools button {
+  min-width: 30px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: rgba(30, 32, 40, 0.92);
+  cursor: pointer;
+}
+
+.floating-tools button:hover:not(:disabled) {
+  background: rgba(55, 58, 70, 0.95);
+}
+
+/* Interruptor encendido (En vivo). */
+.floating-tools button.is-on {
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.floating-spacer {
+  flex: 1;
+}
+
+.floating-resize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 16px;
+  height: 16px;
+  cursor: nwse-resize;
+  opacity: 0;
+  border-right: 2px solid var(--text-2);
+  border-bottom: 2px solid var(--text-2);
+  border-bottom-right-radius: 6px;
+  transition: opacity 0.2s;
+}
+
+.floating:hover .floating-resize {
+  opacity: 0.7;
+}
+
+/* Lo que se oye ahora: una sección aparte bajo los subtítulos. */
+.floating-live {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: max(13px, calc(var(--floating-font, 28px) * 0.58));
+  color: var(--text-2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.floating-live :global(.live-dot) {
+  transform: none;
+}
+
+.floating-live.is-idle {
+  color: var(--text-3);
+}
+
+.floating-live-text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Con solo un par de líneas, el desvanecido va en el borde, no a media altura. */
+.floating :global(.captions-scroll) {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 24px);
+  mask-image: linear-gradient(to bottom, transparent, #000 24px);
+}

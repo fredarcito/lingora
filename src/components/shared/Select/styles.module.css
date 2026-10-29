@@ -1,0 +1,16 @@
+.prefs-select {
+  width: auto;
+  flex: none;
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: var(--n-radius);
+}
+
+.prefs-select {
+  min-height: var(--control-h);
+}
+
+.prefs-select {
+  height: var(--control-h);
+}

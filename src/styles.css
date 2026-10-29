@@ -1,0 +1,695 @@
+/* Lo general de la app: variables, reset, elementos, @keyframes, estructura
+   de las pantallas y las clases que comparten varias (`muted`, `link`,
+   `spinner`, la transcripción…). Lo de cada componente va en su
+   `styles.module.css`; ver docs/componentes.md. */
+
+:root {
+  --bg: #0b0c10;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --surface-3: rgba(255, 255, 255, 0.09);
+  --hairline: rgba(255, 255, 255, 0.08);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
+  --text: #eef0f5;
+  --text-2: #a3a9b8;
+  --text-3: #6b7180;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  /* Color del carril; cada carril lo redefine. */
+  --accent: #5eead4;
+  --accent-2: #22d3ee;
+  --accent-ink: #04201c;
+
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(45, 212, 191, 0.08), transparent 60%),
+    radial-gradient(1000px 600px at 100% 0%, rgba(167, 139, 250, 0.08), transparent 60%),
+    var(--bg);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.app {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  /* Alto de la ventana: los paneles ocupan lo que queda y los subtítulos se
+     ajustan a eso, sin salirse por abajo. */
+  height: 100vh;
+}
+
+/* ---------- Cabecera ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.brand > div {
+  min-width: 0;
+}
+
+/* El header no salta de línea al cambiar de modo: si falta sitio, se recorta
+   la descripción. */
+.brand p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 860px) {
+  .topbar {
+    flex-wrap: wrap;
+  }
+}
+
+.logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: #0b0c10;
+  background: linear-gradient(135deg, #5eead4, #a78bfa);
+  box-shadow: 0 6px 20px rgba(94, 234, 212, 0.18);
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.brand p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  cursor: default;
+}
+
+.pill-bad {
+  color: var(--danger);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+
+.dot.ok {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+}
+
+.dot.warn {
+  background: var(--warn);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+.dot.bad {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+/* ---------- Piezas compartidas: spinner pequeño y botón enlace ---------- */
+
+.spinner.small {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+  color: var(--text-3);
+}
+
+button.link {
+  color: var(--text-3);
+  font-size: 12.5px;
+  padding: 2px 4px;
+  border-radius: 6px;
+}
+
+button.link:hover {
+  color: var(--text);
+}
+
+/* ---------- Formularios ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field > span {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+}
+
+select {
+  width: 100%;
+  min-width: 0;
+  appearance: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  padding: 8px 30px 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a3a9b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+      no-repeat right 10px center,
+    var(--surface-2);
+  text-overflow: ellipsis;
+}
+
+select:focus,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 1px;
+}
+
+/* Lo que se despliega bajo una fila o en «Opciones avanzadas». */
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-left: 108px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--hairline);
+  animation: reveal 0.18s ease-out;
+}
+
+.setting-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.settings-advanced {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 0;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+.settings-advanced:hover {
+  color: var(--text);
+}
+
+.settings-advanced + .setting-group {
+  margin-left: 0;
+}
+
+@media (max-width: 560px) {
+
+  .setting-group {
+    margin-left: 0;
+  }
+
+  .setting-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+input[type="range"] {
+  --fill: 50%;
+  width: 64px;
+  height: 4px;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) var(--fill), var(--surface-3) var(--fill));
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.field > .field-hint {
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.settings-note {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.live-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  transform: translateY(-2px);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ---------- Animaciones ---------- */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    box-shadow: 0 0 0 7px var(--accent-soft);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Subtítulos flotantes: ventana aparte, transparente, encima de todo. */
+html.view-captions,
+html.view-captions body {
+  background: transparent;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Notas ---------- */
+
+/* Traducir y Notas siguen montadas; la que no se ve se oculta, no se desmonta. */
+.app[hidden] {
+  display: none;
+}
+
+/* Escala propia de Notas y del menú, al estilo de shadcn: grises neutros,
+   bordes finos, radio de 8 px y un solo acento. */
+.notes-view,
+.note-toast {
+  --n-border: rgba(255, 255, 255, 0.09);
+  --n-input: rgba(255, 255, 255, 0.12);
+  --n-hover: rgba(255, 255, 255, 0.045);
+  --n-muted: rgba(255, 255, 255, 0.06);
+  --n-popover: #111317;
+  --n-radius: 8px;
+  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* ---- Animaciones del menú ☰, los menús y los diálogos ---- */
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- Estructura ---- */
+
+.notes-topbar .brand h1 {
+  font-size: 17px;
+  line-height: 34px;
+}
+
+.notes-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Holgura para que el anillo de foco no se recorte. */
+  padding: 4px;
+  margin: 0 -4px;
+}
+
+.notes-column {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 40px;
+}
+
+.note-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.12);
+  flex: none;
+}
+
+.note-live::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: note-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes note-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ---- Lista ---- */
+
+.notes-tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.notes-error {
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.notes-empty {
+  padding: 8px 0;
+}
+
+/* ---- Transcripción: página de la nota y Tomar notas ---- */
+
+/* Botones como los de shadcn: "outline" por defecto, uno principal y uno
+   destructivo discreto. */
+.note-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.note-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-line {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.note-time {
+  padding-top: 3px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.note-who {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--who, var(--accent));
+}
+
+/* Al cambiar de persona, un poco más de aire, como en un guion. */
+.note-line.has-who:not(:first-child) {
+  margin-top: 8px;
+}
+
+.note-text small {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+
+@media (max-width: 560px) {
+  .notes-tools {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-live::before {
+    animation: none;
+  }
+}
+
+.prefs-row-static {
+  cursor: default;
+}
+
+/* ---------- Ajustes ---------- */
+
+.prefs-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.prefs-section-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.prefs-section-head p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.prefs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--n-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.prefs-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.prefs-fields .field select {
+  height: 36px;
+  border-radius: var(--n-radius);
+}
+
+.prefs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+}
+
+.prefs-row > span:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prefs-row strong {
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.prefs-row small {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.taking-end {
+  position: absolute;
+  right: 0;
+  bottom: 48px;
+  background: var(--n-popover, #111317);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Con tres modos el header no cabe con la descripción: se oculta antes de que se recorte. */
+@media (max-width: 1100px) {
+  .brand p {
+    display: none;
+  }
+}
+
+/* Un mismo alto para todos los controles de los paneles. */
+:root {
+  --control-h: 40px;
+}
+
+select {
+  min-height: var(--control-h);
+}
+
+.note-line {
+  padding: 16px 0;
+  border-top: 1px solid var(--n-border);
+}
+
+.note-line:first-child {
+  border-top: none;
+}
+
+.note-who {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.note-time {
+  padding-top: 0;
+}
+
+/* Ahora cada párrafo lleva su separador: sin el aire extra al cambiar de persona. */
+.note-line.has-who:not(:first-child) {
+  margin-top: 0;
+}

@@ -1,0 +1,58 @@
+.note-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--n-border);
+  background: var(--n-popover);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: global(fade-in) 0.1s ease-out;
+}
+
+.note-menu button {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--text);
+}
+
+.note-menu button:hover,
+.note-menu button:focus-visible {
+  outline: none;
+  background: var(--n-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-menu {
+    animation: none;
+  }
+}
+
+.note-menu.note-menu-end {
+  left: auto;
+  right: 0;
+  min-width: 220px;
+}
+
+.note-menu-sep {
+  height: 1px;
+  margin: 4px -4px;
+  border: 0;
+  background: var(--n-border);
+}
+
+.note-menu button.note-menu-danger {
+  color: var(--danger);
+}
+
+.note-menu button.note-menu-danger:hover,
+.note-menu button.note-menu-danger:focus-visible {
+  background: rgba(248, 113, 113, 0.1);
+}

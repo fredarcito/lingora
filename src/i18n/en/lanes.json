@@ -1,0 +1,8 @@
+{
+  "remote_to_local.title": "Listen",
+  "remote_to_local.subtitle": "The call or video, translated for you",
+  "local_to_remote.title": "Speak",
+  "local_to_remote.subtitle": "Your microphone, translated for the other person",
+  "remote_to_local.settingsSubtitle": "Where Lingora listens and where it speaks to you",
+  "local_to_remote.settingsSubtitle": "Your microphone and where your translated voice goes"
+}

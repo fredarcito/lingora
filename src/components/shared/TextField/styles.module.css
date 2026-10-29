@@ -1,0 +1,17 @@
+.text-field {
+  width: 200px;
+  flex: none;
+  height: var(--control-h);
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  padding: 0 10px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.text-field::placeholder {
+  color: var(--text-3);
+}

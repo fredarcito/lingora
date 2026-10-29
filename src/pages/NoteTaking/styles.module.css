@@ -1,0 +1,101 @@
+/* Tomar notas */
+.note-taking {
+  --n-border: rgba(255, 255, 255, 0.09);
+  --n-input: rgba(255, 255, 255, 0.12);
+  --n-hover: rgba(255, 255, 255, 0.045);
+  --n-muted: rgba(255, 255, 255, 0.06);
+  --n-radius: 8px;
+  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.taking-start {
+  align-self: flex-start;
+  height: 36px;
+  padding: 0 16px;
+}
+
+.taking-privacy {
+  font-size: 13px;
+}
+
+.taking-live {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.taking-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--n-border);
+}
+
+.taking-time {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+.taking-people {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.taking-warning {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.taking-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Lo que sube se desvanece por arriba, como en los subtítulos. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px);
+  mask-image: linear-gradient(to bottom, transparent, #000 28px);
+}
+
+/* Lo que se oye ahora, como al pie de los subtítulos. */
+.taking-heard {
+  min-height: 22px;
+}
+
+.taking-summary-lang {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.taking-summary-lang strong {
+  font-weight: 550;
+}
+
+.taking-start {
+  min-height: var(--control-h);
+}
+
+.taking-start {
+  height: var(--control-h);
+}
+
+.taking-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}

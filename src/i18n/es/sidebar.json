@@ -1,0 +1,19 @@
+{
+  "openMenu": "Abrir el menú",
+  "menu": "Menú",
+  "closeMenu": "Cerrar el menú",
+  "close": "Cerrar",
+  "tagline": "Traductor de voz",
+  "group.translation": "Traducción",
+  "group.library": "Biblioteca",
+  "group.general": "General",
+  "translate": "Traducir",
+  "translate.hint": "Subtítulos y voz en vivo",
+  "notes": "Notas",
+  "notes.hint": "Conversaciones guardadas",
+  "settings": "Ajustes",
+  "settings.hint": "Audio, notas y diagnóstico",
+  "translating": "Traduciendo",
+  "privacyWithKey": "Todo se procesa en tu Mac, salvo los resúmenes que pidas",
+  "privacy": "Todo se procesa en tu Mac"
+}

@@ -1,0 +1,12 @@
+{
+  "months": "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec",
+  "dayMonth": "{month} {day}",
+  "secs": "{n} s",
+  "mins": "{n} min",
+  "gap": "Not saved · {time}",
+  "notesTitle": "Notes from {date}, {time}",
+  "convTitle": "Conversation from {date}, {time}",
+  "me": "Me",
+  "person": "Person {n}",
+  "summaryPrompt": "Summarize this conversation in {language}: key points, decisions and action items with an owner if one is mentioned."
+}

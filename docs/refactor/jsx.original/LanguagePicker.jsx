@@ -1,0 +1,149 @@
+import { useRef, useState } from "react";
+import { errorMessage } from "./api";
+import { BUNDLED_LANGS, generatedLangs, removeGenerated, systemLang, useLang, useT } from "./i18n";
+import { generateLanguage } from "./i18n/generate";
+
+const NEW = "__new";
+
+/** Nombre de un idioma escrito en ese mismo idioma; si el sistema no lo conoce, el que da la app. @param {string} code @param {string} fallback */
+export function nativeName(code, fallback) {
+  try {
+    const name = new Intl.DisplayNames([code], { type: "language" }).of(code);
+    if (name && name !== code) return name.charAt(0).toLocaleUpperCase(code) + name.slice(1);
+  } catch {
+    // Código que Intl no reconoce.
+  }
+  return fallback;
+}
+
+/**
+ * Selector del idioma de la interfaz: los incluidos, los generados en este equipo
+ * y «Generar otro idioma…», que traduce la interfaz con el modelo local.
+ * @param {{ languages: import("./api").LanguageInfo[] }} props
+ */
+export default function LanguagePicker({ languages }) {
+  const t = useT();
+  const { lang, setLang } = useLang();
+  const [generated, setGenerated] = useState(generatedLangs);
+  const [creating, setCreating] = useState(false);
+  const [target, setTarget] = useState("");
+  const [progress, setProgress] = useState(/** @type {{ done: number, total: number } | null} */ (null));
+  const [message, setMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+  const control = useRef({ cancelled: false });
+
+  const names = new Map(languages.map((l) => [l.code, l.name]));
+  const nameOf = (/** @type {string} */ code) => nativeName(code, names.get(code) ?? code);
+  const bundled = new Set(BUNDLED_LANGS.map((l) => l.code));
+  const candidates = languages.filter((l) => !bundled.has(l.code));
+  const isGenerated = generated.includes(lang);
+
+  const run = async (/** @type {string} */ code) => {
+    setMessage("");
+    setIsError(false);
+    control.current = { cancelled: false };
+    setProgress({ done: 0, total: 1 });
+    try {
+      const result = await generateLanguage(code, (done, total) => setProgress({ done, total }), control.current);
+      setGenerated(generatedLangs());
+      if (result) {
+        setCreating(false);
+        setLang(code);
+        if (result.missing > 0) setMessage(t("languagePicker.partial", { count: result.missing }));
+      }
+    } catch (e) {
+      setIsError(true);
+      setMessage(e instanceof Error && e.message === "local-model-missing" ? t("languagePicker.noModel") : errorMessage(e));
+    } finally {
+      setProgress(null);
+    }
+  };
+
+  /** @param {string} value */
+  const choose = (value) => {
+    setMessage("");
+    if (value === NEW) {
+      setCreating(true);
+      setTarget((c) => c || candidates.find((l) => !generated.includes(l.code))?.code || "");
+    } else {
+      setCreating(false);
+      setLang(value);
+    }
+  };
+
+  const remove = () => {
+    removeGenerated(lang);
+    setGenerated(generatedLangs());
+    setLang(systemLang());
+  };
+
+  return (
+    <>
+      <label className="prefs-row">
+        <span>
+          <strong>{t("languagePicker.title")}</strong>
+          <small>{t("languagePicker.hint")}</small>
+        </span>
+        <select className="prefs-select" value={creating ? NEW : lang} disabled={!!progress} onChange={(e) => choose(e.target.value)}>
+          {BUNDLED_LANGS.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.name}
+            </option>
+          ))}
+          {generated.map((code) => (
+            <option key={code} value={code}>
+              {nameOf(code)} · {t("languagePicker.auto")}
+            </option>
+          ))}
+          <option value={NEW}>{t("languagePicker.generateOption")}</option>
+        </select>
+      </label>
+
+      {creating && (
+        <div className="prefs-row prefs-row-static lang-generate">
+          <span>
+            <strong>{t("languagePicker.generateTitle")}</strong>
+            <small>{progress ? t("languagePicker.progress", { done: progress.done, total: progress.total }) : t("languagePicker.generateHint")}</small>
+            {progress && <progress value={progress.done} max={progress.total} />}
+          </span>
+          {!progress ? (
+            <span className="lang-generate-actions">
+              <select className="prefs-select" value={target} onChange={(e) => setTarget(e.target.value)}>
+                {candidates.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {nameOf(l.code)}
+                  </option>
+                ))}
+              </select>
+              <button className="note-action" disabled={!target} onClick={() => run(target)}>
+                {t("languagePicker.generate")}
+              </button>
+            </span>
+          ) : (
+            <button className="note-action" onClick={() => (control.current.cancelled = true)}>
+              {t("languagePicker.cancel")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {isGenerated && !creating && (
+        <div className="prefs-row prefs-row-static">
+          <span>
+            <small>{t("languagePicker.autoNote")}</small>
+          </span>
+          <span className="lang-generate-actions">
+            <button className="note-action" disabled={!!progress} onClick={() => run(lang)}>
+              {t("languagePicker.regenerate")}
+            </button>
+            <button className="note-action" disabled={!!progress} onClick={remove}>
+              {t("languagePicker.remove")}
+            </button>
+          </span>
+        </div>
+      )}
+
+      {message && <p className={isError ? "notes-error" : "muted"}>{message}</p>}
+    </>
+  );
+}

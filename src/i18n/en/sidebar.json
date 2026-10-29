@@ -1,0 +1,19 @@
+{
+  "openMenu": "Open the menu",
+  "menu": "Menu",
+  "closeMenu": "Close the menu",
+  "close": "Close",
+  "tagline": "Voice translator",
+  "group.translation": "Translation",
+  "group.library": "Library",
+  "group.general": "General",
+  "translate": "Translate",
+  "translate.hint": "Live captions and voice",
+  "notes": "Notes",
+  "notes.hint": "Saved conversations",
+  "settings": "Settings",
+  "settings.hint": "Audio, notes and diagnostics",
+  "translating": "Translating",
+  "privacyWithKey": "Everything runs on your Mac, except the summaries you ask for",
+  "privacy": "Everything runs on your Mac"
+}

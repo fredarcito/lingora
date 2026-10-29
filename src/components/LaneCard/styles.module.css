@@ -1,0 +1,536 @@
+.langs-note {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.lane.is-compact {
+  align-self: start;
+}
+
+:global(.lanes):global(.single) .line-target {
+  font-size: 17px;
+}
+
+:global(.lanes):global(.single) .line.is-latest .line-target {
+  font-size: 24px;
+}
+
+/* En lugar del volumen, cuando el carril no dice la traducción. */
+.subtitles-only {
+  flex: none;
+  padding-left: 12px;
+  border-left: 1px solid var(--hairline);
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+.lane {
+  --accent: #5eead4;
+  --accent-2: #22d3ee;
+  --accent-ink: #04201c;
+  --accent-soft: rgba(94, 234, 212, 0.12);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  min-width: 0;
+  /* Cabe en la ventana; si los ajustes abiertos no caben, el panel hace
+     scroll en vez de encoger sus bloques hasta pisarse. */
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  container: lane / inline-size;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Solo los subtítulos ceden espacio; el resto mantiene su tamaño. */
+.lane > * {
+  flex-shrink: 0;
+}
+
+.lane > :global(.captions),
+.lane > .feed {
+  flex-shrink: 1;
+}
+
+.lane-local_to_remote {
+  --accent: #a78bfa;
+  --accent-2: #818cf8;
+  --accent-ink: #120b29;
+  --accent-soft: rgba(167, 139, 250, 0.12);
+}
+
+.lane.is-running {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent), 0 20px 60px -30px var(--accent);
+}
+
+.lane-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.langs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 9px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.lane h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.lane-head :global(.muted) {
+  margin-top: 2px;
+}
+
+/* Ajustes plegables */
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--hairline);
+  animation: global(reveal) 0.18s ease-out;
+}
+
+/* Una fila por ajuste: etiqueta a la izquierda, control a la derecha. */
+.setting-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-label {
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-2);
+}
+
+/* Voz concreta: selector y botón para escucharla. */
+.voice-pick {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+
+.voice-preview {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 0 12px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.voice-preview:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.voice-preview:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* «BlackHole 2ch → Bocinas      Cambiar» */
+.setting-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 9px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+}
+
+.setting-summary:hover {
+  color: var(--text);
+}
+
+.setting-summary-text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setting-more {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .setting-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+}
+
+/* Control principal */
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--hairline);
+}
+
+.toggle {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 8px 24px -8px var(--accent);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.toggle:hover:not(:disabled) {
+  transform: scale(1.04);
+}
+
+.toggle:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.toggle.is-running {
+  color: var(--text);
+  background: var(--surface-3);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  animation: global(breathe) 2.4s ease-in-out infinite;
+}
+
+.control-status {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.status-text,
+.status-sub {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-text {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.lane.is-running .status-text {
+  color: var(--accent);
+}
+
+.status-sub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 28px;
+  flex: none;
+}
+
+.bars span {
+  width: 4px;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--text-3);
+  transform-origin: center;
+  transition: transform 0.1s linear, background 0.2s;
+}
+
+.lane.is-running .bars span {
+  background: color-mix(in srgb, var(--accent) 55%, var(--text-3));
+}
+
+.bars.is-speaking span {
+  background: var(--accent) !important;
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: var(--text-3);
+  padding-left: 12px;
+  border-left: 1px solid var(--hairline);
+}
+
+.volume-value {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  width: 32px;
+  text-align: right;
+}
+
+/* En carriles estrechos el porcentaje sobra: el control ya lo muestra. */
+@container lane (max-width: 470px) {
+  .volume-value {
+    display: none;
+  }
+}
+
+input[type="range"].wide {
+  width: 100%;
+  margin: 8px 0 4px;
+}
+
+.field-value {
+  float: right;
+  color: var(--text-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Avisos */
+
+.notice {
+  font-size: 12.5px;
+  line-height: 1.45;
+  padding: 9px 12px;
+  border-radius: 10px;
+}
+
+.notice-warn {
+  color: #fcd98a;
+  background: rgba(251, 191, 36, 0.07);
+  border: 1px solid rgba(251, 191, 36, 0.18);
+}
+
+.notice-error {
+  color: #fca5a5;
+  background: rgba(248, 113, 113, 0.07);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+}
+
+/* Subtítulos */
+
+.feed {
+  flex: 1;
+  min-height: 220px;
+  max-height: 52vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 2px 4px 0;
+  mask-image: linear-gradient(to bottom, transparent 0, #000 36px);
+  scrollbar-width: thin;
+}
+
+.empty {
+  margin: auto;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.line {
+  padding: 10px 12px;
+  border-radius: 12px;
+  opacity: 0.55;
+  transition: opacity 0.3s, background 0.3s;
+}
+
+.line:hover {
+  opacity: 0.85;
+}
+
+.line.is-latest {
+  opacity: 1;
+  background: var(--surface-2);
+  animation: global(rise) 0.35s ease-out;
+}
+
+.line-source {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin-bottom: 3px;
+}
+
+.line-target {
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.line.is-latest .line-target {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.line-meta {
+  margin-top: 6px;
+  padding: 0;
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.line-meta:hover {
+  color: var(--text-2);
+}
+
+/* Los datos técnicos solo al pasar el ratón por la frase. */
+.line .line-meta {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.line:hover .line-meta,
+.line .line-meta.is-visible,
+.line .line-meta:focus-visible {
+  opacity: 1;
+}
+
+.feed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+  margin-bottom: -8px;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+/* Lo que se está oyendo ahora, antes de que llegue la traducción: discreto,
+   para que la vista vaya a la traducción. */
+.live {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 12px 2px;
+  animation: global(rise) 0.25s ease-out;
+}
+
+.live-text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: -2px;
+  background: var(--accent);
+  animation: global(blink) 1s steps(2, start) infinite;
+}
+
+.details {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
+.details audio {
+  width: 100%;
+  height: 32px;
+}
+
+.lane-head-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Velocidad de la voz en la tarjeta: el control y su valor en una línea. */
+.speed-pick {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.speed-pick input {
+  flex: 1;
+  min-width: 0;
+}
+
+.speed-pick .field-value {
+  flex: none;
+  min-width: 72px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.voice-preview,
+.setting-summary {
+  min-height: var(--control-h);
+}
+
+/* Junto a las barras, separado como el volumen. La clase dos veces: la
+   especificidad de antes (.notes-switch.lane-save). */
+.lane-save.lane-save {
+  flex: none;
+  padding-right: 14px;
+  border-right: 1px solid var(--hairline);
+}
+
+/* Sobre el fondo oscuro de la tarjeta, el carril apagado casi no se veía. */
+.lane-save.lane-save input:not(:checked) {
+  background: color-mix(in srgb, var(--text) 22%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.lane-save.lane-save input:not(:checked)::after {
+  background: var(--text-2);
+}

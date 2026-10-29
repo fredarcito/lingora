@@ -1,0 +1,8 @@
+{
+  "placeholder": "Groq key",
+  "checking": "Checking…",
+  "save": "Save",
+  "panelText": "To summarize, Lingora sends the transcript to Groq with your own key. It is the only thing that leaves your computer. The key is stored in the Mac keychain.",
+  "getKey": "Get a key at console.groq.com/keys",
+  "orCopy": "Or use \"Copy to summarize\" and paste it into your AI chat."
+}
