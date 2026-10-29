@@ -25,15 +25,19 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cpal = "0.15"
 sherpa-onnx = "2.0.1"
+[target.'cfg(target_os = "macos")'.dependencies]
+coreaudio-sys = "0.2"
+core-foundation = "0.10"
 # Traducción local dentro de la app (sin `llama-server` aparte). Sin las
 # opciones por defecto: `openmp` pediría libomp de Homebrew.
 llama-cpp-2 = { version = "0.1.160", default-features = false, features = ["metal"] }
 # Clave de Groq para los resúmenes: se guarda en el llavero, nunca en un archivo.
 keyring = { version = "3", features = ["apple-native"] }
 
-[target.'cfg(target_os = "macos")'.dependencies]
-coreaudio-sys = "0.2"
-core-foundation = "0.10"
+# Windows (prueba de compilación): CPU por ahora; `vulkan` se añade después.
+[target.'cfg(windows)'.dependencies]
+llama-cpp-2 = { version = "0.1.160", default-features = false }
+keyring = { version = "3", features = ["windows-native"] }
 
 [profile.release]
 codegen-units = 1
