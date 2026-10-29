@@ -1,0 +1,6 @@
+# Windows: enlazar el runtime de C de Visual C++ de forma estática (/MT).
+# sherpa-onnx trae binarios precompilados con /MT y llama.cpp se compila con /MD
+# por defecto; el enlazador rechaza mezclarlos (LNK2038). Con crt-static, las
+# dependencias de C también se compilan con /MT. Mac no se ve afectado.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
