@@ -226,8 +226,17 @@ fn bundled_espeak() -> String {
 
 /// Modelos descargados: no van en el bundle, se bajan la primera vez.
 fn models_dir() -> std::path::PathBuf {
-    let home = std::env::var("HOME").unwrap_or_default();
-    std::path::Path::new(&home).join("Library/Application Support/lingora/models")
+    // Windows no tiene HOME: la carpeta va en %LOCALAPPDATA%.
+    #[cfg(windows)]
+    {
+        let base = std::env::var("LOCALAPPDATA").unwrap_or_default();
+        std::path::Path::new(&base).join("lingora").join("models")
+    }
+    #[cfg(not(windows))]
+    {
+        let home = std::env::var("HOME").unwrap_or_default();
+        std::path::Path::new(&home).join("Library/Application Support/lingora/models")
+    }
 }
 
 fn env_or(key: &str, default: &str) -> String {
