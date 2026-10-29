@@ -19,6 +19,30 @@ jobs:
         with:
           workspaces: src-tauri
 
+      # Mismo espeak-ng (versión y SHA-256) que scripts/build-espeak.sh, compilado
+      # con MSVC. Solo el programa: los datos ya están en src-tauri/resources.
+      - name: espeak-ng para Windows
+        shell: bash
+        run: |
+          VERSION=1.52.0
+          SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
+          WORK="$RUNNER_TEMP/espeak"
+          mkdir -p "$WORK"
+          curl -fsSL -o "$WORK/espeak.tar.gz" "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/$VERSION.tar.gz"
+          echo "$SHA256  $WORK/espeak.tar.gz" | sha256sum -c -
+          tar xzf "$WORK/espeak.tar.gz" -C "$WORK"
+          cmake -S "$WORK/espeak-ng-$VERSION" -B "$WORK/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_TESTING=OFF \
+            -DUSE_MBROLA=OFF -DUSE_LIBSONIC=OFF -DUSE_LIBPCAUDIO=OFF \
+            -DUSE_ASYNC=OFF -DUSE_KLATT=OFF -DUSE_SPEECHPLAYER=OFF
+          cmake --build "$WORK/build" --config Release
+          EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
+          mkdir -p src-tauri/binaries
+          cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+          "$EXE" --path="$WORK/build" -v es -q --ipa "Hola, esto es una prueba."
+
       - name: cargo check (Windows)
         working-directory: src-tauri
         run: cargo check --target x86_64-pc-windows-msvc
