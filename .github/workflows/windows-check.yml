@@ -5,6 +5,11 @@ on:
     branches: [windows-build]
   workflow_dispatch:
 
+# llama-cpp-sys-2 compila llama.cpp con /MT solo si esta variable vale 1; si no, usa /MD
+# y no casa con sherpa-onnx (/MT) al enlazar.
+env:
+  LLAMA_STATIC_CRT: "1"
+
 jobs:
   check:
     runs-on: windows-latest
