@@ -51,4 +51,12 @@ mkdir -p "$OUT"
 for lib in "${LIBS[@]}"; do
   cp "$SRC/$lib" "$OUT/"
 done
+
+# En Mac, la firma del autor (otro Team ID) hace que macOS rechace cargarlas dentro
+# de la app firmada ad-hoc. Se firman de nuevo con la misma identidad que la app ("-").
+if [ "$(uname -s)" = "Darwin" ]; then
+  for lib in "${LIBS[@]}"; do
+    codesign --force --sign - "$OUT/$lib" >/dev/null
+  done
+fi
 echo "✓ sherpa-onnx $VERSION listo en src-tauri/sherpa-libs (${#LIBS[@]} librerías)"
