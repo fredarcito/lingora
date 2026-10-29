@@ -52,6 +52,11 @@ jobs:
           cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
           "$EXE" --path="$WORK/build" -v es -q --ipa "Hola, esto es una prueba."
 
+      # Las DLL de sherpa-onnx que Tauri empaqueta (tauri.windows.conf.json) deben existir ya.
+      - name: sherpa-onnx (DLL)
+        shell: bash
+        run: bash scripts/fetch-sherpa.sh
+
       - name: cargo check (Windows)
         working-directory: src-tauri
         run: cargo check --target x86_64-pc-windows-msvc
@@ -102,6 +107,10 @@ jobs:
           EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
           mkdir -p src-tauri/binaries
           cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+
+      - name: sherpa-onnx (DLL)
+        shell: bash
+        run: bash scripts/fetch-sherpa.sh
 
       # Instalador NSIS sin firmar (demo). El destino se pide aquí y no en
       # tauri.conf.json, para no tocar la configuración de macOS.

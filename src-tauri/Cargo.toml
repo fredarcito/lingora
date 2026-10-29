@@ -24,7 +24,11 @@ hound = "3.5"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cpal = "0.15"
-sherpa-onnx = "2.0.1"
+# Librerías de sherpa-onnx como archivos aparte (dylib / dll), no estáticas: así
+# Windows y Mac usan el mismo enlazado. Mac las empaqueta en el .app (ver
+# tauri.conf.json); Windows, junto al .exe (ver tauri.windows.conf.json).
+sherpa-onnx = { version = "2.0.1", default-features = false, features = ["shared"] }
+
 [target.'cfg(target_os = "macos")'.dependencies]
 coreaudio-sys = "0.2"
 core-foundation = "0.10"

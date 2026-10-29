@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.lingora.app",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "sh scripts/fetch-sherpa.sh && npm run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "sh scripts/fetch-sherpa.sh && npm run build",
     "frontendDist": "../dist"
   },
   "app": {
@@ -42,7 +42,11 @@
     "macOS": {
       "minimumSystemVersion": "14.0",
       "entitlements": "entitlements.plist",
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "frameworks": [
+        "sherpa-libs/libsherpa-onnx-c-api.dylib",
+        "sherpa-libs/libonnxruntime.dylib"
+      ]
     }
   }
 }
