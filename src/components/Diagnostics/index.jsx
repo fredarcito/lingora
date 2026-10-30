@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage } from "../../utils/api";
+import { ensureSpeakers, loadSpeakers } from "../../utils/notes";
 import { t, useT } from "../../i18n";
 import { LinkButton, Spinner, cx } from "../shared";
 import styles from "./styles.module.css";
@@ -25,8 +26,12 @@ const GROUPS = [
  */
 const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "capture_volume"]);
 
-/** What is only needed for some languages or for notes: it does not count as a problem. */
-const OPTIONAL = new Set(["sense_voice", "speakers"]);
+/**
+ * What is only needed for some languages or for notes: it does not count as a problem.
+ * Telling people apart in notes does count while it is turned on.
+ * @param {string} id
+ */
+const isOptional = (id) => id === "sense_voice" || (id === "speakers" && !loadSpeakers());
 
 /**
  * What the user is told when each check fails. The backend's title
@@ -59,7 +64,7 @@ const FIX_LABEL = {
 };
 
 /** @param {import("../../utils/api").Check} c */
-const isProblem = (c) => c.status !== "ok" && !OPTIONAL.has(c.id);
+const isProblem = (c) => c.status !== "ok" && !isOptional(c.id);
 
 /** @param {import("../../utils/api").Check[]} checks */
 function groupStatus(checks) {
@@ -123,6 +128,8 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
   useEffect(() => {
     refresh(true);
     const timer = window.setInterval(() => refresh(false), AUDIO_POLL_MS);
+    // The speakers add-on may be downloading in the background: check again when it ends.
+    ensureSpeakers().then(() => refresh(true));
     return () => window.clearInterval(timer);
   }, [refresh]);
 
@@ -130,7 +137,9 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
     setFixing(id);
     setError(null);
     try {
-      merge(await api.fixDiagnostic(id));
+      // The speakers add-on joins the background download instead of starting a second one.
+      if (id === "speakers") await ensureSpeakers().then(() => refresh(true));
+      else merge(await api.fixDiagnostic(id));
       onFixed?.();
     } catch (e) {
       setError(errorMessage(e));
@@ -215,15 +224,15 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
                   <ul className={styles.diagItems}>
                     {g.checks.map((c) => (
                       <li key={c.id} className={styles.diagItem}>
-                        <StatusIcon status={c.status === "ok" ? "ok" : OPTIONAL.has(c.id) ? "optional" : c.status} />
+                        <StatusIcon status={c.status === "ok" ? "ok" : isOptional(c.id) ? "optional" : c.status} />
                         <div>
                           <p className={styles.diagItemTitle}>
                             {c.title}
-                            {OPTIONAL.has(c.id) && <span className={styles.diagBadge}>{t("diagnostics.optional")}</span>}
+                            {isOptional(c.id) && <span className={styles.diagBadge}>{t("diagnostics.optional")}</span>}
                           </p>
                           <p className={styles.diagWhy}>{c.detail}</p>
                         </div>
-                        {OPTIONAL.has(c.id) && fixButton(c)}
+                        {isOptional(c.id) && fixButton(c)}
                       </li>
                     ))}
                   </ul>

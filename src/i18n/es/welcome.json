@@ -2,6 +2,7 @@
   "step.listener": "Escuchar",
   "step.translator": "Traducir",
   "step.voice_model": "Voz",
+  "step.speakers": "Personas",
   "how.listen.title": "Escucha tu Mac",
   "how.listen.text": "Lingora oye lo que suena en tu Mac: un vídeo, una clase, un podcast. No necesitas configurar fuentes de audio.",
   "how.translate.title": "Traduce mientras hablan",

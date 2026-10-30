@@ -2,6 +2,7 @@
   "step.listener": "Listen",
   "step.translator": "Translate",
   "step.voice_model": "Voice",
+  "step.speakers": "People",
   "how.listen.title": "Listens to your Mac",
   "how.listen.text": "Lingora hears whatever plays on your Mac: a video, a class, a podcast. No audio sources to set up.",
   "how.translate.title": "Translates as they speak",

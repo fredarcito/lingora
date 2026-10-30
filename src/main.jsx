@@ -7,6 +7,7 @@ import LangOffer from "./components/LangOffer";
 import Welcome, { WelcomeBoundary, needsWelcome } from "./pages/Welcome";
 import { I18nProvider } from "./i18n";
 import { captureErrors } from "./utils/log";
+import { ensureSpeakers } from "./utils/notes";
 
 // Interface errors also go to the app's log.
 captureErrors();
@@ -23,6 +24,10 @@ function Main() {
       .then(setWelcome)
       .catch(() => setWelcome(false));
   }, []);
+  // Past the welcome, what it may have skipped: telling people apart in notes.
+  useEffect(() => {
+    if (welcome === false) ensureSpeakers();
+  }, [welcome]);
   if (welcome === null) return null;
   if (!welcome)
     return (

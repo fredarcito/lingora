@@ -80,6 +80,27 @@ export function storeSpeakers(on) {
   }
 }
 
+/** @type {Promise<void> | null} */
+let speakersDownload = null;
+
+/**
+ * Downloads the speakers add-on in the background if it is on and missing
+ * (the welcome screen was skipped, or it predates the add-on). Only one
+ * download at a time; if it fails, the next call tries again.
+ * @returns {Promise<void>}
+ */
+export function ensureSpeakers() {
+  if (!loadSpeakers()) return Promise.resolve();
+  speakersDownload ??= api
+    .setupStatus()
+    .then((list) => {
+      if (list.some((m) => m.id === "speakers" && !m.installed)) return api.downloadModel("speakers", () => {});
+    })
+    .catch((e) => console.warn("[lingora] could not download the speakers add-on:", e))
+    .finally(() => (speakersDownload = null));
+  return speakersDownload;
+}
+
 /** Si ya se aceptó que el resumen envíe la transcripción a Groq. */
 export function loadSummaryConsent() {
   try {

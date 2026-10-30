@@ -3,7 +3,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import Diagnostics from "../../components/Diagnostics";
 import { MenuButton } from "../../components/Sidebar";
 import { api, errorMessage } from "../../utils/api";
-import { loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "../../utils/notes.js";
+import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "../../utils/notes.js";
 import { KeyField, notifyKeyChanged, useSummaryKey } from "../../components/SummaryKey";
 import LanguagePicker from "../../components/LanguagePicker";
 import { useT } from "../../i18n";
@@ -73,6 +73,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   const changeSpeakers = (on) => {
     setSpeakersOn(on);
     storeSpeakers(on);
+    if (on) ensureSpeakers().then(checkSpeakers);
   };
 
   return (

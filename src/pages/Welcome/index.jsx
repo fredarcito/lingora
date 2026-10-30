@@ -9,9 +9,10 @@ const WELCOMED_KEY = "lingora.welcomed";
 /**
  * Lo que se descarga en la bienvenida, en este orden. Se nombra por lo que
  * hace, no por el modelo. El de chino, japonés y coreano no está: se ofrece
- * en el diagnóstico solo a quien lo necesita.
+ * en el diagnóstico solo a quien lo necesita. «Personas» (quién habla en las
+ * notas) es pequeño y va con el resto.
  */
-const STEPS = [{ id: "listener" }, { id: "translator" }, { id: "voice_model" }];
+const STEPS = [{ id: "listener" }, { id: "translator" }, { id: "voice_model" }, { id: "speakers" }];
 
 /** Claves (`welcome.how.<id>.title|text`) de los pasos de «Cómo funciona». */
 const HOW_IT_WORKS = ["listen", "translate", "read", "local"];
