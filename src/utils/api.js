@@ -235,8 +235,22 @@ export const api = {
   voicePrint: (samples) => invoke("voice_print", new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength)),
   /** Carga el modelo de voz antes de la primera frase. @returns {Promise<void>} */
   warmUp: () => invoke("warm_up"),
-  /** @returns {Promise<DeviceInfo[]>} */
-  listAudioDevices: () => invoke("list_audio_devices"),
+  /**
+   * Fuera del Mac Rust aún no lista los dispositivos: se usan los del WebView
+   * (sin las entradas «default» y «communications», que repiten otro).
+   * @returns {Promise<DeviceInfo[]>}
+   */
+  listAudioDevices: () =>
+    invoke("list_audio_devices").catch(async () =>
+      (await navigator.mediaDevices.enumerateDevices())
+        .filter((d) => d.label && d.kind !== "videoinput" && d.deviceId !== "default" && d.deviceId !== "communications")
+        .map((d) => ({
+          name: d.label,
+          uid: d.deviceId,
+          input_channels: d.kind === "audioinput" ? 1 : 0,
+          output_channels: d.kind === "audiooutput" ? 1 : 0,
+        })),
+    ),
   /** @returns {Promise<AudioRoute>} */
   audioRoute: () => invoke("audio_route"),
   /**
