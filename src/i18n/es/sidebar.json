@@ -14,6 +14,6 @@
   "settings": "Ajustes",
   "settings.hint": "Audio, notas y diagnóstico",
   "translating": "Traduciendo",
-  "privacyWithKey": "Todo se procesa en tu Mac, salvo los resúmenes que pidas",
-  "privacy": "Todo se procesa en tu Mac"
+  "privacyWithKey": "Todo se procesa en tu equipo, salvo los resúmenes que pidas",
+  "privacy": "Todo se procesa en tu equipo"
 }

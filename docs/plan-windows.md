@@ -115,6 +115,14 @@ diagnóstico). Hay que medir en un portátil normal sin GPU dedicada: si con
 CPU tarda demasiado, la traducción en vivo no es viable allí y conviene
 decirlo en la app.
 
+**Pendiente (riesgo, 2026-10-30):** con `vulkan` el `.exe` enlaza
+`vulkan-1.dll` al arrancar. La trae el driver de la GPU (casi todos los PC con
+drivers al día), pero en un equipo sin driver o en una máquina virtual **la
+app no abre**. Arreglo: la opción `dynamic-backends` de `llama-cpp-2` (carga
+la GPU como DLL aparte solo si se puede; si no, CPU), o cargar `vulkan-1.dll`
+con retraso (`/DELAYLOAD`) y comprobar antes si existe. Añadir también el
+aviso en el diagnóstico.
+
 - En `Cargo.toml`: `features = ["metal"]` pasa a ser solo para Mac, y
   `["vulkan"]` para Windows (sección por sistema).
 - `translator.rs` no cambia, salvo `n_gpu_layers` si se cae a CPU.

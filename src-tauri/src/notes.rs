@@ -159,8 +159,15 @@ pub fn note_delete(id: String) -> Result<()> {
     Ok(())
 }
 
-/// Muestra el archivo en Finder.
+/// Muestra el archivo en Finder (en Windows, en el Explorador).
 fn reveal(path: &Path) -> Result<()> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        // `/select,` y la ruta van juntos: el Explorador no entiende las comillas de `arg`.
+        std::process::Command::new("explorer").raw_arg(format!("/select,\"{}\"", path.display())).status()?;
+    }
+    #[cfg(not(windows))]
     std::process::Command::new("open").arg("-R").arg(path).status()?;
     Ok(())
 }
@@ -461,7 +468,9 @@ pub async fn summary_key_clear() -> Result<()> {
 /// aquí: la interfaz no puede pedir que se abra otra.
 #[tauri::command]
 pub fn summary_key_help() -> Result<()> {
-    std::process::Command::new("open").arg("https://console.groq.com/keys").status()?;
+    // En Windows el Explorador abre la URL en el navegador por defecto, sin consola.
+    let opener = if cfg!(windows) { "explorer" } else { "open" };
+    std::process::Command::new(opener).arg("https://console.groq.com/keys").status()?;
     Ok(())
 }
 

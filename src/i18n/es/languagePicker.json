@@ -4,7 +4,7 @@
   "auto": "traducción automática",
   "generateOption": "Generar otro idioma…",
   "generateTitle": "Generar la interfaz en otro idioma",
-  "generateHint": "Lingora traduce sus textos con el modelo de traducción de tu Mac. Tarda unos minutos y solo se hace una vez.",
+  "generateHint": "Lingora traduce sus textos con el modelo de traducción de tu equipo. Tarda unos minutos y solo se hace una vez.",
   "generate": "Generar",
   "cancel": "Cancelar",
   "progress": "Traduciendo la interfaz… {done} de {total}",

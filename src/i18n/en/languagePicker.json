@@ -4,7 +4,7 @@
   "auto": "machine translated",
   "generateOption": "Generate another language…",
   "generateTitle": "Generate the interface in another language",
-  "generateHint": "Lingora translates its own texts with the translation model on your Mac. It takes a few minutes and only happens once.",
+  "generateHint": "Lingora translates its own texts with the translation model on your computer. It takes a few minutes and only happens once.",
   "generate": "Generate",
   "cancel": "Cancel",
   "progress": "Translating the interface… {done} of {total}",

@@ -2,7 +2,7 @@
   "placeholder": "Clave de Groq",
   "checking": "Comprobando…",
   "save": "Guardar",
-  "panelText": "Para resumir, Lingora envía la transcripción a Groq con tu propia clave. Es lo único que sale de tu equipo. La clave se guarda en el llavero del Mac.",
+  "panelText": "Para resumir, Lingora envía la transcripción a Groq con tu propia clave. Es lo único que sale de tu equipo. La clave se guarda de forma segura en él.",
   "getKey": "Conseguir una clave en console.groq.com/keys",
   "orCopy": "O usa «Copiar para resumir» y pégalo en tu chat de IA."
 }
