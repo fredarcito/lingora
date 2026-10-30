@@ -59,6 +59,9 @@ jobs:
 
       - name: cargo check (Windows)
         working-directory: src-tauri
+        env:
+          # El enlazador busca sherpa-onnx-c-api.lib aquí, no en la caché del crate.
+          SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
         run: cargo check --target x86_64-pc-windows-msvc
 
   installer:
@@ -115,6 +118,8 @@ jobs:
       # Instalador NSIS sin firmar (demo). El destino se pide aquí y no en
       # tauri.conf.json, para no tocar la configuración de macOS.
       - name: Instalador .exe
+        env:
+          SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
         run: pnpm tauri build --target x86_64-pc-windows-msvc --bundles nsis
 
       - uses: actions/upload-artifact@v4

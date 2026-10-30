@@ -26,7 +26,8 @@ case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
     ARCHIVE="sherpa-onnx-v$VERSION-win-x64-shared-MT-Release-lib.tar.bz2"
     SHA256=afa4de3ca4ab0afd53bb4aab40d28ee15608364b549ffc0fe0caf6489bfc39a5
-    LIBS=(sherpa-onnx-c-api.dll onnxruntime.dll onnxruntime_providers_shared.dll)
+    # Los .lib son para enlazar (SHERPA_ONNX_LIB_DIR en el workflow); los .dll, para empaquetar.
+    LIBS=(sherpa-onnx-c-api.dll onnxruntime.dll onnxruntime_providers_shared.dll sherpa-onnx-c-api.lib onnxruntime.lib)
     ;;
   *)
     echo "✗ Sistema no soportado: $(uname -s)" >&2
