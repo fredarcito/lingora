@@ -134,21 +134,20 @@ aviso en el diagnóstico.
 
 **Intento con `vulkan` (2026-10-30), en curso:** la demo va con CPU y
 `vulkan` es una opción de `Cargo.toml` (`--features vulkan`) que compila un
-trabajo aparte del flujo, ahora con Ninja. Lo que se vio en GitHub Actions (`windows-latest`, VS 2026, CMake 4):
+trabajo aparte del flujo. Lo que se vio en GitHub Actions (`windows-latest`, VS 2026, CMake 4):
 
 - El SDK se instala con `jakoch/install-vulkan-sdk-action` (1.4.309.0), pero
   `ggml-vulkan` pide `find_package(SPIRV-Headers)` y el SDK no trae su
   configuración de CMake: se arregla compilando e instalando SPIRV-Headers de
   la etiqueta `vulkan-sdk-1.4.309.0` y poniendo `CMAKE_PREFIX_PATH`.
 - Luego `vulkan-shaders-gen` (un proyecto CMake aparte que lanza llama.cpp)
-  falla al probar el compilador con `C1041 … use /FS`: `llama-cpp-sys-2`
-  apaga `TrackFileAccess` y añade `/FS` solo a sus propias opciones. No
-  bastaron `CL=-FS` ni `CFLAGS`/`CXXFLAGS=-FS`.
-- Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y
-  rompe otros `cmake` del mismo trabajo; escribirlo con guion.
-- Ahora se prueba Ninja (`CMAKE_GENERATOR=Ninja` con `msvc-dev-cmd`): con
-  MSVC, CMake pone `/FS` en todos los proyectos. Si no basta: una versión más
-  nueva de `llama-cpp-2`, o `dynamic-backends` con la DLL de Vulkan aparte.
+  falla al probar el compilador con `C1041 … use /FS`. El mensaje engaña: la
+  causa es la **longitud de la ruta** del `.pdb` (~268 caracteres dentro de
+  `src-tauri/target/…`; `cl.exe` no pasa de 260). Ni `CL`/`CFLAGS=-FS` ni Ninja
+  (que sí pone `/FS`) lo arreglan; Ninja además cambia `/MT` por `/MD`, que no
+  casa con sherpa-onnx. Se prueba con `CARGO_TARGET_DIR=C:\t` (MSBuild).
+- Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y su
+  `/usr/bin/link` tapa el `link.exe` de Visual Studio: `cargo` va en `cmd`.
 - Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más
   (shaders), sin medir.
 

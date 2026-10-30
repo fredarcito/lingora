@@ -69,9 +69,10 @@ jobs:
   vulkan:
     runs-on: windows-latest
     env:
-      # Con MSBuild, vulkan-shaders-gen (un proyecto CMake aparte) falla con C1041
-      # (falta /FS). Con Ninja y MSVC, CMake pone /FS en todos los proyectos.
-      CMAKE_GENERATOR: Ninja
+      # Carpeta corta: dentro de target/, la prueba del compilador de vulkan-shaders-gen
+      # pasa de 260 caracteres y cl.exe falla con C1041 (no puede abrir el .pdb; lo de
+      # /FS del mensaje es engañoso). Ninja no sirve: cambia /MT por /MD.
+      CARGO_TARGET_DIR: C:\t
     steps:
       - uses: actions/checkout@v5
 
@@ -83,15 +84,6 @@ jobs:
         with:
           workspaces: src-tauri
           prefix-key: "vulkan"
-
-      # Ninja no prepara el compilador como MSBuild: cl.exe tiene que estar en el PATH.
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
-      - name: Ninja
-        shell: bash
-        run: ninja --version || pip install ninja
 
       - name: SDK de Vulkan
         uses: jakoch/install-vulkan-sdk-action@v1
