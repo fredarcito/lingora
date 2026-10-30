@@ -120,15 +120,14 @@ jobs:
         run: mkdir -p src-tauri/binaries && touch src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
 
       # La salida se guarda en build.log: si falla, el paso siguiente saca solo los errores
-      # (en la página del trabajo quedan enterrados bajo miles de líneas).
+      # (en la página del trabajo quedan enterrados bajo miles de líneas). Con cmd y no
+      # Git Bash: su /usr/bin/link taparía el link.exe de Visual Studio.
       - name: cargo check (Windows, Vulkan)
         working-directory: src-tauri
-        shell: bash
+        shell: cmd
         env:
           SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
-        run: |
-          set -o pipefail
-          cargo check --target x86_64-pc-windows-msvc --features vulkan 2>&1 | tee build.log
+        run: cargo check --target x86_64-pc-windows-msvc --features vulkan > build.log 2>&1
 
       - name: Errores de la compilación
         if: failure()
