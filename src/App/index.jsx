@@ -1036,52 +1036,54 @@ export default function App() {
       {/* Aquí solo si algo falla; el detalle está en Ajustes. */}
       <Diagnostics mode={mode === "call" ? "call" : "video"} systemAudio={tapsMac} onFixed={loadDevices} onlyProblems />
 
-      {mode === "notes" ? (
-        <NoteTaking
-          running={remoteState.running}
-          starting={remoteState.starting || localState.starting}
-          closing={closing}
-          error={remoteState.error}
-          micError={meetingNotes.micError}
-          heard={[...remoteState.heard, ...(inMeeting ? localState.heard : [])]}
-          partial={remoteState.partial || (inMeeting ? localState.partial : "")}
-          noSignal={Boolean(remoteState.running && meters.remote_to_local && meters.remote_to_local.silentSecs > NO_SIGNAL_SECS)}
-          input={notesInput}
-          onInput={changeNotesInput}
-          listen={notesListen}
-          onListen={changeNotesListen}
-          systemAudio={systemAudio}
-          languages={shownLanguages}
-          route={shownRoute}
-          onOpenSettings={() => setView("settings")}
-          onStart={meetingNotes.startNotes}
-          onStop={meetingNotes.stopNotes}
-        />
-      ) : (
-        <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>
-          {visible.map((lane) => (
-            <LaneCard
-              key={lane.direction}
-              lane={lane}
-              compact={Boolean(focused) && focused !== lane.direction}
-              original={mode === "video" && lane.direction === "remote_to_local" ? noTranslate : undefined}
-              onOriginal={changeNoTranslate}
-              state={state[lane.direction]}
-              meter={meters[lane.direction]}
-              volume={volumes[lane.direction]}
-              inputs={inputs}
-              onOpenSettings={() => setView("settings")}
-              onToggle={() => (state[lane.direction].running ? stop(lane) : start(lane))}
-              onChange={(patch) => updateLane(lane.direction, patch)}
-              onVolume={(v) => changeVolume(lane.direction, v)}
-              saveNotes={lane.direction === "remote_to_local" ? saveNotes : undefined}
-              onSaveNotes={changeSaveNotes}
-              floating={lane.direction === "remote_to_local" ? floating : undefined}
-              onFloating={toggleFloating}
-            />
-          ))}
-        </div>
-      )}
+      <div key={mode} className={styles.modeBody}>
+        {mode === "notes" ? (
+          <NoteTaking
+            running={remoteState.running}
+            starting={remoteState.starting || localState.starting}
+            closing={closing}
+            error={remoteState.error}
+            micError={meetingNotes.micError}
+            heard={[...remoteState.heard, ...(inMeeting ? localState.heard : [])]}
+            partial={remoteState.partial || (inMeeting ? localState.partial : "")}
+            noSignal={Boolean(remoteState.running && meters.remote_to_local && meters.remote_to_local.silentSecs > NO_SIGNAL_SECS)}
+            input={notesInput}
+            onInput={changeNotesInput}
+            listen={notesListen}
+            onListen={changeNotesListen}
+            systemAudio={systemAudio}
+            languages={shownLanguages}
+            route={shownRoute}
+            onOpenSettings={() => setView("settings")}
+            onStart={meetingNotes.startNotes}
+            onStop={meetingNotes.stopNotes}
+          />
+        ) : (
+          <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>
+            {visible.map((lane) => (
+              <LaneCard
+                key={lane.direction}
+                lane={lane}
+                compact={Boolean(focused) && focused !== lane.direction}
+                original={mode === "video" && lane.direction === "remote_to_local" ? noTranslate : undefined}
+                onOriginal={changeNoTranslate}
+                state={state[lane.direction]}
+                meter={meters[lane.direction]}
+                volume={volumes[lane.direction]}
+                inputs={inputs}
+                onOpenSettings={() => setView("settings")}
+                onToggle={() => (state[lane.direction].running ? stop(lane) : start(lane))}
+                onChange={(patch) => updateLane(lane.direction, patch)}
+                onVolume={(v) => changeVolume(lane.direction, v)}
+                saveNotes={lane.direction === "remote_to_local" ? saveNotes : undefined}
+                onSaveNotes={changeSaveNotes}
+                floating={lane.direction === "remote_to_local" ? floating : undefined}
+                onFloating={toggleFloating}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </main>
     <Notes visible={view === "notes"} recording={anyRunning} languages={shownLanguages} onMenu={() => setMenuOpen(true)} openRequest={openRequest} />
     {view === "settings" && (

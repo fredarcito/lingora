@@ -124,6 +124,11 @@
   gap: 12px;
 }
 
+/* En Traducir llamada (dos carriles, sin «single») la etiqueta ocupa menos. */
+:global(.lanes):not(:global(.single)) .setting-row {
+  grid-template-columns: 80px minmax(0, 1fr);
+}
+
 .setting-label {
   font-size: 13px;
   font-weight: 550;
@@ -300,10 +305,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   color: var(--text-3);
   padding-left: 12px;
   border-left: 1px solid var(--hairline);
+}
+
+/* Si la fila va justa, el deslizador encoge en vez de salirse de la tarjeta. */
+.volume input[type="range"] {
+  flex: 0 1 64px;
+  min-width: 0;
 }
 
 .volume-value {

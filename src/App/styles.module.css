@@ -30,3 +30,18 @@
 :global(.lanes):global(.single) :global(.captions-text) {
   font-size: 28px;
 }
+
+/* Lo que cambia al pasar de Escuchar a Tomar notas (o al revés) se funde. */
+.mode-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: global(fade-in) 0.14s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mode-body {
+    animation: none;
+  }
+}
