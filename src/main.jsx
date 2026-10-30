@@ -6,6 +6,10 @@ import FloatingCaptions from "./pages/FloatingCaptions";
 import LangOffer from "./components/LangOffer";
 import Welcome, { WelcomeBoundary, needsWelcome } from "./pages/Welcome";
 import { I18nProvider } from "./i18n";
+import { captureErrors } from "./utils/log";
+
+// Los errores de la interfaz van también al registro de la app.
+captureErrors();
 
 // La ventana de subtítulos flotantes carga esta misma página; Rust marca cuál es.
 const floating = /** @type {any} */ (window).__LINGORA_VIEW === "captions";

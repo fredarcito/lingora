@@ -5,6 +5,7 @@ mod doctor;
 mod error;
 mod groq;
 mod listener;
+mod log_file;
 mod models;
 mod notes;
 #[cfg(target_os = "macos")]
@@ -356,6 +357,12 @@ async fn list_audio_devices() -> error::Result<Vec<audio::DeviceInfo>> {
         .map_err(|e| error::Error::Audio(format!("no se pudo leer los dispositivos: {e}")))?
 }
 
+/// Deja en el registro un error de la interfaz (en Windows, el archivo del escritorio).
+#[tauri::command]
+fn log_ui(message: String) {
+    tracing::warn!("interfaz: {message}");
+}
+
 #[tauri::command]
 fn settings_summary(state: tauri::State<'_, AppState>) -> serde_json::Value {
     let s = state.pipeline.settings();
@@ -374,12 +381,7 @@ pub fn run() {
     // El .env vive en la raíz del proyecto en desarrollo y junto al binario en
     // producción. Nunca se empaqueta la clave en el bundle.
     let _ = dotenvy::dotenv();
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "lingora_lib=info".into()),
-        )
-        .init();
+    log_file::init();
 
     let settings = Arc::new(Settings::from_env().unwrap_or_else(|e| {
         tracing::warn!("configuración incompleta: {e}");
@@ -432,6 +434,7 @@ pub fn run() {
             list_audio_devices,
             route::audio_route,
             settings_summary,
+            log_ui,
             notes::notes_list,
             notes::note_read,
             notes::note_save,

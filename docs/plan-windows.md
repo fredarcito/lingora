@@ -6,7 +6,9 @@ Estado (2026-10-30): el `.exe` se compila en GitHub Actions
 (espeak-ng y procesos sin ventana) y en la 6 la carpeta de modelos y el
 `keyring`. La traducción va por CPU; `vulkan` se prueba aparte en
 Actions (ver Fase 2). Sin Rust para listar dispositivos, la interfaz usa los del WebView
-(`listAudioDevices` en `api.js`). Sigue a
+(`listAudioDevices` en `api.js`). En Windows la app escribe su registro en el escritorio
+(`Lingora-registro.txt`, `log_file.rs`), con los errores de la interfaz
+(`utils/log.js`) y los fallos de Rust: es lo que hay que pedir a quien prueba. Sigue a
 `plan-autonomia.md`: como la traducción y la voz ya van dentro de la app,
 casi todo lo que falta es lo que toca el sistema (audio, voces, ventanas).
 

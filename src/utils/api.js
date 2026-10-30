@@ -272,6 +272,12 @@ export const api = {
   },
   /** @returns {Promise<void>} */
   systemAudioStop: () => invoke("system_audio_stop"),
+  /**
+   * Deja un error de la interfaz en el registro (en Windows, un .txt en el escritorio).
+   * @param {string} message
+   * @returns {Promise<void>}
+   */
+  logUi: (message) => invoke("log_ui", { message }),
   /** Idiomas de la app y qué voces tienen en este equipo. @returns {Promise<LanguageInfo[]>} */
   languages: () => invoke("languages"),
   /**

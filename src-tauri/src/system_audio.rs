@@ -463,7 +463,10 @@ mod imp {
     unsafe fn open() -> Result<Session> {
         // Cada hilo de captura necesita COM; si ya estaba iniciado, da igual.
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+        // Cada paso deja una línea en el registro: si la app se cae, dice hasta dónde llegó.
+        tracing::info!("captura del sistema: activando");
         let client = activate_client()?;
+        tracing::info!("captura del sistema: activada");
         // En captura de proceso no vale GetMixFormat: hay que pedir el formato.
         let format = WAVEFORMATEX {
             wFormatTag: WAVE_FORMAT_IEEE_FLOAT as u16,
@@ -479,9 +482,11 @@ mod imp {
         // Búfer de 20 ms (en unidades de 100 ns), como el ejemplo de Microsoft: esta
         // captura no tiene periodo propio y con 0 Windows no puede calcular uno.
         client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 200_000, 0, &format, None).map_err(win)?;
+        tracing::info!("captura del sistema: formato aceptado");
         client.SetEventHandle(event.0).map_err(win)?;
         let capture: IAudioCaptureClient = client.GetService().map_err(win)?;
         client.Start().map_err(win)?;
+        tracing::info!("captura del sistema: en marcha");
         Ok(Session { client, capture, event })
     }
 
@@ -490,6 +495,7 @@ mod imp {
         let started = Instant::now();
         let mut delivered: u64 = 0;
         let mut pending: Vec<f32> = Vec::with_capacity(BLOCK_FRAMES * 2);
+        let mut first = true;
         while !stop.load(Ordering::Relaxed) {
             WaitForSingleObject(session.event.0, 20);
             while let Ok(packet) = session.capture.GetNextPacketSize() {
@@ -507,6 +513,10 @@ mod imp {
                 } else {
                     let samples = std::slice::from_raw_parts(data as *const f32, frames as usize * CHANNELS);
                     pending.extend(samples.chunks_exact(CHANNELS).map(|f| (f[0] + f[1]) / 2.0));
+                }
+                if first {
+                    tracing::info!("captura del sistema: primer paquete ({frames} muestras, flags {flags})");
+                    first = false;
                 }
                 delivered += frames as u64;
                 let _ = session.capture.ReleaseBuffer(frames);
@@ -561,10 +571,12 @@ mod imp {
 
     impl Drop for Tap {
         fn drop(&mut self) {
+            tracing::info!("captura del sistema: deteniendo");
             self.stop.store(true, Ordering::Relaxed);
             if let Some(thread) = self.thread.take() {
                 let _ = thread.join();
             }
+            tracing::info!("captura del sistema: detenida");
         }
     }
 }
