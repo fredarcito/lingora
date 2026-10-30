@@ -431,6 +431,17 @@ html.view-captions body {
   }
 }
 
+/* Al cambiar de pantalla (Traducir, Notas, Ajustes) el contenido se funde. */
+main.app:not([hidden]) {
+  animation: fade-in 0.14s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main.app:not([hidden]) {
+    animation: none;
+  }
+}
+
 /* ---- Estructura ---- */
 
 .notes-topbar .brand h1 {

@@ -8,9 +8,6 @@
 
 use crate::error::{Error, Result};
 
-/// Dispositivo de entrada/salida virtual.
-pub const VIRTUAL_DEVICE: &str = "BlackHole 2ch";
-
 /// Lista los dispositivos de audio con sus canales, para que la UI muestre
 /// nombres reales en lugar de los que da el WebView.
 pub fn list_devices() -> Result<Vec<DeviceInfo>> {
