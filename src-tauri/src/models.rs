@@ -223,6 +223,7 @@ async fn fetch(url: &str, dest: &Path, progress: &(dyn Fn(u64, u64) + Send + Syn
 }
 
 /// Descomprime un `.tar.bz2` en su carpeta; `only` limita lo que se extrae.
+#[cfg(not(windows))]
 async fn extract(archive: &Path, only: &[String]) -> bool {
     let Some(parent) = archive.parent() else { return false };
     tokio::process::Command::new("tar")
@@ -236,6 +237,38 @@ async fn extract(archive: &Path, only: &[String]) -> bool {
         .await
         .map(|s| s.success())
         .unwrap_or(false)
+}
+
+/// Windows: su `tar` no trae bzip2 («unable to run program bzip2 -d»). Se descomprime
+/// el bzip2 en Rust a un `.tar` temporal y ese sí lo extrae `tar`.
+#[cfg(windows)]
+async fn extract(archive: &Path, only: &[String]) -> bool {
+    let Some(parent) = archive.parent() else { return false };
+    let tar_path = archive.with_extension("");
+    let (src, dst) = (archive.to_path_buf(), tar_path.clone());
+    let unpacked = tokio::task::spawn_blocking(move || -> std::io::Result<()> {
+        let mut input = bzip2::read::BzDecoder::new(std::fs::File::open(src)?);
+        std::io::copy(&mut input, &mut std::fs::File::create(dst)?)?;
+        Ok(())
+    })
+    .await;
+    if !matches!(unpacked, Ok(Ok(()))) {
+        let _ = tokio::fs::remove_file(&tar_path).await;
+        return false;
+    }
+    let ok = tokio::process::Command::new("tar")
+        .arg("xf")
+        .arg(&tar_path)
+        .arg("-C")
+        .arg(parent)
+        .args(only)
+        .stdout(std::process::Stdio::null())
+        .status()
+        .await
+        .map(|s| s.success())
+        .unwrap_or(false);
+    let _ = tokio::fs::remove_file(&tar_path).await;
+    ok
 }
 
 #[cfg(test)]
