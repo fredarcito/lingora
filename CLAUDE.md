@@ -47,6 +47,13 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
 Si una tarea necesita tocar algo de esta lista, explica por qué y espera el
 sí.
 
+**Ninguna regla de esta guía es inamovible.** El proyecto usa siempre la
+solución estándar y recomendada, sin rodeos para esquivar una regla. Si lo
+correcto implica tocar algo protegido o añadir una dependencia, propónlo. En
+lo importante, di qué archivo cambia, qué podría afectar y qué se gana (pros y
+contras), y el usuario decide. Antes de recomendar algo, compruébalo (su
+documentación o su código).
+
 ---
 
 ## 2. Cómo trabajar
