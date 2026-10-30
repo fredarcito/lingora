@@ -119,11 +119,25 @@ jobs:
         shell: bash
         run: mkdir -p src-tauri/binaries && touch src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
 
+      # La salida se guarda en build.log: si falla, el paso siguiente saca solo los errores
+      # (en la página del trabajo quedan enterrados bajo miles de líneas).
       - name: cargo check (Windows, Vulkan)
         working-directory: src-tauri
+        shell: bash
         env:
           SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
-        run: cargo check --target x86_64-pc-windows-msvc --features vulkan
+        run: |
+          set -o pipefail
+          cargo check --target x86_64-pc-windows-msvc --features vulkan 2>&1 | tee build.log
+
+      - name: Errores de la compilación
+        if: failure()
+        working-directory: src-tauri
+        shell: bash
+        run: |
+          grep -n -i -E "error C[0-9]+|error LNK|FAILED:|CMake Error|fatal error|: error" build.log | grep -v "rerun-if" | head -40 || true
+          echo "---- final de la salida de CMake ----"
+          grep -v "rerun-if" build.log | tail -60
 
   installer:
     runs-on: windows-latest
