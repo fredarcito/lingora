@@ -204,3 +204,98 @@ jobs:
         with:
           name: lingora-windows-installer
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+
+  # El instalador con la traducción por la GPU (Vulkan), aparte del de CPU para
+  # comparar los dos en el mismo equipo. Mismo arreglo que el trabajo `vulkan`.
+  installer-vulkan:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 12
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          prefix-key: "vulkan-installer"
+
+      - name: espeak-ng para Windows
+        shell: bash
+        run: |
+          VERSION=1.52.0
+          SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
+          WORK="espeak-build"
+          mkdir -p "$WORK"
+          curl -fsSL -o "$WORK/espeak.tar.gz" "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/$VERSION.tar.gz"
+          echo "$SHA256  $WORK/espeak.tar.gz" | sha256sum -c -
+          tar --force-local -xzf "$WORK/espeak.tar.gz" -C "$WORK"
+          cmake -S "$WORK/espeak-ng-$VERSION" -B "$WORK/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_TESTING=OFF \
+            -DUSE_MBROLA=OFF -DUSE_LIBSONIC=OFF -DUSE_LIBPCAUDIO=OFF \
+            -DUSE_ASYNC=OFF -DUSE_KLATT=OFF -DUSE_SPEECHPLAYER=OFF
+          cmake --build "$WORK/build" --config Release
+          EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
+          mkdir -p src-tauri/binaries
+          cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+
+      - name: SDK de Vulkan
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.4.309.0
+          install_runtime: false
+          cache: true
+
+      - name: SPIRV-Headers
+        shell: bash
+        run: |
+          git clone --depth 1 --branch vulkan-sdk-1.4.309.0 https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
+          cmake -S spirv-headers -B spirv-headers/build -DSPIRV_HEADERS_ENABLE_TESTS=OFF
+          cmake --install spirv-headers/build --prefix spirv-headers-install
+          echo "CMAKE_PREFIX_PATH=$(cygpath -w "$PWD/spirv-headers-install")" >> "$GITHUB_ENV"
+
+      - name: sherpa-onnx (DLL)
+        shell: bash
+        run: bash scripts/fetch-sherpa.sh
+
+      # Después de los pasos con Git Bash: deja cl.exe en el PATH para Ninja.
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # Ninja, la carpeta corta y /MT solo en este paso, para no tocar espeak-ng.
+      - name: Instalador .exe (Vulkan)
+        shell: cmd
+        env:
+          SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
+          CARGO_TARGET_DIR: C:\t
+          CMAKE_GENERATOR: Ninja
+          CMAKE_TOOLCHAIN_FILE: ${{ github.workspace }}\.github\cmake\msvc-static-crt.cmake
+        run: pnpm tauri build --target x86_64-pc-windows-msvc --bundles nsis --features vulkan > build.log 2>&1
+
+      - name: Errores de la compilación
+        if: failure()
+        shell: bash
+        run: |
+          grep -n -i -E "error C[0-9]+|error LNK|FAILED:|CMake Error|fatal error|: error" build.log | grep -v "rerun-if" | head -40 || true
+          echo "---- final de la salida ----"
+          grep -v "rerun-if" build.log | tail -60
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: lingora-windows-installer-vulkan
+          path: C:/t/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe

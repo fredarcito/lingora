@@ -151,8 +151,10 @@ trabajo aparte del flujo. Lo que se vio en GitHub Actions (`windows-latest`, VS 
   `vulkan-shaders-gen.exe` ya compila.
 - Después falla su instalación: `Not a file: …/vulkan-shaders-gen-build/
   cmake_install.cmake`, aunque el archivo existe. Igual en `windows-2022`
-  (VS 2022, CMake 3.31): no es la versión, apunta a MSBuild. Se prueba Ninja con
-  `C:\t` (falta resolver `/MT` → `/MD` para el instalador).
+  (VS 2022, CMake 3.31): no es la versión, era MSBuild. **Con Ninja y `C:\t`
+  compila** (commit `52a8f2b`). Ninja pone `/MD` encima del `/MT`: se corrige
+  con `.github/cmake/msvc-static-crt.cmake` (`CMAKE_TOOLCHAIN_FILE`). El trabajo
+  `installer-vulkan` genera un segundo `.exe` para compararlo con el de CPU.
 - Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y su
   `/usr/bin/link` tapa el `link.exe` de Visual Studio: `cargo` va en `cmd`.
 - Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más
