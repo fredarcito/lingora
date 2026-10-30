@@ -90,7 +90,7 @@ jobs:
           prefix-key: "vulkan"
 
       # Ninja no prepara el compilador como MSBuild: cl.exe tiene que estar en el PATH.
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64
 
@@ -273,7 +273,7 @@ jobs:
         run: bash scripts/fetch-sherpa.sh
 
       # Después de los pasos con Git Bash: deja cl.exe en el PATH para Ninja.
-      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: TheMrMilchmann/setup-msvc-dev@v4
         with:
           arch: x64
 
