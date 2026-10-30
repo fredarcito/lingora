@@ -2,9 +2,10 @@
 
 Estado (2026-10-30): el `.exe` se compila en GitHub Actions
 (`.github/workflows/windows-check.yml`, rama `windows-build`). Hecho: Fase 1
-(por probar con audio real), Fase 2 con `vulkan` (por medir), Fase 3
+(por probar con audio real), Fase 3
 (espeak-ng y procesos sin ventana) y en la 6 la carpeta de modelos y el
-`keyring`. Sin Rust para listar dispositivos, la interfaz usa los del WebView
+`keyring`. La traducción va por CPU; `vulkan` se prueba aparte en
+Actions (ver Fase 2). Sin Rust para listar dispositivos, la interfaz usa los del WebView
 (`listAudioDevices` en `api.js`). Sigue a
 `plan-autonomia.md`: como la traducción y la voz ya van dentro de la app,
 casi todo lo que falta es lo que toca el sistema (audio, voces, ventanas).
@@ -122,6 +123,26 @@ app no abre**. Arreglo: la opción `dynamic-backends` de `llama-cpp-2` (carga
 la GPU como DLL aparte solo si se puede; si no, CPU), o cargar `vulkan-1.dll`
 con retraso (`/DELAYLOAD`) y comprobar antes si existe. Añadir también el
 aviso en el diagnóstico.
+
+**Intento con `vulkan` (2026-10-30), en curso:** la demo va con CPU y
+`vulkan` es una opción de `Cargo.toml` (`--features vulkan`) que compila un
+trabajo aparte del flujo, ahora con Ninja. Lo que se vio en GitHub Actions (`windows-latest`, VS 2026, CMake 4):
+
+- El SDK se instala con `jakoch/install-vulkan-sdk-action` (1.4.309.0), pero
+  `ggml-vulkan` pide `find_package(SPIRV-Headers)` y el SDK no trae su
+  configuración de CMake: se arregla compilando e instalando SPIRV-Headers de
+  la etiqueta `vulkan-sdk-1.4.309.0` y poniendo `CMAKE_PREFIX_PATH`.
+- Luego `vulkan-shaders-gen` (un proyecto CMake aparte que lanza llama.cpp)
+  falla al probar el compilador con `C1041 … use /FS`: `llama-cpp-sys-2`
+  apaga `TrackFileAccess` y añade `/FS` solo a sus propias opciones. No
+  bastaron `CL=-FS` ni `CFLAGS`/`CXXFLAGS=-FS`.
+- Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y
+  rompe otros `cmake` del mismo trabajo; escribirlo con guion.
+- Ahora se prueba Ninja (`CMAKE_GENERATOR=Ninja` con `msvc-dev-cmd`): con
+  MSVC, CMake pone `/FS` en todos los proyectos. Si no basta: una versión más
+  nueva de `llama-cpp-2`, o `dynamic-backends` con la DLL de Vulkan aparte.
+- Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más
+  (shaders), sin medir.
 
 - En `Cargo.toml`: `features = ["metal"]` pasa a ser solo para Mac, y
   `["vulkan"]` para Windows (sección por sistema).

@@ -38,15 +38,20 @@ llama-cpp-2 = { version = "0.1.160", default-features = false, features = ["meta
 # Clave de Groq para los resúmenes: se guarda en el llavero, nunca en un archivo.
 keyring = { version = "3", features = ["apple-native"] }
 
-# Windows: la traducción va por la GPU con Vulkan (NVIDIA, AMD e Intel). Compilar
-# pide el SDK de Vulkan (VULKAN_SDK); al usarla, vulkan-1.dll, que trae el driver.
+# Windows: la traducción va por la CPU; con la opción `vulkan`, por la GPU (a prueba).
 [target.'cfg(windows)'.dependencies]
-llama-cpp-2 = { version = "0.1.160", default-features = false, features = ["vulkan"] }
+llama-cpp-2 = { version = "0.1.160", default-features = false }
 keyring = { version = "3", features = ["windows-native"] }
 windows = { version = "0.61.3", features = ["Win32_Foundation", "Win32_Media_Audio", "Win32_System_Com", "Win32_System_Threading", "Win32_System_SystemInformation", "Win32_System_Variant", "Win32_System_Com_StructuredStorage", "Win32_Security", "Win32_Media_Multimedia"] }
 windows-core = "0.61.2"
 # Windows no trae bzip2: el tar de Windows no puede descomprimir .tar.bz2 (models.rs).
 bzip2 = "0.6.1"
+
+[features]
+# Solo Windows (`cargo build --features vulkan`): la traducción por la GPU (NVIDIA,
+# AMD e Intel). Compilar pide el SDK de Vulkan; al usarla, vulkan-1.dll, que trae
+# el driver. A prueba en Actions (plan-windows.md, Fase 2).
+vulkan = ["llama-cpp-2/vulkan"]
 
 [profile.release]
 codegen-units = 1

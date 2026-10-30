@@ -9,12 +9,6 @@ on:
 # y no casa con sherpa-onnx (/MT) al enlazar.
 env:
   LLAMA_STATIC_CRT: "1"
-  # Con Vulkan, llama-cpp-sys-2 apaga TrackFileAccess y añade /FS solo a llama.cpp;
-  # vulkan-shaders-gen (un proyecto CMake aparte) falla sin él con C1041. CMake toma
-  # CFLAGS/CXXFLAGS al configurar cada proyecto nuevo (MSBuild no pasa CL a cl.exe).
-  # Con guion: Git Bash convertiría «/FS» en una ruta (C:/Program Files/Git/FS).
-  CFLAGS: -FS
-  CXXFLAGS: -FS
 
 jobs:
   check:
@@ -59,8 +53,46 @@ jobs:
           "$EXE" --path="$WORK/build" -v es -q --ipa "Hola, esto es una prueba."
 
       # Las DLL de sherpa-onnx que Tauri empaqueta (tauri.windows.conf.json) deben existir ya.
-      # La traducción usa Vulkan (Cargo.toml): compilar llama.cpp pide su SDK
-      # (cabeceras, vulkan-1.lib y glslc). La acción deja VULKAN_SDK puesto.
+      - name: sherpa-onnx (DLL)
+        shell: bash
+        run: bash scripts/fetch-sherpa.sh
+
+      - name: cargo check (Windows)
+        working-directory: src-tauri
+        env:
+          # El enlazador busca sherpa-onnx-c-api.lib aquí, no en la caché del crate.
+          SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
+        run: cargo check --target x86_64-pc-windows-msvc
+
+  # A prueba: la traducción por la GPU (Cargo.toml, opción `vulkan`). Va aparte para
+  # que, si falla, el instalador (CPU) salga igual.
+  vulkan:
+    runs-on: windows-latest
+    env:
+      # Con MSBuild, vulkan-shaders-gen (un proyecto CMake aparte) falla con C1041
+      # (falta /FS). Con Ninja y MSVC, CMake pone /FS en todos los proyectos.
+      CMAKE_GENERATOR: Ninja
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          prefix-key: "vulkan"
+
+      # Ninja no prepara el compilador como MSBuild: cl.exe tiene que estar en el PATH.
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Ninja
+        shell: bash
+        run: ninja --version || pip install ninja
+
       - name: SDK de Vulkan
         uses: jakoch/install-vulkan-sdk-action@v1
         with:
@@ -82,12 +114,16 @@ jobs:
         shell: bash
         run: bash scripts/fetch-sherpa.sh
 
-      - name: cargo check (Windows)
+      # cargo check solo pide que espeak-ng exista (tauri-build); no se ejecuta.
+      - name: espeak-ng (vacío)
+        shell: bash
+        run: mkdir -p src-tauri/binaries && touch src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+
+      - name: cargo check (Windows, Vulkan)
         working-directory: src-tauri
         env:
-          # El enlazador busca sherpa-onnx-c-api.lib aquí, no en la caché del crate.
           SHERPA_ONNX_LIB_DIR: ${{ github.workspace }}/src-tauri/sherpa-libs
-        run: cargo check --target x86_64-pc-windows-msvc
+        run: cargo check --target x86_64-pc-windows-msvc --features vulkan
 
   installer:
     runs-on: windows-latest
@@ -135,25 +171,6 @@ jobs:
           EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
           mkdir -p src-tauri/binaries
           cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
-
-      # La traducción usa Vulkan (Cargo.toml): compilar llama.cpp pide su SDK
-      # (cabeceras, vulkan-1.lib y glslc). La acción deja VULKAN_SDK puesto.
-      - name: SDK de Vulkan
-        uses: jakoch/install-vulkan-sdk-action@v1
-        with:
-          vulkan_version: 1.4.309.0
-          install_runtime: false
-          cache: true
-
-      # ggml-vulkan busca SPIRV-Headers con find_package y el SDK no trae su
-      # configuración de CMake: se instalan las de la misma versión del SDK.
-      - name: SPIRV-Headers
-        shell: bash
-        run: |
-          git clone --depth 1 --branch vulkan-sdk-1.4.309.0 https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
-          cmake -S spirv-headers -B spirv-headers/build -DSPIRV_HEADERS_ENABLE_TESTS=OFF
-          cmake --install spirv-headers/build --prefix spirv-headers-install
-          echo "CMAKE_PREFIX_PATH=$(cygpath -w "$PWD/spirv-headers-install")" >> "$GITHUB_ENV"
 
       - name: sherpa-onnx (DLL)
         shell: bash
