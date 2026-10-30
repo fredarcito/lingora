@@ -48,8 +48,6 @@ System audio ──► Core Audio process tap (Lingora excluded, no BlackHole)
                   Played on the chosen output device (never the multi-output device)
 ```
 
-Call mode uses BlackHole 2ch as a virtual microphone, so the other party hears the translated voice.
-
 The opposite direction uses the microphone as input and BlackHole 2ch as
 output (the call app selects it as the microphone).
 
