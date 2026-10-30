@@ -86,7 +86,12 @@ result itself (like the `wasapi` crate), and each step of the activation leaves
 its line. Second PC (same day): Windows does answer `S_OK`, but it closes
 before "activated", i.e. when getting the `IAudioClient` or releasing the
 operation and the notice. Now both are kept alive for the whole capture (as in
-Microsoft's example) and those steps also leave their line. To be tested. Note: Microsoft considers this capture good from build
+Microsoft's example) and those steps also leave their line. Third test: it
+closed after the last line of `activate_client`, on returning. **Cause found:**
+windows-rs 0.61 gives `PROPVARIANT` a `Drop` that calls `PropVariantClear`,
+which frees the blob with `CoTaskMemFree`; our blob pointed to the parameters
+on the stack. Fix: `ManuallyDrop` around the `PROPVARIANT` (as the `wasapi`
+crate does). To be tested. Note: Microsoft considers this capture good from build
 20348 on; on Windows 10 (19041-19045) it works in OBS, but it may have failures.
 
 **On the Mac today:** a Core Audio "process tap" copies what plays, except

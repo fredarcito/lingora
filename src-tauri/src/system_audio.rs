@@ -409,7 +409,11 @@ mod imp {
             cbSize: std::mem::size_of::<AUDIOCLIENT_ACTIVATION_PARAMS>() as u32,
             pBlobData: &mut params as *mut AUDIOCLIENT_ACTIVATION_PARAMS as *mut u8,
         };
-        let prop = PROPVARIANT {
+        // `ManuallyDrop`: el PROPVARIANT de windows-rs llama a `PropVariantClear` al
+        // soltarse, que libera el blob con `CoTaskMemFree`. Aquí el blob apunta a
+        // `params`, en la pila: liberarlo corrompe la memoria (0xc0000374). Lo mismo
+        // hace el crate `wasapi`.
+        let prop = std::mem::ManuallyDrop::new(PROPVARIANT {
             Anonymous: PROPVARIANT_0 {
                 Anonymous: std::mem::ManuallyDrop::new(PROPVARIANT_0_0 {
                     vt: VT_BLOB,
@@ -417,7 +421,7 @@ mod imp {
                     ..Default::default()
                 }),
             },
-        };
+        });
 
         let (tx, rx) = mpsc::channel();
         let handler: IActivateAudioInterfaceCompletionHandler = Activated { tx }.into();
@@ -426,7 +430,7 @@ mod imp {
         let operation = ActivateAudioInterfaceAsync(
             windows::core::w!("VAD\\Process_Loopback"),
             &IAudioClient::IID,
-            Some(&prop as *const PROPVARIANT),
+            Some(&*prop as *const PROPVARIANT),
             &handler,
         )
         .map_err(win)?;
