@@ -1,290 +1,287 @@
-# Plan: Lingora en Windows
+# Plan: Lingora on Windows
 
-Estado (2026-10-30): el `.exe` se compila en GitHub Actions
-(`.github/workflows/windows-check.yml`, rama `windows-build`). Hecho: Fase 1
-(por probar con audio real), Fase 3
-(espeak-ng y procesos sin ventana) y en la 6 la carpeta de modelos y el
-`keyring`. La traducción va por CPU; `vulkan` se prueba aparte en
-Actions (ver Fase 2). Sin Rust para listar dispositivos, la interfaz usa los del WebView
-(`listAudioDevices` en `api.js`). En Windows la app escribe su registro en el escritorio
-(`Lingora-registro.txt`, `log_file.rs`), con los errores de la interfaz
-(`utils/log.js`) y los fallos de Rust: es lo que hay que pedir a quien prueba. Sigue a
-`plan-autonomia.md`: como la traducción y la voz ya van dentro de la app,
-casi todo lo que falta es lo que toca el sistema (audio, voces, ventanas).
+Status (2026-10-30): the `.exe` is built in GitHub Actions
+(`.github/workflows/windows-check.yml`, branch `windows-build`). Done: Phase 1
+(to be tested with real audio), Phase 3 (espeak-ng and processes without a
+window) and in 6 the models folder and the `keyring`. Translation runs on CPU;
+`vulkan` is tested separately in Actions (see Phase 2). Without Rust for listing
+devices, the interface uses the ones from the WebView (`listAudioDevices` in
+`api.js`). On Windows the app writes its log to the desktop
+(`Lingora-registro.txt`, `log_file.rs`), with the interface errors
+(`utils/log.js`) and the Rust failures: that is what must be requested from whoever
+tests. It follows `plan-autonomia.md`: since translation and voice already run
+inside the app, almost everything left is what touches the system (audio, voices, windows).
 
-Meta: un instalador (`.exe` de Tauri con NSIS) que se abre en Windows 10/11 y
-hace lo mismo que en el Mac: Traducir audio, Tomar notas (también «Reunión en
-línea»), la voz traducida y los subtítulos flotantes. Sin instalar nada aparte.
+Goal: an installer (Tauri `.exe` with NSIS) that opens on Windows 10/11 and
+does the same as on the Mac: Translate audio, Take notes (also "Online meeting"),
+the translated voice and the floating captions. Without installing anything else.
 
 ---
 
-## 0. Dónde estamos
+## 0. Where we are
 
-Revisado en el código (`#[cfg(target_os = "macos")]` y llamadas al sistema):
+Reviewed in the code (`#[cfg(target_os = "macos")]` and system calls):
 
-| Pieza | En Windows hoy | Trabajo |
+| Part | On Windows today | Work |
 |---|---|---|
-| Interfaz (React), filtro de eco, notas, nombre «(Yo)» | Igual: JS puro | Nada (salvo los textos que dicen «Mac», ver Fase 7) |
-| Micrófono | `getUserMedia` en WebView2 | Probar |
-| Escucha, voz Kokoro, personas (sherpa-onnx) | El crate tiene versión para Windows | Compilar y probar |
-| Traducción (`llama-cpp-2`) | Compila en Windows; `metal` es solo Mac | Fase 2: elegir GPU |
-| Fonemas (espeak-ng) | Falta el `.exe` | Fase 3 |
-| **Audio del sistema** (`system_audio.rs`) | Devuelve «solo macOS por ahora» | **Fase 1: lo más grande** |
-| Qué hay conectado (`route.rs`) | Responde «no sé» → se trata como altavoces | Fase 4 |
-| Voces del sistema (`system_voice.rs`) | Lista vacía | Fase 5 |
-| Lista de dispositivos (`audio.rs`) | Error «solo macOS» | Fase 4 |
-| Subtítulos flotantes (`captions_window.rs`) | La parte de AppKit (`objc`) no compila allí, el resto sí | Fase 6 |
-| Carpeta de modelos (`config.rs`) | `$HOME/Library/Application Support/…`: en Windows no existe `HOME` | Fase 6 |
-| Clave de Groq (`keyring`) | Solo con `apple-native` | Fase 6 |
-| `open` (mostrar archivo, abrir enlace) | No existe en Windows | Fase 6 |
-| `tar` para descomprimir modelos | Windows 10+ trae `tar.exe` (bsdtar, admite `.bz2`) | Probar |
-| Diagnóstico (`doctor.rs`) | Las comprobaciones de audio son solo Mac | Fase 6 |
-| Scripts `build-espeak.sh` y `check-standalone.sh` | Solo Mac | Fases 3 y 8 |
+| Interface (React), echo filter, notes, "(Me)" name | Same: pure JS | Nothing (except the texts that say "Mac", see Phase 7) |
+| Microphone | `getUserMedia` in WebView2 | Test |
+| Listening, Kokoro voice, speakers (sherpa-onnx) | The crate has a Windows version | Build and test |
+| Translation (`llama-cpp-2`) | Builds on Windows; `metal` is Mac only | Phase 2: choose GPU |
+| Phonemes (espeak-ng) | The `.exe` is missing | Phase 3 |
+| **System audio** (`system_audio.rs`) | Returns "only macOS for now" | **Phase 1: the biggest one** |
+| What is connected (`route.rs`) | Answers "don't know" → treated as speakers | Phase 4 |
+| System voices (`system_voice.rs`) | Empty list | Phase 5 |
+| Device list (`audio.rs`) | "only macOS" error | Phase 4 |
+| Floating captions (`captions_window.rs`) | The AppKit part (`objc`) doesn't build there, the rest does | Phase 6 |
+| Models folder (`config.rs`) | `$HOME/Library/Application Support/…`: `HOME` doesn't exist on Windows | Phase 6 |
+| Groq key (`keyring`) | Only with `apple-native` | Phase 6 |
+| `open` (show file, open link) | Doesn't exist on Windows | Phase 6 |
+| `tar` to decompress models | Windows 10+ includes `tar.exe` (bsdtar, supports `.bz2`) | Test |
+| Diagnostics (`doctor.rs`) | The audio checks are Mac only | Phase 6 |
+| Scripts `build-espeak.sh` and `check-standalone.sh` | Mac only | Phases 3 and 8 |
 
-Lo bueno: el código ya separa Mac del resto con `cfg`, así que cada pieza se
-puede hacer por separado y la app de Mac no cambia.
+The good part: the code already separates Mac from the rest with `cfg`, so each
+part can be done separately and the Mac app doesn't change.
 
-Todo esto está en la lista de «no tocar» de CLAUDE.md (`audio.rs`,
+All of this is on CLAUDE.md's "don't touch" list (`audio.rs`,
 `system_audio.rs`, `system_voice.rs`, `config.rs`, `doctor.rs`,
-`tauri.conf.json`, crates nuevos). **Cada fase necesita el sí del usuario**, y
-lo de Windows va siempre dentro de `#[cfg(windows)]`: el código de Mac no se
-toca.
+`tauri.conf.json`, new crates). **Each phase needs the user's yes**, and
+the Windows work always goes inside `#[cfg(windows)]`: the Mac code is not
+touched.
 
 ---
 
-## Antes de empezar: decisiones del usuario
+## Before starting: user decisions
 
-1. **Una máquina con Windows para probar.** Sin ella no se puede: compilar
-   para Windows desde el Mac no es práctico (sherpa-onnx, llama.cpp y MSVC), y
-   el audio solo se afina con audio real. Opciones: un PC propio o de un
-   amigo, o una máquina virtual (Parallels con Windows 11 ARM sirve para
-   compilar y probar la interfaz, **no** para afinar audio ni GPU).
-2. **Versión mínima.** La captura que excluye a la propia app (Fase 1) es de
-   Windows 10 2004 (mayo de 2020) en adelante. Propuesta: Windows 10 2004+ y
+1. **A Windows machine for testing.** It can't be done without one: building
+   for Windows from the Mac isn't practical (sherpa-onnx, llama.cpp and MSVC), and
+   audio is only tuned with real audio. Options: a PC of your own or a
+   friend's, or a virtual machine (Parallels with Windows 11 ARM is enough to
+   build and test the interface, **not** to tune audio or GPU).
+2. **Minimum version.** The capture that excludes the app itself (Phase 1) is from
+   Windows 10 2004 (May 2020) onwards. Proposal: Windows 10 2004+ and
    Windows 11.
-3. **Crate nuevo: `windows`** (de Microsoft, MIT). Hace falta para el audio,
-   las voces y saber qué hay conectado. Es el equivalente de `coreaudio-sys`.
-   Solo se añade para Windows (`[target.'cfg(windows)'.dependencies]`).
-4. **La GPU de la traducción** (Fase 2).
-5. **¿Icono en la barra de tareas?** En el Mac la app no sale en el Dock. En
-   Windows lo normal es que sí salga; ocultarlo puede confundir.
+3. **New crate: `windows`** (by Microsoft, MIT). It is needed for audio,
+   voices and knowing what is connected. It is the equivalent of `coreaudio-sys`.
+   It is only added for Windows (`[target.'cfg(windows)'.dependencies]`).
+4. **The translation GPU** (Phase 2).
+5. **Taskbar icon?** On the Mac the app doesn't show in the Dock. On
+   Windows it is normal for it to show; hiding it can be confusing.
 
 ---
 
-## Fase 1: el audio del sistema (lo más grande)
+## Phase 1: system audio (the biggest one)
 
-**Primera prueba real (2026-10-30, Dell con Windows 10 19041):** con el audio
-del equipo la app se cerraba sola (`0xc0000374`, memoria corrompida, en
-`ntdll.dll`); con el micrófono no. Se ajustó `system_audio.rs` (solo Windows)
-al ejemplo de Microsoft: búfer de 20 ms (con 0 no hay periodo con que
-calcularlo), sin `SRC_DEFAULT_QUALITY`, el aviso de activación «agile», la
-operación viva hasta la respuesta y el aviso de eventos cerrado después del
-cliente. Siguió cerrándose: el registro del escritorio se corta en
-«activando», o sea, dentro de `ActivateAudioInterfaceAsync` o al recoger su
-resultado. Ahora el aviso solo despierta al hilo de la captura, que lee el
-resultado él mismo (como el crate `wasapi`), y cada paso de la activación deja
-su línea. Por probar. Ojo: Microsoft da esta captura por buena desde la build
-20348; en Windows 10 (19041-19045) funciona en OBS, pero puede tener fallos.
+**First real test (2026-10-30, Dell with Windows 10 19041):** with the computer's
+audio the app closed by itself (`0xc0000374`, corrupted memory, in
+`ntdll.dll`); with the microphone it didn't. `system_audio.rs` (Windows only) was
+adjusted to Microsoft's example: a 20 ms buffer (with 0 there is no period to
+calculate it with), without `SRC_DEFAULT_QUALITY`, the "agile" activation
+notice, the live operation until the response, and the events notice closed after
+the client. It kept closing: the desktop log is cut off at
+"activating", i.e. inside `ActivateAudioInterfaceAsync` or when collecting its
+result. Now the notice only wakes the capture thread, which reads the
+result itself (like the `wasapi` crate), and each step of the activation leaves
+its line. Second PC (same day): Windows does answer `S_OK`, but it closes
+before "activated", i.e. when getting the `IAudioClient` or releasing the
+operation and the notice. Now both are kept alive for the whole capture (as in
+Microsoft's example) and those steps also leave their line. To be tested. Note: Microsoft considers this capture good from build
+20348 on; on Windows 10 (19041-19045) it works in OBS, but it may have failures.
 
-**Hoy en Mac:** una «process tap» de Core Audio copia lo que suena, menos la
-propia Lingora, para que su voz traducida no vuelva a entrar.
+**On the Mac today:** a Core Audio "process tap" copies what plays, except
+Lingora itself, so its translated voice doesn't come back in.
 
-**En Windows:** la API equivalente existe y hace justo eso: captura de
-*process loopback* de WASAPI (`ActivateAudioInterfaceAsync` con
-`AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK` y
-`PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`, pasando el PID de
-Lingora). Es la misma idea que en el Mac, sin BlackHole ni drivers.
+**On Windows:** the equivalent API exists and does exactly that: WASAPI
+*process loopback* capture (`ActivateAudioInterfaceAsync` with
+`AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK` and
+`PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE`, passing Lingora's PID). It is
+the same idea as on the Mac, without BlackHole or drivers.
 
-- Nuevo `mod imp` para Windows dentro de `system_audio.rs`, con la **misma
-  forma pública**: `supported()`, `start(on_block)` → `Capture`, bloques mono
-  de `BLOCK_FRAMES` muestras. `lib.rs`, `pipeline.rs` y la interfaz no se
-  enteran.
-- La captura entrega el formato de la mezcla del sistema (suele ser 48 kHz
-  estéreo, `f32`): se pasa a mono como hoy.
-- Ojo: WASAPI no entrega nada cuando no suena nada (en Mac llegaba silencio).
-  Hay que rellenar con ceros para que el VAD de `audio.js` mida bien las
-  pausas. Si no, los cortes de frase cambian.
-- No pide permiso (en Mac sí, «Grabación de audio del sistema»).
+- New `mod imp` for Windows inside `system_audio.rs`, with the **same
+  public shape**: `supported()`, `start(on_block)` → `Capture`, mono blocks of
+  `BLOCK_FRAMES` samples. `lib.rs`, `pipeline.rs` and the interface don't notice.
+- The capture delivers the system mix format (usually 48 kHz stereo,
+  `f32`): it is converted to mono as today.
+- Careful: WASAPI delivers nothing when nothing plays (on the Mac silence arrived).
+  It must be filled with zeros so that the VAD in `audio.js` measures pauses
+  correctly. Otherwise the sentence cuts change.
+- It doesn't ask for permission (on the Mac it does, "Screen & System Audio Recording").
 
-**Riesgo:** medio. La API es poco usada y hay pocos ejemplos en Rust. En el
-Mac, la mayoría de lo que costó (ver `problemas-conocidos.md`) salió al
-probar con audio real, no al escribir el código. Hay que contar con lo mismo
-aquí.
+**Risk:** medium. The API is little used and there are few examples in Rust. On
+the Mac, most of what it took (see `problemas-conocidos.md`) came out when testing
+with real audio, not when writing the code. The same has to be expected here.
 
-**Prueba:** un vídeo de YouTube en inglés → Traducir audio → la traducción no
-debe volver a entrar (sin bucle) y los cortes de frase deben parecerse a los
-del Mac.
+**Test:** an English YouTube video → Translate audio → the translation must not
+come back in (no loop) and the sentence cuts should resemble those on the Mac.
 
-## Fase 2: la traducción con la GPU de Windows
+## Phase 2: translation with the Windows GPU
 
-En el Mac todos los equipos tienen la misma GPU (Apple Silicon, memoria
-compartida). En Windows varía mucho, y es **el mayor riesgo de rendimiento**:
+On the Mac all machines have the same GPU (Apple Silicon, shared memory). On
+Windows it varies a lot, and it is **the biggest performance risk**:
 
-| Opción | Funciona en | Pega |
+| Option | Works on | Drawback |
 |---|---|---|
-| `vulkan` | NVIDIA, AMD, Intel (con drivers al día) | Hace falta el SDK de Vulkan solo en la máquina que compila |
-| `cuda` | Solo NVIDIA | Pesado (cientos de MB), hay que llevar las librerías de CUDA |
-| Solo CPU | Todos | Lento en portátiles: la traducción puede ir muy por detrás de la voz |
+| `vulkan` | NVIDIA, AMD, Intel (with up-to-date drivers) | The Vulkan SDK is needed only on the machine that builds |
+| `cuda` | NVIDIA only | Heavy (hundreds of MB), the CUDA libraries have to be shipped |
+| CPU only | All | Slow on laptops: translation can fall far behind the voice |
 
-**Propuesta:** `vulkan` y, si falla al cargar, CPU (con aviso en el
-diagnóstico). Hay que medir en un portátil normal sin GPU dedicada: si con
-CPU tarda demasiado, la traducción en vivo no es viable allí y conviene
-decirlo en la app.
+**Proposal:** `vulkan` and, if it fails to load, CPU (with a notice in the
+diagnostics). It must be measured on an ordinary laptop without a dedicated GPU: if on
+CPU it takes too long, live translation isn't viable there and the app should
+say so.
 
-**Pendiente (riesgo, 2026-10-30):** con `vulkan` el `.exe` enlaza
-`vulkan-1.dll` al arrancar. La trae el driver de la GPU (casi todos los PC con
-drivers al día), pero en un equipo sin driver o en una máquina virtual **la
-app no abre**. Arreglo: la opción `dynamic-backends` de `llama-cpp-2` (carga
-la GPU como DLL aparte solo si se puede; si no, CPU), o cargar `vulkan-1.dll`
-con retraso (`/DELAYLOAD`) y comprobar antes si existe. Añadir también el
-aviso en el diagnóstico.
+**Pending (risk, 2026-10-30):** with `vulkan` the `.exe` links `vulkan-1.dll` at
+startup. The GPU driver provides it (almost all PCs with up-to-date drivers), but on
+a machine without the driver or in a virtual machine **the app doesn't open**. Fix: the
+`dynamic-backends` option of `llama-cpp-2` (loads the GPU as a separate DLL only if
+possible; otherwise CPU), or loading `vulkan-1.dll` late (`/DELAYLOAD`) and checking
+first whether it exists. Also add the notice in the diagnostics.
 
-**Intento con `vulkan` (2026-10-30), en curso:** la demo va con CPU y
-`vulkan` es una opción de `Cargo.toml` (`--features vulkan`) que compila un
-trabajo aparte del flujo. Lo que se vio en GitHub Actions (`windows-latest`, VS 2026, CMake 4):
+**Attempt with `vulkan` (2026-10-30), in progress:** the demo runs on CPU and
+`vulkan` is an option in `Cargo.toml` (`--features vulkan`) that builds a
+separate job outside the main flow. What was seen in GitHub Actions (`windows-latest`, VS 2026, CMake 4):
 
-- El SDK se instala con `jakoch/install-vulkan-sdk-action` (1.4.309.0), pero
-  `ggml-vulkan` pide `find_package(SPIRV-Headers)` y el SDK no trae su
-  configuración de CMake: se arregla compilando e instalando SPIRV-Headers de
-  la etiqueta `vulkan-sdk-1.4.309.0` y poniendo `CMAKE_PREFIX_PATH`.
-- Luego `vulkan-shaders-gen` (un proyecto CMake aparte que lanza llama.cpp)
-  falla al probar el compilador con `C1041 … use /FS`. El mensaje engaña: la
-  causa es la **longitud de la ruta** del `.pdb` (~268 caracteres dentro de
-  `src-tauri/target/…`; `cl.exe` no pasa de 260). Ni `CL`/`CFLAGS=-FS` ni Ninja
-  (que sí pone `/FS`) lo arreglan; Ninja además cambia `/MT` por `/MD`, que no
-  casa con sherpa-onnx. Con `CARGO_TARGET_DIR=C:\t` (MSBuild) se arregla:
-  `vulkan-shaders-gen.exe` ya compila.
-- Después falla su instalación: `Not a file: …/vulkan-shaders-gen-build/
-  cmake_install.cmake`, aunque el archivo existe. Igual en `windows-2022`
-  (VS 2022, CMake 3.31): no es la versión, era MSBuild. **Con Ninja y `C:\t`
-  compila** (commit `52a8f2b`). Ninja pone `/MD` encima del `/MT`: se corrige
-  con `.github/cmake/msvc-static-crt.cmake` (`CMAKE_TOOLCHAIN_FILE`). El trabajo
-  `installer-vulkan` genera un segundo `.exe` para compararlo con el de CPU.
-- Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y su
-  `/usr/bin/link` tapa el `link.exe` de Visual Studio: `cargo` va en `cmd`.
-- Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más
-  (shaders), sin medir.
+- The SDK is installed with `jakoch/install-vulkan-sdk-action` (1.4.309.0), but
+  `ggml-vulkan` requires `find_package(SPIRV-Headers)` and the SDK doesn't include
+  its CMake configuration: it is fixed by building and installing SPIRV-Headers from
+  the tag `vulkan-sdk-1.4.309.0` and setting `CMAKE_PREFIX_PATH`.
+- Then `vulkan-shaders-gen` (a separate CMake project launched by llama.cpp)
+  fails when testing the compiler with `C1041 … use /FS`. The message is misleading: the
+  cause is the **path length** of the `.pdb` (~268 characters inside
+  `src-tauri/target/…`; `cl.exe` doesn't go past 260). Neither `CL`/`CFLAGS=-FS` nor Ninja
+  (which does put `/FS`) fixes it; Ninja also changes `/MT` to `/MD`, which doesn't
+  match sherpa-onnx. With `CARGO_TARGET_DIR=C:\t` (MSBuild) it is fixed:
+  `vulkan-shaders-gen.exe` now builds.
+- Afterwards its installation fails: `Not a file: …/vulkan-shaders-gen-build/
+  cmake_install.cmake`, even though the file exists. Same on `windows-2022`
+  (VS 2022, CMake 3.31): it isn't the version, it was MSBuild. **With Ninja and `C:\t`
+  it builds** (commit `52a8f2b`). Ninja puts `/MD` on top of `/MT`: it is corrected
+  with `.github/cmake/msvc-static-crt.cmake` (`CMAKE_TOOLCHAIN_FILE`). The
+  `installer-vulkan` job produces a second `.exe` to compare with the CPU one.
+- Careful: Git Bash turns `/FS` into a path (`C:/Program Files/Git/FS`) and its
+  `/usr/bin/link` shadows Visual Studio's `link.exe`: `cargo` runs in `cmd`.
+- Size: the CPU installer is ~10 MB; with Vulkan, about 10-20 MB more
+  (shaders), not measured.
 
-- En `Cargo.toml`: `features = ["metal"]` pasa a ser solo para Mac, y
-  `["vulkan"]` para Windows (sección por sistema).
-- `translator.rs` no cambia, salvo `n_gpu_layers` si se cae a CPU.
-- `build.rs`: `link_clang_runtime` ya es solo Mac.
+- In `Cargo.toml`: `features = ["metal"]` becomes Mac only, and
+  `["vulkan"]` for Windows (section per system).
+- `translator.rs` doesn't change, except `n_gpu_layers` if it falls back to CPU.
+- `build.rs`: `link_clang_runtime` is already Mac only.
 
-## Fase 3: espeak-ng para Windows
+## Phase 3: espeak-ng for Windows
 
-- Compilar `espeak-ng.exe` con CMake y MSVC, con las mismas opciones que
-  `build-espeak.sh`, y dejarlo en
-  `src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe`. Tauri elige el
-  binario de cada sistema por el nombre, así que `tauri.conf.json` no cambia.
-- **Los datos (`espeak-ng-data/`) son los mismos que los del Mac.** Conviene
-  reutilizarlos: el disco de Windows tampoco distingue mayúsculas, así que
-  compilar allí los fonemas tendría el mismo problema que en el Mac
-  (`e_short_1` / `E_short_1`).
-- `config.rs` (`bundled_espeak`): buscar `espeak-ng.exe` en Windows.
-- `phonemizer.rs` (`data_dir`): en Windows los recursos van junto al `.exe`,
-  no en `../Resources`. La búsqueda en la carpeta del binario ya lo cubre.
-  Probar.
-- Nuevo `scripts/build-espeak.ps1` (PowerShell), con el mismo SHA-256.
+- Build `espeak-ng.exe` with CMake and MSVC, with the same options as
+  `build-espeak.sh`, and leave it at
+  `src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe`. Tauri picks each
+  system's binary by name, so `tauri.conf.json` doesn't change.
+- **The data (`espeak-ng-data/`) is the same as on the Mac.** It is worth reusing:
+  the Windows disk doesn't distinguish case either, so building the phonemes there
+  would have the same problem as on the Mac (`e_short_1` / `E_short_1`).
+- `config.rs` (`bundled_espeak`): look for `espeak-ng.exe` on Windows.
+- `phonemizer.rs` (`data_dir`): on Windows the resources go next to the `.exe`,
+  not in `../Resources`. The search in the binary's folder already covers it. Test it.
+- New `scripts/build-espeak.ps1` (PowerShell), with the same SHA-256.
 
-## Fase 4: qué hay conectado y la lista de dispositivos
+## Phase 4: what is connected and the device list
 
-- `route.rs`: con `IMMDeviceEnumerator`, la salida y la entrada por defecto y
-  su `PKEY_AudioEndpoint_FormFactor` (Headphones/Headset → «headphones»,
-  Speakers → «speakers»). Bluetooth: el identificador del dispositivo empieza
-  por `BTHENUM` / `BTHHFENUM`.
-- Bluetooth en Windows tiene el mismo problema que en el Mac: al abrir el
-  micrófono de unos auriculares, pasan a «modo manos libres» y el sonido
-  empeora. Windows lo muestra como dos dispositivos («Auriculares» y
-  «Manos libres»). `meetingMic` en `route.js` ya evita abrir ese micrófono si
-  hay otro; hay que comprobar que reconoce los nombres de Windows.
-- `input_busy` (otra app usa el micrófono): en Windows no hay una forma
-  sencilla. Se puede dejar en `false`.
-- `audio.rs` (`list_devices`): con el mismo enumerador. Solo da nombres
-  reales a los dispositivos: si falla, la interfaz usa los de WebView2.
+- `route.rs`: with `IMMDeviceEnumerator`, the default output and input and
+  their `PKEY_AudioEndpoint_FormFactor` (Headphones/Headset → "headphones",
+  Speakers → "speakers"). Bluetooth: the device identifier starts with
+  `BTHENUM` / `BTHHFENUM`.
+- Bluetooth on Windows has the same problem as on the Mac: when the microphone of
+  some headphones is opened, they switch to "hands-free mode" and the sound
+  gets worse. Windows shows it as two devices ("Headphones" and
+  "Hands-Free"). `meetingMic` in `route.js` already avoids opening that microphone if
+  there is another one; it must be checked that it recognizes the Windows names.
+- `input_busy` (another app uses the microphone): on Windows there is no simple
+  way. It can be left as `false`.
+- `audio.rs` (`list_devices`): with the same enumerator. It only gives real
+  names to the devices: if it fails, the interface uses the WebView2 ones.
 
-## Fase 5: voces del sistema
+## Phase 5: system voices
 
-`system_voice.rs` ya separa `voices()` y `synthesize()` por sistema. En
-Windows, con `Windows.Media.SpeechSynthesis` (voces OneCore: idioma y género)
-→ WAV → `tts::parse_wav`, como hoy hace `say` en Mac. Ya está anotado en
-`plan-idiomas.md`. Sin esto la app funciona igual con la voz propia (Kokoro)
-en los idiomas que cubre.
+`system_voice.rs` already separates `voices()` and `synthesize()` by system. On
+Windows, with `Windows.Media.SpeechSynthesis` (OneCore voices: language and gender)
+→ WAV → `tts::parse_wav`, as `say` does today on the Mac. Already noted in
+`plan-idiomas.md`. Without this the app works the same with its own voice (Kokoro)
+for the languages it covers.
 
-## Fase 6: lo pequeño
+## Phase 6: the small things
 
-- **Carpeta de modelos** (`config.rs`): en Windows,
-  `%LOCALAPPDATA%\lingora\models`. Mejor con la ruta de datos de la app que da
-  Tauri que con `HOME`.
-- **`keyring`:** añadir la opción `windows-native` (Administrador de
-  credenciales de Windows) solo para Windows.
-- **`open`** (`notes.rs`): usar `explorer /select,` para mostrar el archivo y
-  `cmd /c start` (o el plugin `opener` de Tauri, que sería un crate nuevo)
-  para el enlace de Groq.
-- **Subtítulos flotantes:** la ventana transparente y por encima de todo la
-  da Tauri. La parte de AppKit (`objc`) es solo Mac. Probar encima de un vídeo
-  a pantalla completa en Chrome/Edge.
-- **`set_activation_policy`:** ya es solo Mac. En Windows, lo que se decida en
-  el punto 5.
-- **Diagnóstico:** sin las comprobaciones de BlackHole, que en Windows no
-  aplican. Añadir la de la GPU (Fase 2).
-- **Procesos sin ventana:** espeak-ng y `tar` abrirían una consola negra un
-  instante. Hay que lanzarlos con `CREATE_NO_WINDOW`.
+- **Models folder** (`config.rs`): on Windows,
+  `%LOCALAPPDATA%\lingora\models`. Better to use the app data path that Tauri
+  provides than `HOME`.
+- **`keyring`:** add the `windows-native` option (Windows Credential Manager)
+  for Windows only.
+- **`open`** (`notes.rs`): use `explorer /select,` to show the file and
+  `cmd /c start` (or Tauri's `opener` plugin, which would be a new crate)
+  for the Groq link.
+- **Floating captions:** the transparent, always-on-top window is provided by Tauri.
+  The AppKit part (`objc`) is Mac only. Test on top of a full-screen video
+  in Chrome/Edge.
+- **`set_activation_policy`:** already Mac only. On Windows, whatever is decided in
+  point 5.
+- **Diagnostics:** without the BlackHole checks, which don't apply on Windows. Add
+  the GPU check (Phase 2).
+- **Processes without a window:** espeak-ng and `tar` would briefly open a black
+  console. They must be launched with `CREATE_NO_WINDOW`.
 
-## Fase 7: textos de la interfaz
+## Phase 7: interface texts
 
-Hay 25 textos en `src/i18n/es/` que dicen «Mac» («audio del Mac», «Solo
-audio del Mac»…). Opciones: palabras neutras («del equipo», «del sistema») o
-una clave por sistema. Lo decide el usuario.
+There are 25 texts in `src/i18n/es/` that say "Mac" ("Mac audio", "Only Mac
+audio"…). Options: neutral words ("of the computer", "of the system") or a key per
+system. The user decides.
 
-## Fase 8: instalador y prueba en limpio
+## Phase 8: installer and clean test
 
-- `tauri.conf.json`: añadir el objetivo `nsis` (instalador `.exe`), con
-  WebView2 incluido o descargado al instalar (Windows 11 ya lo trae).
-- `scripts/check-standalone.ps1`: el equivalente de `check-standalone.sh`.
-  Comprueba que todo lo que carga el `.exe` es de Windows (`dumpbin
-  /dependents`), que espeak-ng pronuncia y que no aparecen rutas de la
-  máquina que compila.
-- **Prueba en limpio:** un Windows sin herramientas de desarrollo.
+- `tauri.conf.json`: add the `nsis` target (`.exe` installer), with
+  WebView2 included or downloaded during installation (Windows 11 already has it).
+- `scripts/check-standalone.ps1`: the equivalent of `check-standalone.sh`.
+  It checks that everything the `.exe` loads is from Windows (`dumpbin
+  /dependents`), that espeak-ng pronounces, and that no paths from the building
+  machine appear.
+- **Clean test:** a Windows without development tools.
 
-### Cómo se reparte
+### How it is distributed
 
-Una web o la nube no sirven: el navegador no capta el audio del sistema ni
-mueve bien los modelos, y todo debe ser local. Siempre hay un programa que
-instalar; lo que cambia es la fricción.
+A website or the cloud won't do: the browser doesn't capture system audio or
+move the models well, and everything must be local. There is always a program to
+install; what changes is the friction.
 
-**Ahora (demo para amigos y familia, decidido 2026-10-29):** instalador `.exe`
-(NSIS) sin firmar, enviado a mano (enlace de la nube o USB). Sin firma,
-SmartScreen avisa; va con una nota de una línea: «si sale el aviso azul,
-pulsa *Más información* → *Ejecutar de todas formas*». Es lo mismo que la
-firma ad hoc en el Mac.
+**Now (demo for friends and family, decided 2026-10-29):** unsigned `.exe`
+installer (NSIS), sent by hand (cloud link or USB). Without a signature,
+SmartScreen warns; it comes with a one-line note: "if the blue warning appears,
+click *More info* → *Run anyway*". It is the same as the ad hoc signature
+on the Mac.
 
-**Cómo se genera sin tener el proyecto en Windows:** se trabaja solo en el
-Mac y en Windows solo se instala y se prueba el `.exe`.
-1. Compilación cruzada en el Mac (`cargo-xwin` + LLVM + NSIS,
-   `pnpm tauri build --target x86_64-pc-windows-msvc`). Experimental en
-   Tauri; el riesgo son llama.cpp y sherpa-onnx (C++). Probar primero en una
-   copia.
-2. Si falla: GitHub Actions compila en un Windows suyo (repositorio privado;
-   Lingora aún no es un repositorio git).
+**How to build it without having the project on Windows:** work only on the
+Mac and on Windows only install and test the `.exe`.
+1. Cross-compilation on the Mac (`cargo-xwin` + LLVM + NSIS,
+   `pnpm tauri build --target x86_64-pc-windows-msvc`). Experimental in
+   Tauri; the risk is llama.cpp and sherpa-onnx (C++). Try it first in a
+   copy.
+2. If it fails: GitHub Actions builds on a Windows runner (private repository;
+   Lingora is not yet a git repository).
 
-**Más adelante (para más gente):** Microsoft Store (sin avisos, con
-actualizaciones; cuenta de desarrollador y revisión) o un certificado de
-firma de código. Es el equivalente de la firma y notarización de Apple,
-también pendiente. Alternativas descartadas por ahora: `.zip` portable (no se
-desinstala normal) y `winget` (para gente técnica).
+**Later (for more people):** Microsoft Store (no warnings, with
+updates; developer account and review) or a code-signing certificate. It is the
+equivalent of Apple's signing and notarization, also pending. Alternatives discarded for
+now: a portable `.zip` (it doesn't uninstall normally) and `winget` (for technical
+people).
 
 ---
 
-## Orden y tamaño
+## Order and size
 
-| Fase | Tamaño | Bloquea |
+| Phase | Size | Blocks |
 |---|---|---|
-| 0. Compilar sin errores en Windows (Fases 3 y 6, a lo mínimo) | Pequeño | Todo |
-| 1. Audio del sistema | **Grande** | Traducir audio, Tomar notas |
-| 2. GPU de la traducción | Medio (sobre todo, medir) | Que la traducción vaya a tiempo |
-| 4. Qué hay conectado | Medio | Solo afina el eco en «Reunión en línea» |
-| 3, 6, 7, 8 | Pequeños | Instalador |
-| 5. Voces del sistema | Medio | Solo los idiomas que Kokoro no cubre |
+| 0. Build without errors on Windows (Phases 3 and 6, at minimum) | Small | Everything |
+| 1. System audio | **Large** | Translate audio, Take notes |
+| 2. Translation GPU | Medium (mostly, measuring) | Translation keeping up |
+| 4. What is connected | Medium | Only tunes echo in "Online meeting" |
+| 3, 6, 7, 8 | Small | Installer |
+| 5. System voices | Medium | Only the languages Kokoro doesn't cover |
 
-Primer hito útil: Fases 0 + 1 + 2 → Traducir audio funciona en Windows. Lo
-demás se puede hacer después, sin prisa.
+First useful milestone: Phases 0 + 1 + 2 → Translate audio works on Windows. The
+rest can be done later, without rush.

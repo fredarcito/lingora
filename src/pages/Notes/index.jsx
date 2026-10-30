@@ -45,12 +45,12 @@ import {
 } from "../../components/shared";
 import styles from "./styles.module.css";
 
-/** Cada cuánto se refresca lo que se está grabando. */
+/** How often what is being recorded is refreshed. */
 const REFRESH_MS = 3000;
 
 /**
- * "ES → EN", o "ES" si no se tradujo. Tomar notas no tiene idioma fijo y las
- * notas guardadas antes no lo traen: entonces null.
+ * "ES → EN", or "ES" if it was not translated. Take notes has no fixed language and the
+ * notes saved before do not have it: then null.
  * @param {import("../../utils/api").NoteSummary} n
  */
 function langPair(n) {
@@ -59,19 +59,19 @@ function langPair(n) {
   return from === to ? from.toUpperCase() : `${from.toUpperCase()} → ${to.toUpperCase()}`;
 }
 
-/** Días entre la fecha y hoy, contando días de calendario (hoy = 0). @param {Date} date */
+/** Days between the date and today, counting calendar days (today = 0). @param {Date} date */
 function daysAgo(date) {
   const day = (/** @type {Date} */ d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   return Math.round((day(new Date()) - day(date)) / 86_400_000);
 }
 
-/** "2026-09": el mes de una fecha, para agrupar y filtrar. @param {Date} d */
+/** "2026-09": the month of a date, to group and filter. @param {Date} d */
 const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
 /** @param {string} text */
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-/** Sin acentos y en minúsculas, para que «sabado» encuentre «sábado». @param {string} text */
+/** Without accents and in lowercase, so that «sabado» finds «sábado». @param {string} text */
 const fold = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
 /**
@@ -84,8 +84,8 @@ const fold = (text) => text.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase(
  */
 
 /**
- * Nombre de un mes para el separador y el filtro: "Octubre" o, si es de otro
- * año, "Septiembre de 2025".
+ * Name of a month for the separator and the filter: "Octubre" or, if it is from another
+ * year, "Septiembre de 2025".
  * @param {string} key "2026-09" @param {DateFormats} formats
  */
 function monthLabel(key, formats) {
@@ -95,9 +95,9 @@ function monthLabel(key, formats) {
 }
 
 /**
- * El separador de la nota: "Hoy · jueves, 29 de octubre", "Ayer · …",
- * "Esta semana" y, de ahí para atrás, el mes. Así una lista de meses no se
- * llena de cabeceras de días.
+ * The note separator: "Hoy · jueves, 29 de octubre", "Ayer · …",
+ * "Esta semana" and, from there back, the month. This way a list of months does not
+ * fill up with day headers.
  * @param {string} iso @param {DateFormats} formats @param {import("../../i18n").t} t
  */
 function groupLabel(iso, formats, t) {
@@ -111,8 +111,8 @@ function groupLabel(iso, formats, t) {
 }
 
 /**
- * Si la nota entra en el periodo elegido: "all", "week" (los últimos 7 días),
- * "month" (este mes), "last" (el mes pasado) o "m:2026-08".
+ * Whether the note falls in the chosen period: "all", "week" (the last 7 days),
+ * "month" (this month), "last" (last month) or "m:2026-08".
  * @param {string} iso @param {string} period
  */
 function inPeriod(iso, period) {
@@ -125,7 +125,7 @@ function inPeriod(iso, period) {
   return true;
 }
 
-/** "10:32 – 11:07" o solo "10:32" si sigue grabando. @param {import("../../utils/api").NoteSummary} n @param {boolean} live */
+/** "10:32 – 11:07", or just "10:32" if it is still recording. @param {import("../../utils/api").NoteSummary} n @param {boolean} live */
 function timeRange(n, live) {
   const start = formatWhen(n.created_at).split(" · ")[1];
   if (live || !n.ended_at) return start;
@@ -133,11 +133,11 @@ function timeRange(n, live) {
 }
 
 /**
- * Vista de notas: la lista de conversaciones guardadas y, al pulsar una, su
- * página a ancho completo. Sigue montada aunque se vea Traducir (el buscador
- * se conserva), pero solo consulta el disco mientras está visible.
- * `openRequest` abre una nota concreta (al terminar Tomar notas): el `nonce`
- * distingue dos peticiones seguidas de la misma nota.
+ * Notes view: the list of saved conversations and, when one is pressed, its
+ * full-width page. It stays mounted even when Translate is shown (the search box
+ * is kept), but it only reads from disk while it is visible.
+ * `openRequest` opens a specific note (when Take notes finishes): the `nonce`
+ * tells apart two consecutive requests for the same note.
  * @param {{ visible: boolean, recording: boolean, languages: import("../../utils/api").LanguageInfo[], onMenu: () => void,
  *   openRequest?: { id: string, nonce: number } | null }} props
  */
@@ -166,7 +166,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
   const scroller = useRef(/** @type {HTMLDivElement | null} */ (null));
   const scrollTop = useRef(0);
   const search = useRef(/** @type {HTMLInputElement | null} */ (null));
-  // ⌘K desde una nota abierta: vuelve a la lista y enfoca el buscador al pintarla.
+  // ⌘K from an open note: goes back to the list and focuses the search box when it renders.
   const focusSearch = useRef(false);
 
   const load = useCallback(async () => {
@@ -187,7 +187,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     return () => window.clearInterval(timer);
   }, [visible, openId, load]);
 
-  // Al volver a la lista, donde se había dejado.
+  // Back to the list, where it was left.
   useLayoutEffect(() => {
     if (!openId && scroller.current) scroller.current.scrollTop = scrollTop.current;
   }, [openId, visible]);
@@ -202,7 +202,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     if (openRequest) setOpenId(openRequest.id);
   }, [openRequest]);
 
-  // ⌘K: al buscador, también desde una nota abierta.
+  // ⌘K: to the search box, also from an open note.
   useEffect(() => {
     if (!visible) return;
     const onKey = (/** @type {KeyboardEvent} */ e) => {
@@ -224,8 +224,8 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     search.current?.select();
   }, [openId]);
 
-  // Lo que encuentra el buscador de cada nota: título, texto y su fecha escrita
-  // de varias formas ("jueves", "28 oct", "septiembre de 2026").
+  // What the search box finds for each note: title, text and its date written
+  // in several ways ("jueves", "28 oct", "septiembre de 2026").
   const haystacks = useMemo(
     () =>
       new Map(
@@ -236,7 +236,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
       ),
     [notes, formats],
   );
-  // Los meses con notas, del más nuevo al más viejo, sin este ni el pasado (ya tienen su opción).
+  // Months with notes, from newest to oldest, leaving out this one and last month (they already have their option).
   const months = useMemo(() => {
     const now = new Date();
     const recent = [monthKey(now), monthKey(new Date(now.getFullYear(), now.getMonth() - 1, 1))];
@@ -246,7 +246,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
   const terms = fold(query).split(/\s+/).filter(Boolean);
   const shown = notes.filter((n) => inPeriod(n.created_at, period) && terms.every((term) => haystacks.get(n.id)?.includes(term)));
   const live = recording ? activeNoteId() : null;
-  // Agrupado por día y luego por mes; en "Más recientes", la nota en curso primero.
+  // Grouped by day and then by month; in "Most recent", the note in progress comes first.
   const sorted = order === "recent" ? [...shown].sort((a, b) => Number(b.id === live) - Number(a.id === live)) : [...shown].reverse();
   /** @type {[string, import("../../utils/api").NoteSummary[]][]} */
   const groups = [];
@@ -256,7 +256,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     if (last?.[0] === label) last[1].push(n);
     else groups.push([label, [n]]);
   }
-  /** El día delante de la hora cuando el separador no lo dice ("lunes · 10:32", "28 sept · 10:32"). @param {string} iso */
+  /** The day before the time when the separator does not say it ("lunes · 10:32", "28 sept · 10:32"). @param {string} iso */
   const dayOf = (iso) => {
     const date = new Date(iso);
     const diff = daysAgo(date);
@@ -380,7 +380,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
 }
 
 /**
- * La página de una nota: título editable, acciones y pestañas.
+ * A note's page: editable title, actions and tabs.
  * @param {{ id: string, live: boolean, languages: import("../../utils/api").LanguageInfo[], onBack: () => void }} props
  */
 function NotePage({ id, live, languages, onBack }) {
@@ -392,18 +392,18 @@ function NotePage({ id, live, languages, onBack }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  // Idioma en que está el resumen si se cambió el selector después de resumir.
+  // Language the summary is in, if the selector was changed after summarizing.
   const [summaryWasIn, setSummaryWasIn] = useState(/** @type {string | null} */ (null));
   const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState("");
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
   const [askConsent, setAskConsent] = useState(false);
-  // Resumir sin clave lleva al panel de la pestaña Resumen, aunque ya haya un resumen.
+  // Summarizing without a key leads to the panel in the Summary tab, even if there is already a summary.
   const [askKey, setAskKey] = useState(false);
   const { status: keyStatus, hasKey } = useSummaryKey();
   const noticeTimer = useRef(0);
-  // Lo último que dijo la propiedad `live`: el sondeo lo lee sin reiniciarse.
+  // The latest value of the `live` prop: the polling reads it without restarting.
   const liveRef = useRef(live);
   liveRef.current = live;
 
@@ -429,7 +429,7 @@ function NotePage({ id, live, languages, onBack }) {
 
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
 
-  // El menú ⋯ se cierra al pulsar en cualquier otro sitio o con Escape.
+  // The ⋯ menu closes when clicking anywhere else or with Escape.
   useDismiss(menuOpen, () => setMenuOpen(false));
 
   /** @param {string} text */
@@ -518,7 +518,7 @@ function NotePage({ id, live, languages, onBack }) {
   const [day, ...span] = formatSpan(note).split(" · ");
   const meta = [...span, langs].filter(Boolean);
   const summaryLang = summaryLangOf(note, languages);
-  // El resumen ya no está en el idioma elegido: «Volver a resumir» pasa a principal.
+  // The summary is no longer in the chosen language: "Summarize again" becomes the primary button.
   const stale = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
   const copyForChat = () => run(() => navigator.clipboard.writeText(`${summaryPrompt(note, languages)}\n\n${noteToText(note)}`), t("notes.copied"));
 
@@ -752,8 +752,8 @@ function NotePage({ id, live, languages, onBack }) {
 }
 
 /**
- * La transcripción en párrafos, con hora, persona y color. La usan la página
- * de la nota y la vista en vivo de Tomar notas.
+ * The transcript in paragraphs, with time, person and color. Used by the note page
+ * and by the live view of Take notes.
  * @param {{ note: import("../../utils/api").Note, showSource?: boolean }} props
  */
 export function Transcript({ note, showSource = false }) {
@@ -790,16 +790,16 @@ export function Transcript({ note, showSource = false }) {
   );
 }
 
-/** Un color por persona; "Yo" (0) va en el color de la app. */
+/** One color per person; "Yo" (0) uses the app color. */
 const SPEAKER_COLORS = ["#7dd3fc", "#fca5a5", "#c4b5fd", "#fcd34d", "#86efac", "#f9a8d4"];
 /** @param {number | null | undefined} n */
 export const speakerColor = (n) => (n === 0 || n === null || n === undefined ? "var(--accent)" : SPEAKER_COLORS[(n - 1) % SPEAKER_COLORS.length]);
 
 /**
- * Las personas de la nota, para corregir lo que se detectó: cambiarles el
- * nombre ("Persona 2" → "Ana") o unir dos que son la misma (la misma voz
- * puede sonar distinta un rato). Mientras se graba no se edita: el grabador
- * reescribiría la nota.
+ * The people in the note, to correct what was detected: changing their
+ * name ("Persona 2" → "Ana") or merging two that are the same person (the same voice
+ * can sound different for a while). It cannot be edited while recording: the recorder
+ * would rewrite the note.
  * @param {{ note: import("../../utils/api").Note, live: boolean, onChange: (note: import("../../utils/api").Note) => void }} props
  */
 function SpeakerBar({ note, live, onChange }) {
@@ -814,10 +814,10 @@ function SpeakerBar({ note, live, onChange }) {
   const people = [...counts.keys()].sort((a, b) => a - b);
   /** @param {number} n */
   const label = (n) => speakerLabel(note, /** @type {any} */ ({ speaker: n }));
-  /** Lo que se edita: tu nombre sin "(Yo)"; a los demás, "Persona n" si aún no tienen. @param {number} n */
+  /** What is edited: your name without "(Yo)"; for the others, "Persona n" if they do not have one yet. @param {number} n */
   const editable = (n) => speakerName(note, n) || (n === 0 ? "" : label(n));
 
-  // Se cierra al pulsar fuera o con Esc.
+  // Closes when clicking outside or with Esc.
   useDismiss(editing !== null, () => setEditing(null));
 
   /** @param {number} n */
@@ -828,7 +828,7 @@ function SpeakerBar({ note, live, onChange }) {
     onChange({ ...note, speakers: { ...note.speakers, [n]: value } });
   };
 
-  /** Las frases de `from` pasan a `into`. @param {number} from @param {number} into */
+  /** The sentences of `from` move to `into`. @param {number} from @param {number} into */
   const merge = (from, into) => {
     setEditing(null);
     const { [from]: _, ...speakers } = note.speakers ?? {};

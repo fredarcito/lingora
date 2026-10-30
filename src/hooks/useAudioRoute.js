@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { ROUTE_CHECK_MS, readRoute } from "../utils/route.js";
 
 /**
- * Lo que hay conectado para oír y hablar, al día mientras `active`: se vuelve
- * a mirar cada poco (conectar unos AirPods cambia la salida y la entrada).
+ * What is connected to hear and speak, kept up to date while `active`: it is checked
+ * again every so often (connecting AirPods changes the output and the input).
  * @param {boolean} active
  * @returns {import("../utils/api").AudioRoute | null}
  */

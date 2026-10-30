@@ -4,9 +4,9 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Confirmación propia (no `window.confirm`). Esc o pulsar fuera cancela; el
- * foco empieza en Cancelar para que Enter no confirme sin querer.
- * `danger` pinta el botón de confirmar en rojo (borrar).
+ * Custom confirmation (not `window.confirm`). Esc or clicking outside cancels; the
+ * focus starts on Cancel so that Enter does not confirm by accident.
+ * `danger` paints the confirm button red (delete).
  * @param {{ title: string, body: string, confirmLabel: string, cancelLabel: string, danger?: boolean,
  *   onConfirm: () => void, onCancel: () => void }} props
  */

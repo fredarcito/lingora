@@ -1,40 +1,40 @@
-// Comprueba que repartir el CSS en archivos no cambió nada: compara el
-// `styles.css` original con el CSS que empaqueta Vite sin minificar.
+// Checks that splitting the CSS into files changed nothing: compares the
+// original `styles.css` with the CSS that Vite bundles unminified.
 //
 //   LINGORA_CSS_CHECK=1 npx vite build --minify false --outDir /tmp/lingora-css --emptyOutDir
 //   node scripts/css-check.mjs docs/refactor/styles.original.css /tmp/lingora-css/assets/*.css
 //
-// `LINGORA_CSS_CHECK=1` deja las clases de los módulos sin sufijo, para que
-// se puedan comparar con las del original.
+// `LINGORA_CSS_CHECK=1` leaves the module classes without a suffix, so that
+// they can be compared with those in the original.
 //
-// Mira cuatro cosas:
-//   1. Ninguna regla se perdió ni se duplicó (cada selector de un grupo
-//      `a, b { … }` cuenta por separado).
-//   2. Las reglas de un mismo selector siguen en el mismo orden.
-//   3. Dos reglas que comparten una clase, un atributo o el elemento, tienen
-//      la misma especificidad y tocan alguna propiedad en común siguen en el
-//      mismo orden, aunque una esté dentro de un @media o @container: si no,
-//      la que gana puede cambiar.
-//   5. Cada clase global (sin módulo) del CSS empaquetado sigue escrita tal
-//      cual en algún `.jsx`: si su componente ya la saca del módulo, la regla
-//      global ya no le llega. No cuenta el CSS que ya estaba muerto.
-//   4. Cada `styles.module.css` casa con el `.jsx` de su carpeta: cada clase
-//      del módulo se usa (`s.noteAction`) y cada `s.algo` existe; si no,
-//      React pone `class="undefined"` sin dar error.
-// Para el punto 3 también cuentan dos clases distintas que van en el mismo
-// elemento (`note-action` y `note-more` en el botón ⋯): lo dice el JSX de
-// antes del refactor, copiado en `docs/refactor/jsx.original/`.
-// Los selectores que hubo que reescribir al pasar a módulos (una regla que
-// cruzaba dos componentes) se apuntan en `docs/refactor/renames.json` como
-// `[{ "from": "…", "to": "…" }]`; solo valen si la especificidad no cambia.
-// Sale con 1 y lista los problemas si encuentra alguno.
+// It checks four things:
+//   1. No rule is lost or duplicated (each selector in a group
+//      `a, b { … }` counts separately).
+//   2. Rules with the same selector stay in the same order.
+//   3. Two rules that share a class, an attribute or the element, have
+//      the same specificity and touch some common property, they stay in the
+//      same order, even if one is inside a @media or @container: otherwise,
+//      the one that wins may change.
+//   5. Each global (non-module) class in the bundled CSS is still written as
+//      it is in some `.jsx`: if its component already takes it out of the module, the rule
+//      global no longer reaches it. Dead CSS that was already there is not counted.
+//   4. Each `styles.module.css` matches the `.jsx` in its folder: each class
+//      of the module is used (`s.noteAction`) and each `s.something` exists; otherwise,
+//      React sets `class="undefined"` without raising an error.
+// For point 3, two different classes that go on the same
+// element (`note-action` and `note-more` on the ⋯ button) also count: the JSX of
+// before the refactor, copied in `docs/refactor/jsx.original/`, says so.
+// The selectors that had to be rewritten when moving to modules (a rule that
+// crossed two components) are listed in `docs/refactor/renames.json` as
+// `[{ "from": "…", "to": "…" }]`; they only count if the specificity does not change.
+// Exits with 1 and lists the problems if it finds any.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 /**
- * Las reglas del CSS, en orden: `{ ctx, sel, body }`. `ctx` son los @media,
- * @supports o @container que la envuelven; @keyframes y @font-face cuentan
- * como una regla.
+ * The CSS rules, in order: `{ ctx, sel, body }`. `ctx` is the @media,
+ * @supports or @container wrapping them; @keyframes and @font-face count
+ * as one rule.
  * @param {string} css
  */
 function parse(css) {
@@ -42,7 +42,7 @@ function parse(css) {
   /** @type {{ ctx: string, sel: string, body: string }[]} */
   const rules = [];
   const norm = (/** @type {string} */ s) => s.replace(/\s+/g, " ").trim();
-  /** @param {number} from Índice tras la `{`. @returns {number} Índice de su `}`. */
+  /** @param {number} from Index after the `{`. @returns {number} Index of its `}`. */
   const close = (from) => {
     let depth = 1;
     for (let i = from; i < text.length; i++) {
@@ -76,7 +76,7 @@ function parse(css) {
   return rules;
 }
 
-/** `a, b:not(.c, .d)` → ["a", "b:not(.c, .d)"]: las comas dentro de paréntesis no parten. @param {string} prelude */
+/** `a, b:not(.c, .d)` → ["a", "b:not(.c, .d)"]: commas inside parentheses do not split. @param {string} prelude */
 function splitSelectors(prelude) {
   const out = [];
   let depth = 0;
@@ -93,7 +93,7 @@ function splitSelectors(prelude) {
   return out;
 }
 
-/** Especificidad aproximada [ids, clases, elementos]; basta para comparar. @param {string} sel */
+/** Approximate specificity [ids, classes, elements]; enough for comparing. @param {string} sel */
 function specificity(sel) {
   const s = sel.replace(/:(?:not|is|has)\(([^)]*)\)/g, " $1").replace(/:where\([^)]*\)/g, "");
   const ids = (s.match(/#[\w-]+/g) ?? []).length;
@@ -121,18 +121,18 @@ for (const [from, to] of renames) {
   if (specificity(from) !== specificity(to))
     problems.push(`Renombre con otra especificidad: «${from}» (${specificity(from)}) → «${to}» (${specificity(to)})`);
 }
-// `from` guarda el selector original: una regla reescrita sigue cayendo en los
-// mismos elementos, así que se compara también por él.
+// `from` keeps the original selector: a rewritten rule still lands on the
+// same elements, so it is also compared by it.
 const before = parse(readFileSync(originalPath, "utf8")).map((r) => ({ ...r, from: r.sel, sel: renames.get(r.sel) ?? r.sel }));
-// En el modo de comprobación las clases de módulo llevan su carpeta
-// (`note-action__Button`): se compara sin ella, pero se usa para saber que
-// `.is-selected__Segmented` y `.is-selected__App` no se pisan.
+// In check mode the module classes carry their folder
+// (`note-action__Button`): they are compared without it, but it is used to know that
+// `.is-selected__Segmented` and `.is-selected__App` do not overwrite each other.
 const SCOPE = /__[A-Z]\w*/g;
 const after = bundlePaths
   .flatMap((p) => parse(readFileSync(p, "utf8")))
   .map((r) => ({ ...r, scoped: r.sel, sel: r.sel.replace(SCOPE, ""), body: r.body.replace(SCOPE, "") }));
 
-// 1. Ni perdidas ni duplicadas.
+// 1. Neither lost nor duplicated.
 /** @type {Map<string, number>} */
 const count = new Map();
 for (const r of before) count.set(key(r), (count.get(key(r)) ?? 0) + 1);
@@ -142,8 +142,8 @@ for (const [k, n] of count) {
   if (n < 0) problems.push(`Sobra (o cambió): ${k}`);
 }
 
-// 2 y 3. El orden de cada par que puede pisarse. Las reglas idénticas se
-// distinguen por su número de aparición.
+// 2 and 3. The order of each pair that can overwrite each other. Identical rules are
+// told apart by their occurrence number.
 /** @param {{ ctx: string, sel: string, body: string }[]} rules */
 const positions = (rules) => {
   /** @type {Map<string, number>} */
@@ -154,9 +154,9 @@ const positions = (rules) => {
     return { ...r, id: `${key(r)} #${n}`, at: i };
   });
 };
-/** La propiedad sin prefijo de navegador: `-webkit-mask-image` → `mask-image`. @param {string} p */
+/** The property without browser prefix: `-webkit-mask-image` → `mask-image`. @param {string} p */
 const unprefixed = (p) => p.replace(/^-\w+-/, "");
-/** Abreviadas cuyas partes no empiezan por su nombre. */
+/** Shorthands whose parts do not start with their name. */
 const LONGHANDS = {
   inset: ["top", "right", "bottom", "left"],
   "place-items": ["align-items", "justify-items"],
@@ -165,9 +165,9 @@ const LONGHANDS = {
   gap: ["row-gap", "column-gap"],
 };
 /**
- * Si dos propiedades se pisan: la misma, o una abreviada y una de sus partes
- * (`margin` y `margin-left`, `border-color` y `border-left-color`, `inset` y
- * `top`). `margin-top` y `margin-left` no se pisan.
+ * Whether two properties overwrite each other: the same one, or a shorthand and one of its parts
+ * (`margin` and `margin-left`, `border-color` and `border-left-color`, `inset` and
+ * `top`). `margin-top` and `margin-left` do not overwrite each other.
  * @param {string} p @param {string} q
  */
 const clash = (p, q) => {
@@ -178,24 +178,24 @@ const clash = (p, q) => {
   if (LONGHANDS[p]?.includes(q) || LONGHANDS[q]?.includes(p)) return true;
   const [ps, qs] = [p.split("-"), q.split("-")];
   if (ps[0] !== qs[0]) return false;
-  // `border-color` y `border-left-color`; `margin-inline` con cualquier margen.
+  // `border-color` and `border-left-color`; `margin-inline` with any margin.
   return ps[ps.length - 1] === qs[qs.length - 1] || /inline|block/.test(p) || /inline|block/.test(q);
 };
-/** Las propiedades que declara una regla. @param {string} body */
+/** The properties a rule declares. @param {string} body */
 const propsOf = (body) =>
   body
     .split("; ")
     .map((d) => d.slice(0, d.indexOf(":")).trim().toLowerCase())
     .filter(Boolean);
-/** Si alguna propiedad de una regla pisa alguna de la otra. @param {string[]} x @param {string[]} y */
+/** Whether any property of one rule overwrites any of the other. @param {string[]} x @param {string[]} y */
 const overlap = (x, y) => x.some((p) => y.some((q) => clash(p, q)));
 
 const b = positions(before);
 const afterRules = positions(after);
 const a = new Map(afterRules.map((r) => [r.id, r.at]));
-/** El selector tal como quedó, con la carpeta de cada clase de módulo. */
+/** The selector as it ended up, with the folder of each module class. */
 const scoped = new Map(afterRules.map((r) => [r.id, /** @type {string} */ (r.scoped)]));
-/** `.note-action` → las clases con carpeta que salen así en el CSS empaquetado. */
+/** `.note-action` → the classes with folder that appear this way in the bundled CSS. */
 /** @type {Map<string, Set<string>>} */
 const scopes = new Map();
 for (const r of afterRules)
@@ -205,8 +205,8 @@ for (const r of afterRules)
     scopes.get(plain)?.add(c);
   }
 /**
- * Lo que puede hacer que dos reglas caigan en el mismo elemento: sus clases,
- * atributos e ids, y `el:` + el elemento del último tramo
+ * What can make two rules land on the same element: their classes,
+ * attributes and ids, and `el:` + the element of the last part
  * (`.a button:hover` → `el:button`).
  * @param {string} sel
  */
@@ -217,10 +217,10 @@ const tokensOf = (sel) => {
   if (element) tokens.add(`el:${element[0]}`);
   return tokens;
 };
-/** Las clases de cada `className` del JSX original (todas sus ramas juntas). */
+/** The classes of each `className` in the original JSX (all its branches together). */
 /** @type {Set<string>[]} */
 const together = [];
-/** Todas las clases que salen escritas en algún `className` del JSX original. */
+/** All the classes written in some `className` of the original JSX. */
 const known = new Set();
 const JSX = join(dirname(originalPath), "jsx.original");
 if (existsSync(JSX)) {
@@ -233,26 +233,26 @@ if (existsSync(JSX)) {
     }
   }
 }
-/** Las clases del último tramo, sin carpeta: `.a .b.c:hover` → b, c. @param {string} sel */
+/** The classes of the last part, without folder: `.a .b.c:hover` → b, c. @param {string} sel */
 const subjectClasses = (sel) =>
   (sel.replace(/\([^)]*\)/g, "").split(/[\s>+~]+/).pop()?.match(/\.[\w-]+/g) ?? []).map((c) => c.slice(1).replace(SCOPE, ""));
 /**
- * Si en el JSX original algún elemento llevaba a la vez las clases del último
- * tramo de `x` y las de `y` (`note-action` y `note-more` en el botón ⋯).
+ * Whether in the original JSX some element carried at the same time the classes of the last
+ * part of `x` and those of `y` (`note-action` and `note-more` on the ⋯ button).
  * @param {string} x @param {string} y
  */
 const share = (x, y) => {
   const xs = subjectClasses(x);
   const ys = subjectClasses(y);
-  // Si comparten un nombre, ya decide `meet`, que distingue de qué módulo es cada clase.
+  // If they share a name, `meet` already decides, which tells which module each class belongs to.
   if (!xs.length || !ys.length || xs.some((c) => ys.includes(c))) return false;
   return together.some((g) => [...xs, ...ys].every((c) => g.has(c)));
 };
 /**
- * Si un mismo elemento puede llevar las clases del último tramo de `x` y de
- * `y` (por su selector original). `primary` y `danger` nunca van juntas en el
- * JSX original: sus reglas no se pisan. Si alguna clase se pone desde una
- * variable (`lane-${…}`) no se sabe, y se da por posible.
+ * Whether the same element can carry the classes of the last part of `x` and of
+ * `y` (by their original selector). `primary` and `danger` never go together in the
+ * original JSX: their rules do not overwrite each other. If a class is set from a
+ * variable (`lane-${…}`) it is not known, and it is taken as possible.
  * @param {typeof b[number]} x @param {typeof b[number]} y
  */
 const canMeet = (x, y) => {
@@ -261,9 +261,9 @@ const canMeet = (x, y) => {
   return together.some((g) => [...all].every((c) => g.has(c)));
 };
 /**
- * Si dos selectores pueden caer en el mismo elemento. El elemento solo cuenta
- * si uno de los dos no tiene clases (`button:disabled` y `.segmented button`):
- * `.a span` y `.b span` casi nunca coinciden y darían falsos avisos.
+ * Whether two selectors can land on the same element. The element only counts
+ * if one of the two has no classes (`button:disabled` and `.segmented button`):
+ * `.a span` and `.b span` almost never match and would give false warnings.
  * @param {Set<string>} x @param {Set<string>} y
  */
 const meet = (x, y) => {
@@ -271,8 +271,8 @@ const meet = (x, y) => {
   return [...y].some((k) => x.has(k) && (!k.startsWith("el:") || bare(x) || bare(y)));
 };
 /**
- * Lo que toca una regla en el CSS nuevo. Si se reescribió, también lo que
- * tocaba su selector original, en cualquier módulo donde esté esa clase.
+ * What a rule touches in the new CSS. If it was rewritten, also what
+ * its original selector touched, in any module where that class is.
  * @param {{ id: string, sel: string, from: string }} r
  */
 const reach = (r) => {
@@ -281,7 +281,7 @@ const reach = (r) => {
     for (const k of tokensOf(r.from)) for (const c of scopes.get(k) ?? [k]) tokens.add(c);
   return tokens;
 };
-/** `{ propiedad: valor }` de una regla. @param {string} body */
+/** `{ property: value }` of a rule. @param {string} body */
 const declsOf = (body) =>
   new Map(
     body
@@ -290,8 +290,8 @@ const declsOf = (body) =>
       .map((d) => [d.slice(0, d.indexOf(":")).trim().toLowerCase(), d.slice(d.indexOf(":") + 1).trim()]),
   );
 /**
- * Lo que pide un selector aparte de las clases de su último tramo: lo de
- * delante (`.dialog `) y las pseudoclases (`:hover`, `:not(:disabled)`).
+ * What a selector requires apart from the classes of its last part: what comes
+ * before (`.dialog `) and the pseudo-classes (`:hover`, `:not(:disabled)`).
  * @param {string} sel
  */
 const conditionOf = (sel) => {
@@ -300,19 +300,19 @@ const conditionOf = (sel) => {
   return { before: parts.join(""), pseudos: last.replace(/\.[\w-]+/g, "").match(/:+[\w-]+(?:\([^)]*\))?|^[a-z][\w-]*/gi) ?? [] };
 };
 /**
- * Si cambiar de orden `x` e `y` no cambia nada: para cada propiedad que
- * declaran las dos, el valor que gana en su elemento es el mismo en los dos
- * órdenes. Cuenta solo las reglas que seguro le aplican cuando aplican `x` e
- * `y` (mismas clases o menos, misma condición, sin @media o el de `x` o `y`);
- * las que quizá le apliquen tienen su propia comprobación de orden.
+ * Whether swapping the order of `x` and `y` changes nothing: for each property that
+ * both declare, the value that wins on its element is the same in both
+ * orders. It counts only the rules that surely apply to it when `x` and
+ * `y` apply (same classes or fewer, same condition, no @media or the one of `x` or `y`);
+ * those that might apply have their own order check.
  * @param {typeof b[number]} x @param {typeof b[number]} y
  */
 const sameResult = (x, y) => {
   const dx = declsOf(x.body);
   const dy = declsOf(y.body);
-  // Abreviada contra una de sus partes (`border` y `border-color`): no se puede asegurar.
+  // Shorthand against one of its parts (`border` and `border-color`): cannot be ensured.
   for (const [p] of dx) for (const [q] of dy) if (p !== q && clash(p, q)) return false;
-  /** Las clases de su último tramo, con las de su selector original si se reescribió. @param {typeof b[number]} r */
+  /** The classes of its last part, with those of its original selector if it was rewritten. @param {typeof b[number]} r */
   const classesOf = (r) => [...subjectClasses(r.sel), ...subjectClasses(r.from)];
   const classes = new Set([...classesOf(x), ...classesOf(y)]);
   const [cx, cy] = [conditionOf(x.sel), conditionOf(y.sel)];
@@ -332,7 +332,7 @@ const sameResult = (x, y) => {
       for (const r of sure) {
         const value = declsOf(r.body).get(prop);
         if (value === undefined) continue;
-        // Gana !important, luego la especificidad y luego la que va después.
+        // !important wins, then specificity, then the one that comes later.
         const rank = [value.endsWith("!important") ? 1 : 0, ...specificity(r.sel).split(",").map(Number), at(r)];
         const k = best ? rank.findIndex((v, n) => v !== best.rank[n]) : 0;
         if (!best || (k >= 0 && rank[k] > best.rank[k])) best = { rank, value };
@@ -362,8 +362,8 @@ for (let i = 0; i < b.length; i++) {
   }
 }
 
-// 4. Los módulos y su .jsx.
-/** Como el `camelCase` de lodash que usa Vite: `lane-local_to_remote` → `laneLocalToRemote`. @param {string} name */
+// 4. The modules and their .jsx.
+/** Like the lodash `camelCase` that Vite uses: `lane-local_to_remote` → `laneLocalToRemote`. @param {string} name */
 const camel = (name) =>
   name
     .split(/[^a-zA-Z0-9]+/)
@@ -396,13 +396,13 @@ for (const mod of modulesIn("src")) {
   if (!dynamic) for (const key of defined) if (!used.has(key)) problems.push(`${mod}: .${key} no la usa nadie`);
 }
 
-// 5. Las clases globales siguen escritas en algún .jsx.
+// 5. Global classes are still written in some .jsx.
 /** @param {string} dir @returns {string[]} */
 const jsxIn = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? jsxIn(join(dir, e.name)) : /\.jsx?$/.test(e.name) ? [join(dir, e.name)] : [],
   );
-/** Las palabras de los textos entre comillas de un código. @param {string} code */
+/** The words of the quoted texts in a code. @param {string} code */
 const literalWords = (code) =>
   new Set(
     (code.replace(/^import .*$/gm, "").match(/"[^"\n]*"|'[^'\n]*'|`[^`]*`/g) ?? []).flatMap((lit) =>

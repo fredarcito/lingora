@@ -2,44 +2,44 @@ import { api } from "./api";
 import { pairDevices } from "./audio";
 
 /**
- * Lo que hay conectado para oír y hablar, y qué hacer con ello en una
- * reunión en línea (Tomar notas). Rust lo lee de Core Audio (`audio_route`).
+ * What is connected for listening and speaking, and what to do with it in an
+ * online meeting (Take notes). Rust reads it from Core Audio (`audio_route`).
  * @typedef {import("./api").AudioRoute} AudioRoute
  */
 
-/** Cada cuánto se mira qué hay conectado. */
+/** How often to check what is connected. */
 export const ROUTE_CHECK_MS = 2000;
 
 /**
- * Si el micrófono puede oír lo que suena en el Mac. Sin saber qué hay
- * conectado, sí: quitar el eco cuando no lo hay apenas cuesta.
+ * Whether the microphone can hear what plays on the Mac. Without knowing what is
+ * connected, yes: removing the echo when there is none costs almost nothing.
  * @param {AudioRoute | null} route
  */
 export const echoPossible = (route) => route?.output !== "headphones";
 
 /**
- * Si se usará el micrófono del Mac en vez del de por defecto: cuando son unos
- * auriculares Bluetooth que ninguna app usa aún. Abrirlos los pasaría a modo
- * llamada y la reunión se oiría peor; con los auriculares puestos, el
- * micrófono del Mac solo te oye a ti.
+ * Whether the Mac microphone will be used instead of the default one: when they are some
+ * Bluetooth headphones no app uses yet. Opening them would switch them to
+ * call mode and the meeting would sound worse; with the headphones on, the
+ * Mac microphone only hears you.
  * @param {AudioRoute | null} route
  */
 export const prefersMacMic = (route) => Boolean(route?.input_bluetooth && !route.input_busy && route.builtin_mic);
 
 /**
- * El ID del WebView del micrófono del Mac; "" si no se encuentra.
+ * The WebView ID of the Mac microphone; "" if not found.
  * @param {AudioRoute} route
  * @returns {Promise<string>}
  */
 async function macMicId(route) {
-  // Sin pedir el micrófono otra vez (lo haría `listWebviewDevices`): eso ya
-  // abriría los auriculares. Con el permiso concedido los nombres ya están.
+  // Without requesting the microphone again (`listWebviewDevices` would do it): that would already
+  // open the headphones. With permission granted the names are already there.
   const [core, web] = await Promise.all([api.listAudioDevices(), navigator.mediaDevices.enumerateDevices()]);
   return pairDevices(core, web).inputs.find((d) => d.name === route.builtin_mic)?.webId ?? "";
 }
 
 /**
- * El ID del WebView del micrófono para la reunión; "" es el de por defecto.
+ * The WebView ID of the microphone for the meeting; "" is the default one.
  * @param {AudioRoute | null} route
  * @returns {Promise<string>}
  */
@@ -49,16 +49,16 @@ export async function meetingMic(route) {
 }
 
 /**
- * Si en persona (Tomar notas con el micrófono) se usará el del Mac: siempre
- * que la entrada sean unos auriculares Bluetooth. En modo llamada llegan a
- * 16 kHz y muy comprimidos, y la escucha se equivoca hasta de idioma; el del
- * Mac, además, oye a todos los de la sala.
+ * Whether in person (Take notes with the microphone) the Mac one will be used: always
+ * when the input is Bluetooth headphones. In call mode they arrive at
+ * 16 kHz and heavily compressed, and listening even gets the language wrong; the Mac one
+ * also hears everyone in the room.
  * @param {AudioRoute | null} route
  */
 export const prefersRoomMic = (route) => Boolean(route?.input_bluetooth && route.builtin_mic);
 
 /**
- * El ID del WebView del micrófono para tomar notas en persona; "" es el de por defecto.
+ * The WebView ID of the microphone for taking notes in person; "" is the default one.
  * @param {AudioRoute | null} route
  * @returns {Promise<string>}
  */
@@ -68,7 +68,7 @@ export async function roomMic(route) {
 }
 
 /**
- * Lo que hay conectado ahora; null si no se puede saber.
+ * What is connected now; null if it cannot be known.
  * @returns {Promise<AudioRoute | null>}
  */
 export const readRoute = () => api.audioRoute().catch(() => null);

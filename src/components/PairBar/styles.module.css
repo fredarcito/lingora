@@ -38,7 +38,7 @@
   background-color: var(--surface-2);
 }
 
-/* Subtítulos en el original: el idioma de destino no se usa. */
+/* Subtitles in the original: the target language is not used. */
 .pair.is-untranslated .pair-side:last-child,
 .pair.is-untranslated .pair-swap {
   opacity: 0.35;
@@ -76,7 +76,7 @@
   min-height: calc(var(--control-h) - 8px);
 }
 
-/* Selector de idiomas más corto: los nombres largos se recortan con «…». */
+/* Shorter language selector: long names are cut with "…". */
 .pair select {
   width: 80px;
 }

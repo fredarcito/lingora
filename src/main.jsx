@@ -8,14 +8,14 @@ import Welcome, { WelcomeBoundary, needsWelcome } from "./pages/Welcome";
 import { I18nProvider } from "./i18n";
 import { captureErrors } from "./utils/log";
 
-// Los errores de la interfaz van también al registro de la app.
+// Interface errors also go to the app's log.
 captureErrors();
 
-// La ventana de subtítulos flotantes carga esta misma página; Rust marca cuál es.
+// The floating subtitles window loads this same page; Rust marks which one it is.
 const floating = /** @type {any} */ (window).__LINGORA_VIEW === "captions";
 if (floating) document.documentElement.classList.add("view-captions");
 
-/** La bienvenida la primera vez; si algo falla al comprobarlo, directo a la app. */
+/** Welcome screen the first time; if something fails while checking, go straight to the app. */
 function Main() {
   const [welcome, setWelcome] = useState(/** @type {boolean | null} */ (null));
   useEffect(() => {

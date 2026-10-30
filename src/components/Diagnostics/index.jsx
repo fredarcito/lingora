@@ -4,12 +4,12 @@ import { t, useT } from "../../i18n";
 import { LinkButton, Spinner, cx } from "../shared";
 import styles from "./styles.module.css";
 
-/** Cada cuánto se revisa el audio: detecta auriculares conectados a mitad de uso. */
+/** How often the audio is checked: detects headphones connected in the middle of use. */
 const AUDIO_POLL_MS = 5000;
 
 /**
- * Las comprobaciones agrupadas por lo que hace la app, no por pieza técnica:
- * quien la usa piensa en "no oye la llamada", no en "BlackHole".
+ * The checks are grouped by what the app does, not by technical part:
+ * the user thinks "it can't hear the call", not "BlackHole".
  */
 const GROUPS = [
   { key: "call", title: "diagnostics.group.call", ids: ["blackhole", "routing", "sample_rate", "capture_volume"] },
@@ -20,17 +20,17 @@ const GROUPS = [
 ];
 
 /**
- * Lo que solo hace falta para oír la llamada por BlackHole. Con el audio del
- * Mac (Core Audio taps) no aplica.
+ * What is only needed to hear the call through BlackHole. With Mac audio
+ * (Core Audio taps) it does not apply.
  */
 const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "capture_volume"]);
 
-/** Lo que solo hace falta para algunos idiomas o para las notas: no cuenta como problema. */
+/** What is only needed for some languages or for notes: it does not count as a problem. */
 const OPTIONAL = new Set(["sense_voice", "speakers"]);
 
 /**
- * Qué nota quien usa la app cuando falla cada comprobación. El título del
- * backend (qué está mal) queda debajo, como detalle.
+ * What the user is told when each check fails. The backend's title
+ * (what is wrong) stays below, as a detail.
  */
 const EFFECT = {
   blackhole: "diagnostics.effect.blackhole",
@@ -46,7 +46,7 @@ const EFFECT = {
   translator: "diagnostics.effect.translator",
 };
 
-/** Texto del botón: el verbo de lo que pasa al pulsarlo. */
+/** Button text: the verb for what happens when it is pressed. */
 const FIX_LABEL = {
   routing: "diagnostics.fix.routing",
   sample_rate: "diagnostics.fix.sample_rate",
@@ -78,22 +78,22 @@ function groupSummary(checks) {
 }
 
 /**
- * Panel de diagnóstico. Revisa dependencias al abrir y el enrutado de audio
- * cada pocos segundos. Lo que impide traducir sale primero, dicho por su
- * efecto y con su arreglo; el resto, plegado por grupos.
+ * Diagnostics panel. Checks dependencies when opened and the audio routing
+ * every few seconds. What prevents translating comes first, described by its
+ * effect and with its fix; the rest is collapsed by groups.
  * @param {{ mode: "video" | "call", systemAudio?: boolean, onFixed?: () => void, onlyProblems?: boolean, expanded?: boolean,
  *   className?: string }} props
- *   `systemAudio`: Escuchar oye el audio del Mac, sin BlackHole. `onFixed` se
- *   llama tras un arreglo, para que la app vuelva a leer dispositivos y ajustes.
- *   `onlyProblems`: en la pantalla de traducir solo aparece si algo falla (el
- *   detalle está en Ajustes). `expanded`: los grupos se ven desde el principio.
- *   `className`: una clase más para colocarlo donde va.
+ *   `systemAudio`: Listen hears the Mac audio, without BlackHole. `onFixed` is
+ *   called after a fix, so the app reads devices and settings again.
+ *   `onlyProblems`: on the translate screen it only appears if something fails (the
+ *   details are in Settings). `expanded`: the groups are visible from the start.
+ *   `className`: one more class to place it where it goes.
  */
 export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyProblems = false, expanded = false, className }) {
   const t = useT();
   /** @type {[import("../../utils/api").Check[], Function]} */
   const [allChecks, setChecks] = useState([]);
-  // En modo vídeo el micrófono no se usa: no es un problema ni hace falta verlo.
+  // In video mode the microphone is not used: it is not a problem and does not need to be shown.
   const checks = allChecks.filter(
     (c) => !(mode === "video" && c.id === "microphone") && !(systemAudio && BLACKHOLE_CAPTURE.has(c.id)),
   );
@@ -102,7 +102,7 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
   const [showDetails, setShowDetails] = useState(expanded);
   const [open, setOpen] = useState(/** @type {string | null} */ (null));
 
-  /** Sustituye las comprobaciones recibidas y conserva las demás. */
+  /** Replaces the checks received and keeps the others. */
   const merge = useCallback((fresh) => {
     setChecks((prev) => {
       const ids = new Set(fresh.map((c) => c.id));
@@ -114,7 +114,7 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
     (full) =>
       api
         .runDiagnostics(full)
-        // En una revisión completa también desaparecen las que ya no aplican.
+        // A full check also removes the ones that no longer apply.
         .then((fresh) => (full ? setChecks(fresh) : merge(fresh)))
         .catch((e) => setError(errorMessage(e))),
     [merge],

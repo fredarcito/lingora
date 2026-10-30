@@ -178,7 +178,7 @@
   background: var(--n-hover);
 }
 
-/* La elegida, en el color de la app, con una barra a la izquierda. */
+/* The selected one, in the app color, with a bar on the left. */
 .drawer-entry.is-selected {
   color: var(--text);
   background: color-mix(in srgb, var(--accent) 10%, transparent);

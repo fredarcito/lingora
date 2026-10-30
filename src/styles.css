@@ -1,7 +1,7 @@
-/* Lo general de la app: variables, reset, elementos, @keyframes, estructura
-   de las pantallas y las clases que comparten varias (`muted`, `link`,
-   `spinner`, la transcripción…). Lo de cada componente va en su
-   `styles.module.css`; ver docs/componentes.md. */
+/* General app styles: variables, reset, elements, @keyframes, structure
+   of the screens and the classes shared by several (`muted`, `link`,
+   `spinner`, the transcript…). Each component's own styles go in its
+   `styles.module.css`; see docs/componentes.md. */
 
 :root {
   --bg: #0b0c10;
@@ -16,7 +16,7 @@
   --ok: #34d399;
   --warn: #fbbf24;
   --danger: #f87171;
-  /* Color del carril; cada carril lo redefine. */
+  /* Lane color; each lane redefines it. */
   --accent: #5eead4;
   --accent-2: #22d3ee;
   --accent-ink: #04201c;
@@ -70,12 +70,12 @@ p {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  /* Alto de la ventana: los paneles ocupan lo que queda y los subtítulos se
-     ajustan a eso, sin salirse por abajo. */
+  /* Window height: the panels take up the rest and the subtitles
+     adjust to it, without overflowing at the bottom. */
   height: 100vh;
 }
 
-/* ---------- Cabecera ---------- */
+/* ---------- Header ---------- */
 
 .topbar {
   display: flex;
@@ -95,8 +95,8 @@ p {
   min-width: 0;
 }
 
-/* El header no salta de línea al cambiar de modo: si falta sitio, se recorta
-   la descripción. */
+/* The header does not wrap onto a new line when the mode changes: if there is not enough room,
+   the description is trimmed. */
 .brand p {
   white-space: nowrap;
   overflow: hidden;
@@ -173,7 +173,7 @@ p {
   box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
 }
 
-/* ---------- Piezas compartidas: spinner pequeño y botón enlace ---------- */
+/* ---------- Shared pieces: small spinner and link button ---------- */
 
 .spinner.small {
   width: 14px;
@@ -193,7 +193,7 @@ button.link:hover {
   color: var(--text);
 }
 
-/* ---------- Formularios ---------- */
+/* ---------- Forms ---------- */
 
 .field {
   display: flex;
@@ -233,7 +233,7 @@ input:focus-visible {
   outline-offset: 1px;
 }
 
-/* Lo que se despliega bajo una fila o en «Opciones avanzadas». */
+/* What unfolds under a row or in «Advanced options». */
 .setting-group {
   display: flex;
   flex-direction: column;
@@ -346,7 +346,7 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
-/* ---------- Animaciones ---------- */
+/* ---------- Animations ---------- */
 
 @keyframes spin {
   to {
@@ -389,7 +389,7 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
-/* Subtítulos flotantes: ventana aparte, transparente, encima de todo. */
+/* Floating subtitles: a separate window, transparent, on top of everything. */
 html.view-captions,
 html.view-captions body {
   background: transparent;
@@ -397,15 +397,15 @@ html.view-captions body {
   overflow: hidden;
 }
 
-/* ---------- Notas ---------- */
+/* ---------- Notes ---------- */
 
-/* Traducir y Notas siguen montadas; la que no se ve se oculta, no se desmonta. */
+/* Translate and Notes stay mounted; the one not visible is hidden, not unmounted. */
 .app[hidden] {
   display: none;
 }
 
-/* Escala propia de Notas y del menú, al estilo de shadcn: grises neutros,
-   bordes finos, radio de 8 px y un solo acento. */
+/* Own scale for Notes and the menu, shadcn style: neutral grays,
+   thin borders, 8 px radius and a single accent. */
 .notes-view,
 .note-toast {
   --n-border: rgba(255, 255, 255, 0.09);
@@ -417,7 +417,7 @@ html.view-captions body {
   --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* ---- Animaciones del menú ☰, los menús y los diálogos ---- */
+/* ---- Animations of the ☰ menu, the menus and the dialogs ---- */
 
 @keyframes drawer-in {
   from {
@@ -431,7 +431,7 @@ html.view-captions body {
   }
 }
 
-/* Al cambiar de pantalla (Traducir, Notas, Ajustes) el contenido se funde. */
+/* When switching screens (Translate, Notes, Settings) the content fades. */
 main.app:not([hidden]) {
   animation: fade-in 0.14s ease-out;
 }
@@ -442,7 +442,7 @@ main.app:not([hidden]) {
   }
 }
 
-/* ---- Estructura ---- */
+/* ---- Structure ---- */
 
 .notes-topbar .brand h1 {
   font-size: 17px;
@@ -454,7 +454,7 @@ main.app:not([hidden]) {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Holgura para que el anillo de foco no se recorte. */
+  /* Room so the focus ring is not clipped. */
   padding: 4px;
   margin: 0 -4px;
 }
@@ -498,7 +498,7 @@ main.app:not([hidden]) {
   }
 }
 
-/* ---- Lista ---- */
+/* ---- List ---- */
 
 .notes-tools {
   display: flex;
@@ -515,10 +515,10 @@ main.app:not([hidden]) {
   padding: 8px 0;
 }
 
-/* ---- Transcripción: página de la nota y Tomar notas ---- */
+/* ---- Transcript: note page and Take notes ---- */
 
-/* Botones como los de shadcn: "outline" por defecto, uno principal y uno
-   destructivo discreto. */
+/* Buttons like shadcn's: "outline" by default, one primary and one
+   subtle destructive. */
 .note-actions {
   display: flex;
   flex-wrap: wrap;
@@ -563,7 +563,7 @@ main.app:not([hidden]) {
   color: var(--who, var(--accent));
 }
 
-/* Al cambiar de persona, un poco más de aire, como en un guion. */
+/* When the speaker changes, a bit more air, like in a script. */
 .note-line.has-who:not(:first-child) {
   margin-top: 8px;
 }
@@ -591,7 +591,7 @@ main.app:not([hidden]) {
   cursor: default;
 }
 
-/* ---------- Ajustes ---------- */
+/* ---------- Settings ---------- */
 
 .prefs-section {
   display: flex;
@@ -665,14 +665,14 @@ main.app:not([hidden]) {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-/* Con tres modos el header no cabe con la descripción: se oculta antes de que se recorte. */
+/* With three modes the header does not fit the description: it is hidden before it gets cut. */
 @media (max-width: 1100px) {
   .brand p {
     display: none;
   }
 }
 
-/* Un mismo alto para todos los controles de los paneles. */
+/* One same height for all the controls in the panels. */
 :root {
   --control-h: 40px;
 }
@@ -700,7 +700,7 @@ select {
   padding-top: 0;
 }
 
-/* Ahora cada párrafo lleva su separador: sin el aire extra al cambiar de persona. */
+/* Now each paragraph carries its own separator: without the extra air when the speaker changes. */
 .note-line.has-who:not(:first-child) {
   margin-top: 0;
 }

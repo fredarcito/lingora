@@ -1,44 +1,44 @@
 import { api } from "./api";
 
 /**
- * Reunión en línea con altavoces: el micrófono oye también a los demás, y sin
- * filtrar cada frase suya saldría dos veces, una como "Persona 1" y otra como
- * "Yo". Como el audio del Mac es exactamente lo que sonó, cada frase del
- * micrófono se compara con lo que se oyó a la misma hora:
- * 1. Texto: si casi todo coincide, es eco; si coincide una parte (hablasteis
- *    a la vez), se quita esa parte y se queda lo tuyo.
- * 2. Voz: si el texto no coincide pero sonaba alguien en el Mac y la voz se
- *    parece más a esa persona que a ti, también es eco.
- * Con auriculares no hay eco y las frases pasan sin esperar.
+ * Online meeting with speakers: the microphone also hears the others, and without
+ * filtering each of its sentences, they would come out twice, once as "Person 1" and once as
+ * "Me". Since the Mac audio is exactly what played, each sentence from the
+ * microphone is compared with what was heard at the same time:
+ * 1. Text: if almost all of it matches, it is echo; if part matches (you spoke
+ *    at the same time), that part is removed and yours is kept.
+ * 2. Voice: if the text does not match but someone was playing on the Mac and the voice
+ *    sounds more like that person than like you, it is also echo.
+ * With headphones there is no echo and sentences pass through without waiting.
  */
 
-/** Margen alrededor de una frase del micrófono para buscar lo que sonó (ms). */
+/** Margin around a microphone sentence to look for what played (ms). */
 const WINDOW_MS = 2000;
-/** Tope de espera a que el audio del Mac entregue lo que sonó a esa hora (ms). */
+/** Maximum wait for the Mac audio to deliver what played at that time (ms). */
 const HOLD_MS = 8000;
-/** Cada cuánto se mira si ya se puede decidir (ms). */
+/** How often to check whether a decision can be made (ms). */
 const CHECK_MS = 400;
-/** Lo que sonó en el Mac se guarda este tiempo (ms). */
+/** What played on the Mac is kept for this long (ms). */
 const KEEP_MS = 60_000;
-/** Con esta parte de las palabras en lo que sonó, la frase entera es eco. */
+/** With this share of the words in what played, the whole sentence is echo. */
 const ECHO_SHARE = 0.5;
-/** Lo que queda tras quitar el eco necesita al menos estas palabras. */
+/** What remains after removing the echo needs at least these words. */
 const MIN_LEFT_WORDS = 3;
-/** Parecido (coseno) mínimo a una persona del Mac; el mismo umbral que separa personas en notes.js. */
+/** Minimum similarity (cosine) to a person on the Mac; the same threshold that separates speakers in notes.js. */
 const SAME_VOICE = 0.5;
-/** Cuánto más se tiene que parecer a esa persona que a ti. */
+/** How much more it has to sound like that person than like you. */
 const VOICE_MARGIN = 0.1;
-/** Frases propias (sin nada sonando en el Mac) que hacen falta para conocer tu voz. */
+/** Own sentences (with nothing playing on the Mac) needed to learn your voice. */
 const MIN_OWN = 3;
-/** Con menos audio la huella no es fiable. */
+/** With less audio the fingerprint is not reliable. */
 const MIN_PRINT_SECS = 1.2;
 
-/** Chino, japonés y coreano: sin espacios, cada carácter cuenta como palabra. */
+/** Chinese, Japanese and Korean: no spaces, each character counts as a word. */
 const CJK = /[぀-ヿ㐀-鿿豈-﫿가-힯]/;
 
 /**
- * Las palabras de un texto, en minúsculas, sin acentos ni puntuación. Cada
- * una recuerda de qué palabra del original sale.
+ * The words of a text, in lowercase, without accents or punctuation. Each
+ * one remembers which word of the original it comes from.
  * @param {string} text
  * @returns {{ words: string[], from: number[], original: string[] }}
  */
@@ -64,9 +64,9 @@ function tokenize(text) {
 }
 
 /**
- * Qué palabras de `mine` aparecen, en el mismo orden, en `heard`: tres
- * seguidas, o dos si alguna es larga (las cortas como "de la" coinciden por
- * casualidad). En una frase de una o dos palabras, que estén todas.
+ * Which words of `mine` appear, in the same order, in `heard`: three
+ * in a row, or two if one is long (short ones like "de la" match by
+ * chance). In a sentence of one or two words, all of them must be present.
  * @param {string[]} mine @param {string[][]} heard
  * @returns {boolean[]}
  */
@@ -92,10 +92,10 @@ function covered(mine, heard) {
 }
 
 /**
- * Qué hacer con una frase del micrófono según lo que sonó en el Mac.
+ * What to do with a microphone sentence based on what played on the Mac.
  * @param {string} text @param {string[]} heard
  * @returns {{ echo: true } | { echo: false, text: string, matched: boolean }}
- *   `matched`: algo coincidió (se quitó una parte).
+ *   `matched`: something matched (a part was removed).
  */
 export function compareEcho(text, heard) {
   const mine = tokenize(text);
@@ -107,7 +107,7 @@ export function compareEcho(text, heard) {
   const share = hit.filter(Boolean).length / hit.length;
   if (share === 0) return { echo: false, text, matched: false };
   if (share >= ECHO_SHARE) return { echo: true };
-  // Una palabra del original se quita si todas sus partes eran eco.
+  // A word of the original is removed if all its parts were echo.
   const keep = mine.original.map((_, i) => mine.from.every((f, j) => f !== i || !hit[j]));
   const left = mine.original.filter((_, i) => keep[i]);
   if (left.length < MIN_LEFT_WORDS) return { echo: true };
@@ -135,27 +135,27 @@ function cosine(a, b) {
  */
 
 /**
- * Pone el filtro de eco delante del grabador, con su misma forma: el resto de
- * la app no sabe que existe. Las frases del Mac pasan en el acto; las del
- * micrófono esperan a lo que sonó a la misma hora, salvo sin eco posible.
+ * Puts the echo filter in front of the recorder, with the same shape: the rest of
+ * the app does not know it exists. Mac sentences pass immediately; the
+ * microphone ones wait for what played at the same time, unless no echo is possible.
  * @param {Recorder} recorder
  * @param {{ echoPossible: () => boolean, macIdle: () => boolean }} options
- *   `echoPossible`: la salida actual puede oírse por el micrófono (no son
- *   auriculares). `macIdle`: el audio del Mac no está en mitad de una frase ni
- *   le queda nada en cola, así que ya entregó todo lo que sonó.
+ *   `echoPossible`: the current output can be heard by the microphone (they are not
+ *   headphones). `macIdle`: the Mac audio is not in the middle of a sentence nor
+ *   has anything left in the queue, so it has already delivered everything that played.
  * @returns {Recorder}
  */
 export function withEchoFilter(recorder, { echoPossible, macIdle }) {
-  /** Lo que sonó en el Mac. @type {Array<{ start: number, end: number, text: string, print: Promise<number[] | null> }>} */
+  /** What played on the Mac. @type {Array<{ start: number, end: number, text: string, print: Promise<number[] | null> }>} */
   let heard = [];
-  /** Lo que terminó más tarde de lo que llegó del Mac. */
+  /** What ended later than what arrived from the Mac. */
   let heardUntil = 0;
-  /** Frases del micrófono a la espera. @type {Array<{ sentence: Sentence, info: Info, since: number }>} */
+  /** Microphone sentences waiting. @type {Array<{ sentence: Sentence, info: Info, since: number }>} */
   let waiting = [];
-  /** Huellas de tu voz (frases sin nada sonando en el Mac). @type {number[][]} */
+  /** Fingerprints of your voice (sentences with nothing playing on the Mac). @type {number[][]} */
   const own = [];
   let timer = 0;
-  // Las decisiones van en orden: una espera a la huella de la anterior.
+  // Decisions go in order: one waits for the fingerprint of the previous one.
   let deciding = Promise.resolve();
 
   /** @param {Info} info */
@@ -169,7 +169,7 @@ export function withEchoFilter(recorder, { echoPossible, macIdle }) {
     const { start, end } = span(info);
     const near = heard.filter((h) => h.start <= end + WINDOW_MS && h.end >= start - WINDOW_MS);
     const mine = printOf(info);
-    // Nada sonaba en el Mac: es tu voz seguro, y sirve para conocerla.
+    // Nothing was playing on the Mac: it is surely your voice, and it helps learn it.
     if (!near.length) {
       const print = await mine;
       if (print) own.push(print);
@@ -198,11 +198,11 @@ export function withEchoFilter(recorder, { echoPossible, macIdle }) {
     recorder.add({ ...sentence, source: result.text }, null, info);
   };
 
-  /** Decide las frases para las que el Mac ya entregó lo que sonó (o todas, al terminar). */
+  /** Decides the sentences for which the Mac has already delivered what played (or all of them, at the end). */
   const check = (all = false) => {
     const now = performance.now();
     const idle = macIdle();
-    // Parado justo al terminar la frase, el Mac aún puede estar cerrando la suya: un margen.
+    // Stopped right after the sentence ends, the Mac may still be closing its own: a margin.
     const ready = waiting.filter(
       (w) =>
         all ||

@@ -1,27 +1,27 @@
 #!/bin/bash
-# Compila espeak-ng para meterlo dentro de Lingora: quien usa la app no
-# instala nada (sin Homebrew). Deja:
-#   src-tauri/binaries/espeak-ng-aarch64-apple-darwin  (el programa, `externalBin`)
-#   src-tauri/resources/espeak-ng-data/                 (sus datos, `resources`)
+# Builds espeak-ng to put it inside Lingora: whoever uses the app does not
+# install anything (no Homebrew). It leaves:
+#   src-tauri/binaries/espeak-ng-aarch64-apple-darwin  (the program, `externalBin`)
+#   src-tauri/resources/espeak-ng-data/                 (its data, `resources`)
 #
 #   scripts/build-espeak.sh
 #
-# Hace falta `cmake` y las herramientas de Xcode solo en el Mac que compila.
+# `cmake` and the Xcode tools are needed only on the Mac that builds it.
 #
-# Va como programa aparte y no como librería por su licencia (GPL v3): así
-# solo se distribuye junto a la app (ver docs/plan-autonomia.md).
+# It goes as a separate program and not as a library because of its license (GPL v3): this way
+# it is only distributed alongside the app (see docs/plan-autonomia.md).
 #
-# Dos rarezas de espeak-ng:
-#   - Su código tiene archivos que solo se distinguen por mayúsculas
-#     (`e_short_1` y `E_short_1`); el disco del Mac no los distingue y uno
-#     pisaría al otro. Se compila en una imagen de disco que sí los distingue.
-#   - Al compilar los fonemas, las rutas largas se cortan: la imagen se monta
-#     en una ruta corta.
+# Two quirks of espeak-ng:
+#   - Its code has files that are only told apart by case
+#     (`e_short_1` and `E_short_1`); the Mac disk does not tell them apart and one
+#     would overwrite the other. It is built in a disk image that does tell them apart.
+#   - When compiling the phonemes, long paths get cut: the image is mounted
+#     at a short path.
 set -euo pipefail
 
 VERSION=1.52.0
 SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
-# Solo los idiomas que pronuncia la voz (el campo `espeak` de LANGS en config.rs).
+# Only the languages the voice pronounces (the `espeak` field of LANGS in config.rs).
 DICTS=(en es fr it pt)
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -69,7 +69,7 @@ cp -R "$DATA/phontab" "$DATA/phonindex" "$DATA/phondata" "$DATA/intonations" "$D
 for d in "${DICTS[@]}"; do cp "$DATA/${d}_dict" "$OUT_DATA/"; done
 cp "$MOUNT/espeak-ng-$VERSION/COPYING" "$OUT_DATA/COPYING"
 
-# Solo debe depender de librerías del sistema.
+# It must depend only on system libraries.
 if otool -L "$OUT_BIN" | tail -n +2 | grep -v -E '^\s+/(usr/lib|System)/' | grep -q .; then
   echo "✗ espeak-ng enlaza algo fuera del sistema:" >&2
   otool -L "$OUT_BIN" >&2

@@ -1,4 +1,4 @@
-/* Tomar notas */
+/* Take notes */
 .note-taking {
   --n-border: rgba(255, 255, 255, 0.09);
   --n-input: rgba(255, 255, 255, 0.12);
@@ -12,8 +12,8 @@
   flex-direction: column;
 }
 
-/* Todo el ancho, como la tarjeta de Traducir: comparten cabecera y al cambiar
-   de pestaña el contenido no salta. */
+/* Full width, like the Translate card: they share the header and when switching
+   tabs the content does not jump. */
 .note-taking :global(.notes-column) {
   max-width: none;
 }
@@ -65,12 +65,12 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Lo que sube se desvanece por arriba, como en los subtítulos. */
+  /* What scrolls up fades out at the top, as in the subtitles. */
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px);
   mask-image: linear-gradient(to bottom, transparent, #000 28px);
 }
 
-/* Lo que se oye ahora, como al pie de los subtítulos. */
+/* What is being heard now, like the subtitles at the bottom. */
 .taking-heard {
   min-height: 22px;
 }
@@ -86,13 +86,13 @@
   font-weight: 550;
 }
 
-/* «Cambiar en Ajustes»: subrayado, para que se vea que se puede pulsar. */
+/* "Change in Settings": underlined, so it is clear it can be clicked. */
 .taking-summary-lang :global(.link) {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
 
-/* Al pasar, un gris más claro: el blanco del texto resaltaba demasiado. */
+/* On hover, a lighter gray: the white of the text stood out too much. */
 .taking-summary-lang :global(.link):hover {
   color: var(--text-2);
 }

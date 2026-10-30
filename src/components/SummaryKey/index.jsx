@@ -4,12 +4,12 @@ import { useT } from "../../i18n";
 import { Button, LinkButton } from "../shared";
 import styles from "./styles.module.css";
 
-/** Aviso entre vistas (Notas, Ajustes, menú) de que la clave cambió. */
+/** Notice between views (Notes, Settings, menu) that the key changed. */
 const KEY_EVENT = "lingora:summary-key";
 
 /**
- * Dónde está la clave de Groq. `status` es null mientras se consulta.
- * `hasKey` cuenta también la del entorno de desarrollo.
+ * Where the Groq key is. `status` is null while it is being checked.
+ * `hasKey` also counts the key from the development environment.
  * @returns {{ status: import("../../utils/api").SummaryKeyStatus | null, hasKey: boolean }}
  */
 export function useSummaryKey() {
@@ -31,8 +31,8 @@ export function useSummaryKey() {
 export const notifyKeyChanged = () => window.dispatchEvent(new Event(KEY_EVENT));
 
 /**
- * Campo de contraseña y botón Guardar: Rust comprueba la clave antes de
- * guardarla y, si no vale, el error se ve aquí mismo.
+ * Password field and Save button: Rust checks the key before
+ * saving it and, if it is not valid, the error shows right here.
  * @param {{ placeholder?: string, onSaved?: () => void }} props
  */
 export function KeyField({ placeholder, onSaved }) {
@@ -86,7 +86,7 @@ export function KeyField({ placeholder, onSaved }) {
   );
 }
 
-/** Lo que se ve en la pestaña Resumen cuando aún no hay clave. @param {{ onSaved: () => void }} props */
+/** What is shown in the Summary tab when there is no key yet. @param {{ onSaved: () => void }} props */
 export function KeyPanel({ onSaved }) {
   const t = useT();
   return (

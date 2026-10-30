@@ -6,7 +6,7 @@
   min-height: 0;
 }
 
-/* Con un solo carril en marcha, el otro se queda en su control. */
+/* With one lane running, the other one stays on its control. */
 :global(.lanes).focus-remote_to_local {
   grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
 }
@@ -15,7 +15,7 @@
   grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
 }
 
-/* Modo vídeo: un solo carril, subtítulos más grandes. */
+/* Video mode: one lane, bigger subtitles. */
 :global(.lanes):global(.single) {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -31,7 +31,7 @@
   font-size: 28px;
 }
 
-/* Lo que cambia al pasar de Escuchar a Tomar notas (o al revés) se funde. */
+/* Content fades in when switching between Listen and Take notes. */
 .mode-body {
   flex: 1;
   min-height: 0;

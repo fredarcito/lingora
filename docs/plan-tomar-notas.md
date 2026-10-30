@@ -1,394 +1,385 @@
-# Plan: modo "Tomar notas" (transcribir sin traducir)
+# Plan: "Take notes" mode (transcribe without translating)
 
-Estado: fase 1 lista para implementar (2026-10-29). Las fases 2 y 3 van
-después, cada una con su propia confirmación.
+Status: phase 1 ready to implement (2026-10-29). Phases 2 and 3 come
+afterwards, each with its own confirmation.
 
-Meta: usar Lingora para tomar notas de clases y reuniones en el idioma en
-que se habla, con personas, resumen y exportación. Por dentro casi todo
-existe ya:
+Goal: use Lingora to take notes of classes and meetings in the language
+being spoken, with speakers, summary and export. Almost everything already
+exists internally:
 
-- el modo Original transcribe sin traducir;
-- el grabador de notas, las personas y el resumen ya funcionan.
+- the Original mode transcribes without translating;
+- the notes recorder, the speakers and the summary already work.
 
-Falta el modo en sí y su interfaz.
+What is missing is the mode itself and its interface.
 
 ---
 
-## 0. Reglas (leer antes de empezar)
+## 0. Rules (read before starting)
 
-Las mismas que en `docs/plan-notas.md`, sección 0. Además:
+The same as in `docs/plan-notas.md`, section 0. In addition:
 
-- **"Traducir audio" y "Traducir llamada" tienen que funcionar exactamente
-  igual que ahora.** El modo nuevo se añade al lado; no reorganices el flujo
-  de los otros.
-- **No toques lo afinado:**
+- **"Translate audio" and "Translate call" have to work exactly the same as now.**
+  The new mode is added alongside; don't reorganize the flow of the other ones.
+- **Don't touch what is tuned:**
   - `src/utils/audio.js`;
-  - el flujo `enqueue` / `texted` / `playback` de `App.jsx`, salvo lo que
-    se indica abajo;
-  - `src/components/Captions/` y `src/pages/FloatingCaptions/`;
-  - el agrupado de personas en `src/utils/notes.js` (`createSpeakerTracker`);
-  - los modelos y sus parámetros en Rust.
-- **Reutiliza el diseño** de Notas y Ajustes: los componentes de
-  `src/components/shared/` (`Button`, `Switch`…; ver `docs/componentes.md`)
-  y las variables `--n-*` de `src/styles.css`. Lo nuevo va en
+  - the `enqueue` / `texted` / `playback` flow of `App.jsx`, except what
+    is indicated below;
+  - `src/components/Captions/` and `src/pages/FloatingCaptions/`;
+  - the speaker grouping in `src/utils/notes.js` (`createSpeakerTracker`);
+  - the models and their parameters in Rust.
+- **Reuse the design** of Notes and Settings: the components of
+  `src/components/shared/` (`Button`, `Switch`…; see `docs/componentes.md`)
+  and the `--n-*` variables of `src/styles.css`. The new things go in
   `src/pages/NoteTaking/styles.module.css`.
-- Antes de tocar `src-tauri`, avisa y espera la señal: reinicia la app de
-  quien prueba. Junta todos los cambios de Rust en un solo bloque.
-- En la interfaz no se nombran modelos.
+- Before touching `src-tauri`, warn and wait for the signal: it restarts the app of
+  whoever is testing. Bundle all the Rust changes into a single block.
+- In the interface, no models are named.
 
 ---
 
-## Cómo se maneja el idioma
+## How the language is handled
 
-- La escucha europea (25 idiomas) detecta el idioma frase a frase: no hace
-  falta elegirlo y aguanta reuniones mezcladas (inglés y español, por
-  ejemplo). La de chino, japonés, coreano y cantonés también detecta sola
-  entre esos idiomas y el inglés.
-- Por eso el usuario no elige un idioma concreto, sino solo la familia:
-  - **"Automático"**, por defecto: por dentro se escucha con el código
-    `"EN"`, que elige la escucha europea.
-  - **"Chino, japonés, coreano o cantonés"**: por dentro, `"ZH"`.
-- La transcripción queda en el idioma en que se dijo cada frase.
-- **Idioma de las notas:** es el del resumen, por defecto `es`. Así una
-  reunión en inglés queda transcrita en inglés y resumida en español.
-- Límite: las frases muy cortas o con ruido ("OK", "Yeah") a veces salen en
-  otro idioma o se pierden.
+- The European listening (25 languages) detects the language sentence by sentence: there
+  is no need to choose it, and it handles mixed meetings (English and Spanish, for
+  example). The one for Chinese, Japanese, Korean and Cantonese also detects on its own
+  between those languages and English.
+- That is why the user doesn't choose a specific language, only the family:
+  - **"Automatic"**, by default: internally it listens with the code
+    `"EN"`, which picks the European listening.
+  - **"Chinese, Japanese, Korean…"**: internally, `"ZH"`.
+- The transcript stays in the language in which each sentence was spoken.
+- **Language of the notes:** it is that of the summary, by default `es`. That way a
+  meeting in English is transcribed in English and summarized in Spanish.
+- Limit: very short or noisy sentences ("OK", "Yeah") sometimes come out in
+  another language or are lost.
 
 ---
 
-## Fase 1: el modo básico
+## Phase 1: the basic mode
 
-### 1.1 El modo
+### 1.1 The mode
 
-- `Mode` pasa a ser `"video" | "call" | "notes"`. Se guarda en
-  `lingora.mode` como los otros.
-- En la barra superior, un tercer botón en el selector de modo:
-  - texto: **"Tomar notas"**;
-  - pista: "Transcribe clases y reuniones sin traducir, con personas y
-    resumen".
-  - No depende de `VITE_CALL_MODE`.
-- En modo `notes`, la barra no muestra el selector de idiomas (`PairBar`):
-  sus opciones van en la tarjeta del modo (1.3).
+- `Mode` becomes `"video" | "call" | "notes"`. It is saved in
+  `lingora.mode` like the others.
+- In the top bar, a third button in the mode selector:
+  - text: **"Take notes"**;
+  - hint: "Transcribes classes and meetings without translating, with speakers and a summary".
+  - It doesn't depend on `VITE_CALL_MODE`.
+- In `notes` mode, the bar doesn't show the language selector (`PairBar`):
+  its options go in the mode's card (1.3).
 
-### 1.2 Por dentro: el carril de Escuchar sin traducir ni hablar
+### 1.2 Internally: the Listen lane without translating or speaking
 
-En modo `notes` se usa el carril `remote_to_local` tal cual, con estos
-cambios, aplicados **solo** en el cálculo de `lanes` (cerca de `const lanes =
+In `notes` mode the `remote_to_local` lane is used as is, with these
+changes, applied **only** in the computation of `lanes` (near `const lanes =
 laneSettings.map`):
 
-- `sourceLang` y `targetLang` = `"EN"` o `"ZH"`, según "Idioma de la
-  reunión". Con el mismo idioma, el flujo ya se salta la traducción (ver
-  `t.source_lang === t.target_lang` en `enqueue`).
-- `speak: false`: sin voz.
-- `inputDeviceId`: el de "Qué escuchar" (1.3), no el del carril. No cambies
-  el dispositivo guardado de Escuchar.
+- `sourceLang` and `targetLang` = `"EN"` or `"ZH"`, according to "Meeting language". With the
+  same language, the flow already skips the translation (see
+  `t.source_lang === t.target_lang` in `enqueue`).
+- `speak: false`: no voice.
+- `inputDeviceId`: that of "What to listen to" (1.3), not that of the lane. Don't change
+  the saved device of Listen.
 
-Además:
+Also:
 
-- **Sin precargas innecesarias.** Revisa `start`: en modo `notes` no se
-  precarga la traducción (`translateWarmUp`) ni la voz (`warmUp`), y no se
-  abre la ventana de subtítulos flotantes. Si `start` ya lo evita con el
-  mismo idioma y sin voz, no lo toques.
-- **El grabador** (efecto de `anyRunning`):
-  - en modo `notes` se crea **siempre**, aunque "Guardar conversaciones"
-    esté apagado: grabar es el propósito del modo;
-  - en los otros modos sigue como está.
-- **Las personas** se distinguen igual que ahora: interruptor
-  "Distinguir personas" y modelo descargado.
+- **No unnecessary warm-ups.** Review `start`: in `notes` mode the translation
+  (`translateWarmUp`) and the voice (`warmUp`) are not preloaded, and the floating
+  captions window is not opened. If `start` already avoids it with the
+  same language and no voice, don't touch it.
+- **The recorder** (effect on `anyRunning`):
+  - in `notes` mode it is **always** created, even if "Save conversations"
+    is off: recording is the purpose of the mode;
+  - in the other modes it stays as it is.
+- **Speakers** are distinguished the same way as now: "Tell speakers apart"
+  switch and downloaded model.
 
-### 1.3 Pantalla del modo: `src/pages/NoteTaking/` (nuevo)
+### 1.3 Mode screen: `src/pages/NoteTaking/` (new)
 
-En modo `notes` se muestra este componente en lugar de las tarjetas de los
-carriles (`lanes`). El diagnóstico se queda igual.
+In `notes` mode this component is shown instead of the lane cards (`lanes`). The
+diagnostics stay the same.
 
-**Antes de empezar** (no está grabando), una tarjeta (`prefs-card`) con:
+**Before starting** (not recording), a card (`prefs-card`) with:
 
-- **Qué escuchar**, un segmentado como los de la tarjeta (`Segmented`):
-  - "Audio del Mac": vídeos, clases o reuniones en línea. Usa
-    `SYSTEM_AUDIO`; si no está disponible, la opción se desactiva con su
-    pista.
-  - "Micrófono": reuniones en persona. Usa el micrófono por defecto.
-  - Se guarda en `lingora.notesInput`.
-- **Idioma de la reunión:** "Automático" / "Chino, japonés, coreano o
-  cantonés". Se guarda en `lingora.notesListen`.
-- **Idioma de las notas:** un `select` con los idiomas de
-  `api.languages()`, por defecto español. Pista: "El resumen se escribe en
-  este idioma". Se guarda en `lingora.notesLang`.
-- **El botón principal:** "Empezar a tomar notas".
-- Una línea en gris debajo: "Se transcribe en tu Mac. Solo sale el texto
-  si pides un resumen."
+- **What to listen to**, a segmented control like the ones on the card (`Segmented`):
+  - "Computer audio": videos, classes or online meetings. Uses
+    `SYSTEM_AUDIO`; if it is not available, the option is disabled with its
+    hint.
+  - "Microphone": in-person meetings. Uses the default microphone.
+  - Saved in `lingora.notesInput`.
+- **Meeting language:** "Automatic" / "Chinese, Japanese, Korean…". Saved in `lingora.notesListen`.
+- **Language of the notes:** a `select` with the languages from
+  `api.languages()`, by default Spanish. Hint: "The summary is written in
+  this language". Saved in `lingora.notesLang`.
+- **The main button:** "Start taking notes".
+- A gray line below: "It is transcribed on your Mac. Only the text leaves
+  if you ask for a summary."
 
-**La primera vez** que se pulsa Empezar, un diálogo (mismo estilo que
-`ConfirmDelete` en `Notes.jsx`):
+**The first time** Start is pressed, a dialog (same style as `ConfirmDelete` in
+`Notes.jsx`):
 
-> "Antes de grabar: avisa a las personas de que estás transcribiendo la
-> conversación."
+> "Before recording: let people know you are transcribing the conversation."
 
-Botones "Cancelar" y "Entendido, empezar". Se recuerda en
-`lingora.notesConsent`.
+Buttons "Cancel" and "Got it, start". Remembered in `lingora.notesConsent`.
 
-**Mientras graba**, una vista tipo documento:
+**While recording**, a document-like view:
 
-- **Barra arriba:**
-  - punto rojo que late (reutiliza `note-live`);
-  - tiempo transcurrido `mm:ss` (o `h:mm:ss` a partir de una hora);
-  - las personas detectadas, con su color y sin editar;
-  - a la derecha, el botón **Detener** (`note-action`).
-- **Centro:** la transcripción en vivo, en párrafos, con hora, persona y
-  color, igual que la pestaña Transcripción de una nota.
-  - Para no duplicar código, extrae de `Notes.jsx` un componente
-    `Transcript` (la lista `note-lines`) y `speakerColor`, y úsalos en los
-    dos sitios sin cambiar cómo se ven.
-  - Baja sola mientras el usuario esté abajo. Si sube para leer algo, no
-    lo arrastra: aparece un botón "↓ Ir al final".
-- **Al pie, en gris:** lo que se está oyendo ahora (`heard` + `partial` del
-  carril). Así no parece que va con retraso.
-- **Sin frases todavía:** "Escuchando… las notas aparecerán aquí."
+- **Bar on top:**
+  - a pulsing red dot (reuses `note-live`);
+  - elapsed time `mm:ss` (or `h:mm:ss` from one hour on);
+  - the detected people, with their color and not editable;
+  - on the right, the **Stop** button (`note-action`).
+- **Center:** the live transcript, in paragraphs, with time, speaker and color,
+  just like the Transcript tab of a note.
+  - To avoid duplicating code, extract from `Notes.jsx` a `Transcript`
+    component (the `note-lines` list) and `speakerColor`, and use them in the
+    two places without changing how they look.
+  - It scrolls by itself while the user is at the bottom. If they scroll up to read
+    something, it doesn't drag them down: a "↓ Jump to end" button appears.
+- **Footer, in gray:** what is being heard right now (`heard` + `partial` of the
+  lane). That way it doesn't look delayed.
+- **No sentences yet:** "Listening… notes will appear here."
 
-**De dónde sale la nota en vivo.** `notes.js` expone:
+**Where the live note comes from.** `notes.js` exposes:
 
-- `getActiveNote()`: una copia de la nota en memoria;
-- un evento de ventana `lingora-note-changed` que se emite al añadir una
-  frase y al asignarle persona.
+- `getActiveNote()`: a copy of the note in memory;
+- a window event `lingora-note-changed` that is emitted when a sentence is added
+  and when a speaker is assigned to it.
 
-`NoteTaking` lo escucha. **No** leas el disco cada pocos segundos para esto.
+`NoteTaking` listens to it. **Don't** read the disk every few seconds for this.
 
-### 1.4 La nota de este modo
+### 1.4 The note of this mode
 
-`createRecorder({ mode })` con `mode: "notes"` crea la nota con:
+`createRecorder({ mode })` with `mode: "notes"` creates the note with:
 
-- `kind: "notes"`. Las demás notas no tienen `kind`, o tienen
+- `kind: "notes"`. The other notes don't have `kind`, or have
   `"translation"`.
-- Título: `"Notas del 29 oct, 10:32"`.
-- `summary_lang`: el idioma de las notas elegido.
-- En cada frase, `source_lang` y `target_lang` = `"auto"` (o `"zh"` con la
-  otra familia), y `translation: null`.
+- Title: `"Notas del 29 oct, 10:32"`.
+- `summary_lang`: the chosen language of the notes.
+- In each sentence, `source_lang` and `target_lang` = `"auto"` (or `"zh"` with the
+  other family), and `translation: null`.
 
-En la página de la nota (`Notes.jsx`):
+On the note's page (`Notes.jsx`):
 
-- **La línea de idiomas,** si `kind === "notes"`: "Transcripción · idioma
-  automático".
-- **Idioma del resumen:** junto al botón Resumir, un `select` pequeño
-  ("Resumen en: Español"). Cambiarlo guarda `summary_lang` en la nota.
-  Solo en notas con `kind: "notes"`.
-- **En la lista,** una etiqueta discreta "Notas" (`badge`) para distinguirlas
-  de las traducciones.
+- **The language line,** if `kind === "notes"`: "Transcript · automatic language".
+- **Summary language:** next to the Summarize button, a small `select`
+  ("Summary in: Español"). Changing it saves `summary_lang` in the note.
+  Only for notes with `kind: "notes"`.
+- **In the list,** a discreet "Notes" label (`badge`) to tell them apart
+  from the translations.
 
-### 1.5 Al detener
+### 1.5 When stopping
 
-- Se para el carril como ahora. El grabador termina y hace el repaso de
-  personas.
-- Después se abre **la página de esa nota** en la vista Notas, con la
-  pestaña Transcripción y el botón Resumir a mano.
-  - `Notes` acepta una prop para abrir una nota concreta, por ejemplo
+- The lane stops as now. The recorder finishes and does the speakers review.
+- Afterwards **that note's page** opens in the Notes view, with the
+  Transcript tab and the Summarize button for manual use.
+  - `Notes` accepts a prop to open a specific note, for example
     `openRequest: { id, nonce }`.
-  - `App` cambia `view` a `"notes"` cuando `finish()` termina.
-  - Si la nota quedó vacía (no se dijo nada), no se abre nada y se queda en
-    la pantalla del modo.
+  - `App` changes `view` to `"notes"` when `finish()` completes.
+  - If the note ended up empty (nothing was said), nothing is opened and it stays on
+    the mode's screen.
 
-### 1.6 Rust (un solo bloque, avisar antes)
+### 1.6 Rust (a single block, warn first)
 
-Solo en `src-tauri/src/notes.rs`:
+Only in `src-tauri/src/notes.rs`:
 
-- **`note_summarize`:** el idioma del resumen sale de `summary_lang` si
-  existe (con `Lang::from_code`). Si no, se usa lo de ahora: el
-  `target_lang` de la primera frase, y si no, español.
-- **`span_line` y la exportación:** comprueba que funcionan con
-  `source_lang: "auto"` (no deberían depender de él).
-- Una prueba unitaria: una nota con `summary_lang: "en"` elige inglés.
+- **`note_summarize`:** the summary language comes from `summary_lang` if it
+  exists (with `Lang::from_code`). If not, what is done now is used: the
+  `target_lang` of the first sentence, and if there is none, Spanish.
+- **`span_line` and the export:** check that they work with
+  `source_lang: "auto"` (they shouldn't depend on it).
+- A unit test: a note with `summary_lang: "en"` chooses English.
 
-### Pruebas a mano (fase 1)
+### Manual tests (phase 1)
 
-1. "Traducir audio" y "Traducir llamada" funcionan igual que antes: voz,
-   subtítulos, flotante, original.
-2. Tomar notas con el audio del Mac sobre un vídeo con 2 personas:
-   - aparece la transcripción en vivo, con personas;
-   - al detener se abre la nota, con las personas ya repasadas.
-3. Una reunión en inglés con "Idioma de las notas: Español": la
-   transcripción queda en inglés y el resumen sale en español.
-4. Cambiar "Resumen en" en la nota y volver a resumir: sale en el otro
-   idioma.
-5. Con "Guardar conversaciones" apagado, Tomar notas graba igual y
-   "Traducir audio" no graba.
-6. Con el micrófono: hablar y ver la transcripción. La voz de Lingora no
-   suena en ningún momento.
-7. El aviso de privacidad sale solo la primera vez.
-8. Detener sin haber dicho nada: no se crea nota y no se cambia de vista.
-9. Durante la grabación, subir para leer: no te arrastra abajo, y "↓ Ir al
-   final" vuelve.
-10. Una nota de "Tomar notas" y otra de traducción en la lista: la etiqueta
-    "Notas" solo sale en la primera.
+1. "Translate audio" and "Translate call" work as before: voice, captions,
+   floating, original.
+2. Take notes with the Mac's audio on a video with 2 people:
+   - the live transcript appears, with people;
+   - when stopped, the note opens, with the people already reviewed.
+3. A meeting in English with "Language of the notes: Español": the
+   transcript stays in English and the summary comes out in Spanish.
+4. Change "Summary in" in the note and summarize again: it comes out in the other
+   language.
+5. With "Save conversations" off, Take notes records just the same and
+   "Translate audio" doesn't record.
+6. With the microphone: speak and see the transcript. Lingora's voice never
+   plays at any point.
+7. The privacy notice appears only the first time.
+8. Stop without having said anything: no note is created and the view doesn't change.
+9. During recording, scroll up to read: it doesn't drag you down, and "↓ Jump to
+   end" brings you back.
+10. A "Take notes" note and a translation note in the list: the "Notes" label
+    only appears on the first.
 
 ---
 
-## Fase 2: reunión en línea, con "Yo" (la hace Opus)
+## Phase 2: online meeting, with "Me" (done by Opus)
 
-Meta: en una reunión en línea quedan en la nota **las demás personas y tú**,
-uses lo que uses para oír y hablar. Se usan siempre la **salida y la entrada
-por defecto del Mac**; quien usa la app no elige ni configura nada.
+Goal: in an online meeting the note contains **the other people and you**,
+whatever you use to listen and speak. The Mac's **default output and input** are
+always used; whoever uses the app chooses and configures nothing.
 
-### 2.1 Qué ve la persona
+### 2.1 What the person sees
 
-- "Qué escuchar" pasa a tener tres opciones:
-  - **"Reunión en línea"** (nueva, la primera y la de por defecto si hay
-    audio del Mac): el audio del Mac y tu micrófono a la vez.
-  - "Solo audio del Mac": vídeos y clases, donde tú no hablas.
-  - "Micrófono": reuniones en persona.
-- Debajo, una pista que cambia sola según lo que esté conectado (ver 2.3):
-  - Auriculares: "Con auriculares: tu voz y la de los demás quedan separadas."
-  - Altavoces: "Con altavoces, Lingora quita de tu micrófono lo que ya se
-    oyó por el Mac. Con auriculares queda más limpio."
-  - AirPods como micrófono: "Tu micrófono son los AirPods: se oye con menos
-    calidad." (la pista que ya hay en el diagnóstico).
-- En la nota: el micrófono es siempre **"Yo"** (`speaker: 0`); el audio del
-  Mac son Persona 1, 2… como ahora.
-- Nada se manda a la llamada: sin voz ni micrófono virtual.
+- "What to listen to" now has three options:
+  - **"Online meeting"** (new, the first one and the default if there is computer
+    audio): the Mac's audio and your microphone at the same time.
+  - "Computer audio only": videos and classes, where you don't speak.
+  - "Microphone": in-person meetings.
+- Below it, a hint that changes by itself according to what is connected (see 2.3):
+  - Headphones: "With headphones: your voice and everyone else's stay separate."
+  - Speakers: "With speakers, Lingora removes from your microphone what was already
+    heard through the Mac. With headphones it's cleaner."
+  - AirPods as microphone: "Your microphone is the AirPods: it sounds lower quality."
+    (the hint that already exists in diagnostics).
+- In the note: the microphone is always **"Me"** (`speaker: 0`); the Mac's audio
+  is Person 1, 2… as now.
+- Nothing is sent to the call: no voice and no virtual microphone.
 
-### 2.2 Cómo se graba
+### 2.2 How it is recorded
 
-- Dos carriles a la vez, como el modo llamada, los dos con `notes: true` y
-  sin voz:
-  - `remote_to_local` con `SYSTEM_AUDIO` (las demás personas);
-  - `local_to_remote` con la entrada por defecto (tú). El recorder ya pone
-    `speaker: 0` a esta dirección.
-- **El orden:** antes `createRecorder.add` apilaba en el orden de llegada y
-  `t` era la hora de llegada. Con dos fuentes, una frase corta puede
-  adelantarse a otra. Ahora `t` es cuándo **terminó de oírse** la frase
-  (`info.endedAt`, como dice el tipo `NoteSentence`; las pausas de
-  `paragraphs` cuentan con eso) y la frase se inserta en su sitio por `t`.
-- **Los subtítulos** de la pantalla de notas muestran las dos fuentes en una
-  sola lista, por hora, con "Yo" marcado.
+- Two lanes at the same time, like the call mode, both with `notes: true` and
+  no voice:
+  - `remote_to_local` with `SYSTEM_AUDIO` (the other people);
+  - `local_to_remote` with the default input (you). The recorder already sets
+    `speaker: 0` for this direction.
+- **The order:** before, `createRecorder.add` stacked in arrival order and `t` was the
+  arrival time. With two sources, a short sentence can jump ahead of another. Now `t` is when
+  the sentence **finished being heard** (`info.endedAt`, as the `NoteSentence` type
+  says; the pauses of `paragraphs` rely on it) and the sentence is inserted in its place by `t`.
+- **The captions** of the notes screen show both sources in a single list, by
+  time, with "Me" marked.
 
-### 2.3 Qué hay conectado (detección automática)
+### 2.3 What is connected (automatic detection)
 
-Se mira al empezar y **cada vez que cambia** la salida o la entrada por
-defecto (conectar o quitar unos AirPods a media reunión):
+It is checked when starting and **every time** the default output or input changes
+(connecting or removing AirPods in the middle of a meeting):
 
-| Salida por defecto | Cómo se reconoce | ¿Puede haber eco? |
+| Default output | How it is recognized | Can there be echo? |
 |---|---|---|
-| AirPods / auriculares Bluetooth | transporte Bluetooth | No |
-| Auriculares con cable en el Mac | integrada con fuente `hdpn` | No |
-| Auriculares USB (con micrófono) | USB con entrada y salida | No |
-| Altavoces del Mac | integrada con fuente `ispk` | **Sí** |
-| Monitor, HDMI, altavoz USB/Bluetooth sin micrófono, AirPlay | el resto | **Sí** (por si acaso) |
+| AirPods / Bluetooth headphones | Bluetooth transport | No |
+| Wired headphones on the Mac | built-in with source `hdpn` | No |
+| USB headphones (with microphone) | USB with input and output | No |
+| Mac speakers | built-in with source `ispk` | **Yes** |
+| Monitor, HDMI, USB/Bluetooth speaker without microphone, AirPlay | the rest | **Yes** (just in case) |
 
-Si no se sabe, se trata como altavoces: quitar el eco cuando no lo hay
-apenas cuesta; no quitarlo cuando lo hay llena la nota de frases repetidas.
+If it is not known, it is treated as speakers: removing the echo when there is none
+barely costs anything; not removing it when there is fills the note with repeated
+sentences.
 
-**El micrófono de unos AirPods.** Si la entrada por defecto es el micrófono
-de los AirPods pero la app de la reunión usa el del Mac, abrirlo pasaría los
-AirPods a modo llamada y **la reunión se oiría peor**. Regla:
+**The AirPods microphone.** If the default input is the AirPods microphone but
+the meeting app uses the Mac's, opening it would switch the AirPods to call mode and **the
+meeting would sound worse**. Rule:
 
-- si el micrófono de los AirPods ya lo usa otra app (Core Audio:
-  `DeviceIsRunningSomewhere`), se usa ese (ya están en modo llamada, no se
-  pierde nada);
-- si no, se usa el micrófono del Mac, que con auriculares solo te oye a ti.
+- if the AirPods microphone is already used by another app (Core Audio:
+  `DeviceIsRunningSomewhere`), that one is used (they are already in call mode, nothing
+  is lost);
+- if not, the Mac's microphone is used, which with headphones only hears you.
 
-**Cambios a media reunión.** Si cambia la entrada por defecto, el carril del
-micrófono se cierra y se vuelve a abrir con la nueva, sin parar la nota ni
-mostrar un error. La captura del Mac sigue sola: la tap es global, no depende
-de la salida.
+**Changes in the middle of a meeting.** If the default input changes, the microphone
+lane is closed and reopened with the new one, without stopping the note or
+showing an error. The Mac's capture keeps going by itself: the tap is global, it doesn't depend
+on the output.
 
-### 2.4 El eco con altavoces
+### 2.4 Echo with speakers
 
-Con altavoces el micrófono oye también a los demás: sin hacer nada, cada
-frase suya saldría dos veces, una como "Persona 1" y otra como "Yo". Tenemos
-la ventaja de que **sabemos exactamente lo que sonó** (el audio del Mac), así
-que se compara con eso. Se hace en tres capas, en `src/utils/echo.js` (nuevo;
-no toca `audio.js` ni el tracker de personas):
+With speakers the microphone also hears the others: without doing anything, each of their
+sentences would come out twice, once as "Person 1" and once as "Me". We have the
+advantage that **we know exactly what was played** (the Mac's audio), so
+it is compared against that. It is done in three layers, in `src/utils/echo.js` (new;
+it doesn't touch `audio.js` or the speakers tracker):
 
-1. **Espera corta.** Cada frase del micrófono espera hasta que el carril del
-   Mac entregó todo lo que se oyó a la misma hora (como mucho unos 4 s).
-2. **Texto.** Si en ese rato (±1,5 s) hubo una frase del Mac y casi todas
-   las palabras de la del micrófono están en ella (≥ 60 %, sin acentos ni
-   muletillas), es eco y se descarta. Si solo una parte coincide (hablasteis
-   a la vez), se quitan esas palabras y se queda lo tuyo, si queda algo con
-   sentido (3 palabras o más).
-3. **Voz.** Si la huella de voz de la frase del micrófono se parece más a una
-   persona del Mac que a "Yo", se descarta. La huella de "Yo" se aprende sola
-   con las frases del micrófono que el Mac no explica. Solo se aplica cuando
-   la salida puede tener eco.
+1. **Short wait.** Each sentence from the microphone waits until the Mac lane has
+   delivered everything that was heard at the same time (at most about 4 s).
+2. **Text.** If in that window (±1.5 s) there was a sentence from the Mac and almost all
+   the words of the microphone one are in it (≥ 60 %, without accents or filler
+   words), it is echo and is discarded. If only part matches (you spoke at the same time), those
+   words are removed and yours is kept, if something meaningful remains (3 words or more).
+3. **Voice.** If the voice fingerprint of the microphone sentence is more similar to a
+   person from the Mac than to "Me", it is discarded. The "Me" fingerprint is learned by itself
+   from the microphone sentences that the Mac doesn't explain. It is only applied when
+   the output may have echo.
 
-Con auriculares no se aplica ninguna capa: lo del micrófono va directo como
-"Yo", sin esperas.
+With headphones no layer is applied: the microphone goes straight through as "Me",
+with no waits.
 
-Plan B (solo si con audio real las capas no bastan): cancelación de eco de
-verdad con el audio del Mac como referencia. Necesita un crate nuevo
-(cancelación de eco tipo WebRTC) y hay que preguntar antes. La cancelación
-de eco de WKWebView no sirve: solo quita lo que suena desde la propia
-página, no lo que suena por la app de la reunión.
+Plan B (only if with real audio the layers aren't enough): real echo cancellation
+with the Mac's audio as reference. It needs a new crate
+(WebRTC-style echo cancellation) and you must ask first. WKWebView's echo
+cancellation is no use: it only removes what plays from the page itself, not what
+plays through the meeting app.
 
-### 2.5 Otros casos
+### 2.5 Other cases
 
-- **Te silencias en la reunión:** Lingora no lo sabe y sigue anotando lo que
-  dices. Se acepta; queda en la pista de la opción.
-- **Sala híbrida** (varias personas junto a tu micrófono): todo lo del
-  micrófono sale como "Yo". Para eso está la opción "Micrófono", que distingue
-  personas.
-- **Sin audio del Mac** (macOS anterior a 14.2): la opción nueva se desactiva
-  con su pista, como "Solo audio del Mac".
-- **Sin permiso de micrófono:** se avisa y se sigue solo con el audio del Mac
-  (no se pierde la reunión).
-- **Se pierde el micrófono** (lo desconectas): se reintenta con la nueva
-  entrada por defecto; el carril del Mac no se para.
+- **You mute yourself in the meeting:** Lingora doesn't know it and keeps noting
+  what you say. It is accepted; it is noted in the option's hint.
+- **Hybrid room** (several people next to your microphone): everything from the microphone
+  comes out as "Me". That is what the "Microphone" option is for, which tells people apart.
+- **No Mac audio** (macOS before 14.2): the new option is disabled with its
+  hint, like "Computer audio only".
+- **No microphone permission:** a notice is shown and it carries on only with the Mac's
+  audio (the meeting isn't lost).
+- **The microphone is lost** (you disconnect it): it is retried with the new
+  default input; the Mac lane doesn't stop.
 
-### 2.6 Qué toca (hecho)
+### 2.6 What it touches (done)
 
 - `src/utils/route.js`: `readRoute`, `echoPossible`, `prefersMacMic`,
-  `meetingMic` (qué micrófono abrir).
-- `src/utils/echo.js`: `compareEcho` (texto) y `withEchoFilter` (envuelve
-  al grabador con su misma forma).
-- `src/hooks/useMeetingNotes.js`: empezar y parar los dos carriles, volver a
-  abrir el micrófono si cambia o se pierde, cerrar si se pierde el Mac.
-- `src/hooks/useAudioRoute.js`: lo que hay conectado, para la pista.
-- `utils/notes.js`: `add(sentence, voice, info)` con `t` del audio e
-  inserción ordenada; `lingora.notesInput` gana `"meeting"` (por defecto si
-  no había nada guardado). `createSpeakerTracker` sin tocar.
-- `App/index.jsx`: los carriles de notas y los hooks. En `enqueue` solo se
-  pasa `info` al grabador; `start` y `stop` sin tocar.
-- `NoteTaking`: tercera opción, pista según lo conectado, aviso si falla el
-  micrófono y "Yo" marcado en vivo.
-- Rust: `src-tauri/src/route.rs` (nuevo, comando `audio_route`) y su
-  registro en `lib.rs`. `audio.rs` sin tocar. En vez de un evento, el
-  frontend vuelve a mirar cada 2 s mientras graba.
+  `meetingMic` (which microphone to open).
+- `src/utils/echo.js`: `compareEcho` (text) and `withEchoFilter` (wraps the
+  recorder with the same shape).
+- `src/hooks/useMeetingNotes.js`: starting and stopping the two lanes, reopening the
+  microphone if it changes or is lost, closing if the Mac lane is lost.
+- `src/hooks/useAudioRoute.js`: what is connected, for the hint.
+- `utils/notes.js`: `add(sentence, voice, info)` with `t` from the audio and
+  ordered insertion; `lingora.notesInput` gains `"meeting"` (default if
+  nothing was saved). `createSpeakerTracker` untouched.
+- `App/index.jsx`: the notes lanes and the hooks. In `enqueue` only `info`
+  is passed to the recorder; `start` and `stop` untouched.
+- `NoteTaking`: third option, hint according to what is connected, notice if the
+  microphone fails and "Me" marked live.
+- Rust: `src-tauri/src/route.rs` (new, command `audio_route`) and its
+  registration in `lib.rs`. `audio.rs` untouched. Instead of an event, the
+  frontend checks again every 2 s while recording.
 
-### 2.7 Pruebas con audio real
+### 2.7 Tests with real audio
 
-1. AirPods (micrófono y salida) en Meet o Zoom.
-2. AirPods para oír y micrófono del Mac en la reunión: los AirPods no deben
-   pasar a modo llamada.
-3. Auriculares con cable.
-4. Altavoces del Mac: ninguna frase de los demás debe salir como "Yo"; hablar
-   a la vez que otra persona y comprobar que lo tuyo queda.
-5. Monitor externo con altavoces.
-6. Conectar y quitar los AirPods a media reunión: la nota sigue sin cortes.
-7. Comprobar el orden de las frases en una conversación rápida.
+1. AirPods (microphone and output) in Meet or Zoom.
+2. AirPods to listen and the Mac's microphone in the meeting: the AirPods must not
+   switch to call mode.
+3. Wired headphones.
+4. Mac speakers: none of the others' sentences should come out as "Me"; speak
+   at the same time as another person and check that yours is kept.
+5. External monitor with speakers.
+6. Connect and remove the AirPods in the middle of a meeting: the note carries on without cuts.
+7. Check the order of the sentences in a fast conversation.
 
-## Fase 3: mis notas y marcas (después)
+## Phase 3: my notes and bookmarks (later)
 
-- **Mis notas:** un panel lateral "Mis notas" mientras se graba (abajo en
-  ventanas estrechas). Cada línea guarda el minuto en que se escribió y va en
+- **My notes:** a side panel "My notes" while recording (at the bottom on narrow
+  windows). Each line stores the minute it was written and goes in
   `my_notes: [{ t, text }]`.
-- **Marcas:** "Marcar momento" (⌘B) guarda `bookmarks: [{ t }]`. En la
-  transcripción se ve una marca junto a ese párrafo.
-- **En el resumen y la exportación:** el resumen recibe las notas y las
-  marcas como "lo que el usuario consideró importante", y la exportación las
-  incluye.
+- **Bookmarks:** "Mark moment" (⌘B) saves `bookmarks: [{ t }]`. In the transcript a
+  bookmark is seen next to that paragraph.
+- **In the summary and the export:** the summary receives the notes and the
+  bookmarks as "what the user considered important", and the export
+  includes them.
 
-## Fase 4: traducción opcional (más adelante)
+## Phase 4: optional translation (later on)
 
-La traducción pequeña debajo de cada párrafo, para quien quiera las dos
-cosas.
+The small translation below each paragraph, for those who want both
+things.
 
 ---
 
-## Campos nuevos de la nota
+## New note fields
 
-Sin romper las notas que ya existen; todos son opcionales al leer.
+Without breaking the notes that already exist; all are optional when reading.
 
-| Campo | Fase | Qué es |
+| Field | Phase | What it is |
 |---|---|---|
-| `kind` | 1 | `"notes"` o `"translation"` (sin él, traducción) |
-| `summary_lang` | 1 | Idioma del resumen |
+| `kind` | 1 | `"notes"` or `"translation"` (without it, translation) |
+| `summary_lang` | 1 | Summary language |
 | `my_notes` | 3 | `[{ t, text }]` |
 | `bookmarks` | 3 | `[{ t }]` |

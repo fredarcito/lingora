@@ -5,10 +5,10 @@ import { WaveIcon, cx } from "../shared";
 import styles from "./styles.module.css";
 
 /**
- * La cabecera de Traducir: ☰, logo, los idiomas de la conversación y el modo
- * (Vídeo, Tomar notas, Llamada). Con un carril en marcha (`running`) no se
- * cambia ni el modo ni los idiomas. `callMode`: «Traducir llamada» ya está
- * disponible; si no, sale bloqueada.
+ * The Translate header: ☰, logo, the conversation languages and the mode
+ * (Video, Take notes, Call). With a lane running (`running`) neither the mode nor the
+ * languages can be changed. `callMode`: "Translate call" is already
+ * available; otherwise it is shown locked.
  * @param {{ mode: import("../../App/types").Mode, onMode: (mode: import("../../App/types").Mode) => void, callMode: boolean,
  *   running: boolean, onMenu: () => void, pair: import("../../App/types").LangPair,
  *   languages: import("../../utils/api").LanguageInfo[], onPair: (pair: import("../../App/types").LangPair) => void,
@@ -29,7 +29,7 @@ export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, 
         </div>
       </div>
       <div className={styles.topbarActions}>
-        {/* En Tomar notas se oculta sin quitarlo: así el selector de modo no se desplaza. */}
+        {/* In Take notes it is hidden instead of removed, so the mode selector does not shift. */}
         <div className={cx(styles.pairHold, mode === "notes" && styles.isAway)}>
           <PairBar
             pair={pair}

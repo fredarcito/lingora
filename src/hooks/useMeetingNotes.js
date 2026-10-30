@@ -11,15 +11,15 @@ import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "..
  */
 
 /**
- * Tomar notas en una reunión en línea: el audio del Mac (las demás personas)
- * y tu micrófono ("Yo") a la vez, cada uno en su carril.
- * - Al empezar, el micrófono se elige según lo que hay conectado (`meetingMic`).
- * - Durante la reunión, si cambia la entrada por defecto (conectas o quitas
- *   unos AirPods) o se pierde el micrófono, se vuelve a abrir sin parar la nota.
- * - Si se pierde el audio del Mac, la nota termina: también tu micrófono.
- * - `wrapRecorder` pone el filtro de eco delante del grabador.
- * Sin reunión (`meeting` falso) solo se usa el carril del Mac, como siempre; si
- * es el micrófono (en persona), se elige con `roomMic`.
+ * Take notes in an online meeting: the Mac audio (the other people)
+ * and your microphone ("Me") at the same time, each on its own lane.
+ * - When starting, the microphone is chosen based on what is connected (`meetingMic`).
+ * - During the meeting, if the default input changes (you connect or remove
+ *   AirPods) or the microphone is lost, it reopens without stopping the note.
+ * - If the Mac audio is lost, the note ends: your microphone too.
+ * - `wrapRecorder` puts the echo filter in front of the recorder.
+ * Without a meeting (`meeting` false) only the Mac lane is used, as always; if
+ * it is the microphone (in person), it is chosen with `roomMic`.
  * @param {{
  *   mode: import("../App/types").Mode,
  *   meeting: boolean,
@@ -35,28 +35,28 @@ import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "..
 export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, lanesRef, runtime, start, stop, stopping }) {
   const stateRef = useRef(state);
   stateRef.current = state;
-  /** Si la toma de notas en marcha es una reunión en línea (se fija al empezar). */
+  /** Whether the note-taking in progress is an online meeting (set when it starts). */
   const meetingRef = useRef(false);
-  /** Lo que hay conectado; null si no se sabe (se trata como altavoces). */
+  /** What is connected; null if unknown (treated as speakers). */
   const routeRef = useRef(/** @type {import("../utils/api").AudioRoute | null} */ (null));
-  /** El audio del Mac llegó a arrancar en esta toma de notas (el micrófono se abre antes). */
+  /** The Mac audio did start in this note-taking session (the microphone opens first). */
   const macRan = useRef(false);
 
   const inMeeting = mode === "notes" && meetingRef.current;
   const remote = state.remote_to_local;
   const local = state.local_to_remote;
 
-  /** El carril del micrófono con los ajustes de ahora. */
+  /** The microphone lane with the current settings. */
   const micLane = () => lanesRef.current.find((l) => l.direction === "local_to_remote") ?? localLane;
 
-  /** Qué micrófono abrir con lo que hay conectado ahora. */
+  /** Which microphone to open with what is connected now. */
   const chooseMic = async () => {
     const route = await readRoute();
     routeRef.current = route;
     return meetingMic(route).catch(() => "");
   };
 
-  /** Abre tu micrófono; `inputDeviceId`, si ya se eligió. @param {string} [inputDeviceId] */
+  /** Opens your microphone; `inputDeviceId`, if it was already chosen. @param {string} [inputDeviceId] */
   const startMic = async (inputDeviceId) => {
     await start({ ...micLane(), inputDeviceId: inputDeviceId ?? (await chooseMic()) });
   };
@@ -66,16 +66,16 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
     macRan.current = false;
     if (!meeting) {
       if (remoteLane.inputDeviceId === SYSTEM_AUDIO) return start(remoteLane);
-      // En persona, con unos auriculares Bluetooth, el micrófono del Mac (`roomMic`).
+      // In person, with Bluetooth headphones, the Mac microphone (`roomMic`).
       return start({ ...remoteLane, inputDeviceId: await roomMic(await readRoute()).catch(() => "") });
     }
-    // Tu micrófono se abre antes de capturar el audio del Mac: con la captura
-    // recién creada y nada sonando, Core Audio no contesta hasta que suena algo.
+    // Your microphone opens before capturing the Mac audio: with the capture
+    // just created and nothing playing, Core Audio does not answer until something plays.
     const mic = await chooseMic();
     await startMic(mic);
     await start(remoteLane);
-    // Sin el audio del Mac no hay reunión; sin el micrófono, sí (solo los demás).
-    // Se mira la captura, no el estado: React aún no ha repintado con `running`.
+    // Without the Mac audio there is no meeting; without the microphone there is (only the others).
+    // The capture is checked, not the state: React has not repainted with `running` yet.
     if (runtime.current.remote_to_local.capture) macRan.current = true;
     else await stop(micLane());
   };
@@ -109,7 +109,7 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
         const mic = stateRef.current.local_to_remote;
         const lost = !mic.running && !mic.starting && mic.error === t("app.error.inputLost");
         const moved = Boolean(route && before && route.input_name !== before.input_name);
-        // La salida puede cambiar sin tocar la entrada: el eco se decide con la de ahora.
+        // The output can change without touching the input: the echo is decided with the current one.
         if (route) routeRef.current = route;
         if (!lost && !moved) return;
         if (mic.running) await stop(micLane());
@@ -127,12 +127,12 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
   }, [macLost]);
 
   return {
-    /** La toma de notas en marcha (o la última) es una reunión en línea. */
+    /** The note-taking in progress (or the last one) is an online meeting. */
     inMeeting,
     startNotes,
     stopNotes,
     wrapRecorder,
-    /** El error de tu micrófono, si no se pudo abrir y el Mac sigue. */
+    /** The error of your microphone, if it could not be opened and the Mac is still running. */
     micError: inMeeting && remote.running && !local.running && !local.starting ? local.error : null,
   };
 }

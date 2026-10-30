@@ -3,12 +3,12 @@ import { englishStrings, saveGenerated } from ".";
 
 const CONTEXT = "Short user-interface text of a voice translation app (button, label, menu or message). Keep it brief and natural; do not add explanations.";
 
-/** Nombres de los marcadores `{nombre}` de un texto, en orden de aparición y sin repetir. @param {string} text */
+/** Names of the `{name}` placeholders in a text, in order of appearance and without repeats. @param {string} text */
 const placeholderNames = (text) => [...new Set((text.match(/\{\w+\}/g) ?? []).map((m) => m.slice(1, -1)))];
 
 /**
- * El modelo traduce los nombres dentro de las llaves (`{date}` → `{data}`). Se
- * cambian por números antes de traducir y se devuelven después.
+ * The model translates the names inside the braces (`{date}` → `{data}`). They are
+ * replaced with numbers before translating and restored afterwards.
  * @param {string} text @returns {{ masked: string, names: string[] }}
  */
 function mask(text) {
@@ -16,14 +16,14 @@ function mask(text) {
   return { masked: text.replace(/\{(\w+)\}/g, (_, n) => `{${names.indexOf(n) + 1}}`), names };
 }
 
-/** Devuelve los nombres originales; null si faltan marcadores o sobran. @param {string} result @param {string[]} names */
+/** Returns the original names; null if placeholders are missing or extra. @param {string} result @param {string[]} names */
 function unmask(result, names) {
   const found = new Set(result.match(/\{\d+\}/g) ?? []);
   if (found.size !== names.length || names.some((_, i) => !found.has(`{${i + 1}}`))) return null;
   return result.replace(/\{(\d+)\}/g, (_, n) => `{${names[Number(n) - 1]}}`);
 }
 
-/** Meses abreviados en el idioma, los que da el sistema: no hace falta el modelo. @param {string} code */
+/** Abbreviated month names in the language, as provided by the system: the model is not needed. @param {string} code */
 function monthNames(code) {
   try {
     const fmt = new Intl.DateTimeFormat(code, { month: "short" });
@@ -34,13 +34,13 @@ function monthNames(code) {
 }
 
 /**
- * Traduce la interfaz del inglés a `code` con el modelo local, clave a clave.
- * Una traducción que pierde un marcador `{x}` se descarta: esa clave se queda en
- * inglés (y se anota en la consola con el motivo). Guarda al terminar.
+ * Translates the interface from English to `code` with the local model, key by key.
+ * A translation that loses a `{x}` placeholder is discarded: that key stays in
+ * English (and the reason is noted in the console). It saves when done.
  * @param {string} code
  * @param {(done: number, total: number) => void} onProgress
- * @param {{ cancelled: boolean }} control Se pone `cancelled` para parar.
- * @returns {Promise<{ missing: number } | null>} Null si se canceló.
+ * @param {{ cancelled: boolean }} control Set `cancelled` to stop.
+ * @returns {Promise<{ missing: number } | null>} Null if it was cancelled.
  */
 export async function generateLanguage(code, onProgress, control) {
   if (!(await api.translateWarmUp())) throw new Error("local-model-missing");
@@ -48,7 +48,7 @@ export async function generateLanguage(code, onProgress, control) {
   /** @type {Record<string, string>} */
   const out = {};
 
-  /** Una traducción válida o null; si el servidor local falla, lo relanza y reintenta una vez. @param {string} key @param {string} text */
+  /** A valid translation or null; if the local server fails, it rethrows and retries once. @param {string} key @param {string} text */
   const translate = async (key, text) => {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
@@ -73,7 +73,7 @@ export async function generateLanguage(code, onProgress, control) {
     const result = key === "notesLib.months" ? monthNames(code) : await translate(key, text);
     if (result) out[key] = result;
   }
-  // Repaso de lo que falló: el servidor pudo estar reiniciándose.
+  // Retry what failed: the server may have been restarting.
   for (const [key, text] of entries) {
     if (control.cancelled) return null;
     if (key in out) continue;

@@ -2,7 +2,7 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Desplegable de los ajustes y las notas. `label` va a `aria-label`.
+ * Dropdown for settings and notes. `label` goes to `aria-label`.
  * @param {{ value: string, onChange: (value: string) => void, options: Array<{ value: string, label: string }>,
  *   label?: string, disabled?: boolean, className?: string }} props
  */

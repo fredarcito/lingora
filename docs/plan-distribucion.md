@@ -1,113 +1,113 @@
-# Plan: traducción local y una app sin dependencias externas
+# Plan: local translation and an app without external dependencies
 
-Estado: pendiente. Se hará después de la fase de pruebas. El plan detallado
-para no depender de nada está en `plan-autonomia.md`.
+Status: pending. It will be done after the testing phase. The detailed plan
+to depend on nothing is in `plan-autonomia.md`.
 
-Meta: que el usuario descargue un solo instalador, lo abra y la app baje sus
-modelos la primera vez. Sin Homebrew, Node, espeak-ng ni configurar BlackHole.
+Goal: the user downloads a single installer, opens it and the app downloads
+its models the first time. No Homebrew, Node, espeak-ng or BlackHole setup.
 
-## 1. Traducción local con HY-MT2 1.8B (dentro de la app)
+## 1. Local translation with HY-MT2 1.8B (inside the app)
 
-Probado en el scratchpad (M1 Pro, 16 GB):
+Tested in the scratchpad (M1 Pro, 16 GB):
 
 - HY-MT2 1.8B Q4_K_M (`tencent/Hy-MT2-1.8B-GGUF`, Apache 2.0): 1.1 GB, ~1.4 GB
-  de RAM, ~0.3 s por frase. Más rápido que qwen en Groq (0.4-0.9 s).
-- Q8 empató con Q4 en calidad, así que se usa Q4.
-- TranslateGemma 4B quedó descartado: el doble de lento, el doble de grande y
-  alarga las traducciones.
-- Inglés → español: bien. Español coloquial y trozos cortados: flojo.
-  - "Dale" queda sin traducir.
-  - "buscarle otra vuelta" sale como "looked up again".
-  - A veces quita el "and" final de un trozo.
-- Pasarle contexto empeora las cosas:
-  - Con el formato "Background Information" a veces traduce también el
-    contexto, y la voz lo repite.
-  - Con indicaciones extra a veces devuelve las propias instrucciones.
-- Los parámetros oficiales (temperatura 0.7) inventan más; usar temperatura baja.
+  of RAM, ~0.3 s per sentence. Faster than qwen on Groq (0.4-0.9 s).
+- Q8 tied with Q4 on quality, so Q4 is used.
+- TranslateGemma 4B was discarded: twice as slow, twice as large and it
+  makes translations longer.
+- English → Spanish: good. Colloquial Spanish and cut-off chunks: weak.
+  - "Dale" is left untranslated.
+  - "buscarle otra vuelta" comes out as "looked up again".
+  - Sometimes it drops the final "and" of a chunk.
+- Giving it context makes things worse:
+  - With the "Background Information" format it sometimes translates the
+    context too, and the voice repeats it.
+  - With extra instructions it sometimes returns the instructions themselves.
+- The official parameters (temperature 0.7) invent more; use a low temperature.
 
-**Hecho (2026-10-29):** llama.cpp va dentro de la app (`llama-cpp-2`, con
-Metal), en un hilo propio de `translator.rs`. Sin `llama-server` ni Homebrew.
-Traduce igual que antes (30 de 30 frases idénticas sin azar). Lo que se
-planeó entonces:
+**Done (2026-10-29):** llama.cpp goes inside the app (`llama-cpp-2`, with
+Metal), in its own thread of `translator.rs`. No `llama-server` or Homebrew.
+It translates the same as before (30 of 30 sentences identical, no randomness). What
+was planned then:
 
-- llama.cpp dentro de la app con el crate `llama-cpp-2` (Metal), sin
-  `llama-server` externo. Solo cambia el interior de `translator.rs`, que
-  pasa al patrón de `listener.rs` (carga perezosa en el proceso); el resto de
-  la lista ya está hecho.
-- Prompt por defecto de HY-MT2:
+- llama.cpp inside the app with the `llama-cpp-2` crate (Metal), without an
+  external `llama-server`. Only the inside of `translator.rs` changes, which moves to the
+  `listener.rs` pattern (lazy loading in the process); the rest of the list is
+  already done.
+- HY-MT2's default prompt:
   `Translate the following text into {lang}. Note that you should only output
   the translated result without any additional explanation:\n\n{text}`.
-  - Sin contexto.
-  - Temperatura 0.3.
-  - `max_tokens` proporcional al texto.
-- Glosario por dirección con el formato de terminología:
+  - No context.
+  - Temperature 0.3.
+  - `max_tokens` proportional to the text.
+- Glossary per direction with the terminology format:
   `Reference the following translations:\n{a} translates to {b}\n\n...`.
-  Solo incluye las entradas que aparecen en la frase.
-- Sustitución previa para los casos que el glosario no arregla
+  It only includes the entries that appear in the sentence.
+- Prior substitution for the cases the glossary doesn't fix
   ("Dale," → "OK,").
-- Solo en modo local con transcripción Precisa (con Rápida sumaba ~4 s de
-  retraso): traducir hasta el último `.?!` y guardar el resto en
-  `rt.carry`. Si ya se guardó un trozo, cortar en la última coma o mandarlo
-  todo, la misma regla que `splitAtSentenceEnd`.
-- Selector por carril: "Traducción: Nube (qwen) / Local (HY-MT2)", que se
-  puede cambiar sin detener el carril. La traducción condensada no aplica en
-  modo local.
-- Diagnóstico: "Traducción local" con un botón "Descargar".
-- A futuro: afinar el 1.8B con LoRA (el repositorio trae scripts) con pares de
-  frases de llamadas generados con qwen.
+- Only in local mode with Precise transcription (with Fast it added ~4 s of
+  delay): translate up to the last `.?!` and keep the rest in
+  `rt.carry`. If a chunk was already saved, cut at the last comma or send
+  everything, the same rule as `splitAtSentenceEnd`.
+- Selector per lane: "Translation: Cloud (qwen) / Local (HY-MT2)", which can be
+  changed without stopping the lane. The condensed translation doesn't apply in
+  local mode.
+- Diagnostics: "Local translation" with a "Download" button.
+- Future: fine-tune the 1.8B with LoRA (the repository includes scripts) with pairs of
+  call sentences generated with qwen.
 
-## 2. Voz con sherpa-onnx en lugar de Node + Kokoro-js
+## 2. Voice with sherpa-onnx instead of Node + Kokoro-js
 
-- **Hecho (2026-10-28):** Kokoro corre dentro de la app con sherpa-onnx, la
-  misma librería que Parakeet. Ya no hace falta Node. El modelo (`fp32`,
-  ~350 MB de descarga) se baja desde el diagnóstico y se libera con los demás
-  tras 3 minutos parado.
-- **Hecho (2026-10-29): espeak-ng** va dentro de la app como programa propio
-  (`externalBin`, por su licencia GPL), con 2 MB de datos. Lo compila
+- **Done (2026-10-28):** Kokoro runs inside the app with sherpa-onnx, the
+  same library as Parakeet. Node is no longer needed. The model (`fp32`,
+  ~350 MB download) is downloaded from diagnostics and released with the others
+  after 3 minutes idle.
+- **Done (2026-10-29): espeak-ng** goes inside the app as its own program
+  (`externalBin`, because of its GPL license), with 2 MB of data. It is built by
   `scripts/build-espeak.sh`.
 
-## 3. Capturar el audio de la llamada sin BlackHole
+## 3. Capture the call audio without BlackHole
 
-- **Hecho (2026-10-28):** Escuchar usa una tap global de Core Audio que
-  excluye a Lingora (`src-tauri/src/system_audio.rs`), elegida por defecto
-  como "Audio del Mac". Falta probar el permiso en la app firmada (en
-  desarrollo se lo pide a VS Code o a la terminal).
-- Core Audio process taps (macOS 14.2+) capturan el audio de otras apps
-  directamente.
-- Quita BlackHole y la salida múltiple del carril remoto → local.
-- El carril local → remoto sigue necesitando un micrófono virtual: macOS no
-  permite crear uno sin un driver.
+- **Done (2026-10-28):** Listen uses a global Core Audio tap that excludes
+  Lingora (`src-tauri/src/system_audio.rs`), chosen by default as "Mac audio".
+  The permission still needs testing in the signed app (in development it is
+  requested for VS Code or the terminal).
+- Core Audio process taps (macOS 14.2+) capture other apps' audio
+  directly.
+- Remove BlackHole and the multi-output device from the remote lane → local.
+- The local → remote lane still needs a virtual microphone: macOS
+  doesn't allow creating one without a driver.
 
-## 4. Primer arranque e instalador
+## 4. First launch and installer
 
-- **Hecho (2026-10-28):** bienvenida la primera vez (`src/pages/Welcome/`). Explica
-  cómo funciona mientras descarga escuchar, traducir y voz (~1,9 GB) con
-  progreso real y tiempo restante. Las descargas siguen donde se cortaron
-  (`src-tauri/src/models.rs`). Plan B: se puede saltar, y si la bienvenida
-  falla se entra a la app; lo que falte se baja desde el diagnóstico.
-- Instalador firmado en local (`signingIdentity: "-"`). Para otros Macs falta
-  la firma de Apple (Developer ID) y la notarización.
-- El instalador incluye el micrófono virtual, que se instala con un clic. Si
-  es BlackHole, hace falta licencia comercial, porque es GPL. Otra opción es un
-  driver propio.
-- La nube (qwen o Whisper), si se ofrece, va por un servidor nuestro. La clave
-  nunca va dentro de la app.
+- **Done (2026-10-28):** welcome screen the first time (`src/pages/Welcome/`). It explains
+  how it works while it downloads listening, translation and voice (~1.9 GB) with
+  real progress and time remaining. Downloads resume where they stopped
+  (`src-tauri/src/models.rs`). Plan B: it can be skipped, and if the welcome screen
+  fails you enter the app; whatever is missing is downloaded from diagnostics.
+- Installer signed locally (`signingIdentity: "-"`). For other Macs, Apple's
+  signature (Developer ID) and notarization are missing.
+- The installer includes the virtual microphone, which is installed with one click. If
+  it is BlackHole, a commercial license is needed, because it is GPL. Another option is a
+  driver of our own.
+- The cloud (qwen or Whisper), if offered, goes through our own server. The key
+  never goes inside the app.
 
-## Limpieza (hecha el 2026-10-28)
+## Cleanup (done 2026-10-28)
 
-- Borrados el Whisper local (`ggml-large-v3-turbo-q8_0.bin`, 834 MB) y
-  `translategemma:4b` de Ollama (3.3 GB).
-- `llama.cpp` y `ggml` de Homebrew ya no hacen falta para la app (solo
-  sirven para comparar con `llama-server` en las pruebas)
-  para la traducción local.
-- `cmake` se queda: es pequeño y puede hacer falta para compilar sherpa-onnx.
+- Deleted the local Whisper (`ggml-large-v3-turbo-q8_0.bin`, 834 MB) and
+  `translategemma:4b` from Ollama (3.3 GB).
+- Homebrew's `llama.cpp` and `ggml` are no longer needed for the app (they only
+  serve to compare with `llama-server` in the tests)
+  for local translation.
+- `cmake` stays: it is small and may be needed to build sherpa-onnx.
 
-## Tamaño estimado
+## Estimated size
 
-| Pieza | Tamaño |
+| Part | Size |
 |---|---|
-| Instalador (.dmg): app, sherpa-onnx, llama.cpp y driver | ~30-60 MB |
-| Parakeet v3 int8 (primer arranque) | ~640 MB |
-| HY-MT2 1.8B Q4 (primer arranque) | ~1.1 GB |
-| Kokoro (primer arranque, según precisión) | ~100-350 MB |
-| Total en disco | ~2-2.2 GB |
+| Installer (.dmg): app, sherpa-onnx, llama.cpp and driver | ~30-60 MB |
+| Parakeet v3 int8 (first launch) | ~640 MB |
+| HY-MT2 1.8B Q4 (first launch) | ~1.1 GB |
+| Kokoro (first launch, depending on precision) | ~100-350 MB |
+| Total on disk | ~2-2.2 GB |

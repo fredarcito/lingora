@@ -1,10 +1,10 @@
 /**
- * Los iconos de la interfaz: trazos de 24×24 con el color del texto. Cada uno
- * conserva el tamaño que tenía donde se usa.
+ * The UI icons: 24×24 strokes in the text color. Each one
+ * keeps the size it had where it is used.
  */
 const svgProps = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" };
 
-/** Ondas de sonido: el logo y la entrada Traducir del menú. */
+/** Sound waves: the logo and the Translate entry of the menu. */
 export function WaveIcon() {
   return (
     <svg {...svgProps}>
@@ -13,7 +13,7 @@ export function WaveIcon() {
   );
 }
 
-/** Una hoja con texto: notas. */
+/** A sheet with text: notes. */
 export function NoteIcon() {
   return (
     <svg {...svgProps}>
@@ -64,7 +64,7 @@ export function SearchIcon() {
   );
 }
 
-/** Los tres puntos del menú ⋯. */
+/** The three-dot menu ⋯. */
 export function MoreIcon() {
   return (
     <svg {...svgProps} width={16} height={16}>
@@ -105,7 +105,7 @@ export function ArrowIcon() {
   );
 }
 
-/** Una ventana con una pequeña flotando encima: imagen sobre imagen. */
+/** A window with a small one floating on top: picture-in-picture. */
 export function FloatIcon() {
   return (
     <svg {...svgProps}>

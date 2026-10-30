@@ -21,10 +21,10 @@ import {
 } from "../shared";
 import styles from "./styles.module.css";
 
-/** La clase de la dirección del carril: su color. */
+/** The lane direction's class: its color. */
 const LANE_CLASS = { local_to_remote: styles.laneLocalToRemote };
 
-/** Frase para probar una voz, en su idioma. Para los demás se traduce la española. */
+/** Sample sentence to test a voice, in its language. For the others, the Spanish one is translated. */
 const VOICE_SAMPLES = {
   es: "Hola, así sonará la traducción con esta voz.",
   en: "Hi, this is how the translation will sound with this voice.",
@@ -34,8 +34,8 @@ const VOICE_SAMPLES = {
 };
 
 /**
- * Tarjeta de un carril: cabecera, control principal, ajustes plegables y las
- * traducciones como subtítulos (la más reciente abajo y destacada).
+ * Lane card: header, main control, collapsible settings and the
+ * translations as subtitles (the most recent one at the bottom, highlighted).
  */
 export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, saveNotes, onSaveNotes, floating, onFloating, onOpenSettings }) {
   const t = useT();
@@ -47,7 +47,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const feed = useRef(null);
   const target = apiLang(lane.targetLang);
 
-  // Las voces del idioma; se vuelven a mirar al volver a la app por si se descargó alguna.
+  // The voices of the language; they are checked again when returning to the app in case one was downloaded.
   useEffect(() => {
     if (!settingsOpen) return;
     const load = () =>
@@ -62,7 +62,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const latestId = s.history[0]?.id;
   const live = [...s.heard.map((h) => h.text), s.partial].filter(Boolean).join(" ");
 
-  // Sigue la última traducción y lo que se está oyendo, como unos subtítulos.
+  // Follows the latest translation and what is being heard, like subtitles.
   useEffect(() => {
     feed.current?.scrollTo({ top: feed.current.scrollHeight, behavior: "smooth" });
   }, [latestId, live]);
@@ -75,17 +75,17 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
         ? t("app.lane.status.detecting")
         : t("app.lane.status.listening");
   const noSignal = s.running && meter && meter.silentSecs > NO_SIGNAL_SECS;
-  // Raíz cuadrada: la voz por BlackHole llega con poco nivel.
+  // Square root: the voice through BlackHole comes in at a low level.
   const level = s.running && meter ? Math.min(1, Math.sqrt(meter.level) * 3) : 0;
   const entries = [...s.history].reverse();
   const same = lane.sourceLang === lane.targetLang;
   const speaks = lane.speak && !same;
-  // Si el género elegido no tiene voz en este idioma, Rust usa el otro.
+  // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
   const showSource = !same && (lane.showSource ?? speaks);
-  // Un solo ajuste para qué texto se ve: la traducción, el original sin
-  // traducir (solo en Traducir audio) o los dos.
+  // A single setting for which text is shown: the translation, the original without
+  // translating (only in Translate audio) or both.
   const subtitles = same ? "original" : showSource ? "both" : "translated";
   const subtitleOptions = [
     ["translated", t("app.lane.subtitles.translated"), t("app.lane.subtitles.translated.hint")],
@@ -144,7 +144,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
 
       {settingsOpen && (
         <div className={styles.settings}>
-          {/* Lo esencial: qué ves y qué oyes. */}
+          {/* The essentials: what you see and what you hear. */}
           <div className={styles.settingRow}>
             <span className={styles.settingLabel}>{t("app.lane.subtitles")}</span>
             <Segmented
@@ -160,14 +160,14 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
                 value={speaks ? voice : "off"}
                 onChange={(value) => {
                   if (value === "off") return onChange({ speak: false });
-                  // Una voz concreta de otro género deja de valer: vuelve a la automática.
+                  // A specific voice of another gender no longer applies: it goes back to automatic.
                   const chosen = voiceList.find((v) => v.id === voiceId);
                   const { [target]: _, ...rest } = lane.voiceIds;
                   onChange({ speak: true, voice: value, ...(chosen && chosen.gender !== value ? { voiceIds: rest } : {}) });
                 }}
                 options={[
                   { value: "off", label: t("app.lane.voice.off"), hint: t("app.lane.voice.off.hint") },
-                  // Se lee en cada frase: se puede cambiar con el carril en marcha.
+                  // It is read in every sentence: it can be changed while the lane is running.
                   {
                     value: "female",
                     label: t("app.lane.voice.female"),
@@ -184,7 +184,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
               />
             </div>
           )}
-          {/* La voz concreta y la velocidad, a mano; los dispositivos, en Ajustes. */}
+          {/* The specific voice and the speed, at hand; the devices, in Settings. */}
           {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} />}
           {!same && !lane.voices.female && !lane.voices.male && (
             <p className="settings-note">
@@ -192,7 +192,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             </p>
           )}
 
-          {/* Dispositivos: la app los elige sola; se cambian en Ajustes. */}
+          {/* Devices: the app chooses them by itself; they are changed in Settings. */}
           <div className={styles.settingRow}>
             <span className={styles.settingLabel}>{t("app.lane.audio")}</span>
             <button className={styles.settingSummary} onClick={onOpenSettings}>
@@ -270,7 +270,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       {!compact && !showHistory && (
         <Captions state={s} live={live} showSource={showSource} onHistory={() => setShowHistory(true)} />
       )}
-      {/* Fuera de la lista: la lista baja sola hasta la última frase y el botón quedaba oculto arriba. */}
+      {/* Outside the list: the list scrolls down by itself to the last sentence, and the button would stay hidden at the top. */}
       {!compact && showHistory && (
         <div className={styles.feedBar}>
           <span>{t("app.lane.history")}</span>
@@ -291,7 +291,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
               <article key={h.id} className={cx(styles.line, latest && styles.isLatest)}>
                 {showSource && <p className={styles.lineSource} dir="auto">{h.transcript}</p>}
                 <p className={styles.lineTarget} dir="auto">{h.translation}</p>
-                {/* Datos técnicos: aparecen al pasar el ratón; "voz omitida" sí se ve siempre. */}
+                {/* Technical data: shown on hover; "voice skipped" is always visible. */}
                 <button
                   className={cx(styles.lineMeta, (h.skipped || detailsId === h.id) && styles.isVisible)}
                   onClick={() => setDetailsId(detailsId === h.id ? null : h.id)}
@@ -334,8 +334,8 @@ const voiceLabel = (v) =>
     .join(" · ");
 
 /**
- * La voz concreta (con prueba) y la velocidad máxima, en la tarjeta del
- * carril: se cambian a menudo y tienen que estar a mano.
+ * The specific voice (with preview) and the maximum speed, on the lane's card:
+ * they are changed often and must be at hand.
  * @param {{ lane: import("../../App/types").Lane & { voices: { female: boolean, male: boolean } }, volume: number,
  *   onChange: (patch: Partial<import("../../App/types").Lane>) => void }} props
  */
@@ -343,13 +343,13 @@ function VoiceControls({ lane, volume, onChange }) {
   const t = useT();
   /** @type {[import("../../utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
-  /** Ya llegó la lista de voces del idioma; hasta entonces el selector está desactivado. */
+  /** The voice list for the language has arrived; until then the selector is disabled. */
   const [voicesLoaded, setVoicesLoaded] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
   const target = apiLang(lane.targetLang);
 
-  // Las voces del idioma; se vuelven a mirar al volver a la app por si se descargó alguna.
+  // The voices of the language; they are checked again when returning to the app in case one was downloaded.
   useEffect(() => {
     const load = () =>
       api
@@ -362,16 +362,16 @@ function VoiceControls({ lane, volume, onChange }) {
     return () => window.removeEventListener("focus", load);
   }, [target]);
 
-  // Si el género elegido no tiene voz en este idioma, Rust usa el otro.
+  // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
-  /** @param {string} id "" = automática. */
+  /** @param {string} id "" = automatic. */
   const chooseVoice = (id) => {
     const { [target]: _, ...rest } = lane.voiceIds;
     const chosen = voiceList.find((v) => v.id === id);
     onChange({ voiceIds: id ? { ...rest, [target]: id } : rest, ...(chosen?.gender ? { voice: chosen.gender } : {}) });
   };
-  /** Dice una frase de ejemplo con la voz elegida, por la salida del carril. */
+  /** Speaks a sample sentence with the chosen voice, through the lane's output. */
   const previewVoice = async () => {
     setPreviewing(true);
     setPreviewError("");
@@ -389,8 +389,8 @@ function VoiceControls({ lane, volume, onChange }) {
 
   return (
     <>
-      {/* Siempre a la vista, para que la tarjeta no salte al llegar las voces:
-          desactivado mientras cargan o si el idioma solo tiene una. */}
+      {/* Always in view, so the card does not jump when the voices arrive:
+          disabled while they load or if the language has only one. */}
       <div className={styles.settingRow}>
         <span className={styles.settingLabel} />
         <div className={styles.voicePick}>

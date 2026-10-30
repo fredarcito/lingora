@@ -2,8 +2,8 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Botones de opción única («segmented control»).
- * La opción elegida lleva un ✓: el estado no depende solo del color.
+ * Single-choice buttons ("segmented control").
+ * The selected option gets a ✓: the state does not depend on color alone.
  * @param {{ value: string, onChange: (value: string) => void, small?: boolean,
  *   options: Array<{ value: string, label: string, hint?: string, disabled?: boolean }> }} props
  */

@@ -43,9 +43,9 @@
   justify-content: center;
 }
 
-/* Lo elegido en un control segmentado de formulario lleva ✓ y un toque del
-   color de acento. El selector de modo y las pestañas son navegación: sin ✓
-   ni verde, solo el botón más oscuro. */
+/* The selected option in a segmented form control gets a ✓ and a touch of the
+   accent color. The mode selector and the tabs are navigation: no ✓
+   or green, only the darker button. */
 .seg-check {
   margin-left: 8px;
   color: color-mix(in srgb, var(--accent) 70%, var(--text-2));

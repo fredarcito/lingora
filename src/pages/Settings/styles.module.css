@@ -1,4 +1,4 @@
-/* Fila de clave dentro de la tarjeta de Notas en Ajustes. */
+/* Key row inside the Notes card in Settings. */
 .prefs-key {
   display: flex;
   flex-direction: column;
@@ -16,13 +16,13 @@
   color: var(--text-3);
 }
 
-/* El diagnóstico va dentro de la página: sin márgenes propios de la cabecera. */
+/* The diagnostics sit inside the page: without the header's own margins. */
 .prefs-view .prefs-diagnostics {
   margin: 0;
 }
 
-/* Cabecera: el menú a la izquierda y el título en la columna del contenido
-   (la misma rejilla que el buscador de Notas). */
+/* Header: the menu on the left and the title in the content column
+   (the same grid as the Notes search box). */
 .prefs-brand {
   flex: 1;
   display: grid;

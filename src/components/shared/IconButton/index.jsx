@@ -2,9 +2,9 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Botón cuadrado con solo un icono (☰, panel flotante, ajustes del carril).
- * `active` lo marca como encendido y `small` lo hace más pequeño. `label` va
- * a `aria-label` y a `title`; un `title` propio lo sustituye.
+ * Square button with only an icon (☰, floating panel, lane settings).
+ * `active` marks it as on and `small` makes it smaller. `label` goes
+ * to `aria-label` and `title`; a custom `title` replaces it.
  * @param {{ active?: boolean, small?: boolean, label?: string, className?: string } & import("react").ComponentProps<"button">} props
  */
 export default function IconButton({ active = false, small = false, label, className, children, ...rest }) {

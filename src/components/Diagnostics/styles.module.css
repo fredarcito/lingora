@@ -32,7 +32,7 @@
   color: var(--text-2);
 }
 
-/* Icono de estado: círculo con ✓, ✕, ! o – */
+/* Status icon: circle with ✓, ✕, ! or – */
 .diag-icon {
   flex: none;
   width: 22px;
@@ -67,7 +67,7 @@
   background: var(--surface-2);
 }
 
-/* Problemas que impiden traducir: arriba y en grande. */
+/* Problems that prevent translating: at the top and large. */
 .diag-problems {
   list-style: none;
   margin: 0;
@@ -117,7 +117,7 @@
   color: var(--text-3);
 }
 
-/* Grupos plegables */
+/* Collapsible groups */
 .diag-groups {
   display: flex;
   flex-direction: column;

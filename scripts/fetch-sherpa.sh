@@ -1,15 +1,15 @@
 #!/bin/bash
-# Deja en src-tauri/sherpa-libs/ las librerías compartidas de sherpa-onnx que la
-# app necesita al empaquetarse (no estáticas, para que Mac y Windows se enlacen igual):
+# Leaves in src-tauri/sherpa-libs/ the shared sherpa-onnx libraries that the
+# app needs when packaged (not static, so that Mac and Windows link the same way):
 #   Mac:     libsherpa-onnx-c-api.dylib, libonnxruntime.dylib  (`bundle.macOS.frameworks`)
 #   Windows: sherpa-onnx-c-api.dll, onnxruntime.dll, onnxruntime_providers_shared.dll
-#            (`bundle.resources`, en tauri.windows.conf.json)
+#            (`bundle.resources`, in tauri.windows.conf.json)
 #
 #   scripts/fetch-sherpa.sh
 #
-# Se llama desde beforeDevCommand / beforeBuildCommand (tauri.conf.json) y desde la
-# CI de Windows. Tauri exige que estos archivos existan antes de compilar Rust.
-# Usa la misma versión que la crate `sherpa-onnx` (Cargo.toml).
+# It is called from beforeDevCommand / beforeBuildCommand (tauri.conf.json) and from the
+# Windows CI. Tauri requires these files to exist before compiling Rust.
+# Uses the same version as the `sherpa-onnx` crate (Cargo.toml).
 set -euo pipefail
 
 VERSION=2.0.1
@@ -26,7 +26,7 @@ case "$(uname -s)" in
   MINGW*|MSYS*|CYGWIN*)
     ARCHIVE="sherpa-onnx-v$VERSION-win-x64-shared-MT-Release-lib.tar.bz2"
     SHA256=afa4de3ca4ab0afd53bb4aab40d28ee15608364b549ffc0fe0caf6489bfc39a5
-    # Los .lib son para enlazar (SHERPA_ONNX_LIB_DIR en el workflow); los .dll, para empaquetar.
+    # The .lib files are for linking (SHERPA_ONNX_LIB_DIR in the workflow); the .dll files are for packaging.
     LIBS=(sherpa-onnx-c-api.dll onnxruntime.dll onnxruntime_providers_shared.dll sherpa-onnx-c-api.lib onnxruntime.lib)
     ;;
   *)
@@ -53,8 +53,8 @@ for lib in "${LIBS[@]}"; do
   cp "$SRC/$lib" "$OUT/"
 done
 
-# En Mac, la firma del autor (otro Team ID) hace que macOS rechace cargarlas dentro
-# de la app firmada ad-hoc. Se firman de nuevo con la misma identidad que la app ("-").
+# On Mac, the author's signature (another Team ID) makes macOS reject loading them inside
+# the ad-hoc signed app. They are signed again with the same identity as the app ("-").
 if [ "$(uname -s)" = "Darwin" ]; then
   for lib in "${LIBS[@]}"; do
     codesign --force --sign - "$OUT/$lib" >/dev/null

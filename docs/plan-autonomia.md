@@ -1,221 +1,219 @@
-# Plan: una app que no depende de nada
+# Plan: an app that depends on nothing
 
-Estado: Fases 1, 2 y 6 hechas (2026-10-29); el resto, pendiente. Amplía los puntos 1, 2 y 4 de
+Status: Phases 1, 2 and 6 done (2026-10-29); the rest, pending. Expands points 1, 2 and 4 of
 `plan-distribucion.md`.
 
-Meta: quien la recibe descarga un `.dmg`, la arrastra a Aplicaciones y todo
-funciona: escuchar, traducir, voz, notas y resumen. Sin Homebrew, sin
-Terminal, sin avisos de seguridad. Lo único que se baja después son los
-modelos, desde la propia app.
+Goal: whoever receives it downloads a `.dmg`, drags it to Applications and
+everything works: listening, translating, voice, notes and summary. No Homebrew,
+no Terminal, no security warnings. The only thing downloaded afterwards is the
+models, from the app itself.
 
 ---
 
-## 0. Qué depende hoy de algo de fuera
+## 0. What currently depends on something external
 
-Revisado en el código y en el binario de `release` (`otool -L`):
+Reviewed in the code and in the `release` binary (`otool -L`):
 
-| Pieza | Hoy | ¿Problema? |
+| Part | Today | Problem? |
 |---|---|---|
-| Escucha, voz Kokoro, personas (sherpa-onnx) | Va **dentro** del binario (enlace estático) | No |
-| Traducción (llama.cpp) | Lanza `/opt/homebrew/bin/llama-server` como proceso aparte (`translator.rs`, `config.rs`) | **Sí**: sin Homebrew no traduce |
-| Fonemas de la voz (espeak-ng) | Lanza `/opt/homebrew/bin/espeak-ng` en cada frase (`phonemizer.rs`) | **Sí**: sin Homebrew no hay voz Kokoro |
-| Resumen de notas | Groq, con la clave del usuario (`notes.rs`) | Es nube y pide una cuenta |
-| Modelos | Se bajan de GitHub (sherpa-onnx) y Hugging Face (HY-MT2) | Dependen de terceros: si cambian una URL, la app se rompe |
-| Firma | Ad hoc (`signingIdentity: "-"`) | **Sí**: en otro Mac, macOS la bloquea |
-| `tar`, `open`, `say`, `ps`, `kill` | Vienen con macOS | No |
-| Diagnóstico | Comprueba espeak-ng y llama-server de Homebrew (`doctor.rs`) | Hay que cambiarlo con lo de arriba |
+| Listening, Kokoro voice, speakers (sherpa-onnx) | Is **inside** the binary (static link) | No |
+| Translation (llama.cpp) | Launches `/opt/homebrew/bin/llama-server` as a separate process (`translator.rs`, `config.rs`) | **Yes**: without Homebrew it doesn't translate |
+| Voice phonemes (espeak-ng) | Launches `/opt/homebrew/bin/espeak-ng` for each sentence (`phonemizer.rs`) | **Yes**: without Homebrew there is no Kokoro voice |
+| Note summary | Groq, with the user's key (`notes.rs`) | It is cloud and requires an account |
+| Models | Downloaded from GitHub (sherpa-onnx) and Hugging Face (HY-MT2) | Depend on third parties: if they change a URL, the app breaks |
+| Signing | Ad hoc (`signingIdentity: "-"`) | **Yes**: on another Mac, macOS blocks it |
+| `tar`, `open`, `say`, `ps`, `kill` | Come with macOS | No |
+| Diagnostics | Checks espeak-ng and llama-server from Homebrew (`doctor.rs`) | Has to change along with the above |
 
-Todo lo marcado con **Sí** está en la lista de «no tocar» de CLAUDE.md
+Everything marked **Yes** is on CLAUDE.md's "don't touch" list
 (`translator.rs`, `phonemizer.rs`, `config.rs`, `models.rs`, `doctor.rs`,
-`tauri.conf.json`, la firma y los crates nuevos). **Cada fase necesita el sí
-del usuario antes de empezar**, y cada una se prueba en una copia del
-proyecto antes de tocar `src-tauri` (ver §2 de CLAUDE.md).
+`tauri.conf.json`, the signing and the new crates). **Each phase needs the user's
+yes before starting**, and each one is tested in a copy of the
+project before touching `src-tauri` (see §2 of CLAUDE.md).
 
 ---
 
-## Fase 1: la traducción, con llama.cpp dentro de la app
+## Phase 1: translation, with llama.cpp inside the app
 
-**Hoy:** `translator.rs` arranca `llama-server` (el servidor de llama.cpp) en
-un puerto local, espera a `/health` y le pide la traducción en streaming por
+**Today:** `translator.rs` starts `llama-server` (the llama.cpp server) on a
+local port, waits for `/health` and requests the translation in streaming over
 HTTP.
 
-**Cambio:** usar llama.cpp como **librería**, dentro del proceso, con el
-crate `llama-cpp-2` (MIT, con Metal). Es lo que ya se decidió: nada de
-programas aparte.
+**Change:** use llama.cpp as a **library**, inside the process, with the
+`llama-cpp-2` crate (MIT, with Metal). This is what was already decided: no
+separate programs.
 
-- Solo cambia el **interior** de `translator.rs`; su forma pública se queda
-  igual (`new`, `is_installed`, `warm_up`, `shutdown`, `translate` con
-  `on_delta`). `pipeline.rs` y el frontend no se enteran.
-- Pasa al patrón de `listener.rs`: carga perezosa del modelo al primer uso,
-  en su hilo, y se libera tras 3 minutos parado como los demás.
-- **Mismos parámetros que hoy**, para no perder calidad: temperatura 0,3,
-  `max_tokens = min(caracteres/2 + 32, 512)`, contexto 4096, todas las capas
-  en la GPU (`-ngl 99`), el mismo prompt de HY-MT2 y la plantilla de chat del
-  modelo. Antes de cambiar, sacar 30 frases de prueba con `llama-server` y
-  comparar que salgan iguales (o casi) con la librería.
-- `on_delta` se llama con cada trozo que sale del bucle de tokens, igual que
-  ahora con el streaming HTTP.
-- Sobran: `kill_previous`, el archivo del PID, el puerto y el log en `/tmp`.
-  También `llama_server_bin` en `config.rs`.
-- **Compilar** necesita `cmake` en el Mac de desarrollo (ya está); quien usa
-  la app no necesita nada. El binario crece unos 5–10 MB.
-- **Riesgo:** que ggml y onnxruntime choquen al enlazarse juntos. Se
-  comprueba primero en una copia con un `main` de prueba que cargue los dos.
+- Only the **inside** of `translator.rs` changes; its public shape stays the
+  same (`new`, `is_installed`, `warm_up`, `shutdown`, `translate` with
+  `on_delta`). `pipeline.rs` and the frontend won't notice.
+- It follows the `listener.rs` pattern: lazy loading of the model on first use,
+  in its own thread, and it is released after 3 minutes idle like the others.
+- **Same parameters as today**, to avoid losing quality: temperature 0.3,
+  `max_tokens = min(characters/2 + 32, 512)`, context 4096, all layers on the GPU
+  (`-ngl 99`), the same HY-MT2 prompt and the model's chat template. Before changing, take
+  30 test sentences with `llama-server` and check that the library gives the same
+  output (or nearly).
+- `on_delta` is called with each chunk that comes out of the token loop, as it does now with
+  HTTP streaming.
+- Leftovers to remove: `kill_previous`, the PID file, the port and the log in `/tmp`.
+  Also `llama_server_bin` in `config.rs`.
+- **Building** needs `cmake` on the development Mac (already there); whoever uses the
+  app needs nothing. The binary grows by about 5–10 MB.
+- **Risk:** ggml and onnxruntime clashing when linked together. It is checked first in a
+  copy with a test `main` that loads both.
 
-**Plan B** (solo si `llama-cpp-2` da problemas): meter `llama-server`
-**dentro** del `.app` como ejecutable propio (`externalBin` de Tauri) y
-seguir lanzándolo como hoy. Cambia una ruta y poco más, pero sigue siendo un
-proceso aparte.
+**Plan B** (only if `llama-cpp-2` causes problems): put `llama-server`
+**inside** the `.app` as its own executable (Tauri's `externalBin`) and
+keep launching it as today. It changes one path and little else, but it is still a
+separate process.
 
-**Crate nuevo:** `llama-cpp-2` (hay que preguntar).
+**New crate:** `llama-cpp-2` (must ask first).
 
-## Fase 2: los fonemas, con espeak-ng dentro de la app
+## Phase 2: phonemes, with espeak-ng inside the app
 
-**Hoy:** `phonemizer.rs` ejecuta `espeak-ng -v <idioma> -q --ipa <texto>`
-desde Homebrew en cada frase.
+**Today:** `phonemizer.rs` runs `espeak-ng -v <language> -q --ipa <text>`
+from Homebrew for each sentence.
 
-**Ojo con la licencia:** espeak-ng es **GPL v3**. Si se enlaza como librería
-dentro de Lingora, toda la app pasa a ser GPL (código abierto obligatorio).
-Si va como **programa aparte dentro del `.app`**, es solo distribuirlo junto
-a la app: basta con incluir su licencia y ofrecer su código fuente.
+**Careful with the license:** espeak-ng is **GPL v3**. If it is linked as a library
+inside Lingora, the whole app becomes GPL (mandatory open source). If it goes as a
+**separate program inside the `.app`**, it is only distributing it alongside
+the app: it is enough to include its license and offer its source code.
 
-**Cambio recomendado:** espeak-ng como programa propio de la app.
+**Recommended change:** espeak-ng as the app's own program.
 
-- Compilarlo desde su código fuente para Apple Silicon, sin dependencias
-  (`--without-pcaudiolib --without-sonic`), con un script en
-  `scripts/build-espeak.sh` que deje el binario y `espeak-ng-data` (~10 MB,
-  solo los idiomas que usa Kokoro).
-- Meterlo en el `.app` con `externalBin` (el binario, en `Contents/MacOS`)
-  y `resources` (los datos, en `Contents/Resources`) de `tauri.conf.json`.
-- `phonemizer.rs` solo cambia la ruta: el binario de dentro de la app, con
-  `--path=<Resources>/espeak-ng-data`. La llamada, los fonemas y las
-  interjecciones se quedan igual.
-- En desarrollo sigue sirviendo `LINGORA_ESPEAK_BIN` para apuntar a otro.
-- Añadir `LICENSES/espeak-ng.txt` y una línea en «Acerca de» con el enlace
-  a su código fuente.
+- Build it from its source code for Apple Silicon, without dependencies
+  (`--without-pcaudiolib --without-sonic`), with a script in
+  `scripts/build-espeak.sh` that leaves the binary and `espeak-ng-data` (~10 MB,
+  only the languages Kokoro uses).
+- Put it in the `.app` with `externalBin` (the binary, in `Contents/MacOS`)
+  and `resources` (the data, in `Contents/Resources`) of `tauri.conf.json`.
+- `phonemizer.rs` only changes the path: the binary inside the app, with
+  `--path=<Resources>/espeak-ng-data`. The call, the phonemes and the
+  interjections stay the same.
+- In development, `LINGORA_ESPEAK_BIN` still works to point to another one.
+- Add `LICENSES/espeak-ng.txt` and a line in "About" with the link
+  to its source code.
 
-**Alternativa sin GPL** (más trabajo, para más adelante): un conversor de
-texto a fonemas propio o con licencia permisiva. No hay uno bueno en Rust
-para todos los idiomas de Kokoro, así que no compensa ahora.
+**License-free alternative** (more work, for later): a text-to-phonemes converter of our
+own or with a permissive license. There is no good one in Rust for all the
+Kokoro languages, so it isn't worth it now.
 
-## Fase 3: el resumen, en local
+## Phase 3: the summary, locally
 
-**Hoy:** Groq con la clave del usuario. Es la única excepción a «todo
-local», y en la memoria del proyecto consta que era solo para probar.
+**Today:** Groq with the user's key. It is the only exception to "all
+local", and the project memory says it was only for testing.
 
-**Cambio:** el resumen con un modelo local, sobre el **mismo llama.cpp** de
-la fase 1 (sin motor nuevo).
+**Change:** the summary with a local model, on the **same llama.cpp** from
+phase 1 (no new engine).
 
-- Un modelo de instrucciones pequeño en GGUF (unos 2–3 GB en Q4), que se
-  descarga aparte desde Ajustes o la primera vez que se pide un resumen. En
-  la interfaz se llama «el resumen», sin nombre de modelo.
-- Elegirlo probando con 3 notas reales (una de 5 min, otra de 30 y otra de
-  55) en español e inglés: calidad, tiempo y memoria. El contexto tiene que
-  dar para una reunión de una hora; si no da, resumir por trozos y luego
-  juntar.
-- La memoria: el traductor (~1,4 GB) y el modelo del resumen no deberían
-  estar cargados a la vez. El resumen se pide con la toma de notas parada,
-  así que se libera uno antes de cargar el otro.
-- Groq, la clave y el llavero salen de la interfaz. Si se quiere conservar
-  como opción avanzada, va detrás de un interruptor y apagada por defecto.
+- A small instruction model in GGUF (about 2–3 GB in Q4), downloaded separately from
+  Settings or the first time a summary is requested. In the interface it is called
+  "the summary", without a model name.
+- Choose it by testing with 3 real notes (one of 5 min, one of 30 and one of
+  55) in Spanish and English: quality, time and memory. The context must be enough
+  for a one-hour meeting; if it isn't, summarize in chunks and then join them.
+- Memory: the translator (~1.4 GB) and the summary model should not be
+  loaded at the same time. The summary is requested with note-taking stopped,
+  so one is released before loading the other.
+- Groq, the key and the keychain leave the interface. If it is to be kept as an
+  advanced option, it goes behind a switch and is off by default.
 
-**Decisión del usuario:** ¿quitar Groq del todo o dejarlo como opción?
+**User decision:** remove Groq entirely or keep it as an option?
 
-## Fase 4: los modelos, desde un sitio propio
+## Phase 4: models, from their own place
 
-**Hoy:** las URLs apuntan a GitHub (sherpa-onnx) y Hugging Face. Si renombran
-un archivo, la bienvenida falla para todo el mundo.
+**Today:** the URLs point to GitHub (sherpa-onnx) and Hugging Face. If they rename
+a file, the welcome screen fails for everyone.
 
-**Cambio:**
+**Change:**
 
-- Subir una copia de cada modelo a un almacenamiento propio (Cloudflare R2
-  o los Releases de un repositorio propio), con su versión en el nombre.
-- Un manifiesto (`models.json`) con URL, tamaño y SHA-256 de cada uno.
-  `models.rs` comprueba el SHA-256 al terminar cada descarga: un archivo
-  corrupto no se instala.
-- Si la copia propia falla, se intenta la URL original.
-- Revisar la licencia de cada modelo para poder redistribuirlo (HY-MT2,
-  Parakeet, SenseVoice, Kokoro, el de las personas y el del resumen).
+- Upload a copy of each model to our own storage (Cloudflare R2
+  or the Releases of an own repository), with its version in the name.
+- A manifest (`models.json`) with URL, size and SHA-256 of each one.
+  `models.rs` checks the SHA-256 when each download finishes: a corrupt file
+  is not installed.
+- If our copy fails, the original URL is tried.
+- Check each model's license so it can be redistributed (HY-MT2,
+  Parakeet, SenseVoice, Kokoro, the speakers one and the summary one).
 
-## Fase 5: firma, notarización e instalador
+## Phase 5: signing, notarization and installer
 
-- Cuenta de **Apple Developer** (99 USD al año) y certificado «Developer ID
-  Application».
-- `tauri.conf.json`: `signingIdentity` con ese certificado y hardened
-  runtime. Los permisos (`entitlements.plist`) siguen con
-  `audio-input`; los textos de permisos ya están en `Info.plist`.
-- Tauri firma también los programas de `externalBin` (espeak-ng). Comprobar
-  que llama.cpp con Metal funciona con hardened runtime, sin permisos extra.
-- Notarizar al compilar (`APPLE_ID`, `APPLE_PASSWORD` de aplicación,
-  `APPLE_TEAM_ID` en el entorno, nunca en el código).
-- Actualizaciones con el plugin `updater` de Tauri: la app avisa de la
-  versión nueva y se actualiza sola. Sus claves de firma, fuera del
-  repositorio.
-- Solo Apple Silicon y macOS 14.2 o posterior: decirlo en la página de
-  descarga y en la bienvenida si el Mac no cumple.
+- **Apple Developer** account (99 USD per year) and a "Developer ID
+  Application" certificate.
+- `tauri.conf.json`: `signingIdentity` with that certificate and hardened
+  runtime. The permissions (`entitlements.plist`) stay with
+  `audio-input`; the permission texts are already in `Info.plist`.
+- Tauri also signs the programs in `externalBin` (espeak-ng). Check
+  that llama.cpp with Metal works with hardened runtime, without extra permissions.
+- Notarize when building (`APPLE_ID`, application `APPLE_PASSWORD`,
+  `APPLE_TEAM_ID` in the environment, never in the code).
+- Updates with Tauri's `updater` plugin: the app notifies about the new
+  version and updates itself. Its signing keys stay outside the repository.
+- Apple Silicon and macOS 14.2 or later only: say so on the download page and on
+  the welcome screen if the Mac doesn't meet it.
 
-**Crate o plugin nuevo:** `tauri-plugin-updater` (hay que preguntar).
+**New crate or plugin:** `tauri-plugin-updater` (must ask first).
 
-## Fase 6: comprobarlo en un Mac limpio
+## Phase 6: checking on a clean Mac
 
-- **Script** `scripts/check-standalone.sh`, que falla si:
-  - `otool -L` de cualquier binario del `.app` apunta fuera de `/usr/lib` y
+- **Script** `scripts/check-standalone.sh`, which fails if:
+  - `otool -L` of any binary in the `.app` points outside `/usr/lib` and
     `/System`;
-  - el binario contiene `/opt/homebrew` o `/usr/local` (`strings`);
-  - `codesign --verify --deep --strict` o `spctl -a -vv` fallan.
-- **Prueba de verdad:** una máquina virtual de macOS (UTM, en el mismo Mac) o
-  el Mac de un amigo, sin Homebrew. Instalar el `.dmg` y recorrer:
-  bienvenida y descargas, Traducir audio con voz, Tomar notas («Reunión en
-  línea» y micrófono) y un resumen.
-- Mientras tanto, en el Mac de desarrollo: renombrar `/opt/homebrew/bin/
-  llama-server` y `espeak-ng` y comprobar que todo sigue funcionando.
+  - the binary contains `/opt/homebrew` or `/usr/local` (`strings`);
+  - `codesign --verify --deep --strict` or `spctl -a -vv` fail.
+- **Real test:** a macOS virtual machine (UTM, on the same Mac) or
+  a friend's Mac, without Homebrew. Install the `.dmg` and go through:
+  welcome and downloads, Translate audio with voice, Take notes ("Online meeting"
+  and microphone) and a summary.
+- Meanwhile, on the development Mac: rename `/opt/homebrew/bin/
+  llama-server` and `espeak-ng` and check that everything still works.
 
-## Extra: registros para quien prueba
+## Extra: logs for whoever tests
 
-Hoy los registros salen por la terminal, y en la app instalada no se ven.
-Guardarlos también en `~/Library/Logs/Lingora/` (rotando, los últimos días)
-y añadir en Ajustes → Diagnóstico un botón «Copiar registro» para mandarlo.
+Today the logs go to the terminal, and they can't be seen in the installed app.
+Save them also to `~/Library/Logs/Lingora/` (rotating, the last few days)
+and add to Settings → Diagnostics a "Copiar registro" (Copy log) button to send them.
 
 ---
 
-## Orden y tamaño
+## Order and size
 
-| Fase | Qué arregla | Tamaño | Puede ir sola |
+| Phase | What it fixes | Size | Can go alone |
 |---|---|---|---|
-| 2. espeak-ng | La voz sin Homebrew | Pequeña | Sí |
-| 1. llama.cpp | La traducción sin Homebrew | Mediana | Sí |
-| 6. Script de comprobación | Saber que no queda nada fuera | Pequeña | Sí, en paralelo |
-| 4. Modelos propios | Que las descargas no se rompan | Pequeña-mediana | Sí |
-| 3. Resumen local | Quitar la nube y la clave | Mediana | Después de la 1 |
-| 5. Firma y actualizaciones | Que se abra sin avisos | Pequeña (más la cuenta de Apple) | Al final |
+| 2. espeak-ng | The voice without Homebrew | Small | Yes |
+| 1. llama.cpp | Translation without Homebrew | Medium | Yes |
+| 6. Check script | Knowing nothing is left outside | Small | Yes, in parallel |
+| 4. Own models | Downloads don't break | Small-medium | Yes |
+| 3. Local summary | Removing the cloud and the key | Medium | After 1 |
+| 5. Signing and updates | Opens without warnings | Small (plus the Apple account) | At the end |
 
-Se empieza por la 2 porque es la más corta y ya deja la voz funcionando.
+We start with 2 because it is the shortest and already leaves the voice working.
 
-## Decisiones del usuario (2026-10-29)
+## User decisions (2026-10-29)
 
-1. Sí a `llama-cpp-2` y a tocar los archivos de las fases 1, 2 y 6.
-2. Sí a espeak-ng como programa dentro de la app.
-3. Groq se queda para el resumen mientras sea una demo; la Fase 3 espera.
-4. Los modelos siguen bajándose de GitHub y Hugging Face; la copia propia
-   espera. Sí se comprueba que cada descarga llegue entera.
-5. La firma de Apple, después. Ahora la meta es que funcione sin la
-   configuración del Mac de desarrollo (sin Homebrew).
+1. Yes to `llama-cpp-2` and to touching the files of phases 1, 2 and 6.
+2. Yes to espeak-ng as a program inside the app.
+3. Groq stays for the summary while it is a demo; phase 3 waits.
+4. Models keep being downloaded from GitHub and Hugging Face; our own copy
+   waits. Yes, it is checked that each download arrives complete.
+5. Apple signing comes later. For now the goal is that it works without the
+   configuration of the development Mac (no Homebrew).
 
-## Hecho (2026-10-29)
+## Done (2026-10-29)
 
-- **Fase 2, espeak-ng:** `scripts/build-espeak.sh` lo compila (versión y
-  SHA-256 fijos, en un disco que distingue mayúsculas y montado en una ruta
-  corta: con rutas largas espeak-ng corta los nombres de archivo). Sale en
-  `src-tauri/binaries/` y `src-tauri/resources/espeak-ng-data/` (solo en, es,
-  fr, it y pt: 2,1 MB). Da los mismos fonemas que el de Homebrew en los 5
-  idiomas. `phonemizer.rs` le pasa `--path` con los datos de la app.
-- **Fase 1, llama.cpp:** `translator.rs` con `llama-cpp-2` (Metal, sin
-  `openmp`, que pediría libomp de Homebrew). Un hilo tiene el modelo y su
-  contexto; las traducciones van en cola. Mismo prompt (plantilla de HY-MT2
-  escrita tal cual la arma `llama-server`) y mismo muestreo. Con
-  `same_as_llama_server` (sin azar): 30 de 30 frases idénticas, 150–350 ms
-  en compilación de pruebas. `shutdown` espera a que el hilo suelte la GPU:
-  si no, Metal aborta al salir.
-- **Fase 6:** `scripts/check-standalone.sh`.
-- Fuera: `llama_server_bin`, `LINGORA_LLAMA_SERVER_BIN`, el aviso «Falta
-  llama.cpp» del diagnóstico y los `brew install` de los mensajes.
+- **Phase 2, espeak-ng:** `scripts/build-espeak.sh` builds it (fixed version and
+  SHA-256, on a case-sensitive disk mounted at a short path: with long paths espeak-ng
+  truncates file names). It goes to `src-tauri/binaries/` and `src-tauri/resources/espeak-ng-data/` (only en, es,
+  fr, it and pt: 2.1 MB). It gives the same phonemes as the Homebrew one in the 5
+  languages. `phonemizer.rs` passes it `--path` with the app's data.
+- **Phase 1, llama.cpp:** `translator.rs` with `llama-cpp-2` (Metal, without
+  `openmp`, which would require libomp from Homebrew). One thread holds the model and its
+  context; translations are queued. Same prompt (HY-MT2 template written exactly as
+  `llama-server` builds it) and same sampling. With
+  `same_as_llama_server` (no randomness): 30 of 30 identical sentences, 150–350 ms
+  in test build.
+  `shutdown` waits for the thread to release the GPU:
+  otherwise Metal aborts on exit.
+- **Phase 6:** `scripts/check-standalone.sh`.
+- Removed: `llama_server_bin`, `LINGORA_LLAMA_SERVER_BIN`, the "llama.cpp missing"
+  warning in diagnostics and the `brew install` in the messages.

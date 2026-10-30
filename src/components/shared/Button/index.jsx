@@ -4,13 +4,13 @@ import Spinner from "../Spinner";
 import styles from "./styles.module.css";
 
 /**
- * El botón de las notas y los ajustes (estilo shadcn).
- * `variant`: "default", "primary" (la acción principal), "danger" (borrar) o
- * "stop" (detener una grabación; lleva `<StopIcon />` delante del texto).
- * `busy` pone un spinner pequeño delante del texto. El resto de props, incluido
- * `ref`, va al `<button>`.
- * El botón no encoge: al cambiar el texto («Preparando…», «Resumiendo…»)
- * conserva el ancho más grande que tuvo, para que nada salte a su alrededor.
+ * The button used for notes and settings (shadcn style).
+ * `variant`: "default", "primary" (the main action), "danger" (delete) or
+ * "stop" (stops a recording; has `<StopIcon />` in front of the text).
+ * `busy` shows a small spinner in front of the text. The rest of the props, including
+ * `ref`, is passed to the `<button>`.
+ * The button does not shrink: when the text changes ("Preparing…", "Summarizing…")
+ * it keeps the widest width it had, so nothing jumps around it.
  * @param {{ variant?: "default" | "primary" | "danger" | "stop", busy?: boolean, className?: string }
  *   & import("react").ComponentProps<"button">} props
  */
@@ -18,8 +18,8 @@ export default function Button({ variant = "default", busy = false, className, c
   const own = useRef(/** @type {HTMLButtonElement | null} */ (null));
   const widest = useRef(0);
 
-  // Se mide el ancho de su contenido, no el que le da el contenedor: así un
-  // botón estirado no se queda ancho al estrechar la ventana.
+  // Its content width is measured, not the one the container gives it, so a
+  // stretched button does not stay wide when the window is narrowed.
   useLayoutEffect(() => {
     const el = own.current;
     if (!el) return;

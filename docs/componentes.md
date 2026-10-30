@@ -1,10 +1,10 @@
-# Componentes y CSS
+# Components and CSS
 
-Antes de escribir un botón, un interruptor o un menú dentro de una pantalla,
-mira aquí. Si no está lo que necesitas, créalo en `src/components/shared/`
-con su JSDoc y añade su fila a esta tabla.
+Before writing a button, a switch or a menu inside a screen, look here. If
+what you need isn't here, create it in `src/components/shared/` with its JSDoc
+and add its row to this table.
 
-## Carpetas
+## Folders
 
 ```
 src/
@@ -21,77 +21,77 @@ src/
   i18n/                     textos de la interfaz
 ```
 
-Cada componente vive en su carpeta: `Nombre/index.jsx` y su CSS en
-`Nombre/styles.module.css`. Nunca `Nombre.jsx` suelto.
+Each component lives in its own folder: `Name/index.jsx` and its CSS in
+`Name/styles.module.css`. Never a loose `Name.jsx`.
 
-## Catálogo
+## Catalog
 
-Todo se importa de `src/components/shared` (`import { Button } from "../components/shared"`).
-Los textos llegan por props, ya traducidos con `t()`.
+Everything is imported from `src/components/shared` (`import { Button } from "../components/shared"`).
+Texts arrive as props, already translated with `t()`.
 
-| Componente | Para qué | Props | Ejemplo |
+| Component | What for | Props | Example |
 |---|---|---|---|
-| `Button` | Botón de notas y ajustes (estilo shadcn) | `variant`: `"default"` \| `"primary"` \| `"danger"` \| `"stop"` (con `<StopIcon />` delante); `busy` (spinner delante); no encoge al cambiar el texto (conserva su ancho mayor); `className`; el resto, incluido `ref`, al `<button>` | `<Button variant="primary" busy={saving} onClick={save}>{t("x.save")}</Button>` |
-| `IconButton` | Botón cuadrado con solo un icono | `active`, `small`, `label` (a `aria-label` y `title`; un `title` propio lo sustituye), `className`, el resto al `<button>` | `<IconButton active={open} title={t("x.settings")} onClick={toggle}><SlidersIcon /></IconButton>` |
-| `LinkButton` | Botón con aspecto de enlace | `className`, el resto al `<button>` | `<LinkButton onClick={onBack}>{t("notes.back")}</LinkButton>` |
-| `Switch` | Interruptor | `checked`, `onChange(bool)`, `label`, `disabled`, `className`, `title`. Sin `label` se pinta como `<span>`, para ir dentro de otra etiqueta (filas de Ajustes) | `<Switch checked={on} onChange={setOn} label={t("x.showSource")} />` |
-| `Select` | Desplegable de ajustes y notas | `value`, `onChange(value)`, `options: {value, label}[]`, `label` (a `aria-label`), `disabled`, `className` | `<Select value={lang} onChange={setLang} options={langs} />` |
-| `TextField` | Campo de texto de una línea (ajustes) | `value`, `onChange(value)`, `onCommit()` (Enter o al salir), `label` (a `aria-label`), `placeholder`, `maxLength`, `disabled`, `className` | `<TextField value={name} onChange={setName} onCommit={save} placeholder={t("x.name")} />` |
-| `Menu`, `MenuItem`, `MenuSeparator` | Menú desplegable bajo un botón | `Menu`: `align` (`"start"` \| `"end"`), `className`, el resto al `<div>` (`role="menu"`). `MenuItem`: `danger`, el resto al `<button>` | `<Menu align="end" role="menu"><MenuItem onClick={x}>{t("x")}</MenuItem></Menu>` |
-| `PageHeader` | Título grande de una página, dentro de su columna y alineado con el contenido (Notas, Ajustes) | `title`, `subtitle` (gris, debajo), `children` (a la derecha: filtros, acciones) | `<PageHeader title={t("notes.title")} subtitle={count}><Select … /></PageHeader>` |
-| `useDismiss` | Cierra algo abierto al pulsar fuera o con Escape | `useDismiss(open, onClose)`. Quien lo abre para su propio clic con `e.stopPropagation()` | `useDismiss(menuOpen, () => setMenuOpen(false));` |
-| `ConfirmDialog` | Confirmación propia (no `window.confirm`) | `title`, `body`, `confirmLabel`, `cancelLabel`, `danger`, `onConfirm`, `onCancel`. Foco en Cancelar, Escape y pulsar fuera cancelan | `<ConfirmDialog danger title={…} body={…} confirmLabel={…} cancelLabel={…} onConfirm={del} onCancel={close} />` |
-| `Badge` | Etiqueta pequeña junto a un título | `children` | `<Badge>{t("notes.badge.summary")}</Badge>` |
-| `Spinner` | Rueda de espera | `small` | `<Spinner small />` |
-| `SearchBox` | Buscador con lupa | `value`, `onChange(value)`, `placeholder` (también `aria-label`), `shortcut`, `inputRef`, `className`. Escape lo vacía | `<SearchBox value={q} onChange={setQ} placeholder={t("notes.search")} shortcut="⌘K" />` |
-| `Segmented` | Botones de opción única | `value`, `onChange(value)`, `options: {value, label, hint?, disabled?}[]`, `small` | `<Segmented value={mode} onChange={setMode} options={modes} />` |
-| `cx` | Junta clases y quita las vacías | `cx(...nombres)` | `className={cx(styles.item, open && styles.isOpen)}` |
-| Iconos (`icons.jsx`) | Los iconos de la interfaz, cada uno con su tamaño | sin props | `<CopyIcon />` |
+| `Button` | Notes and settings button (shadcn style) | `variant`: `"default"` \| `"primary"` \| `"danger"` \| `"stop"` (with `<StopIcon />` in front); `busy` (spinner in front); does not shrink when the text changes (keeps its larger width); `className`; the rest, including `ref`, goes to the `<button>` | `<Button variant="primary" busy={saving} onClick={save}>{t("x.save")}</Button>` |
+| `IconButton` | Square button with only an icon | `active`, `small`, `label` (goes to `aria-label` and `title`; an explicit `title` replaces it), `className`, the rest goes to the `<button>` | `<IconButton active={open} title={t("x.settings")} onClick={toggle}><SlidersIcon /></IconButton>` |
+| `LinkButton` | Button that looks like a link | `className`, the rest goes to the `<button>` | `<LinkButton onClick={onBack}>{t("notes.back")}</LinkButton>` |
+| `Switch` | Toggle switch | `checked`, `onChange(bool)`, `label`, `disabled`, `className`, `title`. Without `label` it is rendered as a `<span>`, to go inside another label (Settings rows) | `<Switch checked={on} onChange={setOn} label={t("x.showSource")} />` |
+| `Select` | Dropdown for settings and notes | `value`, `onChange(value)`, `options: {value, label}[]`, `label` (goes to `aria-label`), `disabled`, `className` | `<Select value={lang} onChange={setLang} options={langs} />` |
+| `TextField` | Single-line text field (settings) | `value`, `onChange(value)`, `onCommit()` (on Enter or on leaving the field), `label` (goes to `aria-label`), `placeholder`, `maxLength`, `disabled`, `className` | `<TextField value={name} onChange={setName} onCommit={save} placeholder={t("x.name")} />` |
+| `Menu`, `MenuItem`, `MenuSeparator` | Dropdown menu under a button | `Menu`: `align` (`"start"` \| `"end"`), `className`, the rest goes to the `<div>` (`role="menu"`). `MenuItem`: `danger`, the rest goes to the `<button>` | `<Menu align="end" role="menu"><MenuItem onClick={x}>{t("x")}</MenuItem></Menu>` |
+| `PageHeader` | Large page title, inside its column and aligned with the content (Notes, Settings) | `title`, `subtitle` (gray, below), `children` (on the right: filters, actions) | `<PageHeader title={t("notes.title")} subtitle={count}><Select … /></PageHeader>` |
+| `useDismiss` | Closes something open when clicking outside or pressing Escape | `useDismiss(open, onClose)`. Whoever opens it for its own click uses `e.stopPropagation()` | `useDismiss(menuOpen, () => setMenuOpen(false));` |
+| `ConfirmDialog` | Own confirmation (not `window.confirm`) | `title`, `body`, `confirmLabel`, `cancelLabel`, `danger`, `onConfirm`, `onCancel`. Focus goes to Cancel; Escape and clicking outside cancel | `<ConfirmDialog danger title={…} body={…} confirmLabel={…} cancelLabel={…} onConfirm={del} onCancel={close} />` |
+| `Badge` | Small label next to a title | `children` | `<Badge>{t("notes.badge.summary")}</Badge>` |
+| `Spinner` | Wait indicator | `small` | `<Spinner small />` |
+| `SearchBox` | Search field with a magnifying glass | `value`, `onChange(value)`, `placeholder` (also `aria-label`), `shortcut`, `inputRef`, `className`. Escape clears it | `<SearchBox value={q} onChange={setQ} placeholder={t("notes.search")} shortcut="⌘K" />` |
+| `Segmented` | Single-choice buttons | `value`, `onChange(value)`, `options: {value, label, hint?, disabled?}[]`, `small` | `<Segmented value={mode} onChange={setMode} options={modes} />` |
+| `cx` | Joins classes and removes the empty ones | `cx(...names)` | `className={cx(styles.item, open && styles.isOpen)}` |
+| Icons (`icons.jsx`) | The UI icons, each with its own size | no props | `<CopyIcon />` |
 
-Iconos: `WaveIcon`, `NoteIcon`, `MenuIcon`, `CloseIcon`, `SettingsIcon`,
+Icons: `WaveIcon`, `NoteIcon`, `MenuIcon`, `CloseIcon`, `SettingsIcon`,
 `LockIcon`, `SearchIcon`, `MoreIcon`, `CopyIcon`, `ChevronIcon`, `SwapIcon`,
 `ArrowIcon`, `FloatIcon`, `SlidersIcon`, `PlayIcon`, `StopIcon`,
-`VolumeIcon`. Los de estado del diagnóstico (✓, ✕, !) son propios de
+`VolumeIcon`. The diagnostics status marks (✓, ✕, !) are specific to
 `Diagnostics`.
 
 ## CSS
 
-**Módulos.** Cada componente importa su CSS como módulo y usa sus clases
-desde ahí:
+**Modules.** Each component imports its CSS as a module and uses its classes
+from there:
 
 ```jsx
 import styles from "./styles.module.css";
 <div className={cx(styles.noteItem, open && styles.isOpen)} />
 ```
 
-En el CSS los nombres siguen con guiones (`.note-item`). En JS van en
-camelCase (`styles.noteItem`), como el `camelCase` de lodash:
-`lane-local_to_remote` → `styles.laneLocalToRemote`. Llama al import
-`styles`, no `s`: varias pantallas usan `s` como variable.
+In CSS, names keep hyphens (`.note-item`). In JS they go in camelCase
+(`styles.noteItem`), as lodash's `camelCase` does:
+`lane-local_to_remote` → `styles.laneLocalToRemote`. Call the import
+`styles`, not `s`: several screens use `s` as a variable.
 
-**Lo global** está en `src/styles.css`: variables (`--n-*`, `--control-h`…),
-reset, elementos, `@keyframes`, la estructura de las pantallas (`app`,
-`topbar`, `brand`, `notes-scroll`, `prefs-section`, `prefs-row`, `field`…) y
-las clases que comparten varios componentes (`muted`, `notes-error`, `link`,
-`spinner`, `live-dot`, la transcripción `note-line`…). En el JSX van como
-texto: `className="muted"`. Captions también es global, en
+**Global styles** are in `src/styles.css`: variables (`--n-*`, `--control-h`…),
+reset, elements, `@keyframes`, the structure of the screens (`app`,
+`topbar`, `brand`, `notes-scroll`, `prefs-section`, `prefs-row`, `field`…) and
+the classes shared by several components (`muted`, `notes-error`, `link`,
+`spinner`, `live-dot`, the transcript `note-line`…). In JSX they are written as
+plain text: `className="muted"`. Captions is also global, in
 `Captions/styles.css`.
 
-**Dentro de un módulo:**
+**Inside a module:**
 
-- Una clase global se escribe `:global(.muted)`.
-- Las animaciones usan `@keyframes` globales: `animation: global(fade-in) 0.15s`.
-  Sin `global()`, Vite le pone el sufijo del módulo y la animación no existe.
-- Para colocar un componente desde fuera, pásale una clase tuya por
-  `className` y escribe la regla con ella. Las clases de otro módulo no
-  se pueden nombrar.
-- Si esa regla tiene que ganar igual que antes, mantén la especificidad
-  (por ejemplo `.lane-save.lane-save`, con la clase dos veces) y dilo en un
-  comentario.
+- A global class is written `:global(.muted)`.
+- Animations use global `@keyframes`: `animation: global(fade-in) 0.15s`.
+  Without `global()`, Vite adds the module suffix and the animation doesn't exist.
+- To place a component from outside, pass it one of your own classes through
+  `className` and write the rule with it. Classes from another module cannot
+  be named.
+- If that rule has to win just as before, keep the specificity
+  (for example `.lane-save.lane-save`, with the class twice) and say so in a
+  comment.
 
-## Comprobar el CSS
+## Checking the CSS
 
-`scripts/css-check.mjs` compara el CSS empaquetado con el de antes del
+`scripts/css-check.mjs` compares the bundled CSS with the CSS from before the
 refactor (`docs/refactor/styles.original.css`):
 
 ```
@@ -99,20 +99,21 @@ LINGORA_CSS_CHECK=1 npx vite build --minify false --outDir /tmp/lingora-css --em
 node scripts/css-check.mjs docs/refactor/styles.original.css /tmp/lingora-css/assets/*.css
 ```
 
-Con `LINGORA_CSS_CHECK=1` cada clase de módulo sale como `nombre__Carpeta`,
-para comparar sin el sufijo y saber de qué módulo es. El script avisa si:
+With `LINGORA_CSS_CHECK=1` each module class comes out as `name__Folder`, so
+you can compare without the suffix and know which module it belongs to. The
+script warns if:
 
-1. una regla se perdió o se duplicó;
-2. dos reglas que pueden caer en el mismo elemento cambiaron de orden y el
-   valor final de alguna propiedad cambia (simula la cascada del elemento);
-3. un módulo y su `index.jsx` no casan (`styles.algo` que no existe, o una
-   clase que nadie usa);
-4. una clase global ya no está escrita en ningún `.jsx`.
+1. a rule was lost or duplicated;
+2. two rules that can match the same element changed order and the final value
+   of some property changes (it simulates the element's cascade);
+3. a module and its `index.jsx` don't match (`styles.something` that doesn't
+   exist, or a class nobody uses);
+4. a global class is no longer written in any `.jsx`.
 
-Usa además `docs/refactor/renames.json` (los selectores que se
-reescribieron al pasar a módulos, solo válidos con la misma especificidad)
-y `docs/refactor/jsx.original/` (qué clases iban juntas en cada elemento).
+It also uses `docs/refactor/renames.json` (the selectors that were rewritten
+when moving to modules, only valid with the same specificity) and
+`docs/refactor/jsx.original/` (which classes went together on each element).
 
-Sirve para **mover** CSS sin cambiar el resultado. Si cambias CSS a
-propósito, avisará de esa regla: es lo esperado. Para otro refactor solo
-de mover, hay que hacer antes una referencia nueva.
+It is meant for **moving** CSS without changing the result. If you change CSS
+on purpose, it will warn about that rule: that is expected. For another
+move-only refactor, a new reference has to be made first.

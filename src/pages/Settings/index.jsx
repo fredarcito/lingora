@@ -11,10 +11,10 @@ import { Button, PageHeader, Select, Switch, TextField, cx } from "../../compone
 import styles from "./styles.module.css";
 
 /**
- * Ajustes: lo que se elige una vez y se olvida. Lo que se cambia al traducir
- * (subtítulos, voz sí o no, volumen) sigue en la tarjeta de cada carril.
- * Los ajustes de cada carril llegan ya montados en `lanes` (ver
- * `components/LaneSettings`), para no repetir aquí su lógica.
+ * Settings: what is chosen once and then forgotten. What is changed while translating
+ * (subtitles, voice on or off, volume) stays on each lane's card.
+ * Each lane's settings arrive already mounted in `lanes` (see
+ * `components/LaneSettings`), so its logic is not repeated here.
  * @param {{ lanes: Array<{ key: string, title: string, subtitle: string, content: React.ReactNode }>,
  *   mode: "video" | "call", systemAudio: boolean, recording: boolean, languages: import("../../utils/api").LanguageInfo[],
  *   onFixed: () => void, onMenu: () => void }} props
@@ -25,7 +25,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   const [speakersOn, setSpeakersOn] = useState(loadSpeakers);
   const [summaryLang, setSummaryLang] = useState(loadNotesLang);
   const [myName, setMyName] = useState(loadMyName);
-  // Si está descargado lo que distingue personas; null mientras se mira.
+  // Whether the files that tell speakers apart are downloaded; null while checking.
   const [speakersReady, setSpeakersReady] = useState(/** @type {boolean | null} */ (null));
   const [version, setVersion] = useState("");
   const { status, hasKey } = useSummaryKey();
@@ -37,7 +37,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
       .catch(() => {});
   }, []);
 
-  // Se vuelve a mirar tras descargarlo desde el diagnóstico de abajo.
+  // Checked again after downloading it from the diagnostics below.
   const checkSpeakers = () =>
     api
       .setupStatus()
@@ -78,7 +78,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   return (
     <main className={cx("app notes-view", styles.prefsView)}>
       <header className="topbar notes-topbar">
-        {/* El título a la altura del menú y alineado con las secciones, como el buscador de Notas. */}
+        {/* The title level with the menu and aligned with the sections, like the search box in Notes. */}
         <div className={cx("brand", styles.prefsBrand)}>
           <MenuButton onClick={onMenu} recording={recording} />
           <div className={styles.prefsTitle}>

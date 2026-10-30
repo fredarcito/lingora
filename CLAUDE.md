@@ -85,9 +85,12 @@ sí.
 - **Nada de nombres de modelos en la interfaz** ("Parakeet", "Kokoro",
   "HY-MT2", "qwen", "ERes2Net"…). Usa textos genéricos: "la escucha", "la
   voz", "el resumen", "un modelo pequeño".
-- **Interfaz en español neutro.** Comentarios y textos también en español,
-  con el estilo y la densidad del código de alrededor (JSDoc en JS, `///`
-  en Rust).
+- **Interfaz en español neutro.** Los textos de la interfaz van en
+  `src/i18n/es` y `en` (con `t()`).
+- **Comentarios y documentación en inglés.** Comentarios del código,
+  README y `docs/` en inglés, con el estilo y la densidad del código de
+  alrededor (JSDoc en JS, `///` en Rust). Los nombres de funciones, claves y
+  variables ya están en inglés y no se tocan.
 - **La voz y la velocidad se quedan en la tarjeta del carril**, a mano. En
   Ajustes solo van los dispositivos, las notas y el diagnóstico.
 - **Diseño:** estilo shadcn / Sembly, sobrio. Reutiliza las variables

@@ -7,20 +7,20 @@ import styles from "./styles.module.css";
 
 const NEW = "__new";
 
-/** Nombre de un idioma escrito en ese mismo idioma; si el sistema no lo conoce, el que da la app. @param {string} code @param {string} fallback */
+/** Name of a language written in that same language; if the system does not know it, the one the app provides. @param {string} code @param {string} fallback */
 export function nativeName(code, fallback) {
   try {
     const name = new Intl.DisplayNames([code], { type: "language" }).of(code);
     if (name && name !== code) return name.charAt(0).toLocaleUpperCase(code) + name.slice(1);
   } catch {
-    // Código que Intl no reconoce.
+    // Code that Intl does not recognize.
   }
   return fallback;
 }
 
 /**
- * Selector del idioma de la interfaz: los incluidos, los generados en este equipo
- * y «Generar otro idioma…», que traduce la interfaz con el modelo local.
+ * Interface language selector: the built-in ones, the ones generated on this device
+ * and "Generate another language…", which translates the interface with the local model.
  * @param {{ languages: import("../../utils/api").LanguageInfo[] }} props
  */
 export default function LanguagePicker({ languages }) {

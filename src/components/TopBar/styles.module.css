@@ -4,7 +4,7 @@
   }
 }
 
-/* Vídeo | Llamada */
+/* Video | Call */
 .mode-switch {
   display: inline-flex;
   padding: 2px;
@@ -30,7 +30,7 @@
   background: var(--surface-3);
 }
 
-/* Idiomas de la conversación, en la barra superior: «Tú [Español] ⇄ Ellos [Inglés]» */
+/* Conversation languages, in the top bar: "You [Spanish] ⇄ Them [English]" */
 .topbar-actions {
   display: flex;
   flex: none;
@@ -46,7 +46,7 @@
   }
 }
 
-/* Controles segmentados: la misma pista y el elegido, más oscuro y hundido. */
+/* Segmented controls: the same track and the chosen one, darker and sunken. */
 .mode-switch {
   border-radius: 9px;
   border: 1px solid var(--hairline);
@@ -67,7 +67,7 @@
   min-height: var(--control-h);
 }
 
-/* Dentro de una pista, el botón ocupa todo el alto que deja el relleno. */
+/* Inside a track, the button takes all the height left by the padding. */
 .mode-switch button {
   min-height: calc(var(--control-h) - 8px);
   display: inline-flex;
@@ -75,7 +75,7 @@
   justify-content: center;
 }
 
-/* Tomar notas no tiene selector de idiomas, pero conserva su sitio en el header. */
+/* Take notes has no language selector, but keeps its place in the header. */
 .pair-hold.is-away {
   visibility: hidden;
 }

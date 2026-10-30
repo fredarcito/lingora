@@ -1,9 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 /**
- * Textos de la interfaz. Cada archivo de `es/` y `en/` es un espacio de nombres
- * (`settings.json` → `settings.title`); `en` es el idioma de respaldo. Una clave
- * con plural se escribe `clave_one` / `clave_other` y se pide con `{ count }`.
+ * UI texts. Each file in `es/` and `en/` is a namespace
+ * (`settings.json` → `settings.title`); `en` is the fallback language. A key
+ * with plurals is written `key_one` / `key_other` and requested with `{ count }`.
  */
 const files = import.meta.glob("./{es,en}/*.json", { eager: true, import: "default" });
 
@@ -14,23 +14,23 @@ for (const [path, strings] of Object.entries(files)) {
   for (const [key, text] of Object.entries(/** @type {Record<string, string>} */ (strings))) BUNDLED[lang][`${ns}.${key}`] = text;
 }
 
-/** Idiomas que Lingora trae de serie. */
+/** Languages that Lingora ships with. */
 export const BUNDLED_LANGS = [
   { code: "es", name: "Español" },
   { code: "en", name: "English" },
 ];
 
 const STORAGE_KEY = "lingora.uiLang";
-/** Idiomas generados con el modelo local: `lingora.uiStrings.<código>` guarda `{ strings, date, missing }`. */
+/** Languages generated with the local model: `lingora.uiStrings.<code>` stores `{ strings, date, missing }`. */
 const GENERATED_PREFIX = "lingora.uiStrings.";
 const RTL = new Set(["ar", "he", "fa", "ur"]);
 
-/** Código base del idioma del sistema, sea cual sea (`fr-CA` → `fr`). */
+/** Base code of the system language, whatever it is (`fr-CA` → `fr`). */
 export function rawSystemLang() {
   return (navigator.language || "en").toLowerCase().split("-")[0];
 }
 
-/** Texto del inglés de la interfaz: lo que se traduce al generar otro idioma. @returns {Record<string, string>} */
+/** English UI text: what gets translated when another language is generated. @returns {Record<string, string>} */
 export function englishStrings() {
   return BUNDLED.en;
 }
@@ -46,7 +46,7 @@ function readGenerated(code) {
   }
 }
 
-/** Códigos de los idiomas ya generados en este equipo. @returns {string[]} */
+/** Codes of the languages already generated on this device. @returns {string[]} */
 export function generatedLangs() {
   try {
     return Object.keys(localStorage)
@@ -57,7 +57,7 @@ export function generatedLangs() {
   }
 }
 
-/** Guarda un idioma generado. Lanza si no cabe en el almacenamiento. @param {string} code @param {Record<string, string>} strings @param {number} missing */
+/** Saves a generated language. Throws if it does not fit in storage. @param {string} code @param {Record<string, string>} strings @param {number} missing */
 export function saveGenerated(code, strings, missing) {
   const data = { strings, date: new Date().toISOString(), missing };
   localStorage.setItem(GENERATED_PREFIX + code, JSON.stringify(data));
@@ -69,26 +69,26 @@ export function removeGenerated(code) {
   try {
     localStorage.removeItem(GENERATED_PREFIX + code);
   } catch {
-    // Sin almacenamiento no había nada guardado.
+    // Without storage there was nothing saved.
   }
   delete extra[code];
 }
 
 export const OFFER_KEY = "lingora.uiLangOffered";
 
-/** Idioma del sistema reducido al código base: `es-MX` → `es`. Solo español sale en español. */
+/** System language reduced to its base code: `es-MX` → `es`. Only Spanish maps to Spanish; everything else maps to English. */
 export function systemLang() {
   const base = (navigator.language || "en").toLowerCase().split("-")[0];
   return base === "es" ? "es" : "en";
 }
 
-/** Elegido a mano si lo hay (y está disponible); si no, el del sistema. */
+/** The one picked by hand if there is one (and it is available); otherwise the system one. */
 function initialLang() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && (saved in BUNDLED || readGenerated(saved))) return saved;
   } catch {
-    // Sin almacenamiento se usa el del sistema.
+    // Without storage the system one is used.
   }
   return systemLang();
 }
@@ -102,7 +102,7 @@ for (const code of generatedLangs()) {
 let current = initialLang();
 
 /**
- * Traducción de una clave. Si falta en el idioma actual cae al inglés y, al final, a la propia clave.
+ * Translation of a key. If it is missing in the current language it falls back to English and, finally, to the key itself.
  * @param {string} key
  * @param {Record<string, string | number>} [vars]
  */
@@ -124,9 +124,9 @@ export function t(key, vars) {
 }
 
 /**
- * Nombre de un idioma escrito en el de la interfaz (`fr` → «francés» o «French»).
- * Si el sistema no lo conoce, `fallback`. En una frase va tal cual; en una lista,
- * con mayúscula inicial.
+ * Name of a language written in the interface language (`fr` → «francés» or «French»).
+ * If the system does not know it, `fallback`. In a sentence it is used as is; in a list,
+ * with the first letter capitalized.
  * @param {string} code @param {string} fallback @param {boolean} [inSentence]
  */
 export function langName(code, fallback, inSentence = false) {
@@ -134,19 +134,19 @@ export function langName(code, fallback, inSentence = false) {
     const name = new Intl.DisplayNames([current], { type: "language" }).of(code);
     if (name && name.toLowerCase() !== code.toLowerCase()) return inSentence ? name : name.charAt(0).toLocaleUpperCase(current) + name.slice(1);
   } catch {
-    // Código que Intl no reconoce.
+    // Code that Intl does not recognize.
   }
   return fallback;
 }
 
 const I18nContext = createContext({ lang: current, setLang: /** @type {(code: string) => void} */ (() => {}) });
 
-/** Idioma de la interfaz y cómo cambiarlo. */
+/** Interface language and how to change it. */
 export function useLang() {
   return useContext(I18nContext);
 }
 
-/** `t` que hace repintar el componente al cambiar de idioma. */
+/** `t` that repaints the component when the language changes. */
 export function useT() {
   const { lang } = useLang();
   return useCallback(/** @type {typeof t} */ ((key, vars) => t(key, vars)), [lang]);
@@ -173,11 +173,11 @@ export function I18nProvider({ children }) {
     try {
       localStorage.setItem(STORAGE_KEY, code);
     } catch {
-      // Se aplica igual; solo no se recuerda al reabrir.
+      // It is applied anyway; it just is not remembered when reopening.
     }
   }, []);
 
-  // Los subtítulos flotantes son otra ventana: se enteran por el almacenamiento compartido.
+  // The floating subtitles are another window: they learn about it through shared storage.
   useEffect(() => {
     /** @param {StorageEvent} e */
     const onStorage = (e) => {

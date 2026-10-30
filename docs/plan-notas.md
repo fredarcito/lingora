@@ -1,56 +1,57 @@
-# Plan: notas y resúmenes
+# Plan: notes and summaries
 
-Estado: parte A hecha (2026-10-29), con el diseño revisado por Opus y una página Ajustes nueva. Falta la B (Sonnet) y la C (Opus). La parte de
-personas (quién habla) la hace Opus aparte; aquí solo se deja el hueco.
+Status: part A done (2026-10-29), with the design reviewed by Opus and a new Settings
+page. Part B (Sonnet) and C (Opus) remain. The part about speakers (who is
+speaking) is done separately by Opus; here only the slot is left.
 
-Meta: guardar cada conversación en disco, verla en la app, exportarla y
-pedir un resumen. Inspiración: la vista de notas de Sembly, pero **mucho más
-simple**: una lista y un detalle, sin editor, sin participantes, sin
-reproductor ni chat.
+Goal: save each conversation to disk, view it in the app, export it and
+ask for a summary. Inspiration: Sembly's notes view, but **much
+simpler**: a list and a detail view, no editor, no participants, no
+player or chat.
 
 ---
 
-## 0. Reglas (leer antes de empezar)
+## 0. Rules (read before starting)
 
-**No tocar lo que ya está afinado.** Costó mucho tiempo dejarlo así. No
-cambies, "limpies" ni reorganices nada de esto, aunque te parezca mejorable:
+**Don't touch what is already tuned.** It took a long time to get it this way.
+Don't change, "clean up" or reorganize any of this, even if it seems improvable:
 
-- `src/audio.js` entero: VAD, cortes de frase, `FILLER`, `LONE_NOD`, umbrales y tiempos.
-- `src/Captions.jsx` y `src/FloatingCaptions.jsx`: ritmo de palabras, animaciones y recortes.
-- En `src/App.jsx`: `speedFor`, `MAX_VOICE_LAG_SECS`, `trimSilence`, el flujo
-  de `texted` y `playback`, `start` y `stop`, las claves de `localStorage`
-  existentes y los ajustes de cada carril (`LaneCard`).
-- En `src-tauri/src`: `audio.rs`, `system_audio.rs`, `listener.rs`,
+- `src/audio.js` entirely: VAD, sentence cuts, `FILLER`, `LONE_NOD`, thresholds and timings.
+- `src/Captions.jsx` and `src/FloatingCaptions.jsx`: word rhythm, animations and cuts.
+- In `src/App.jsx`: `speedFor`, `MAX_VOICE_LAG_SECS`, `trimSilence`, the flow
+  of `texted` and `playback`, `start` and `stop`, the existing `localStorage` keys
+  and the settings of each lane (`LaneCard`).
+- In `src-tauri/src`: `audio.rs`, `system_audio.rs`, `listener.rs`,
   `translator.rs`, `tts.rs`, `pipeline.rs`, `phonemizer.rs`,
-  `system_voice.rs`, `models.rs`, `doctor.rs` y `config.rs` (salvo lo que
-  se indica abajo). Hilos, temperaturas, `silence_scale`, velocidades y
-  tiempos se quedan igual.
-- `src/Welcome.jsx`, `src/Diagnostics.jsx`, `src-tauri/tauri.conf.json` y la firma.
-- No añadas dependencias de npm. En Rust solo la de la parte B (`keyring`).
+  `system_voice.rs`, `models.rs`, `doctor.rs` and `config.rs` (except what
+  is indicated below). Threads, temperatures, `silence_scale`, speeds and
+  timings stay the same.
+- `src/Welcome.jsx`, `src/Diagnostics.jsx`, `src-tauri/tauri.conf.json` and the signing.
+- Don't add npm dependencies. In Rust only the one for part B (`keyring`).
 
-**Cómo trabajar:**
+**How to work:**
 
-- Comentarios y textos en español, con el mismo estilo y densidad que el
-  código de alrededor (JSDoc en JS, `///` en Rust). Interfaz en español neutro.
-- Nunca muestres nombres de modelos en la interfaz ("Parakeet", "Kokoro",
-  "HY-MT2", "qwen"…). Usa textos genéricos ("el resumen", "la IA").
-- Tocar `src-tauri` reinicia la app de quien está probando. **Avisa antes**
-  de editar algo ahí y junta los cambios de Rust en un solo bloque.
-- La clave de Groq **nunca** va dentro de la app ni en el repositorio.
-- Si algo del plan no encaja con el código, para y pregunta. No improvises
-  un cambio grande.
-- Al terminar cada parte: `npx vite build` y `cargo check` (en `src-tauri`)
-  sin errores, y la lista de pruebas a mano de esa parte.
+- Comments and texts in Spanish, with the same style and density as the
+  surrounding code (JSDoc in JS, `///` in Rust). Interface in neutral Spanish.
+- Never show model names in the interface ("Parakeet", "Kokoro",
+  "HY-MT2", "qwen"…). Use generic texts ("the summary", "the AI").
+- Touching `src-tauri` restarts the app of whoever is testing. **Warn first**
+  before editing anything there and bundle the Rust changes into a single block.
+- The Groq key is **never** put inside the app or in the repository.
+- If something in the plan doesn't fit the code, stop and ask. Don't improvise
+  a big change.
+- When each part finishes: `npx vite build` and `cargo check` (in `src-tauri`)
+  without errors, and the manual test list for that part.
 
 ---
 
-## Formato en disco
+## On-disk format
 
-Una conversación es un archivo JSON en
-`~/Library/Application Support/lingora/notes/<id>.json` (la misma carpeta
-base que `models_dir()` en `config.rs`). JSON y no texto plano: guarda la
-hora, quién habla y el original separado de la traducción. El texto plano
-sale al exportar.
+A conversation is a JSON file in
+`~/Library/Application Support/lingora/notes/<id>.json` (the same base folder
+as `models_dir()` in `config.rs`). JSON and not plain text: it stores the
+time, who is speaking and the original separate from the translation. Plain text
+comes out when exporting.
 
 ```json
 {
@@ -76,45 +77,45 @@ sale al exportar.
 }
 ```
 
-- `t`: segundos desde `created_at` hasta que terminó la frase.
-- `translation`: `null` en modo original (sin traducir, `noTranslate`).
-- `speaker` y `speakers` quedan para la parte de personas: `speaker` será un
-  número (1, 2…) y `speakers` el nombre que el usuario le ponga
-  (`{"1": "Ana"}`). Ahora siempre `null` y `{}`. La interfaz tiene que
-  funcionar en los dos casos: si todas son `null`, no se muestran etiquetas;
-  si hay número, se muestra `speakers[n] ?? "Persona n"`.
-- `summary`: `null` o `{ "text": "<markdown>", "created_at": "..." }`.
-- `gaps` (opcional): los ratos en que se apagó «Guardar en notas» a mitad de
-  la conversación, `[{ "at": 12, "secs": 95 }]`: el hueco va antes de la
-  frase `at` (o al final si `at` es el número de frases) y duró `secs`. La
-  vista (`transcriptParts` en `src/notes.js`) y el exportar
-  (`transcript_text` en `notes.rs`) lo marcan igual: «Sin guardar · 2 min»,
-  partiendo el párrafo en el que cae.
-- El `id` sale de la fecha local de inicio y sirve de nombre de archivo.
-  Valida en Rust que solo tenga `[0-9A-Za-z_-]`, para que nadie pueda
-  escribir fuera de la carpeta.
+- `t`: seconds from `created_at` until the sentence ended.
+- `translation`: `null` in original mode (untranslated, `noTranslate`).
+- `speaker` and `speakers` are left for the speakers part: `speaker` will be a
+  number (1, 2…) and `speakers` the name the user gives it
+  (`{"1": "Ana"}`). For now always `null` and `{}`. The interface has to
+  work in both cases: if all are `null`, no labels are shown;
+  if there is a number, `speakers[n] ?? "Persona n"` is shown.
+- `summary`: `null` or `{ "text": "<markdown>", "created_at": "..." }`.
+- `gaps` (optional): the stretches when "Save to notes" was turned off in the middle of
+  the conversation, `[{ "at": 12, "secs": 95 }]`: the gap goes before the
+  sentence `at` (or at the end if `at` is the number of sentences) and lasted `secs`. The
+  view (`transcriptParts` in `src/notes.js`) and the export
+  (`transcript_text` in `notes.rs`) mark it the same way: "Not saved · 2 min",
+  splitting the paragraph where it falls.
+- The `id` comes from the local start date and serves as the file name.
+  Rust validates that it only has `[0-9A-Za-z_-]`, so that nobody can
+  write outside the folder.
 
 ---
 
-## Parte A: menú, guardado y vista de notas
+## Part A: menu, saving and notes view
 
-### A1. Rust: comandos de notas (un solo bloque de cambios; avisar antes)
+### A1. Rust: notes commands (a single block of changes; warn first)
 
-Archivo nuevo `src-tauri/src/notes.rs`, con `mod notes;` en `lib.rs` y los
-comandos añadidos a `generate_handler!`. Errores con el `Error` de
-`error.rs`; añade una variante `Notes(String)` si hace falta, con kind `"notes"`.
+New file `src-tauri/src/notes.rs`, with `mod notes;` in `lib.rs` and the
+commands added to `generate_handler!`. Errors with the `Error` from
+`error.rs`; add a `Notes(String)` variant if needed, with kind `"notes"`.
 
-| Comando | Qué hace |
+| Command | What it does |
 |---|---|
-| `notes_list() -> Vec<NoteSummary>` | Lee la carpeta y devuelve `{ id, title, created_at, ended_at, sentences: usize, has_summary, kind, preview, source_lang, target_lang, summary_line }`, de la más nueva a la más vieja. `preview` son los primeros ~200 caracteres de las traducciones (o del original), para buscar; `source_lang`/`target_lang` son los de la primera frase y `summary_line` la primera frase del resumen (para la lista). Ignora los archivos que no se puedan leer. |
-| `note_read(id) -> serde_json::Value` | El JSON tal cual. |
-| `note_save(note: serde_json::Value)` | Escribe `<id>.json` de forma atómica (a `.tmp` y luego `rename`). Crea la carpeta si no existe. |
-| `note_delete(id)` | Borra el archivo. |
-| `note_reveal(id)` | `open -R <ruta>`: lo muestra en Finder. |
-| `note_export(id, format: "md" \| "txt") -> String` | Escribe la nota en `~/Downloads/<título saneado>.<ext>` (si existe, añade ` (2)`, ` (3)`…), la muestra en Finder y devuelve la ruta. |
+| `notes_list() -> Vec<NoteSummary>` | Reads the folder and returns `{ id, title, created_at, ended_at, sentences: usize, has_summary, kind, preview, source_lang, target_lang, summary_line }`, from newest to oldest. `preview` is the first ~200 characters of the translations (or of the original), for searching; `source_lang`/`target_lang` are those of the first sentence and `summary_line` the first sentence of the summary (for the list). Ignores files that can't be read. |
+| `note_read(id) -> serde_json::Value` | The JSON as is. |
+| `note_save(note: serde_json::Value)` | Writes `<id>.json` atomically (to `.tmp` and then `rename`). Creates the folder if it doesn't exist. |
+| `note_delete(id)` | Deletes the file. |
+| `note_reveal(id)` | `open -R <path>`: shows it in Finder. |
+| `note_export(id, format: "md" \| "txt") -> String` | Writes the note to `~/Downloads/<sanitized title>.<ext>` (if it exists, adds ` (2)`, ` (3)`…), shows it in Finder and returns the path. |
 
-Formato de exportación (en `.md` el título va con `#` y el resumen con su
-encabezado; en `.txt`, igual pero sin `#`):
+Export format (in `.md` the title gets `#` and the summary its heading; in `.txt`,
+the same but without `#`):
 
 ```
 # Conversación del 29 oct, 10:32
@@ -128,164 +129,162 @@ encabezado; en `.txt`, igual pero sin `#`):
         (Hi everyone, let's get started.)
 ```
 
-Sin hablante, la línea es `[00:03] Hola a todos, empecemos.`. El original
-entre paréntesis solo aparece si hay traducción.
+Without a speaker, the line is `[00:03] Hola a todos, empecemos.`. The original
+in parentheses only appears if there is a translation.
 
-### A2. JS: `src/notes.js` (nuevo)
+### A2. JS: `src/notes.js` (new)
 
-- Envoltorios en `src/api.js`, con JSDoc, siguiendo el estilo de los que ya
-  hay: `notesList`, `noteRead`, `noteSave`, `noteDelete`, `noteReveal`,
-  `noteExport`, y los typedefs `Note`, `NoteSentence` y `NoteSummary`.
-- Un grabador, sin React:
-  - `createRecorder()` devuelve `{ add(sentence), finish() }`.
-  - `add` crea la nota con la primera frase (sin frases no hay archivo) y
-    guarda como mucho cada 5 s (debounce) con `api.noteSave`.
-  - `finish()` pone `ended_at`, guarda ya, y si la nota sigue vacía no
-    escribe nada.
-  - Un fallo al guardar no puede romper la traducción: `console.warn` y seguir.
-- Interruptor "Guardar conversaciones" en `localStorage`
-  (`lingora.saveNotes`), activado por defecto, con `loadSaveNotes()`
-  igual que `loadSpeak()` en `App.jsx`.
+- Wrappers in `src/api.js`, with JSDoc, following the style of the ones
+  that already exist: `notesList`, `noteRead`, `noteSave`, `noteDelete`, `noteReveal`,
+  `noteExport`, and the typedefs `Note`, `NoteSentence` and `NoteSummary`.
+- A recorder, without React:
+  - `createRecorder()` returns `{ add(sentence), finish() }`.
+  - `add` creates the note with the first sentence (without sentences there is no file) and
+    saves at most every 5 s (debounce) with `api.noteSave`.
+  - `finish()` sets `ended_at`, saves right away, and if the note is still empty
+    it writes nothing.
+  - A failure when saving can't break the translation: `console.warn` and carry on.
+- "Save conversations" switch in `localStorage`
+  (`lingora.saveNotes`), on by default, with `loadSaveNotes()`
+  just like `loadSpeak()` in `App.jsx`.
 
-### A3. Engancharlo en `App.jsx` (cambios mínimos)
+### A3. Hooking it into `App.jsx` (minimal changes)
 
-- Un `useRef` con el grabador actual.
-- **Un solo punto de grabación:** en `playback`, justo después del último
+- A `useRef` with the current recorder.
+- **A single recording point:** in `playback`, right after the last
   `patchEntry(lane.direction, id, { translation: result.translation, ... })`
-  (cerca de la línea 806), llama a
+  (around line 806), call
   `recorder.add({ direction, source_lang, target_lang, source: result.transcript, translation })`.
-  - En modo original (`noTranslate`), `translation: null`.
-  - No añadas grabación en ningún otro sitio ni cambies ese flujo.
-- `t` lo calcula el grabador (`performance.now()` desde la primera frase,
-  corregido por `created_at`). No hace falta tocar `info`.
-- Sesión: empieza con la primera frase después de que algún carril arranca.
-  Termina (`finish()`) cuando `anyRunning` pasa a `false`. Ya hay un efecto
-  sobre `anyRunning` (cerca de la línea 950); añade uno nuevo al lado, sin
-  tocar el existente.
-- Si `lingora.saveNotes` está apagado, no se crea grabador.
+  - In original mode (`noTranslate`), `translation: null`.
+  - Don't add recording anywhere else or change that flow.
+- `t` is computed by the recorder (`performance.now()` from the first sentence,
+  corrected by `created_at`). No need to touch `info`.
+- Session: starts with the first sentence after some lane starts. It
+  ends (`finish()`) when `anyRunning` becomes `false`. There is already an effect
+  on `anyRunning` (around line 950); add a new one next to it, without
+  touching the existing one.
+- If `lingora.saveNotes` is off, no recorder is created.
 
-### A4. Menú de hamburguesa (☰)
+### A4. Hamburger menu (☰)
 
-- Botón ☰ arriba a la izquierda, antes del logo de la barra superior. Es
-  lo único que cambia en la barra: la marca, los modos y los idiomas se
-  quedan igual.
-- Al pulsarlo, se abre un panel lateral (`src/Sidebar.jsx`) **por encima**
-  del contenido, desde la izquierda, de ~240 px, con un fondo oscuro
-  semitransparente detrás. No empuja ni encoge la vista.
-- Se cierra:
-  - al elegir una entrada;
-  - al pulsar fuera, en el fondo;
-  - con Esc;
-  - con una ✕.
-- Al abrirse, el foco va a la primera entrada. Al cerrarse, vuelve al ☰.
-- Dos entradas, con icono y texto: **Traducir** (la vista actual) y
-  **Notas**. La que está activa va resaltada. Nada más por ahora; Ajustes y
-  Diagnóstico se quedan donde están.
-- Iconos SVG en línea, simples, como `WaveIcon`.
-- **Muy importante:** al ir a Notas, la vista Traducir **no se desmonta**:
-  se oculta con `hidden` o CSS. Si se desmontara, se cortaría la
-  traducción en curso. Si hay un carril en marcha, la entrada Traducir
-  muestra un punto rojo y el ☰ también, para que se vea con el menú cerrado.
-- La vista Notas lleva su propia barra superior: ☰, el título "Notas" y nada
-  más.
+- ☰ button at the top left, before the logo of the top bar. It is
+  the only thing that changes in the bar: the brand, the modes and the languages
+  stay the same.
+- When pressed, a side panel (`src/Sidebar.jsx`) opens **on top of**
+  the content, from the left, about 240 px wide, with a semi-transparent dark background
+  behind it. It doesn't push or shrink the view.
+- It closes:
+  - when choosing an entry;
+  - when clicking outside, on the background;
+  - with Esc;
+  - with a ✕.
+- When it opens, focus goes to the first entry. When it closes, it returns to the ☰.
+- Two entries, with icon and text: **Translate** (the current view) and
+  **Notes**. The active one is highlighted. Nothing else for now; Settings
+  and Diagnostics stay where they are.
+- Inline SVG icons, simple, like `WaveIcon`.
+- **Very important:** when going to Notes, the Translate view **is not unmounted**:
+  it is hidden with `hidden` or CSS. If it were unmounted, the
+  ongoing translation would be cut. If a lane is running, the Translate entry
+  shows a red dot and the ☰ does too, so it is visible with the menu closed.
+- The Notes view has its own top bar: ☰, the title "Notes" and nothing
+  else.
 
-### A5. Vista Notas: `src/Notes.jsx`
+### A5. Notes view: `src/Notes.jsx`
 
-Dos páginas, una tras otra, no en columnas:
+Two pages, one after the other, not in columns:
 
-1. **Lista de notas:** todas las conversaciones guardadas.
-2. **Página de una nota:** se abre al pulsar una nota, ocupa toda la vista y
-   tiene un botón "← Notas" arriba para volver a la lista. La lista
-   recuerda el buscador y la posición del scroll al volver.
+1. **Notes list:** all the saved conversations.
+2. **A note's page:** opens when a note is pressed, takes up the whole view and
+   has a "← Notes" button at the top to go back to the list. The list
+   remembers the search and the scroll position when returning.
 
-**Arriba de la lista:**
-- un buscador ("Buscar en notas") que filtra por título y `preview`, en local;
-- el interruptor "Guardar conversaciones".
+**Above the list:**
+- a search box ("Search by text or date") that filters by title and `preview`, locally;
+- the "Save conversations" switch.
 
-**Lista:**
-- cada elemento muestra el título, la fecha (`29 oct · 10:32`), la duración
-  y un punto si ya tiene resumen;
-- la nota en curso aparece arriba, con la etiqueta "Grabando";
-- vacía: "Aún no hay notas. Cuando traduzcas algo, se guardará aquí."
+**List:**
+- each item shows the title, the date (`29 oct · 10:32`), the duration
+  and a dot if it already has a summary;
+- the note in progress appears at the top, with the label "Recording";
+- empty: "No notes yet. When you translate something, it will be saved here."
 
-**Página de una nota:**
-- **Cabecera:**
-  - título editable al hacer clic, que guarda con `noteSave` al salir del
-    campo o con Enter;
-  - debajo: fecha, hora de inicio y fin, duración e idiomas (`Inglés → Español`).
-- **Acciones**, botones pequeños a la derecha:
-  - Resumir (parte B; en la parte A no se muestra);
-  - Copiar para resumir;
-  - Exportar, con un menú pequeño: Markdown (.md) / Texto (.txt);
-  - Mostrar en Finder;
-  - Borrar, que pide confirmación con un diálogo propio, no `window.confirm`.
-- **Pestañas:** "Resumen" y "Transcripción".
-  - Sin resumen se abre en Transcripción.
-  - En la parte A, Resumen solo muestra el texto vacío explicando el botón
-    Copiar para resumir.
-- **Transcripción:**
-  - una fila por frase: `mm:ss` en gris, la etiqueta de persona si hay, y la
-    traducción;
-  - un interruptor "Ver original" muestra el original en pequeño debajo.
-- **Copiar para resumir:** copia al portapapeles
-  (`navigator.clipboard.writeText`) unas instrucciones cortas y la
-  transcripción en el formato de exportación, para pegarla en cualquier
-  chat de IA.
-  - Instrucciones: "Resume esta conversación en español: puntos clave,
-    decisiones y tareas con responsable si se menciona".
-  - Debe mostrar el aviso "Copiado".
-- La nota en curso se refresca sola mientras se graba: un evento de
-  ventana desde el grabador o un `setInterval` de 3 s; elige uno.
+**A note's page:**
+- **Header:**
+  - title editable on click, which saves with `noteSave` when leaving the field
+    or with Enter;
+  - below it: date, start and end time, duration and languages (`English → Spanish`).
+- **Actions**, small buttons on the right:
+  - Summarize (part B; not shown in part A);
+  - Copy for your AI chat;
+  - Export, with a small menu: Markdown (.md) / Text (.txt);
+  - Show in Finder;
+  - Delete, which asks for confirmation with its own dialog, not `window.confirm`.
+- **Tabs:** "Summary" and "Transcript".
+  - Without a summary it opens on Transcript.
+  - In part A, Summary only shows empty text explaining the Copy for your AI chat
+    button.
+- **Transcript:**
+  - one row per sentence: `mm:ss` in gray, the speaker label if there is one, and the
+    translation;
+  - a "Show original" switch shows the original in small text below.
+- **Copy for your AI chat:** copies to the clipboard
+  (`navigator.clipboard.writeText`) a few short instructions and the
+  transcript in the export format, to paste into any AI chat.
+  - Instructions: "Summarize this conversation in {language}: key points, decisions and action items with an owner if one is mentioned."
+  - It must show the "Copied" notice.
+- The note in progress refreshes itself while recording: a window event
+  from the recorder or a 3 s `setInterval`; choose one.
 
-**Estilo:**
-- Usa las variables y clases que ya hay en `src/styles.css` (tema oscuro,
-  acento turquesa, `icon-button`, `link`). Añade lo nuevo al final del
-  archivo, en una sección `/* Notas */`.
-- Foco visible y estados hover.
-- Sin scroll horizontal. La lista y la página de la nota ocupan toda la
-  vista, hasta ~860 px de ancho, centradas.
+**Style:**
+- Use the variables and classes that already exist in `src/styles.css` (dark theme,
+  turquoise accent, `icon-button`, `link`). Add the new things at the end of the
+  file, in a `/* Notas */` section.
+- Visible focus and hover states.
+- No horizontal scroll. The list and the note's page take up the whole
+  view, up to ~860 px wide, centered.
 
-### Pruebas a mano (parte A)
+### Manual tests (part A)
 
-1. Traducir un vídeo 1–2 minutos. En Notas aparece "Grabando", con frases
-   que se van añadiendo. Al parar, queda con su duración.
-2. Mientras se traduce, ir a Notas y volver: la traducción no se cortó, ni
-   los subtítulos ni la voz.
-3. Con "Guardar conversaciones" apagado no se crea nada.
-4. Renombrar, exportar .md y .txt (los archivos aparecen en Descargas),
-   mostrar en Finder y borrar.
-5. Pararla sin que haya dicho nada: no queda una nota vacía.
-6. Modo original: se guarda sin traducción, y "Ver original" no duplica el texto.
-7. El menú ☰ se abre por encima y se cierra con Esc, al pulsar fuera y al
-   elegir una entrada. Notas → una nota → "← Notas" vuelve a la lista con
-   el buscador intacto.
+1. Translate a 1–2 minute video. In Notes "Recording" appears, with sentences
+   being added. When stopped, it stays with its duration.
+2. While translating, go to Notes and back: the translation wasn't cut, nor
+   the captions or the voice.
+3. With "Save conversations" off nothing is created.
+4. Rename, export .md and .txt (the files appear in Downloads),
+   show in Finder and delete.
+5. Stop it without anything having been said: no empty note is left.
+6. Original mode: it is saved without translation, and "Show original" doesn't duplicate the text.
+7. The ☰ menu opens on top and closes with Esc, on clicking outside and when
+   choosing an entry. Notes → a note → "← Notes" returns to the list with
+   the search intact.
 
 ---
 
-## Parte B: resumen con IA
+## Part B: summary with AI
 
-### B1. La clave
+### B1. The key
 
-- Dependencia: `keyring = { version = "3", features = ["apple-native"] }`.
-- Comandos en `notes.rs` (servicio `com.lingora.app`, cuenta `groq`):
+- Dependency: `keyring = { version = "3", features = ["apple-native"] }`.
+- Commands in `notes.rs` (service `com.lingora.app`, account `groq`):
   - `summary_key_status() -> bool`;
-  - `summary_key_set(key)`, que antes de guardar comprueba la clave con un
-    `GET https://api.groq.com/openai/v1/models` y si no vale devuelve
-    "La clave no es válida";
+  - `summary_key_set(key)`, which before saving checks the key with a
+    `GET https://api.groq.com/openai/v1/models` and if it isn't valid returns
+    "La clave no es válida" (The key is not valid);
   - `summary_key_clear()`.
-- Solo en desarrollo, si no hay clave en el llavero se usa `GROQ_API_KEY`
-  del entorno. Nunca se guarda en un archivo ni va en el bundle.
+- Only in development, if there is no key in the keychain, `GROQ_API_KEY`
+  from the environment is used. It is never saved to a file or included in the bundle.
 
-### B2. Resumir
+### B2. Summarizing
 
-- `note_summarize(id) -> String`: lee la nota, arma la transcripción en el
-  formato de exportación y llama al chat de Groq. Reutiliza el cliente de
-  `groq.rs` añadiendo un método `complete(system, user, model)` sin
-  streaming. No cambies `transcribe` ni `translate`.
-- Modelo: `LINGORA_SUMMARY_MODEL` en `config.rs`, por defecto
-  `qwen/qwen3.8-27b`, que ya funciona en la cuenta. Es el único cambio en
-  `config.rs`. Temperatura 0.3.
-- Prompt de sistema (en español; idioma de salida = el de la traducción):
+- `note_summarize(id) -> String`: reads the note, builds the transcript in the
+  export format and calls Groq's chat. It reuses the client in `groq.rs`
+  by adding a `complete(system, user, model)` method without
+  streaming. Don't change `transcribe` or `translate`.
+- Model: `LINGORA_SUMMARY_MODEL` in `config.rs`, default
+  `qwen/qwen3.8-27b`, which already works on the account. It is the only change in
+  `config.rs`. Temperature 0.3.
+- System prompt (in Spanish; output language = that of the translation):
   ```
   Eres un asistente que resume conversaciones transcritas. Responde en {idioma}
   con Markdown y solo estas secciones, omitiendo las que no tengan contenido:
@@ -296,82 +295,80 @@ Dos páginas, una tras otra, no en columnas:
   No inventes nada que no esté en la transcripción. Si aparecen etiquetas
   "Persona N", úsalas tal cual.
   ```
-- Textos largos: si la transcripción pasa de ~60 000 caracteres, se resume
-  por trozos de ~50 000 y luego se resume el conjunto de esos resúmenes.
-- Guarda el resultado en `summary` de la nota y lo devuelve.
-- El cliente de `groq.rs` tiene un timeout de 30 s. Para resumir, crea el
-  cliente con 120 s; no cambies el de la traducción.
+- Long texts: if the transcript goes over ~60,000 characters, it is summarized in
+  chunks of ~50,000 and then the set of those summaries is summarized.
+- Saves the result in `summary` of the note and returns it.
+- The `groq.rs` client has a 30 s timeout. For summarizing, create the client
+  with 120 s; don't change the one for translation.
 
-### B3. Interfaz
+### B3. Interface
 
-- Botón **Resumir** en el detalle (o "Volver a resumir" si ya hay resumen),
-  con un estado "Resumiendo…" y los errores en línea.
-- Sin clave: un panel pequeño en la propia pestaña Resumen.
-  - Texto: "Para resumir, Lingora envía la transcripción a Groq con tu
-    propia clave. Es lo único que sale de tu equipo. La clave se guarda en
-    el llavero del Mac."
-  - Un campo de contraseña y el botón Guardar.
-  - Un enlace a `https://console.groq.com/keys`.
-  - Debajo, la alternativa: "O usa Copiar para resumir y pégalo en tu chat
-    de IA".
-- La primera vez que se resume, un aviso de confirmación: "La
-  transcripción se enviará a Groq. ¿Continuar?" Se recuerda en
+- **Summarize** button in the detail (or "Summarize again" if there is already a summary),
+  with a "Summarizing…" state and errors inline.
+- No key: a small panel in the Summary tab itself.
+  - Text: "To summarize, Lingora sends the transcript to Groq with your own
+    key. It is the only thing that leaves your computer. The key is stored in
+    the Mac's keychain."
+  - A password field and the Save button.
+  - A link to `https://console.groq.com/keys`.
+  - Below it, the alternative: "Or use Copy for your AI chat and paste it into your AI chat".
+- The first time a summary is requested, a confirmation notice: "The
+  transcript will be sent to Groq. Continue?" It is remembered in
   `lingora.summaryConsent`.
-- Resumen en Markdown: un render mínimo propio para `##`, listas `-`,
-  casillas `- [ ]` (solo visuales) y `**negrita**`. Sin dependencias y sin
-  `dangerouslySetInnerHTML` con el texto sin escapar.
-- La clave se gestiona también en **Ajustes → Notas** (`src/Settings.jsx`):
-  estado ("Clave guardada" / "Sin clave"), un campo para ponerla o
-  cambiarla y "Quitar clave". Es una fila nueva en la tarjeta de Notas que
-  ya existe, con el mismo estilo (`prefs-row`).
-- Textos de privacidad: con clave guardada, el pie del menú
-  (`src/Sidebar.jsx`, `drawer-foot`) y "Acerca de" en Ajustes pasan de
-  "Todo se procesa en tu Mac" a "Todo se procesa en tu Mac, salvo los
-  resúmenes que pidas". Sin clave, se quedan como están.
-- Estilo: usa las clases y variables de la sección `/* Notas */` de
+- Summary in Markdown: a minimal in-house renderer for `##`, `-` lists,
+  `- [ ]` checkboxes (visual only) and `**bold**`. No dependencies and no
+  `dangerouslySetInnerHTML` with unescaped text.
+- The key is also managed in **Settings → Notes** (`src/Settings.jsx`):
+  status ("Key saved" / "No key"), a field to set or
+  change it and "Remove key". It is a new row in the existing Notes card,
+  with the same style (`prefs-row`).
+- Privacy texts: with a key saved, the menu footer
+  (`src/Sidebar.jsx`, `drawer-foot`) and "About" in Settings change from
+  "Everything runs on your computer" to "Everything runs on your computer, except the summaries you ask for". Without a key they stay as they are.
+- Style: use the classes and variables from the `/* Notas */` section of
   `styles.css` (`note-action`, `note-action primary`, `notes-switch`,
-  `prefs-*`, `--n-*`), que ya siguen el estilo de shadcn. No cambies las
-  que existen; añade lo nuevo al final de esa sección.
+  `prefs-*`, `--n-*`), which already follow the shadcn style. Don't change
+  the ones that exist; add the new ones at the end of that section.
 
-### Pruebas a mano (parte B)
+### Manual tests (part B)
 
-1. Sin clave: el panel explica qué se envía. Una clave mala se rechaza.
-2. Con clave: Resumir una nota de 5–10 minutos devuelve las secciones
-   esperadas y queda guardado (cierra y abre la app).
-3. "Volver a resumir" reemplaza el resumen.
-4. Sin conexión: el error se muestra en línea y la app sigue funcionando.
-5. Exportar con resumen: sale la sección Resumen.
+1. Without a key: the panel explains what is sent. A bad key is rejected.
+2. With a key: Summarize a 5–10 minute note returns the expected sections
+   and stays saved (close and reopen the app).
+3. "Summarize again" replaces the summary.
+4. No connection: the error is shown inline and the app keeps working.
+5. Export with a summary: the Summary section appears.
 
 ---
 
-## Parte C: personas (hecha por Opus, 2026-10-29)
+## Part C: speakers (done by Opus, 2026-10-29)
 
-- Rust (`src-tauri/src/speakers.rs`) solo calcula la huella de voz de cada
-  frase (`voice_print`). Modelo: ERes2Net de 3D-Speaker (~40 MB, un solo
-  archivo), descargable desde el diagnóstico (`speakers`, opcional).
-- Se probaron 4 modelos con 4 voces sintéticas en inglés y en español. Solo
-  ERes2Net acertó todas las frases con un mismo umbral (0,5), con ~80 ms por
-  frase. CAM++ y TitaNet confundían voces y WeSpeaker juntaba a todas.
-- El agrupado va en JS (`createSpeakerTracker` en `src/notes.js`):
-  - cada frase va a la persona más parecida si el coseno pasa de 0,5;
-  - si no, es una persona nueva;
-  - las frases de menos de 1,2 s van siempre a la más parecida.
-- Lo del micrófono (llamada) es siempre `speaker: 0`, "Yo".
-- En la nota: los colores por persona, renombrar y unir dos personas
-  (`SpeakerBar` en `src/Notes.jsx`).
-- Interruptor "Distinguir personas" en Ajustes → Notas (`lingora.speakers`).
-- Con audio real (una entrevista de 55 min, 2 personas) el agrupado en vivo
-  daba 6 "personas": las de más eran frases sueltas con risas, ruido o dos
-  voces a la vez. Por eso hay dos ajustes:
-  - en vivo, una frase de menos de 2 s no crea persona nueva;
-  - al terminar, un repaso (`refine`) con toda la conversación:
-    1. quien habla menos del 3 % del tiempo se une a la más parecida;
-    2. dos personas con medias más parecidas que 0,6 se juntan;
-    3. cada frase se reasigna a la persona más cercana;
-    4. se renumera por orden de aparición.
-  Resultado: 2 personas y el 94 % de las frases bien, contra la diarización
-  completa de sherpa-onnx como referencia. Las pruebas con 4 voces siguen al
-  100 %.
-- Mientras se graba pueden verse personas de más; se corrigen al detener.
-- Las notas grabadas antes del repaso no se pueden rehacer: no se guardan
-  las huellas. Se corrigen a mano con "Es la misma persona que…".
+- Rust (`src-tauri/src/speakers.rs`) only computes the voice fingerprint of each
+  sentence (`voice_print`). Model: ERes2Net from 3D-Speaker (~40 MB, a single
+  file), downloadable from diagnostics (`speakers`, optional).
+- 4 models were tested with 4 synthetic voices in English and Spanish. Only
+  ERes2Net got every sentence right with a single threshold (0.5), at ~80 ms
+  per sentence. CAM++ and TitaNet confused voices and WeSpeaker lumped everyone together.
+- The grouping is in JS (`createSpeakerTracker` in `src/notes.js`):
+  - each sentence goes to the most similar person if the cosine is above 0.5;
+  - otherwise, it is a new person;
+  - sentences shorter than 1.2 s always go to the most similar person.
+- The microphone (call) is always `speaker: 0`, "Me".
+- In the note: colors per person, renaming and merging two people
+  (`SpeakerBar` in `src/Notes.jsx`).
+- "Tell speakers apart" switch in Settings → Notes (`lingora.speakers`).
+- With real audio (a 55 min interview, 2 people) the live grouping
+  gave 6 "people": the extra ones were single sentences with laughter, noise or two
+  voices at once. That is why there are two settings:
+  - live, a sentence shorter than 2 s doesn't create a new person;
+  - at the end, a review (`refine`) with the whole conversation:
+    1. whoever speaks less than 3% of the time merges into the most similar one;
+    2. two people with averages more similar than 0.6 are merged;
+    3. each sentence is reassigned to the closest person;
+    4. renumbered by order of appearance.
+  Result: 2 people and 94% of sentences right, against full sherpa-onnx
+  diarization as the reference. The tests with 4 voices stay at
+  100%.
+- While recording, extra people may be seen; they are corrected when stopping.
+- Notes recorded before the review can't be redone: the fingerprints are not
+  saved. They are corrected by hand with "Same person as…".

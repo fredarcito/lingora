@@ -1,4 +1,4 @@
-// Componentes básicos de la interfaz. Catálogo en docs/componentes.md.
+// Basic UI components. Catalog in docs/componentes.md.
 export { cx } from "./cx";
 export { default as Badge } from "./Badge";
 export { default as Button } from "./Button";

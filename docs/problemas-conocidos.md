@@ -1,269 +1,268 @@
-# Problemas conocidos
+# Known problems
 
-Problemas reales encontrados al probar Lingora en un Mac, con el síntoma tal
-como lo ve quien usa la app, la causa y lo que hace la app al respecto.
+Real problems found while testing Lingora on a Mac, with the symptom as the app
+user sees it, the cause and what the app does about it.
 
-La mayoría son de **configuración del audio de macOS**, no del código. La app
-los revisa en el panel de diagnóstico (arriba de todo): las dependencias al
-abrirse y el audio cada 5 segundos. Cuando hay un arreglo automático aparece un
-botón.
+Most of them are about **macOS audio configuration**, not the code. The app
+checks them in the diagnostics panel (at the very top): the dependencies when
+it opens and the audio every 5 seconds. When there is an automatic fix, a
+button appears.
 
-| Síntoma | Causa | ¿Lo detecta la app? | ¿Lo arregla? |
+| Symptom | Cause | Does the app detect it? | Does it fix it? |
 |---|---|---|---|
-| Solo traduce la última frase / se corta / suena "como dentro de un pote" | "Lingora" es un dispositivo agregado, no una salida múltiple | Sí | Sí |
-| Se corta a ratos | BlackHole y la salida a frecuencias distintas | Sí | Sí |
-| No traduce nada, el medidor no se mueve | La salida del sistema no pasa por BlackHole | Sí, y aviso en el carril | Sí |
-| Dejó de funcionar al conectar auriculares | macOS cambió la salida (y la entrada) a los auriculares | Sí, en menos de 5 s | Sí |
-| El vídeo no se oye | La salida del sistema es BlackHole a secas | Sí | Sí |
-| Detecta voz poco o nunca | Volumen de BlackHole bajo / vídeo muy bajo | Sí | Sí (volumen de BlackHole) |
-| La voz traducida se repite en bucle | La traducción sonaba por la salida que alimenta la captura | — | Imposible por diseño |
-| "No se pudo abrir la salida: the requested device is no longer available" con AirPods | Los AirPods son dos dispositivos con el mismo nombre (entrada y salida) | — | Resuelto en el código |
-| Mi voz se oye mal / lejana | Micrófono Bluetooth en modo llamada | Sí (aviso) | No |
-| Mi voz llega muy baja | Ganancia automática desactivada en el micrófono | — | Resuelto en el código |
-| La voz traducida se corta a mitad en frases largas | Límite de 510 tokens de Kokoro | — | Resuelto en el código |
-| Deja de funcionar tras reiniciar el audio del sistema | El WebView pierde el dispositivo | Sí (aviso en el carril) | No: reiniciar la app |
-| Falta espeak-ng / un modelo / BlackHole | Instalación incompleta | Sí | No: indica el comando |
-| La voz suena cortada: una frase no termina y empieza otra | Frases partidas por el corte de 5 s + la salida se abría y cerraba en cada frase | — | Resuelto en el código |
-| La traducción empieza 10–15 s tarde | Trozos largos + voz generada entera + Kokoro lento | — | Resuelto en el código |
+| Only translates the last sentence / it cuts out / sounds "as if inside a tin can" | "Lingora" is an aggregate device, not a multi-output device | Yes | Yes |
+| It cuts out at times | BlackHole and the output run at different sample rates | Yes | Yes |
+| Doesn't translate anything, the meter doesn't move | The system output doesn't go through BlackHole | Yes, and a notice in the lane | Yes |
+| Stopped working when headphones were connected | macOS switched the output (and the input) to the headphones | Yes, within 5 s | Yes |
+| The video can't be heard | The system output is plain BlackHole | Yes | Yes |
+| Detects little or no voice | BlackHole volume low / video very quiet | Yes | Yes (BlackHole volume) |
+| The translated voice repeats in a loop | The translation was played through the output that feeds the capture | — | Impossible by design |
+| "Couldn't open the output: the requested device is no longer available" with AirPods | AirPods are two devices with the same name (input and output) | — | Fixed in the code |
+| My voice sounds bad / distant | Bluetooth microphone in call mode | Yes (notice) | No |
+| My voice comes through very low | Automatic gain disabled on the microphone | — | Fixed in the code |
+| The translated voice cuts off midway in long sentences | Kokoro's limit of 510 tokens | — | Fixed in the code |
+| Stops working after restarting the system audio | The WebView loses the device | Yes (notice in the lane) | No: restart the app |
+| espeak-ng / a model / BlackHole is missing | Incomplete installation | Yes | No: shows the command |
+| The voice sounds cut: one sentence doesn't end and another begins | Sentences split by the 5 s cut + the output opened and closed on every sentence | — | Fixed in the code |
+| The translation starts 10–15 s late | Long chunks + whole voice generated at once + slow Kokoro | — | Fixed in the code |
 
 ---
 
-## Enrutado de audio
+## Audio routing
 
-Lingora oye la llamada así: la salida del sistema es una **salida múltiple**
-llamada "Lingora" que manda el mismo audio a las bocinas (para que tú lo oigas)
-y a **BlackHole 2ch** (un cable virtual). La app graba de BlackHole.
+Lingora hears the call like this: the system output is a **multi-output device**
+called "Lingora" that sends the same audio to the speakers (so you hear it)
+and to **BlackHole 2ch** (a virtual cable). The app records from BlackHole.
 
 ```
-App de la llamada / vídeo
+Call / video app
         │
         ▼
-Salida del sistema: "Lingora" (salida múltiple)
-        ├──► Bocinas / auriculares  → lo oyes tú
-        └──► BlackHole 2ch          → lo captura Lingora
+System output: "Lingora" (multi-output device)
+        ├──► Speakers / headphones  → you hear it
+        └──► BlackHole 2ch          → Lingora captures it
 ```
 
-### "Lingora" es un dispositivo agregado en lugar de una salida múltiple
+### "Lingora" is an aggregate device instead of a multi-output device
 
-- **Síntoma:** la grabación suena entrecortada y metálica, "como dentro de un
-  pote". Whisper solo entiende trozos, normalmente el final, así que la app
-  traduce solo la última frase.
-- **Causa:** en Configuración de Audio MIDI hay dos tipos de dispositivo que se
-  parecen. Un *dispositivo agregado* junta entradas y salidas de varios
-  aparatos con relojes distintos. Una *salida múltiple* manda el mismo audio a
-  varias salidas. Se distinguen porque el agregado tiene canales de entrada.
-- **Detección:** la salida del sistema es un agregado con canales de entrada.
-- **Arreglo automático:** borra el "Lingora" anterior y crea una salida
-  múltiple con la salida real actual (o las bocinas) como dispositivo
-  principal, más BlackHole 2ch con corrección de deriva.
-- **A mano:** Configuración de Audio MIDI → "+" → *Crear dispositivo de salida
-  múltiple*. Marca las bocinas y BlackHole 2ch, elige las bocinas como
-  *dispositivo principal* y activa *Corrección de deriva* solo en BlackHole.
+- **Symptom:** the recording sounds choppy and metallic, "as if inside a tin
+  can". Whisper only understands fragments, usually the end, so the app only
+  translates the last sentence.
+- **Cause:** in Audio MIDI Setup there are two device types that look alike. An
+  *aggregate device* joins inputs and outputs from several devices with different
+  clocks. A *multi-output device* sends the same audio to several outputs. They
+  are told apart because the aggregate has input channels.
+- **Detection:** the system output is an aggregate with input channels.
+- **Automatic fix:** deletes the previous "Lingora" and creates a multi-output
+  device with the current real output (or the speakers) as the main device, plus
+  BlackHole 2ch with drift correction.
+- **By hand:** Audio MIDI Setup → "+" → *Create Multi-Output Device*. Check the
+  speakers and BlackHole 2ch, choose the speakers as the *master device* and
+  enable *Drift Correction* only on BlackHole.
 
-### Frecuencias distintas
+### Different sample rates
 
-- **Síntoma:** cortes y saltos en la captura.
-- **Causa:** BlackHole iba a 48000 Hz y las bocinas a 44100 Hz. La corrección
-  de deriva no compensa una diferencia así.
-- **Arreglo automático:** pone BlackHole a la frecuencia de la salida principal.
-- **A mano:** Configuración de Audio MIDI → BlackHole 2ch → *Formato*.
+- **Symptom:** cuts and jumps in the capture.
+- **Cause:** BlackHole ran at 48000 Hz and the speakers at 44100 Hz. Drift
+  correction doesn't compensate for a difference like that.
+- **Automatic fix:** sets BlackHole to the sample rate of the main output.
+- **By hand:** Audio MIDI Setup → BlackHole 2ch → *Format*.
 
-### La salida del sistema no pasa por BlackHole
+### The system output doesn't go through BlackHole
 
-- **Síntoma:** al pulsar "Traducir en automático" el medidor no se mueve y
-  nunca aparece "● voz". Pasados 8 segundos el carril avisa.
-- **Causa:** la salida del sistema son las bocinas o unos auriculares, así que
-  el audio nunca llega a BlackHole.
-- **Arreglo automático:** crea (o recrea) "Lingora" y la pone como salida.
+- **Symptom:** when "Translate automatically" is pressed, the meter doesn't move
+  and "● voice" never appears. After 8 seconds the lane shows a notice.
+- **Cause:** the system output is the speakers or some headphones, so the audio
+  never reaches BlackHole.
+- **Automatic fix:** creates (or recreates) "Lingora" and sets it as the output.
 
-### Se conectaron unos auriculares
+### Headphones were connected
 
-- **Síntoma:** funcionaba y de repente deja de traducir.
-- **Causa:** al conectar unos auriculares (AirPods, por ejemplo) macOS pasa a
-  ellos la salida *y la entrada* del sistema, y el audio deja de pasar por
+- **Symptom:** it was working and suddenly stops translating.
+- **Cause:** when headphones are connected (AirPods, for example) macOS moves the
+  system *output and input* to them, and the audio stops going through
   "Lingora".
-- **Detección:** el diagnóstico se repite cada 5 segundos y lo marca enseguida.
-- **Arreglo automático:** crea "Lingora" con los auriculares como salida
-  principal, para seguir oyendo por ellos.
+- **Detection:** the diagnostics repeat every 5 seconds and flag it right away.
+- **Automatic fix:** creates "Lingora" with the headphones as the main output,
+  so you keep hearing through them.
 
-### La salida del sistema es BlackHole a secas
+### The system output is plain BlackHole
 
-- **Síntoma:** Lingora traduce, pero no oyes la llamada ni el vídeo.
-- **Causa:** BlackHole es un cable virtual y no suena por ningún altavoz.
-- **Arreglo automático:** igual que el anterior.
+- **Symptom:** Lingora translates, but you can't hear the call or the video.
+- **Cause:** BlackHole is a virtual cable and doesn't play through any speaker.
+- **Automatic fix:** same as the previous one.
 
-### Volumen de BlackHole bajo
+### BlackHole volume low
 
-- **Síntoma:** el medidor apenas se mueve y la voz no se detecta.
-- **Causa:** la entrada de BlackHole estaba al 73 %, y el vídeo ya llegaba con
-  poco nivel.
-- **Arreglo automático:** sube la entrada de BlackHole al 100 %.
-- **En el código:** el umbral de detección de voz es bajo (0,002 RMS) y las
-  frases se normalizan antes de mandarlas a Whisper.
-- **A mano:** sube también el volumen del reproductor o de la app de la llamada.
-  Con una salida múltiple las teclas de volumen del Mac no funcionan. Para la
-  voz traducida, cada carril tiene su propio control de volumen (0–200 %).
+- **Symptom:** the meter barely moves and the voice is not detected.
+- **Cause:** the BlackHole input was at 73 %, and the video was already coming
+  in at a low level.
+- **Automatic fix:** raises the BlackHole input to 100 %.
+- **In the code:** the voice detection threshold is low (0.002 RMS) and the
+  sentences are normalized before being sent to Whisper.
+- **By hand:** also raise the volume of the player or the call app.
+  With a multi-output device the Mac's volume keys don't work. For the
+  translated voice, each lane has its own volume control (0–200 %).
 
-### La traducción se oye en bucle
+### The translation is heard in a loop
 
-- **Síntoma:** las mismas frases se repiten una y otra vez, y aparecen
-  "transcripciones" en español en el carril de inglés.
-- **Causa:** la voz traducida sonaba por "Lingora", volvía a entrar por
-  BlackHole y se traducía otra vez. El WebView de macOS (WKWebView) no
-  implementa `AudioContext.setSinkId`, así que no puede elegir la salida.
-- **En el código:** la voz se reproduce desde Rust (`cpal`) en el dispositivo
-  elegido. Las salidas que alimentan la captura (BlackHole 2ch, "Lingora") no se
-  pueden elegir, y el backend se niega a reproducir en ellas.
-- **Nota técnica:** `cpal` no sabe leer los formatos de las bocinas integradas
-  en macOS reciente ("Invalid property value") y no las lista. La app las busca
-  entre todos los dispositivos y usa la frecuencia que da Core Audio. Pedir otra
-  frecuencia haría que `cpal` la cambiara y descuadraría la salida múltiple.
+- **Symptom:** the same sentences repeat over and over, and "transcriptions" in
+  Spanish appear in the English lane.
+- **Cause:** the translated voice played through "Lingora", came back in through
+  BlackHole and was translated again. The macOS WebView (WKWebView) doesn't
+  implement `AudioContext.setSinkId`, so it can't choose the output.
+- **In the code:** the voice is played from Rust (`cpal`) on the chosen device.
+  The outputs that feed the capture (BlackHole 2ch, "Lingora") can't be chosen,
+  and the backend refuses to play to them.
+- **Technical note:** `cpal` can't read the formats of the built-in speakers on
+  recent macOS ("Invalid property value") and doesn't list them. The app looks
+  for them among all the devices and uses the sample rate that Core Audio gives.
+  Requesting another sample rate would make `cpal` change it and throw off the
+  multi-output device.
 
-### Error al reproducir en unos AirPods
+### Error playing through AirPods
 
-- **Síntoma:** con los AirPods como salida del carril, cada frase falla con
-  "no se pudo abrir la salida: The requested device is no longer available".
-- **Causa:** macOS registra unos auriculares Bluetooth como **dos
-  dispositivos con el mismo nombre**: uno solo de entrada (micrófono) y otro
-  solo de salida. La app buscaba la salida por nombre y encontraba primero el
-  micrófono.
-- **En el código:** entre los dispositivos con ese nombre se usa el que tiene
-  salida. Igual que con las bocinas, `cpal` no sabe leer sus formatos, así que
-  se usa la frecuencia de Core Audio.
+- **Symptom:** with the AirPods as the lane's output, every sentence fails with
+  "couldn't open the output: The requested device is no longer available".
+- **Cause:** macOS registers some Bluetooth headphones as **two devices with the
+  same name**: one input-only (microphone) and one output-only. The app looked for
+  the output by name and found the microphone first.
+- **In the code:** among the devices with that name, the one that has an output is
+  used. As with the speakers, `cpal` can't read their formats, so the Core Audio
+  sample rate is used.
 
-### Micrófono Bluetooth
+### Bluetooth microphone
 
-- **Síntoma:** tu voz traducida sale peor. Whisper se equivoca más.
-- **Causa:** al usar el micrófono de unos auriculares Bluetooth, macOS los pasa
-  a modo llamada: 16 kHz y mucha compresión.
-- **Detección:** aviso si la entrada del sistema es Bluetooth.
-- **A mano:** usa el micrófono del Mac como entrada y los auriculares solo
-  para oír.
+- **Symptom:** your translated voice comes out worse. Whisper makes more mistakes.
+- **Cause:** when using the microphone of Bluetooth headphones, macOS switches
+  them to call mode: 16 kHz and a lot of compression.
+- **Detection:** notice if the system input is Bluetooth.
+- **By hand:** use the Mac's microphone as the input and the headphones only
+  for listening.
 
-### Se reinició el audio del sistema
+### The system audio was restarted
 
-- **Síntoma:** después de reiniciar el servicio de audio (`sudo killall
-  coreaudiod`), de cambiar dispositivos o de que un dispositivo se desconecte,
-  la captura deja de funcionar.
-- **Causa:** el WebView pierde la conexión con el dispositivo.
-- **Detección:** el carril se detiene y avisa.
-- **A mano:** volver a pulsar "Traducir en automático"; si no responde,
-  reiniciar Lingora.
+- **Symptom:** after restarting the audio service (`sudo killall
+  coreaudiod`), after changing devices or when a device disconnects, the
+  capture stops working.
+- **Cause:** the WebView loses its connection to the device.
+- **Detection:** the lane stops and shows a notice.
+- **By hand:** press "Translate automatically" again; if it doesn't respond,
+  restart Lingora.
 
-### Reunión en línea: tu voz no aparece hasta que suena el Mac
+### Online meeting: your voice doesn't appear until the Mac makes a sound
 
-- **Síntoma:** en Tomar notas → Reunión en línea, si empiezas hablando tú, no
-  sale nada (ni la línea `[lingora] entrada:` de tu micrófono) hasta que suena
-  algo en el Mac (un vídeo, la otra persona). El reloj puede quedarse en 00:00.
-- **Causa:** con la captura del audio del Mac recién creada y nada sonando,
-  Core Audio no contesta hasta que pasa audio por ella. Abrir el micrófono
-  después se quedaba esperando, y las consultas de dispositivos en el hilo de
-  la ventana la congelaban.
-- **Arreglo:** `startNotes` (`useMeetingNotes.js`) abre tu micrófono **antes**
-  de capturar el Mac, y `audio_route` y `list_audio_devices` corren fuera del
-  hilo de la ventana (`spawn_blocking`). Al conectar un aparato no se recargan
-  los dispositivos mientras se graba. No cambies ese orden.
-
----
-
-## Voz y transcripción
-
-### Mi voz llega muy baja
-
-- **Causa:** la captura desactiva el procesamiento del sistema porque, con él,
-  WKWebView puede entregar silencio en dispositivos virtuales como BlackHole.
-  Eso también desactivaba la ganancia automática del micrófono.
-- **En el código:** la ganancia automática se activa solo en el carril del
-  micrófono, y cada frase se normaliza a −1 dBFS (como mucho ×20) antes de ir a
-  Whisper. Lo que está por debajo del umbral de silencio no se amplifica, para
-  que Whisper no invente frases sobre el ruido.
-
-### La voz traducida se corta a mitad
-
-- **Causa:** Kokoro admite unos 510 tokens por llamada y descarta el resto sin
-  avisar. Una traducción de más de unos 30 s se cortaba.
-- **En el código:** espeak-ng devuelve una cláusula por línea; el motor las
-  agrupa en trozos de hasta 400 caracteres, los sintetiza por separado y los
-  une con una pausa corta.
-
-### Whisper "solo devuelve el último segmento"
-
-Una nota anterior en `groq.rs` atribuía a Whisper que el campo `text` trajera
-solo el último segmento. Al probarlo con 22 s de habla, Whisper devolvió todo
-tanto con `json` como con `verbose_json`. Lo más probable es que el audio ya
-llegara recortado por el problema del dispositivo agregado.
-
-### La traducción empieza 10–15 s tarde
-
-- **Síntoma:** en un vídeo o una llamada, la voz traducida empieza a sonar
-  mucho después de que la persona termine de hablar.
-- **Causa:** se sumaban tres cosas. Quien habla sin pausas llegaba al máximo
-  de 10 s por trozo, así que había que esperar 10 s antes de traducir nada. La
-  voz se generaba entera antes de sonar. Y Kokoro en `q8` tardaba la mitad de
-  lo que dura el audio en generarlo.
-- **En el código:**
-  - Trozos de 5 s como máximo; una pausa de 0,4 s cierra la frase.
-  - La traducción se parte en frases y la primera se corta en su primera
-    coma. Cada frase se sintetiza por separado y suena en cuanto está lista.
-  - Kokoro en `fp32`: 2,25 veces más rápido que `q8` en Apple Silicon, ~0,22 s
-    por segundo de voz. La primera frase corta está lista en ~0,4 s.
-  - Whisper y el traductor reciben el trozo anterior como contexto, para que
-    las frases partidas se traduzcan bien.
-- **Medido:** Whisper + traducción ~1,4 s, primera frase de voz ~0,4 s. Unos 2 s
-  desde que termina el trozo, más los 0,4 s de pausa que lo cierran.
-
-### La voz suena cortada: una frase no termina y empieza otra
-
-- **Causa 1, frases partidas:** quien habla sin pausas se corta cada 5 s. Si
-  el corte cae en mitad de una frase, se traducía y se decía media frase
-  ("y luego fuimos al…") y la siguiente empezaba igual de coja. Además,
-  Whisper suele poner punto al final del trozo aunque la frase siga.
-- **En el código:** cada trozo indica si terminó en una pausa o en un corte
-  forzado. En un corte forzado solo se traduce hasta el último final de frase
-  interno (o la última coma); el resto se guarda y se junta con el trozo
-  siguiente. El punto final que pone Whisper no cuenta. Si un texto no tiene
-  ningún final de frase, se guarda una vez; a la segunda se traduce tal cual
-  para no acumular retraso. En una pausa se traduce todo.
-- **Causa 2, la salida se abría en cada frase:** abrir y cerrar el dispositivo
-  de audio en cada frase hacía que los auriculares Bluetooth se comieran el
-  principio de cada una.
-- **En el código:** cada salida se abre una vez y se queda abierta (emite
-  silencio cuando no hay nada que decir). Las frases se encolan y suenan
-  seguidas. Si el dispositivo se desconecta, se reabre en la siguiente frase.
-
-### Whisper tarda a veces 8 s o falla
-
-- **Síntoma:** algunas frases llegan con mucho más retraso que otras, o
-  aparece un error suelto de la API.
-- **Causa:** la latencia de Groq es muy variable: la misma petición tarda 1 s
-  o 8 s, y de vez en cuando falla sin motivo.
-- **En el código:** si Whisper no responde en 2 s, se lanza una segunda
-  petición idéntica y se usa la primera que llegue. Un fallo rápido se reintenta
-  una vez.
+- **Symptom:** in Take notes → Online meeting, if you start speaking, nothing
+  appears (not even the `[lingora] entrada:` line for your microphone) until
+  something plays on the Mac (a video, the other person). The clock may stay at
+  00:00.
+- **Cause:** with the Mac's audio capture just created and nothing playing,
+  Core Audio doesn't answer until audio passes through it. Opening the microphone
+  afterwards kept waiting, and device queries on the window's thread froze it.
+- **Fix:** `startNotes` (`useMeetingNotes.js`) opens your microphone **before**
+  capturing the Mac, and `audio_route` and `list_audio_devices` run outside the
+  window's thread (`spawn_blocking`). When a device is connected, the devices are
+  not reloaded while recording. Don't change that order.
 
 ---
 
-## Instalación
+## Voice and transcription
 
-| Comprobación | Si falla |
+### My voice comes through very low
+
+- **Cause:** the capture turns off system processing because, with it on,
+  WKWebView can deliver silence on virtual devices such as BlackHole.
+  That also turned off the microphone's automatic gain.
+- **In the code:** automatic gain is enabled only on the microphone lane, and each
+  sentence is normalized to −1 dBFS (at most ×20) before going to Whisper. What is
+  below the silence threshold is not amplified, so that Whisper doesn't invent
+  sentences out of the noise.
+
+### The translated voice cuts off midway
+
+- **Cause:** Kokoro accepts about 510 tokens per call and silently discards the
+  rest. A translation longer than about 30 s was being cut.
+- **In the code:** espeak-ng returns one clause per line; the engine groups them
+  into chunks of up to 400 characters, synthesizes them separately and joins them
+  with a short pause.
+
+### Whisper "only returns the last segment"
+
+An earlier note in `groq.rs` attributed to Whisper that the `text` field came
+back with only the last segment. When tested with 22 s of speech, Whisper returned
+everything with both `json` and `verbose_json`. The most likely explanation is
+that the audio already arrived truncated because of the aggregate device problem.
+
+### The translation starts 10–15 s late
+
+- **Symptom:** in a video or a call, the translated voice starts playing long
+  after the person finishes speaking.
+- **Cause:** three things added up. Someone speaking without pauses reached the
+  maximum of 10 s per chunk, so 10 s had to pass before anything was translated.
+  The voice was generated in full before playing. And Kokoro in `q8` took half
+  the audio's duration to generate it.
+- **In the code:**
+  - Chunks of 5 s at most; a 0.4 s pause closes the sentence.
+  - The translation is split into sentences and the first one is cut at its first
+    comma. Each sentence is synthesized separately and plays as soon as it is ready.
+  - Kokoro in `fp32`: 2.25 times faster than `q8` on Apple Silicon, ~0.22 s per
+    second of voice. The first short sentence is ready in ~0.4 s.
+  - Whisper and the translator receive the previous chunk as context, so that
+    split sentences are translated well.
+- **Measured:** Whisper + translation ~1.4 s, first voice sentence ~0.4 s. About
+  2 s from the end of the chunk, plus the 0.4 s pause that closes it.
+
+### The voice sounds cut: one sentence doesn't end and another begins
+
+- **Cause 1, split sentences:** someone speaking without pauses gets cut every 5 s.
+  If the cut falls in the middle of a sentence, half a sentence was translated and
+  spoken ("and then we went to the…") and the next one started just as lamely.
+  Also, Whisper usually puts a period at the end of the chunk even when the
+  sentence continues.
+- **In the code:** each chunk indicates whether it ended at a pause or at a forced
+  cut. At a forced cut only the text up to the last internal sentence end (or the
+  last comma) is translated; the rest is kept and joined with the next chunk. The
+  final period that Whisper adds doesn't count. If a text has no sentence end at
+  all, it is kept once; the second time it is translated as is, so as not to
+  accumulate delay. At a pause, everything is translated.
+- **Cause 2, the output opened on every sentence:** opening and closing the audio
+  device for each sentence made Bluetooth headphones eat the beginning of each one.
+- **In the code:** each output is opened once and stays open (it emits silence when
+  there is nothing to say). Sentences are queued and play one after another. If the
+  device disconnects, it is reopened on the next sentence.
+
+### Whisper sometimes takes 8 s or fails
+
+- **Symptom:** some sentences arrive much later than others, or a stray API error
+  appears.
+- **Cause:** Groq's latency is very variable: the same request takes 1 s or 8 s,
+  and now and then it fails for no reason.
+- **In the code:** if Whisper doesn't respond within 2 s, an identical second
+  request is sent and whichever arrives first is used. A fast failure is retried
+  once.
+
+---
+
+## Installation
+
+| Check | If it fails |
 |---|---|
-| Clave de Groq | Añadir `GROQ_API_KEY=...` al `.env` de la raíz y reiniciar |
-| espeak-ng | Va dentro de la app: reinstalar Lingora. En desarrollo, `scripts/build-espeak.sh` |
-| Modelo de voz | «Descargar» en el diagnóstico |
-| BlackHole 2ch | `brew install blackhole-2ch` y reiniciar el Mac |
+| Groq key | Add `GROQ_API_KEY=...` to the `.env` in the root and restart |
+| espeak-ng | It is inside the app: reinstall Lingora. In development, `scripts/build-espeak.sh` |
+| Voice model | "Descargar" (Download) in the diagnostics |
+| BlackHole 2ch | `brew install blackhole-2ch` and restart the Mac |
 
 ---
 
-## Último recurso
+## Last resort
 
-Si BlackHole parece no recibir nada aunque el diagnóstico esté en verde,
-reiniciar el servicio de audio puede ayudar (requiere contraseña de
-administrador):
+If BlackHole seems to receive nothing even though the diagnostics are green,
+restarting the audio service can help (requires the administrator password):
 
 ```bash
 sudo killall coreaudiod
 ```
 
-Después hay que reiniciar Lingora. No está confirmado que esto fuera necesario
-en las pruebas, donde el fallo resultó ser la herramienta de medida, pero es
-la recomendación habitual con drivers virtuales bloqueados.
+Afterwards Lingora has to be restarted. It is not confirmed that this was
+necessary in the tests, where the fault turned out to be the measuring tool, but
+it is the usual recommendation when virtual drivers get stuck.

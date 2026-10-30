@@ -15,13 +15,13 @@ import { echoPossible, prefersMacMic, prefersRoomMic } from "../../utils/route.j
 import { splitWords, wordDelayMs } from "../../utils/words.js";
 import styles from "./styles.module.css";
 
-/** Distancia al final a partir de la cual se considera que el usuario subió a leer. */
+/** Distance from the bottom beyond which the user is considered to have scrolled up to read. */
 const STICK_PX = 48;
 
-/** Caracteres de lo que se oye ahora que caben al pie, como en los subtítulos. */
+/** Characters of what is being heard now that fit at the bottom, as in the subtitles. */
 const LIVE_CHARS = 90;
 
-/** "03:25", o "1:03:25" a partir de una hora. @param {number} secs */
+/** "03:25", or "1:03:25" from one hour on. @param {number} secs */
 function elapsedLabel(secs) {
   const s = Math.max(0, Math.floor(secs));
   const pad = (/** @type {number} */ n) => String(n).padStart(2, "0");
@@ -30,9 +30,9 @@ function elapsedLabel(secs) {
 }
 
 /**
- * La pantalla de Tomar notas: antes de empezar, sus opciones; mientras graba,
- * la transcripción en vivo como un documento. La nota la escribe el grabador
- * (`notes.js`); aquí solo se lee su copia en memoria cuando avisa de un cambio.
+ * The Take notes screen: before starting, its options; while recording,
+ * the live transcript as a document. The recorder writes the note
+ * (`notes.js`); here its in-memory copy is only read when it reports a change.
  * @param {{
  *   running: boolean, starting: boolean, closing: boolean, error: string | null,
  *   micError: string | null,
@@ -66,17 +66,17 @@ export default function NoteTaking({
   onStop,
 }) {
   const t = useT();
-  // Se elige en Ajustes; al volver aquí la pantalla se pinta de nuevo y lo lee.
+  // It is chosen in Settings; when coming back here, the screen is repainted and reads it.
   const summaryLang = loadNotesLang();
   const [askConsent, setAskConsent] = useState(false);
   const [note, setNote] = useState(/** @type {import("../../utils/api").Note | null} */ (null));
   const [elapsed, setElapsed] = useState(0);
-  // El usuario subió a leer: no se le arrastra abajo y se ofrece volver.
+  // The user scrolled up to read: they are not dragged back down and a way back is offered.
   const [away, setAway] = useState(false);
   const stick = useRef(true);
   const scroller = useRef(/** @type {HTMLDivElement | null} */ (null));
 
-  // Sin Audio del Mac (macOS anterior a 14.2) solo queda el micrófono.
+  // Without Mac audio (macOS before 14.2) only the microphone is left.
   const effectiveInput = systemAudio ? input : "mic";
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function NoteTaking({
     setElapsed(0);
     stick.current = true;
     setAway(false);
-    // El grabador conserva la nota anterior hasta la primera frase: solo vale una de esta sesión.
+    // The recorder keeps the previous note until the first sentence: only one from this session counts.
     const sync = () => {
       const current = getActiveNote();
       setNote(current && current.created_at >= since ? current : null);
@@ -102,7 +102,7 @@ export default function NoteTaking({
 
   const live = [...heard.map((h) => h.text), partial].filter(Boolean).join(" ");
 
-  // Baja sola, con suavidad, mientras el usuario esté abajo.
+  // Scrolls down by itself, smoothly, while the user is at the bottom.
   const follow = () => {
     const el = scroller.current;
     if (!el || !stick.current) return;
@@ -128,9 +128,9 @@ export default function NoteTaking({
   const begin = () => (loadNotesConsent() ? onStart() : setAskConsent(true));
 
   if (running) {
-    // En vivo las personas son provisionales (el repaso las junta al terminar):
-    // se muestra el texto sin ellas y los párrafos se parten solo por pausas.
-    // "Yo" (tu micrófono en una reunión en línea) sí es seguro y se marca.
+    // Live, people are provisional (the review merges them when it finishes):
+    // the text is shown without them and paragraphs are split only by pauses.
+    // "Yo" (your microphone in an online meeting) is reliable and gets marked.
     const anonymous = note && { ...note, sentences: note.sentences.map((x) => ({ ...x, speaker: x.speaker === 0 ? 0 : null })) };
     return (
       <div className={styles.noteTaking}>
@@ -138,7 +138,7 @@ export default function NoteTaking({
           <div className={styles.takingBar}>
             <span className="note-live">{t("noteTaking.recording")}</span>
             <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
-            {/* De dónde se graba, por si se eligió el que no era. */}
+            {/* Where it is recorded from, in case the wrong one was chosen. */}
             <Badge>{t(`noteTaking.${effectiveInput}`)}</Badge>
             <p className={cx(styles.takingPeople, "muted")}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
             <Button variant="stop" onClick={onStop}>
@@ -264,8 +264,8 @@ export default function NoteTaking({
 }
 
 /**
- * Qué pasará con lo que hay conectado ahora en una reunión en línea: si tu voz
- * queda separada (auriculares) y qué micrófono se usará (ver `utils/route.js`).
+ * What will happen with what is connected now in an online meeting: whether your voice
+ * stays separate (headphones) and which microphone will be used (see `utils/route.js`).
  * @param {{ route: import("../../utils/api").AudioRoute }} props
  */
 function RouteHint({ route }) {
@@ -279,9 +279,9 @@ function RouteHint({ route }) {
 }
 
 /**
- * La transcripción en vivo: las frases llegan enteras, pero el texto aparece
- * palabra a palabra, al ritmo de los subtítulos de Traducir audio, para que
- * no se vea a saltos. Cada párrafo es una fila como en la página de la nota.
+ * The live transcript: sentences arrive whole, but the text appears
+ * word by word, at the pace of the Translate audio subtitles, so that
+ * it does not look jumpy. Each paragraph is a row, as on the note page.
  * @param {{ note: import("../../utils/api").Note, onReveal: () => void }} props
  */
 function LiveTranscript({ note, onReveal }) {
@@ -289,9 +289,9 @@ function LiveTranscript({ note, onReveal }) {
   /** @type {Map<import("../../utils/api").NoteSentence, number>} */
   const index = new Map(note.sentences.map((x, i) => [x, i]));
   /**
-   * Las palabras de cada frase, con clave estable (frase:palabra). La frase
-   * no se identifica por su posición: en una reunión en línea una frase puede
-   * colarse antes de otra que ya se ve.
+   * The words of each sentence, with a stable key (sentence:word). The sentence
+   * is not identified by its position: in an online meeting a sentence can
+   * slip in before another one that is already visible.
    */
   const byIndex = note.sentences.map((x) =>
     splitWords(x.translation ?? x.source).map((text, j) => ({ key: `${x.t}:${x.direction}:${x.source.length}:${j}`, text })),
@@ -302,14 +302,14 @@ function LiveTranscript({ note, onReveal }) {
   const shown = useRef(/** @type {Set<string>} */ (new Set()));
   const [, redraw] = useState(0);
 
-  // Un reloj propio: las frases llegan a trozos y reiniciarían un temporizador atado al render.
+  // Its own clock: sentences arrive in chunks and would restart a timer tied to the render.
   useEffect(() => {
     let last = 0;
     let tick = performance.now();
     const timer = window.setInterval(() => {
       const waiting = allRef.current.filter((w) => !shown.current.has(w.key));
       const now = performance.now();
-      // Con la ventana detrás de otra macOS frena el reloj: al volver, de golpe.
+      // With the window behind another one, macOS slows the clock: when it comes back, it jumps at once.
       const throttled = now - tick > 500;
       tick = now;
       if (throttled && waiting.length) {

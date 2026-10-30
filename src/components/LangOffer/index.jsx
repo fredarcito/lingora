@@ -16,8 +16,8 @@ function alreadyDecided() {
 }
 
 /**
- * Aviso de una sola vez: si el sistema está en un idioma que Lingora no trae pero
- * sabe traducir, ofrece generar la interfaz en él con el modelo local.
+ * One-time notice: if the system is set to a language that Lingora does not ship but
+ * can translate, it offers to generate the interface in that language with the local model.
  */
 export default function LangOffer() {
   const t = useT();
@@ -46,7 +46,7 @@ export default function LangOffer() {
     try {
       localStorage.setItem(OFFER_KEY, "1");
     } catch {
-      // Volverá a preguntar la próxima vez.
+      // It will ask again next time.
     }
     setOffer(null);
   };

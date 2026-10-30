@@ -1,136 +1,135 @@
-# Plan: más idiomas y paquetes de idioma descargables
+# Plan: more languages and downloadable language packs
 
-Estado (2026-10-28):
+Status (2026-10-28):
 
-- **Hecho: 37 idiomas**, todos los que traduce HY-MT2 en local y transcribe
-  Whisper (todos menos el uigur, que Whisper no tiene). La lista vive en un
-  solo sitio, `LANGS` en `src-tauri/src/config.rs`, y la UI la pide con el
-  comando `languages`, que dice también qué voces hay en el equipo.
-- **Todo local (desde 2026-10-28), sin Groq.**
-- **Por idioma:**
-  - Escuchar: Parakeet para los europeos (en, es, fr, it, pt, de, nl, pl,
-    cs, ru, uk) y SenseVoice para zh, zh-hant, yue, ja y ko. Los demás (22)
-    solo pueden ser idioma de destino: en el lado que se escucha salen como
-    "(pronto)". Para escucharlos haría falta un Whisper local (whisper.cpp,
-    ~550–830 MB, más lento) u Omnilingual de Meta (sherpa-onnx, CTC).
-  - Voz: Kokoro en en, es, fr, it y pt; para los demás, la mejor voz del
-    sistema instalada (`system_voice.rs`: Premium > Mejorada > normal, y
-    del género pedido o, si no hay, del otro). Sin voz instalada, el idioma
-    sale como "(sin voz)" y solo hay subtítulos.
-  - En este Mac (macOS 26) hay voz para 27 de los 37. Sin voz: persa,
-    urdu, guyaratí, maratí, filipino, jemer, birmano, tibetano, kazajo y
-    mongol.
-- **Subtítulos:** las escrituras sin espacios (china, japonesa, tailandesa,
-  lao, tibetana, birmana, jemer) se separan en palabras con
-  `Intl.Segmenter`; el árabe, el hebreo y el urdu se muestran de derecha a
-  izquierda (`dir="auto"`); los cortes de frase entienden 。！？ । ۔ ؟ ။ ། ។.
-- **Windows:** `system_voice.rs` ya separa la lista de voces y la síntesis
-  por sistema. Falta implementarlas con `Windows.Media.SpeechSynthesis`
-  (voces OneCore, con idioma y género); hasta entonces en Windows solo
-  tendrían voz los cinco idiomas de Kokoro.
-- **Pendiente:** escuchar en local los 22 idiomas restantes y los paquetes
-  descargables.
+- **Done: 37 languages**, all the ones HY-MT2 translates locally and Whisper
+  transcribes (all except Uyghur, which Whisper doesn't have). The list lives in
+  a single place, `LANGS` in `src-tauri/src/config.rs`, and the UI requests it with
+  the `languages` command, which also says which voices are on the machine.
+- **All local (since 2026-10-28), no Groq.**
+- **Per language:**
+  - Listen: Parakeet for the European languages (en, es, fr, it, pt, de, nl, pl,
+    cs, ru, uk) and SenseVoice for zh, zh-hant, yue, ja and ko. The others (22)
+    can only be target languages: on the listening side they show as
+    "(soon)". To listen to them, a local Whisper (whisper.cpp,
+    ~550–830 MB, slower) or Meta's Omnilingual (sherpa-onnx, CTC) would be needed.
+  - Voice: Kokoro in en, es, fr, it and pt; for the others, the best system voice
+    installed (`system_voice.rs`: Premium > Enhanced > normal, and of the
+    requested gender or, if there is none, of the other). With no voice installed, the language
+    shows as "(no voice)" and there are only captions.
+  - On this Mac (macOS 26) there is a voice for 27 of the 37. No voice: Persian,
+    Urdu, Gujarati, Marathi, Filipino, Khmer, Burmese, Tibetan, Kazakh and
+    Mongolian.
+- **Captions:** scripts without spaces (Chinese, Japanese, Thai,
+  Lao, Tibetan, Burmese, Khmer) are split into words with `Intl.Segmenter`; Arabic,
+  Hebrew and Urdu are shown right to left (`dir="auto"`); sentence breaks understand
+  。！？ । ۔ ؟ ။ ། ។.
+- **Windows:** `system_voice.rs` already separates the voice list and the synthesis
+  by system. It still needs to be implemented with `Windows.Media.SpeechSynthesis`
+  (OneCore voices, with language and gender); until then, on Windows only the five
+  Kokoro languages would have a voice.
+- **Pending:** listen locally to the remaining 22 languages and the downloadable packs.
 
-Los paquetes no se hicieron porque el modelo de Kokoro ya trae sus 54 voces
-(`voices.bin`, 27 MB): no hay nada más que descargar. Tienen sentido
-cuando un idioma necesite piezas pesadas (ver abajo).
+The packs were not made because the Kokoro model already includes its 54 voices
+(`voices.bin`, 27 MB): there is nothing else to download. They make sense
+when a language needs heavy pieces (see below).
 
-## Antes de la fase 1
+## Before phase 1
 
-La app solo tenía inglés y español: el tipo `Lang` (`config.rs`) solo tenía
-`En` y `Es`, y los carriles iban fijos EN↔ES.
+The app only had English and Spanish: the `Lang` type (`config.rs`) only had
+`En` and `Es`, and the lanes were fixed EN↔ES.
 
-Cuántos idiomas cubre cada pieza:
+How many languages each part covers:
 
-| Pieza | Idiomas |
+| Part | Languages |
 |---|---|
-| Whisper en Groq (Precisa) | ~99 |
-| Parakeet v3 (Rápida) | 25, solo europeos |
-| qwen en Groq (Nube) | 100+ |
-| HY-MT2 (Local) | 33 (incluye chino, japonés, coreano, árabe, hindi, alemán…) |
-| Kokoro (voz) | 8: inglés, español, francés, italiano, portugués, hindi, japonés, chino |
+| Whisper on Groq (Precise) | ~99 |
+| Parakeet v3 (Fast) | 25, European only |
+| qwen on Groq (Cloud) | 100+ |
+| HY-MT2 (Local) | 33 (includes Chinese, Japanese, Korean, Arabic, Hindi, German…) |
+| Kokoro (voice) | 8: English, Spanish, French, Italian, Portuguese, Hindi, Japanese, Chinese |
 
-El límite lo pone la voz:
+The limit is set by the voice:
 
-- **Todo local** (Rápida + Local): 5 idiomas (en, es, fr, it, pt).
-- **Con Whisper en Groq**: hasta 8, pero hindi, japonés y chino están sin
-  probar. Hoy los fonemas salen de espeak-ng, y Kokoro se entrenó con otro
-  sistema para japonés y chino.
-- Kokoro no tiene alemán, ruso, árabe ni coreano. Piper (en sherpa-onnx) tiene
-  voces para unos 40 idiomas, aunque menos naturales.
+- **All local** (Fast + Local): 5 languages (en, es, fr, it, pt).
+- **With Whisper on Groq**: up to 8, but Hindi, Japanese and Chinese are untested. Today
+  the phonemes come from espeak-ng, and Kokoro was trained with another
+  system for Japanese and Chinese.
+- Kokoro doesn't have German, Russian, Arabic or Korean. Piper (in sherpa-onnx) has
+  voices for about 40 languages, although less natural ones.
 
-Abrir los 5 idiomas europeos es poco trabajo:
+Opening the 5 European languages is little work:
 
-- Un selector de idioma por carril.
-- Ampliar `Lang`, las voces y los glosarios.
-- Revisar los filtros que solo conocen inglés y español (muletillas y
-  alucinaciones de Whisper).
+- A language picker per lane.
+- Extend `Lang`, the voices and the glossaries.
+- Review the filters that only know English and Spanish (filler words and Whisper
+  hallucinations).
 
-## Japonés y chino
+## Japanese and Chinese
 
-1. **Escuchar:**
-   - Whisper en Groq ya funciona con los dos.
-   - En local, Parakeet no los reconoce. Las opciones:
-     - SenseVoice Small (Alibaba; zh, ja, ko, yue, en; ~230 MB). Corre en
-       sherpa-onnx, la misma librería que Parakeet. Falta comprobar que da
-       tiempos por palabra.
-     - Whisper local (large-v3-turbo, 834 MB; se borró al limpiar y habría que volver a bajarlo).
-2. **Traducir:** no cambia. HY-MT2 es fuerte en chino↔inglés e incluye
-   japonés; qwen también.
-3. **Hablar, que es lo difícil:**
-   - Kokoro tiene voces japonesas (5) y chinas (8), pero necesita la
-     pronunciación de su entrenamiento, y espeak-ng no la da.
-   - **Chino:** el Kokoro multilingüe de sherpa-onnx trae diccionario propio.
-     Es viable y encaja con pasar Kokoro a sherpa-onnx
-     (ver [plan-distribucion.md](plan-distribucion.md)).
-   - **Japonés:** hace falta un analizador de kanji (OpenJTalk/MeCab). No hay
-     una opción lista conocida para Rust; es lo más costoso.
-   - **Alternativas:** MeloTTS (zh+en en sherpa-onnx) y Style-BERT-VITS2 para
-     japonés. Esta última va en Python, así que no sirve para la app.
-4. **Ajustes de la app para chino y japonés:**
-   - Puntuación `。！？、，` en los cortes de frase (`audio.js`, `App.jsx`).
-   - Sin espacios entre palabras: afecta a la unión de tokens en
-     `listener.rs` y al corte entre palabras.
-   - Los largos de frase en caracteres (`MIN_PHRASE_CHARS`,
-     `MAX_PHRASE_CHARS`) deben ir por idioma.
-   - Alucinaciones de Whisper propias de cada idioma, como
-     "字幕由Amara.org社区提供".
+1. **Listening:**
+   - Whisper on Groq already works with both.
+   - Locally, Parakeet doesn't recognize them. The options:
+     - SenseVoice Small (Alibaba; zh, ja, ko, yue, en; ~230 MB). It runs in
+       sherpa-onnx, the same library as Parakeet. It still needs to be checked that it gives
+       per-word timings.
+     - Local Whisper (large-v3-turbo, 834 MB; it was deleted during cleanup and would have to be downloaded again).
+2. **Translating:** no change. HY-MT2 is strong in Chinese↔English and includes
+   Japanese; qwen does too.
+3. **Speaking, which is the hard part:**
+   - Kokoro has Japanese (5) and Chinese (8) voices, but it needs the pronunciation
+     from its training, and espeak-ng doesn't provide it.
+   - **Chinese:** the multilingual Kokoro in sherpa-onnx comes with its own dictionary.
+     It is viable and fits with moving Kokoro to sherpa-onnx
+     (see [plan-distribucion.md](plan-distribucion.md)).
+   - **Japanese:** a kanji analyzer (OpenJTalk/MeCab) is needed. There is no known
+     ready-made option for Rust; it is the most costly part.
+   - **Alternatives:** MeloTTS (zh+en in sherpa-onnx) and Style-BERT-VITS2 for
+     Japanese. The latter is written in Python, so it is not usable in the app.
+4. **App adjustments for Chinese and Japanese:**
+   - Punctuation `。！？、，` in sentence breaks (`audio.js`, `App.jsx`).
+   - No spaces between words: affects the joining of tokens in
+     `listener.rs` and the cut between words.
+   - Sentence lengths in characters (`MIN_PHRASE_CHARS`,
+     `MAX_PHRASE_CHARS`) must be per language.
+   - Whisper hallucinations specific to each language, such as
+     "字幕由Amara.org社区提供" (subtitles provided by the Amara.org community).
 
-Primero hay que comprobar dos cosas:
+First, two things must be checked:
 
-- Qué idiomas lee de verdad el Kokoro multilingüe de sherpa-onnx. Si incluye
-  japonés, se simplifica mucho.
-- Si SenseVoice da tiempos por palabra.
+- Which languages the multilingual Kokoro in sherpa-onnx really reads. If it includes
+  Japanese, this is much simpler.
+- Whether SenseVoice gives per-word timings.
 
-**Resumen:** el chino es viable a medio plazo. El japonés depende de resolver
-la voz.
+**Summary:** Chinese is viable in the medium term. Japanese depends on solving
+the voice.
 
-## Paquetes de idioma descargables
+## Downloadable language packs
 
-La voz en sí casi no pesa. Lo pesado es lo que necesita cada idioma.
+The voice itself barely weighs anything. What is heavy is what each language needs.
 
-| Pieza | Tamaño aprox. | ¿Por idioma? |
+| Part | Approx. size | Per language? |
 |---|---|---|
-| Modelo de Kokoro | ~100–330 MB | No, uno para todos sus idiomas |
-| Una voz de Kokoro | ~0,5 MB | Sí |
-| Diccionario de pronunciación | Chino: pocos MB. Japonés: ~100 MB | Sí |
-| Voz Piper (idiomas sin Kokoro) | ~60 MB | Sí |
-| Modelo para escuchar en local (SenseVoice) | ~230 MB, compartido zh/ja/ko | A veces |
+| Kokoro model | ~100–330 MB | No, one for all its languages |
+| One Kokoro voice | ~0.5 MB | Yes |
+| Pronunciation dictionary | Chinese: a few MB. Japanese: ~100 MB | Yes |
+| Piper voice (languages without Kokoro) | ~60 MB | Yes |
+| Model for listening locally (SenseVoice) | ~230 MB, shared zh/ja/ko | Sometimes |
 
-Por eso, en lugar de "descargar una voz", un **paquete de idioma** con voces,
-diccionario y, si hace falta, el modelo para escuchar en local:
+So, instead of "download a voice", a **language pack** with voices,
+dictionary and, if needed, the model for listening locally:
 
-- En el carril se elige el idioma. Si no está instalado, sale "Descargar
-  japonés (~350 MB)" con barra de progreso.
-- El instalador trae solo inglés y español. El resto se baja cuando se pide,
-  como los modelos del primer arranque.
-- Una sección "Idiomas" muestra los paquetes instalados y permite borrarlos.
+- In the lane you choose the language. If it isn't installed, "Descargar
+  japonés" (Download Japanese, ~350 MB) appears with a progress bar.
+- The installer only includes English and Spanish. The rest is downloaded when requested,
+  like the models of the first start.
+- A "Languages" section shows the installed packs and lets you delete them.
 
-Ventajas:
+Advantages:
 
-- El instalador sigue pequeño.
-- Un idioma se puede añadir o mejorar publicando su paquete, sin sacar una
-  versión nueva de la app.
+- The installer stays small.
+- A language can be added or improved by publishing its pack, without releasing a
+  new version of the app.
 
-Lo que no resuelve: el paquete solo es la forma de repartir. Para el japonés
-primero hace falta un motor que lo lea bien dentro de la app.
+What it doesn't solve: the pack is only a way to distribute. For Japanese,
+an engine that reads it well inside the app is needed first.

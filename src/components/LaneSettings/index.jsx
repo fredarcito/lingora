@@ -3,8 +3,8 @@ import { feedsCapture } from "../../utils/lanes";
 import { useT } from "../../i18n";
 
 /**
- * Los dispositivos de un carril, en la página Ajustes: de dónde oye y por
- * dónde habla. Se eligen una vez; mismas reglas que tenía la tarjeta.
+ * The devices of a lane, on the Settings page: where it listens from and
+ * where it speaks. They are chosen once; same rules the card had.
  * @param {{ lane: import("../../App/types").Lane, running: boolean, inputs: any[], outputs: any[], systemAudio: boolean,
  *   onChange: (patch: Partial<import("../../App/types").Lane>) => void }} props
  */
@@ -33,7 +33,7 @@ export default function LaneSettings({ lane, running, inputs, outputs, systemAud
             {tapsMac && lane.direction === "remote_to_local" ? t("app.devices.outputRecommended") : t("app.lane.output.default")}
           </option>
           {outputs.map((d) => (
-            // Con el audio del Mac la voz de Lingora nunca entra en la captura.
+            // With Mac audio, Lingora's own voice never enters the capture.
             <option key={d.uid} value={d.name} disabled={!tapsMac && feedsCapture(d.name)}>
               {!tapsMac && feedsCapture(d.name) ? t("app.devices.loop", { name: d.name }) : d.name}
             </option>

@@ -54,10 +54,10 @@
   cursor: not-allowed;
 }
 
-/* Botones de los paneles: el estilo de los ajustes de Escuchar (fondo
-   `--surface-2`, borde fino, esquinas de 9 px, borde de acento al pasar) en
-   todos los botones y controles segmentados de la app. Los botones
-   principales y destructivos conservan su énfasis. */
+/* Panel buttons: the style of the Listen settings (background
+   `--surface-2`, thin border, 9 px corners, accent border on hover) on
+   all the app's buttons and segmented controls. The primary and
+   destructive buttons keep their emphasis. */
 .note-action {
   height: 34px;
   border-radius: 9px;
@@ -105,8 +105,8 @@
   padding: 0 16px;
 }
 
-/* Detener una grabación: el botón normal con un cuadrito rojo delante y un
-   tinte rojizo al pasar. No es destructivo (la nota se guarda). */
+/* Stop a recording: the normal button with a small red square in front and a
+   reddish tint on hover. It is not destructive (the note is saved). */
 .note-action.stop svg {
   width: 11px;
   height: 11px;

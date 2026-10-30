@@ -3,9 +3,9 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Cierra algo abierto (un menú, un panel) al pulsar en cualquier otro sitio o
- * con Escape. Quien lo abre tiene que parar su propio clic
- * (`e.stopPropagation()`), o se cerraría en el acto.
+ * Closes something open (a menu, a panel) when clicking anywhere else or
+ * with Escape. Whoever opens it must stop its own click
+ * (`e.stopPropagation()`), or it would close right away.
  * @param {boolean} open @param {() => void} onClose
  */
 export function useDismiss(open, onClose) {
@@ -26,8 +26,8 @@ export function useDismiss(open, onClose) {
 }
 
 /**
- * Menú desplegable bajo un botón; el contenedor lo coloca (`position: relative`).
- * `align="end"` lo pega al borde derecho. El resto de props (`role`…) va al `<div>`.
+ * Dropdown menu under a button; the container positions it (`position: relative`).
+ * `align="end"` pins it to the right edge. The rest of the props (`role`…) go to the `<div>`.
  * @param {{ align?: "start" | "end", className?: string } & import("react").ComponentProps<"div">} props
  */
 export default function Menu({ align = "start", className, children, ...rest }) {
@@ -39,14 +39,14 @@ export default function Menu({ align = "start", className, children, ...rest }) 
 }
 
 /**
- * Una opción del menú. `danger` la pinta en rojo (borrar).
+ * A menu option. `danger` paints it red (delete).
  * @param {{ danger?: boolean } & import("react").ComponentProps<"button">} props
  */
 export function MenuItem({ danger = false, ...rest }) {
   return <button role="menuitem" className={danger ? styles.noteMenuDanger : undefined} {...rest} />;
 }
 
-/** Línea entre grupos de opciones. */
+/** Line between groups of options. */
 export function MenuSeparator() {
   return <hr className={styles.noteMenuSep} />;
 }

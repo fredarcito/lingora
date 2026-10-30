@@ -1,38 +1,38 @@
-# Plan: componentes reutilizables de la interfaz
+# Plan: reusable interface components
 
-> **Estado (2026-10-29): hecho.** Con tres cambios que el usuario decidió
-> sobre la marcha: CSS Modules en vez de CSS global
-> («CSS Modules»), carpetas `pages/`, `components/`, `components/shared/` y
-> `utils/` en vez de `src/` y `src/ui/` («Carpetas finales») y el orden de
-> las fases («Cómo se hizo»). Lo que no encajó está en «Pendiente». El
-> catálogo y las reglas que quedan, en `docs/componentes.md`.
+> **Status (2026-10-29): done.** With three changes the user decided on the fly:
+> CSS Modules instead of global CSS
+> ("CSS Modules"), folders `pages/`, `components/`, `components/shared/` and
+> `utils/` instead of `src/` and `src/ui/` ("Final folders") and the order of
+> the phases ("How it was done"). What didn't fit is in "Pending". The
+> catalog and the rules that remain are in `docs/componentes.md`.
 
-**Para quien lo implemente:** lee antes `CLAUDE.md`. Este plan es un
-refactor: **la app tiene que verse y comportarse exactamente igual** antes y
-después. Si algo de aquí choca con `CLAUDE.md`, para y pregunta.
+**For whoever implements it:** read `CLAUDE.md` first. This plan is a
+refactor: **the app has to look and behave exactly the same** before and
+after. If anything here conflicts with `CLAUDE.md`, stop and ask.
 
-## Por qué
+## Why
 
-Cada pantalla hace a mano sus botones, interruptores, menús, diálogos e
-iconos. Funciona, pero:
+Each screen hand-writes its own buttons, switches, menus, dialogs and
+icons. It works, but:
 
-- **Lo mismo se escribe varias veces:**
-  - hay tres diálogos de confirmación casi iguales;
-  - dos menús, cada uno con su propio «cerrar al pulsar fuera»;
-  - `const svg = {…}` está copiado en tres archivos.
-- **Cada cosa nueva acaba con su propio estilo.** El interruptor de la
-  tarjeta del carril necesitó CSS propio porque en ese fondo no se veía.
-- **Cuesta saber qué usar** al añadir algo, porque no hay un sitio donde
-  mirar.
+- **The same thing is written several times:**
+  - there are three almost identical confirmation dialogs;
+  - two menus, each with its own "close when clicking outside";
+  - `const svg = {…}` is copied into three files.
+- **Each new thing ends up with its own style.** The switch on the lane card
+  needed its own CSS because it didn't show on that background.
+- **It is hard to know what to use** when adding something, because there is no
+  single place to look.
 
-Objetivo: una carpeta `src/ui/` con los componentes básicos, el código
-existente usándolos y una regla en `CLAUDE.md` para que lo nuevo los use (o
-los amplíe) en vez de reinventarlos.
+Goal: a `src/ui/` folder with the basic components, the existing code using
+them, and a rule in `CLAUDE.md` so that new code uses them (or extends them)
+instead of reinventing them.
 
-## Estructura (decisión del usuario)
+## Structure (user decision)
 
-Todo componente, sea pantalla o pieza de `src/ui/`, vive en **su carpeta**,
-nunca como archivo suelto (`Captions.jsx`):
+Every component, whether a screen or a piece of `src/ui/`, lives in **its own
+folder**, never as a loose file (`Captions.jsx`):
 
 ```
 src/ui/Button/index.jsx      el componente
@@ -41,222 +41,217 @@ src/Notes/index.jsx
 src/Notes/styles.css
 ```
 
-- Esto vale también para las pantallas que ya existen: App, Notes,
+- This also applies to the screens that already exist: App, Notes,
   NoteTaking, Settings, Sidebar, Diagnostics, LanguagePicker, LangOffer,
-  SummaryKey y Markdown.
-- **Captions, FloatingCaptions y Welcome también**, con el sí del usuario,
-  aunque están en la lista de «no tocar»: **solo se mueven**, su código no
-  cambia ni una línea, salvo las rutas de import si hiciera falta.
-- Los archivos que no son componentes (`notes.js`, `api.js`, `audio.js`,
-  `words.js`, `i18n/`) se quedan donde están.
-- Si un componente tiene subcomponentes que solo usa él (por ejemplo
-  `SpeakerBar` o `Transcript` en Notes), pueden quedarse en su `index.jsx`.
-  Si otro archivo los usa, van a su propia carpeta.
-- Los imports `./Notes` siguen funcionando, porque Vite resuelve
-  `Notes/index.jsx`. Los que llevan extensión (`./Notes.jsx`,
-  `./Segmented.jsx`) hay que cambiarlos.
+  SummaryKey and Markdown.
+- **Captions, FloatingCaptions and Welcome too**, with the user's yes,
+  even though they are on the "don't touch" list: **they are only moved**, their code
+  doesn't change by a single line, except the import paths if needed.
+- The files that are not components (`notes.js`, `api.js`, `audio.js`,
+  `words.js`, `i18n/`) stay where they are.
+- If a component has subcomponents that only it uses (for example
+  `SpeakerBar` or `Transcript` in Notes), they can stay in its `index.jsx`.
+  If another file uses them, they go to their own folder.
+- The imports `./Notes` keep working, because Vite resolves
+  `Notes/index.jsx`. The ones that carry an extension (`./Notes.jsx`,
+  `./Segmented.jsx`) have to be changed.
 
-## Carpetas finales (decisión del usuario, 2026-10-29)
+## Final folders (user decision, 2026-10-29)
 
-Sustituye a lo de arriba en cuanto a dónde va cada cosa:
+It replaces the above as to where each thing goes:
 
 ```
-src/App/                 el armazón y Traducir (separarlos tocaría su lógica)
+src/App/                 the frame and Translate (separating them would touch its logic)
 src/pages/               Notes, NoteTaking, Settings, Welcome, FloatingCaptions
 src/components/          Captions, Diagnostics, LangOffer, LanguagePicker,
                          Markdown, Sidebar, SummaryKey
-src/components/shared/   lo que el plan llama `src/ui/`
-src/utils/               api.js, audio.js, notes.js, words.js (sin cambios
-                         dentro, salvo la ruta de `i18n` en notes.js)
-src/i18n/                igual
+src/components/shared/   what the plan calls `src/ui/`
+src/utils/               api.js, audio.js, notes.js, words.js (unchanged
+                         inside, except the `i18n` path in notes.js)
+src/i18n/                same
 ```
 
-Con `pages/Notes` y `utils/notes.js` en carpetas distintas desaparece el
-choque de macOS entre `./Notes` y `notes.js`.
+With `pages/Notes` and `utils/notes.js` in different folders, the macOS clash
+between `./Notes` and `notes.js` disappears.
 
-## Cómo se hizo
+## How it was done
 
-Con módulos, el orden de las fases cambió: si `.note-action` pasa al módulo
-de `Button` mientras una pantalla aún escribe `className="note-action"`,
-esa pantalla se queda sin estilo. Así que:
+With modules, the order of the phases changed: if `.note-action` moves to the
+`Button` module while a screen still writes `className="note-action"`, that
+screen is left unstyled. So:
 
-1. **Fase 1:** las piezas de `ui` se crearon pintando las clases globales de
-   siempre.
-2. **Fase 2:** cada pantalla pasó a su carpeta y a su módulo, usando las
-   piezas; lo de `ui` que nombraba su CSS, con `:global()`.
-3. **Fase 2b:** cada pieza pasó a su módulo cuando todas las pantallas la
-   usaban, y las reglas que cruzaban se reescribieron (ver
-   `docs/refactor/renames.json`).
+1. **Phase 1:** the `ui` pieces were created painting the same global classes as always.
+2. **Phase 2:** each screen moved to its folder and its module, using the pieces;
+   what `ui` named in its CSS, with `:global()`.
+3. **Phase 2b:** each piece moved to its module once all the screens used it, and the
+   rules that crossed over were rewritten (see `docs/refactor/renames.json`).
 
-Tras cada paso, `npx vite build` y `scripts/css-check.mjs` en «Bien». El
-script se probó y se amplió antes de empezar y durante el refactor (cada
-ampliación, probada con copias del CSS estropeadas a propósito): `@media` y
-`@container` en el orden, clases que van juntas en un elemento (según
-`docs/refactor/jsx.original/`), módulos (`nombre__Carpeta`), simulación de
-la cascada para los pares que cambian de orden y clases globales que ya no
-escribe nadie.
+After each step, `npx vite build` and `scripts/css-check.mjs` reported "Bien"
+(good). The script was tested and extended before starting and during the refactor
+(each extension, tested with copies of the CSS deliberately broken): `@media` and
+`@container` in order, classes that go together on one element (according to
+`docs/refactor/jsx.original/`), modules (`name__Folder`), simulation of the
+cascade for the pairs that change order and global classes that no one writes anymore.
 
-## CSS Modules (decisión del usuario, 2026-10-29)
+## CSS Modules (user decision, 2026-10-29)
 
-Cada componente lleva su CSS en un **módulo**, para que las clases de uno no
-pisen las de otro. Esto sustituye a lo de «mismas clases» de más abajo:
+Each component carries its CSS in a **module**, so that one component's classes
+don't override another's. This replaces the "same classes" approach below:
 
-- **Archivos:** `Nombre/styles.module.css`, importado como
-  `import s from "./styles.module.css"`, y `className={s.noteAction}`.
-  Dentro del CSS los nombres **no cambian** (`.note-action`), así el CSS solo
-  cambia de archivo. Para juntar clases, un `cx()` de una línea en
-  `src/ui/cx.js` (sin dependencias).
-- **`vite.config.js`:** `css.modules` con `localsConvention: "camelCaseOnly"`
-  y `generateScopedName` `[local]_[hash:base64:5]` (en el inspector se sigue
-  leyendo `note-action_x7f2a`). Con `LINGORA_CSS_CHECK=1` usa `[local]`, para
-  que `css-check` compare los mismos selectores que el original.
-- **Lo que sigue global**, en CSS normal:
-  - `src/styles.css`: `:root`, reset, elementos, `@keyframes`, estructura y
-    las clases de utilidad que usan muchos archivos (`muted`, `error`,
+- **Files:** `Name/styles.module.css`, imported as
+  `import s from "./styles.module.css"`, and `className={s.noteAction}`.
+  Inside the CSS the names **do not change** (`.note-action`), so the CSS only
+  changes file. To combine classes, a one-line `cx()` in
+  `src/ui/cx.js` (without dependencies).
+- **`vite.config.js`:** `css.modules` with `localsConvention: "camelCaseOnly"`
+  and `generateScopedName` `[local]_[hash:base64:5]` (in the inspector you still
+  read `note-action_x7f2a`). With `LINGORA_CSS_CHECK=1` it uses `[local]`, so
+  that `css-check` compares the same selectors as the original.
+- **What stays global**, in plain CSS:
+  - `src/styles.css`: `:root`, reset, elements, `@keyframes`, structure and
+    the utility classes that many files use (`muted`, `error`,
     `small`…);
-  - nada más: **Captions, FloatingCaptions y Welcome también van con
-    módulo** (el usuario lo aprobó). En ellos solo cambian los `className`;
-    ritmo, animaciones, recortes y lógica no se tocan.
-- **Reglas que cruzan componentes** (`.dialog .note-action.danger`,
-  `.speaker-menu .note-action.primary`, `.notes-switch.lane-save`; unas 20):
-  el de fuera pasa una clase suya por `className` y la regla se reescribe con
-  ella, **con la misma especificidad**. Cada cambio de selector se apunta en
-  `docs/refactor/renames.json` (viejo → nuevo); `css-check` lo acepta solo si
-  la especificidad coincide.
-- **`css-check` comprueba además** que cada clase de un módulo la use su
-  `index.jsx` y que cada `s.algo` exista en el módulo (si no, sale
-  `class="undefined"` sin error).
-- **App.jsx:** cambian los `className` de todo su JSX, no solo cabecera,
-  `LaneCard` y `VoiceControls`. La lógica sigue sin tocarse.
-- **CLAUDE.md:** «No cambies las clases que ya existen» pasa a ser: los
-  nombres de clase se conservan dentro de los módulos.
+  - nothing else: **Captions, FloatingCaptions and Welcome also go with a module**
+    (the user approved it). In them only the `className`s change; rhythm, animations,
+    cuts and logic are not touched.
+- **Rules that cross components** (`.dialog .note-action.danger`,
+  `.speaker-menu .note-action.primary`, `.notes-switch.lane-save`; about 20):
+  the outer one passes one of its own classes through `className` and the rule is
+  rewritten with it, **with the same specificity**. Each selector change is noted in
+  `docs/refactor/renames.json` (old → new); `css-check` accepts it only if
+  the specificity matches.
+- **`css-check` also checks** that each class of a module is used by its
+  `index.jsx` and that each `s.something` exists in the module (otherwise
+  `class="undefined"` comes out without an error).
+- **App.jsx:** the `className`s of all its JSX change, not only the header,
+  `LaneCard` and `VoiceControls`. The logic is still not touched.
+- **CLAUDE.md:** "Don't change the existing class names" becomes: the class
+  names are kept inside the modules.
 
-## Mover el CSS (decisión del usuario: en este refactor)
+## Moving the CSS (user decision: in this refactor)
 
-> Con CSS Modules, donde abajo dice `styles.css` de un componente léase
-> `styles.module.css`; el orden sigue importando igual.
+> With CSS Modules, wherever below it says a component's `styles.css`, read
+> `styles.module.css`; the order still matters just the same.
 
-`src/styles.css` se queda solo con lo general: variables de `:root`, reset,
-estilos de elementos (`button`, `select`, `input`), `@keyframes` y
-estructura de la app. Lo de cada componente va a su `styles.css`.
+`src/styles.css` stays only with the general things: `:root` variables, reset,
+element styles (`button`, `select`, `input`), `@keyframes` and app
+structure. Each component's own styles go to its `styles.css`.
 
-**El riesgo es el orden.** Cuando dos reglas tienen la misma especificidad,
-gana la que va después. Muchas clases tienen reglas repartidas por
-`styles.css`: `.note-action` aparece en 5 o 6 sitios, `.note-summary` en 3,
-y hay una sección que redefine el alto de todos los controles
-(`--control-h`). Si una regla cambia de posición, otra puede ganar y algo
-cambia de aspecto sin dar error. Para evitarlo:
+**The risk is the order.** When two rules have the same specificity, the one that
+comes later wins. Many classes have rules spread across `styles.css`:
+`.note-action` appears in 5 or 6 places, `.note-summary` in 3,
+and there is a section that redefines the height of all the controls
+(`--control-h`). If a rule changes position, another may win and something
+changes its look without any error. To avoid it:
 
-1. **Antes de empezar,** copia `src/styles.css` a
-   `docs/refactor/styles.original.css`. No hay git: es la única referencia.
-2. **En `main.jsx`,** el import de `./styles.css` pasa a ser **el primero**.
-   Hoy va el último, y Vite pone el CSS de cada archivo en el orden en que
-   se importa. Así lo general va antes que lo de cada componente.
-3. **Un componente se lleva todas sus reglas a la vez**, en el mismo orden
-   en que estaban, incluidas las de `@media` y las de las secciones
-   «generales» que lo nombran. Una regla agrupada como
-   `.note-action, .taking-start, .pair { … }` se parte y cada trozo va con su
-   componente.
-4. **Una regla que mezcla dos componentes** (`.dialog .note-action.danger`,
-   `.speaker-menu .note-action.primary`) va con el de fuera: el diálogo o la
-   página de la nota.
-5. **Comprueba con `scripts/css-check.mjs`** después de cada componente:
+1. **Before starting,** copy `src/styles.css` to
+   `docs/refactor/styles.original.css`. There is no git: it is the only reference.
+2. **In `main.jsx`,** the import of `./styles.css` becomes **the first one**.
+   Today it is last, and Vite puts each file's CSS in the order it is
+   imported. That way the general styles come before each component's.
+3. **A component takes all its rules at once**, in the same order they were in,
+   including those in `@media` and those in the "general" sections that name it. A
+   grouped rule such as `.note-action, .taking-start, .pair { … }` is split and each
+   piece goes with its component.
+4. **A rule that mixes two components** (`.dialog .note-action.danger`,
+   `.speaker-menu .note-action.primary`) goes with the outer one: the dialog or the
+   note page.
+5. **Check with `scripts/css-check.mjs`** after each component:
 
    ```
    npx vite build --minify false --outDir /tmp/lingora-css --emptyOutDir
    node scripts/css-check.mjs docs/refactor/styles.original.css /tmp/lingora-css/assets/*.css
    ```
 
-   Avisa si una regla se perdió o se duplicó, o si dos reglas que pueden
-   pisarse cambiaron de orden. **Ese script está sin probar.** Antes de
-   mover nada, ejecútalo contra el CSS actual: tiene que decir «Bien». Si
-   falla o da falsos avisos, arréglalo primero. Si avisa de un orden, no lo
-   apagues: mueve la regla o deja las dos en el mismo archivo.
+   It warns if a rule was lost or duplicated, or if two rules that can override
+   each other changed order. **That script is untested.** Before moving anything,
+   run it against the current CSS: it has to say "Bien" (good). If it fails or gives
+   false warnings, fix it first. If it warns about an order, don't turn it off:
+   move the rule or leave both in the same file.
 
-## Reglas de este refactor
+## Rules for this refactor
 
-- **Mismo HTML de salida, mismas clases.** Los componentes generan las
-  clases que ya existen (`note-action`, `notes-switch`, `note-menu`,
-  `dialog`…). `CLAUDE.md` prohíbe cambiar las clases existentes, y así no
-  cambia nada visual. El CSS solo cambia de archivo, no de contenido.
-- **No se toca el código de:**
-  - `src/Welcome.jsx`, `src/Captions.jsx` y `src/FloatingCaptions.jsx` (solo
-    se mueven a su carpeta);
+- **Same output HTML, same classes.** The components generate the classes that
+  already exist (`note-action`, `notes-switch`, `note-menu`,
+  `dialog`…). `CLAUDE.md` forbids changing existing classes, so nothing changes
+  visually. The CSS only changes file, not content.
+- **Do not touch the code of:**
+  - `src/Welcome.jsx`, `src/Captions.jsx` and `src/FloatingCaptions.jsx` (they are only
+    moved to their folder);
   - `src/audio.js`;
-  - en `src/App.jsx`, solo el JSX de `LaneCard`, `VoiceControls` y la
-    cabecera. Nada de `enqueue`, `texted`, `playback`, `start`, `stop`, los
-    efectos ni las claves `lingora.*`;
-  - `createSpeakerTracker` y sus constantes en `src/notes.js`.
-- **Sin dependencias nuevas** (ni Radix, ni shadcn como paquete, ni
-  librerías de iconos).
-- **Sin Rust.** Este plan no toca `src-tauri`.
-- **JS con JSDoc**, comentarios y textos en español, con la densidad del
-  código de alrededor. Todo texto visible con `t()`; los componentes no
-  llevan texto fijo, lo reciben por props.
-- **Un archivo migrado = un paso.** Después de cada uno, `npx vite build`
-  sin errores.
+  - in `src/App.jsx`, only the JSX of `LaneCard`, `VoiceControls` and the
+    header. Nothing about `enqueue`, `texted`, `playback`, `start`, `stop`, the effects or the
+    `lingora.*` keys;
+  - `createSpeakerTracker` and its constants in `src/notes.js`.
+- **No new dependencies** (no Radix, no shadcn as a package, no
+  icon libraries).
+- **No Rust.** This plan does not touch `src-tauri`.
+- **JS with JSDoc**, comments and texts in Spanish, with the density of the
+  surrounding code. Every visible text through `t()`; the components don't
+  carry fixed text, they receive it through props.
+- **One migrated file = one step.** After each one, `npx vite build`
+  without errors.
 
-## Fase 0: preparar
+## Phase 0: prepare
 
-1. Copia `src/styles.css` a `docs/refactor/styles.original.css`.
-2. Prueba `scripts/css-check.mjs` contra el CSS actual, como dice «Mover el
-   CSS».
-3. Pon el import de `./styles.css` el primero en `main.jsx` y comprueba con
-   el script que sigue saliendo «Bien».
+1. Copy `src/styles.css` to `docs/refactor/styles.original.css`.
+2. Run `scripts/css-check.mjs` against the current CSS, as "Moving the CSS" says.
+3. Put the import of `./styles.css` first in `main.jsx` and check with
+   the script that it still says "Bien".
 
-## Fase 1: crear `src/ui/`
+## Phase 1: create `src/ui/`
 
-Una carpeta por componente (`index.jsx` + `styles.css`, como dice
-«Estructura») y un `src/ui/index.js` que los exporte todos. Cada
-componente se lleva su CSS de `styles.css` según «Mover el CSS».
+One folder per component (`index.jsx` + `styles.css`, as in "Structure") and a
+`src/ui/index.js` that exports them all. Each component takes its CSS from
+`styles.css` as described in "Moving the CSS".
 
-| Componente | Sustituye a | Notas |
+| Component | Replaces | Notes |
 |---|---|---|
-| `Button` | `<button className="note-action …">` (unas 20 veces) | Props: `variant`: `"default"` \| `"primary"` \| `"danger"`. Además `icon` (solo icono, cuadrado: hoy `note-more` y `note-summary-copy`), `busy` (pone el `spinner small` delante) y el resto pasa al `<button>`. Clases: `note-action`, `primary`, `danger` y las extra que se le pasen en `className`. |
-| `IconButton` | `icon-button` (☰, panel flotante, ajustes del carril) | `active` añade `is-active`. `label` va a `aria-label` y `title`. |
-| `LinkButton` | `<button className="link …">` | Solo envuelve la clase. |
-| `Switch` | `label.notes-switch` + `input[role=switch]` (Ajustes ×2, «Ver original», «Guardar en notas») | Props: `checked`, `onChange(bool)`, `label`, `disabled`, `className`, `title`. Lo que hay en Ajustes (fila con título y ayuda) sigue usando `prefs-row`, con `Switch` dentro. |
-| `Select` | `<select className="prefs-select">` y los de `note-summary-lang` | Props: `value`, `onChange(value)`, `options: {value, label}[]`, `label` (a `aria-label`), `disabled`. Los selects de la cabecera (`.pair`) y de `VoiceControls` se quedan como están, porque su CSS depende del contenedor. |
-| `Menu` + `useDismiss` | menú ⋯ de la nota y `speaker-menu` | `useDismiss(open, onClose)` cierra al pulsar fuera y con Escape; hoy está escrito dos veces en `Notes.jsx`. `Menu` pinta `note-menu`, con `align="end"` (añade `note-menu-end`); `MenuItem` lleva `danger` (añade `note-menu-danger`); `MenuSeparator` es `<hr className="note-menu-sep">`. |
-| `ConfirmDialog` | `ConfirmDelete`, `ConfirmSend` (Notes.jsx), `ConfirmRecord` (NoteTaking.jsx) | Props: `title`, `body`, `confirmLabel`, `cancelLabel`, `danger`, `onConfirm` y `onCancel`. Conserva el foco inicial en Cancelar, Escape para cancelar, pulsar fuera para cancelar y `role="alertdialog"`. El `id` del título con `useId()`. |
+| `Button` | `<button className="note-action …">` (about 20 times) | Props: `variant`: `"default"` \| `"primary"` \| `"danger"`. Also `icon` (icon only, square: today `note-more` and `note-summary-copy`), `busy` (puts the `spinner small` in front) and the rest goes to the `<button>`. Classes: `note-action`, `primary`, `danger` and any extra ones passed in `className`. |
+| `IconButton` | `icon-button` (☰, floating panel, lane settings) | `active` adds `is-active`. `label` goes to `aria-label` and `title`. |
+| `LinkButton` | `<button className="link …">` | Only wraps the class. |
+| `Switch` | `label.notes-switch` + `input[role=switch]` (Settings ×2, "Show original", "Save to notes") | Props: `checked`, `onChange(bool)`, `label`, `disabled`, `className`, `title`. What is in Settings (row with title and help) still uses `prefs-row`, with `Switch` inside. |
+| `Select` | `<select className="prefs-select">` and those of `note-summary-lang` | Props: `value`, `onChange(value)`, `options: {value, label}[]`, `label` (to `aria-label`), `disabled`. The header selects (`.pair`) and those of `VoiceControls` stay as they are, because their CSS depends on the container. |
+| `Menu` + `useDismiss` | the note's ⋯ menu and `speaker-menu` | `useDismiss(open, onClose)` closes on clicking outside and with Escape; today it is written twice in `Notes.jsx`. `Menu` renders `note-menu`, with `align="end"` (adds `note-menu-end`); `MenuItem` takes `danger` (adds `note-menu-danger`); `MenuSeparator` is `<hr className="note-menu-sep">`. |
+| `ConfirmDialog` | `ConfirmDelete`, `ConfirmSend` (Notes.jsx), `ConfirmRecord` (NoteTaking.jsx) | Props: `title`, `body`, `confirmLabel`, `cancelLabel`, `danger`, `onConfirm` and `onCancel`. Keeps the initial focus on Cancel, Escape to cancel, clicking outside to cancel and `role="alertdialog"`. The title's `id` via `useId()`. |
 | `Badge` | `<span className="badge">` | |
-| `Spinner` | `<span className="spinner …" aria-hidden />` | `small` añade `small`. |
-| `SearchBox` | `label.notes-searchbox` de la lista de notas | Props: `value`, `onChange`, `placeholder`, `shortcut` (el `⌘K`), `inputRef` y `className`. |
-| `Segmented` | `src/Segmented.jsx` | Se mueve a `src/ui/` tal cual. Actualiza los imports. |
-| Iconos | las 20 funciones `XxxIcon` y los tres `const svg` | `src/ui/icons.jsx`: un `svgProps` común y cada icono exportado con nombre. Si dos iconos son el mismo dibujo, queda uno. **Copia los `path` exactos**, sin redibujar nada. |
+| `Spinner` | `<span className="spinner …" aria-hidden />` | `small` adds `small`. |
+| `SearchBox` | `label.notes-searchbox` of the notes list | Props: `value`, `onChange`, `placeholder`, `shortcut` (the `⌘K`), `inputRef` and `className`. |
+| `Segmented` | `src/Segmented.jsx` | Moved to `src/ui/` as is. Update the imports. |
+| Icons | the 20 `XxxIcon` functions and the three `const svg` | `src/ui/icons.jsx`: a shared `svgProps` and each icon exported by name. If two icons are the same drawing, only one stays. **Copy the exact `path`s**, without redrawing anything. |
 
-Cada componente con un JSDoc corto: para qué sirve y qué props tiene, al
-estilo de `Segmented.jsx`.
+Each component gets a short JSDoc: what it is for and what props it has, in the
+style of `Segmented.jsx`.
 
-## Fase 2: migrar archivo por archivo
+## Phase 2: migrate file by file
 
-En este orden, de menos a más riesgo. Cada pantalla pasa a su carpeta con
-su CSS, y tras cada una toca `npx vite build` y `scripts/css-check.mjs`. Al
-final van `Captions`, `FloatingCaptions` y `Welcome`: solo moverlos y
-llevarse su CSS.
+In this order, from least to most risk. Each screen moves to its folder with
+its CSS, and after each one run `npx vite build` and `scripts/css-check.mjs`. At the
+end come `Captions`, `FloatingCaptions` and `Welcome`: just move them and
+take their CSS along.
 
-1. `LangOffer.jsx`, `SummaryKey.jsx` y `LanguagePicker.jsx`: botones y
+1. `LangOffer.jsx`, `SummaryKey.jsx` and `LanguagePicker.jsx`: buttons and
    selects.
-2. `Settings.jsx`: interruptores, select y botones.
-3. `Sidebar.jsx`: `IconButton` e iconos.
-4. `Diagnostics.jsx`: iconos, `LinkButton` y `Spinner`.
-5. `NoteTaking.jsx`: botones, `ConfirmDialog` (en lugar de `ConfirmRecord`)
-   y `Segmented`.
-6. `Notes.jsx`: botones, menú ⋯ con `Menu`/`useDismiss`, `speaker-menu`,
-   `ConfirmDialog` ×2, `Switch` de «Ver original», `Select`, `Badge`,
-   `SearchBox` e iconos.
-7. `App.jsx`, **solo el JSX** de la cabecera, `LaneCard` y `VoiceControls`:
-   `IconButton`, `Switch` de «Guardar en notas», `Segmented` e iconos.
+2. `Settings.jsx`: switches, select and buttons.
+3. `Sidebar.jsx`: `IconButton` and icons.
+4. `Diagnostics.jsx`: icons, `LinkButton` and `Spinner`.
+5. `NoteTaking.jsx`: buttons, `ConfirmDialog` (instead of `ConfirmRecord`)
+   and `Segmented`.
+6. `Notes.jsx`: buttons, ⋯ menu with `Menu`/`useDismiss`, `speaker-menu`,
+   `ConfirmDialog` ×2, the "Show original" `Switch`, `Select`, `Badge`,
+   `SearchBox` and icons.
+7. `App.jsx`, **only the JSX** of the header, `LaneCard` and `VoiceControls`:
+   `IconButton`, the "Save to notes" `Switch`, `Segmented` and icons.
 
-Si algo no encaja en un componente sin cambiar cómo se ve, **déjalo como
-está** y apúntalo al final de este documento, en «Pendiente». No fuerces el
-componente ni cambies el CSS para que encaje.
+If something doesn't fit a component without changing how it looks, **leave it
+as it is** and note it at the end of this document, under "Pending". Don't force
+the component or change the CSS to make it fit.
 
-## Fase 3: la regla y el catálogo
+## Phase 3: the rule and the catalog
 
-1. Crea `docs/componentes.md`: una tabla con cada componente, para qué es,
-   sus props y un ejemplo de una línea.
-2. En `CLAUDE.md`, sección 3, apartado **Diseño**, añade:
+1. Create `docs/componentes.md`: a table with each component, what it is for,
+   its props and a one-line example.
+2. In `CLAUDE.md`, section 3, **Design** item, add:
 
    > **Componentes:** usa los de `src/ui/` (catálogo en
    > `docs/componentes.md`). Si no existe lo que necesitas, créalo ahí, con
@@ -265,87 +260,84 @@ componente ni cambies el CSS para que encaje.
    > CSS en `Nombre/styles.css`, nunca como `Nombre.jsx` suelto.
    > `src/styles.css` es solo para lo general.
 
-   Y cambia la frase de **Diseño** que dice «Lo nuevo va en su propia
-   sección al final del CSS»: ahora lo nuevo va en el `styles.css` de su
-   componente.
+   And change the **Design** sentence that says "New code goes in its own section at the end of the CSS":
+   now new code goes in the `styles.css` of its component.
 
-3. En `CLAUDE.md`, sección 4 («Dónde está cada cosa»), añade una línea para
-   `src/ui/` y `docs/componentes.md`.
+3. In `CLAUDE.md`, section 4 ("Where everything is"), add a line for
+   `src/ui/` and `docs/componentes.md`.
 
-## Cómo comprobarlo
+## How to check it
 
-- `npx vite build` sin errores y `scripts/css-check.mjs` en «Bien» después
-  de cada archivo. `cargo check` no hace falta, porque no se toca Rust.
-- Al terminar, en `src/` no queda ningún `.jsx` suelto salvo `main.jsx`.
-- `grep -c 'className="note-action' src/*.jsx` debería quedar en 0 fuera de
-  `src/ui/`, salvo lo apuntado en «Pendiente». Lo mismo con
-  `role="switch"`, `className="dialog"` y `const svg =`.
-- El usuario lo revisa en la app con `pnpm tauri dev`. Dile qué pantallas
-  mirar:
-  - **Traducir audio:** tarjeta, ajustes del carril e interruptor «Guardar
-    en notas».
-  - **Tomar notas:** inicio, grabando y el diálogo de confirmar.
-  - **Lista de notas:** buscador con ⌘K, filtros y tarjetas.
-  - **Página de una nota:** menú ⋯, borrar con su diálogo, el primer
-    resumen con su aviso, copiar, las pestañas, «Ver original» y el menú de
-    una persona.
-  - **Ajustes y Diagnóstico.**
-  - **Menú ☰.**
+- `npx vite build` without errors and `scripts/css-check.mjs` reporting "Bien" after
+  each file. `cargo check` isn't needed, because Rust isn't touched.
+- At the end, no loose `.jsx` remains in `src/` except `main.jsx`.
+- `grep -c 'className="note-action' src/*.jsx` should end up at 0 outside
+  `src/ui/`, except what is noted under "Pending". The same with
+  `role="switch"`, `className="dialog"` and `const svg =`.
+- The user reviews it in the app with `pnpm tauri dev`. Tell them which screens to
+  look at:
+  - **Translate audio:** card, lane settings and the "Save to notes" switch.
+  - **Take notes:** start, recording and the confirm dialog.
+  - **Notes list:** search box with ⌘K, filters and cards.
+  - **A note's page:** ⋯ menu, deleting with its dialog, the first
+    summary with its notice, copy, the tabs, "Show original" and the menu of
+    a person.
+  - **Settings and Diagnostics.**
+  - **☰ menu.**
 
-  Los diálogos tienen que seguir con el foco en Cancelar y cerrarse con
+  Dialogs have to keep the focus on Cancel and close with
   Escape.
-- Al terminar, di qué migraste, qué quedó en «Pendiente» y qué no pudiste
-  probar.
+- At the end, say what was migrated, what was left under "Pending" and what could not be
+  tested.
 
-## Fuera de este plan
+## Outside this plan
 
-- Juntar o limpiar CSS duplicado: por ejemplo, las tres reglas de
-  `.note-summary` en una sola. Aquí solo se mueve, sin reescribir. Limpiar
-  cambia el resultado y va en otro plan.
-- Cambiar el diseño de nada.
-- Cambiar el código de Welcome (`welcome-primary`/`welcome-secondary`) o de
-  los subtítulos para que usen los componentes nuevos.
+- Merging or cleaning duplicated CSS: for example, the three `.note-summary`
+  rules into one. Here it is only moved, not rewritten. Cleaning changes the
+  result and goes in another plan.
+- Changing the design of anything.
+- Changing the code of Welcome (`welcome-primary`/`welcome-secondary`) or of
+  the captions so they use the new components.
 
-## Pendiente
+## Pending
 
-Lo que no encajó sin cambiar el aspecto, o que queda para otro plan:
+What didn't fit without changing the look, or what is left for another plan:
 
-- **Captions usa CSS global** (`src/components/Captions/styles.css`, no
-  módulo). App (`.lane > .captions`), FloatingCaptions (`.floating
-  .captions-text`) y Tomar notas (`captions-status`, `live-dot`, `word`)
-  le dan estilo desde fuera. Para hacerlo módulo, Captions tendría que
-  aceptar clases por props, y eso es cambiar su código más allá de los
-  `className`.
-- **`.taking-end` sigue global** (`src/styles.css`). En el original, una
-  regla posterior de `.note-action` pisa su `background`, así que el botón
-  «Ir al final» se ve con el fondo de los botones normales. En un módulo
-  iría después y pasaría a verse con `--n-popover`. Su `background` está de
-  hecho muerto: decidir cuál se quiere es una decisión de diseño.
-- **`LinkButton` y `Spinner` pintan las clases globales `link` y
-  `spinner`.** Captions y Bienvenida escriben esas clases directamente, y en
-  ellos solo se podían cambiar los `className`, no usar componentes.
-- **`Button` no tiene prop `icon`.** El tamaño cuadrado está en `.note-more`
-  y `.note-summary-copy` (Notes), mezclado con otras propiedades. Una
-  variante genérica necesitaría CSS nuevo.
-- **El select de «Resumir en» (`note-summary-lang`) no usa `Select`.** No
-  lleva `prefs-select`, y `Select` siempre la pone. Tampoco los de la
-  cabecera (`.pair`) ni los de `VoiceControls` y `LaneSettings`, como decía
-  el plan.
-- **Diagnóstico conserva sus iconos de estado** (`StatusIcon` y su chevron,
-  con trazo 2.4): son distintos a los de `icons.jsx`.
-- **CSS muerto que sigue en `src/styles.css`**, sin tocar: `.pill`,
+- **Captions uses global CSS** (`src/components/Captions/styles.css`, not a
+  module). App (`.lane > .captions`), FloatingCaptions (`.floating
+  .captions-text`) and Take notes (`captions-status`, `live-dot`, `word`)
+  style it from outside. To make it a module, Captions would have to
+  accept classes through props, and that means changing its code beyond the
+  `className`s.
+- **`.taking-end` stays global** (`src/styles.css`). In the original, a later
+  `.note-action` rule overrides its `background`, so the "Jump to end" button
+  looks like the normal buttons' background. In a module it would come later and would
+  start showing `--n-popover`. Its `background` is in fact dead: deciding which one is wanted
+  is a design decision.
+- **`LinkButton` and `Spinner` render the global classes `link` and
+  `spinner`.** Captions and Welcome write those classes directly, and in them
+  only the `className`s could be changed, not components used.
+- **`Button` has no `icon` prop.** The square size is in `.note-more`
+  and `.note-summary-copy` (Notes), mixed with other properties. A generic
+  variant would need new CSS.
+- **The "Summary in" select (`note-summary-lang`) doesn't use `Select`.** It
+  doesn't carry `prefs-select`, and `Select` always adds it. Neither do the header
+  ones (`.pair`) or those of `VoiceControls` and `LaneSettings`, as the plan said.
+- **Diagnostics keeps its status icons** (`StatusIcon` and its chevron,
+  with a 2.4 stroke): they are different from those in `icons.jsx`.
+- **Dead CSS still in `src/styles.css`**, untouched: `.pill`,
   `.pill-bad`, `.dot*`, `.setting-group`, `.setting-pair`,
-  `.settings-advanced*`, `.note-toast`, `.notes-tools` y `.note-actions`.
-  Ningún JSX las usa. Limpiarlo va en otro plan.
-- **Cambios en el HTML sin efecto visible:**
-  - Los diálogos usan `useId()` para el título, en vez de `dialog-title`,
-    `send-title` y `record-title`.
-  - `Spinner` añade `aria-hidden` donde antes no estaba (App y
-    Diagnóstico).
-  - Ya no se pintan clases sin CSS: `note-original` en «Ver original»,
-    `lane-remote_to_local` en la tarjeta y `is-ok` en el diagnóstico.
-    `welcome-how`, `is-active` (Bienvenida) y `error` (Diagnóstico) siguen
-    como texto.
-  - `IconButton` tiene una prop `small` para la regla
-    `.icon-button.small`, que ya existía y hoy no usa nadie.
-  - El `Chevron` de App, que no se usaba, se quitó con su `const svg`.
+  `.settings-advanced*`, `.note-toast`, `.notes-tools` and `.note-actions`.
+  No JSX uses them. Cleaning it up goes in another plan.
+- **HTML changes with no visible effect:**
+  - The dialogs use `useId()` for the title, instead of `dialog-title`,
+    `send-title` and `record-title`.
+  - `Spinner` adds `aria-hidden` where it wasn't before (App and
+    Diagnostics).
+  - Classes without CSS are no longer rendered: `note-original` in "Show original",
+    `lane-remote_to_local` on the card and `is-ok` in diagnostics.
+    `welcome-how`, `is-active` (Welcome) and `error` (Diagnostics) remain
+    as text.
+  - `IconButton` has a `small` prop for the rule
+    `.icon-button.small`, which already existed and no one uses today.
+  - App's `Chevron`, which was not used, was removed along with its `const svg`.

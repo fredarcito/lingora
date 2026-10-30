@@ -9,8 +9,8 @@ import styles from "./styles.module.css";
  */
 
 /**
- * El ☰ de la barra superior. El punto rojo avisa de que hay un carril en
- * marcha aunque el menú esté cerrado.
+ * The ☰ in the top bar. The red dot warns that a lane is running
+ * even when the menu is closed.
  * @param {{ onClick: () => void, recording: boolean }} props
  */
 export function MenuButton({ onClick, recording }) {
@@ -23,7 +23,7 @@ export function MenuButton({ onClick, recording }) {
   );
 }
 
-/** Secciones del menú: grupo y entradas; el título y la línea que dice qué hay están en `sidebar.<grupo>` y `sidebar.<entrada>`. */
+/** Menu sections: group and entries; the title and the line that says what is there are in `sidebar.<group>` and `sidebar.<entry>`. */
 const SECTIONS = /** @type {const} */ ([
   ["translation", [["translate", WaveIcon]]],
   ["library", [["notes", NoteIcon]]],
@@ -31,9 +31,9 @@ const SECTIONS = /** @type {const} */ ([
 ]);
 
 /**
- * Panel que se abre por encima del contenido, sin empujarlo. Se cierra al
- * elegir, al pulsar fuera, con Esc o con la ✕. El foco va a la primera
- * entrada al abrir y vuelve a donde estaba al cerrar.
+ * Panel that opens above the content without pushing it. It closes when
+ * choosing, when clicking outside, with Esc or with the ✕. Focus goes to the first
+ * entry when it opens and goes back to where it was when it closes.
  * @param {{ open: boolean, view: View, recording: boolean, onSelect: (view: View) => void, onClose: () => void }} props
  */
 export default function Sidebar({ open, view, recording, onSelect, onClose }) {

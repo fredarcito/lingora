@@ -2,8 +2,8 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Campo de texto de una línea, para los ajustes. `label` va a `aria-label`;
- * `onCommit` se llama al pulsar Enter o al salir del campo.
+ * Single-line text field, for settings. `label` goes to `aria-label`;
+ * `onCommit` is called when pressing Enter or when leaving the field.
  * @param {{ value: string, onChange: (value: string) => void, onCommit?: () => void,
  *   label?: string, placeholder?: string, maxLength?: number, disabled?: boolean, className?: string }} props
  */

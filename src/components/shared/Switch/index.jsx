@@ -2,9 +2,9 @@ import { cx } from "../cx";
 import styles from "./styles.module.css";
 
 /**
- * Interruptor pequeño, como el Switch de shadcn. Con `label` es una etiqueta
- * con su texto; sin él se pinta como `<span>`, para ir dentro de otra etiqueta
- * (las filas de Ajustes, que ya llevan título y ayuda).
+ * Small switch, like the shadcn Switch. With `label` it is a label
+ * with its text; without it, it is painted as a `<span>`, to go inside another label
+ * (the Settings rows, which already have a title and help text).
  * @param {{ checked: boolean, onChange: (on: boolean) => void, label?: string, disabled?: boolean,
  *   className?: string, title?: string }} props
  */

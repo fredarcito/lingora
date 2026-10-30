@@ -1,35 +1,36 @@
 # Lingora
 
-Traductor de voz en tiempo real para macOS, **todo en local**: nada sale del
-equipo ni depende de una API. Lingora escucha el audio del Mac (un vídeo, una
-llamada), lo transcribe, lo traduce y lo muestra como subtítulos o lo dice con
-una voz sintética; en modo llamada hace lo mismo con tu micrófono en la
-dirección contraria. 37 idiomas de destino; se pueden escuchar los 11 europeos
-de Parakeet más chino, cantonés, japonés y coreano (ver docs/plan-idiomas.md).
+Real-time voice translator for macOS, **fully local**: nothing leaves the
+machine and nothing depends on an API. Lingora listens to the Mac's audio (a
+video, a call), transcribes it, translates it and shows it as captions or
+speaks it with a synthetic voice; in call mode it does the same with your
+microphone in the opposite direction. 37 target languages; the 11 European
+languages of Parakeet can be listened to, plus Chinese, Cantonese, Japanese and
+Korean (see docs/plan-idiomas.md).
 
-## Estado
+## Status
 
-Fase 0 (validación) completada y scaffold de la app generado. Lo que está
-comprobado con ejecuciones reales está marcado abajo; lo que no, también.
+Phase 0 (validation) is complete and the app scaffold has been generated. What
+has been checked with real runs is marked below; what hasn't, is marked too.
 
-| Pieza | Estado |
+| Part | Status |
 |---|---|
-| Captura de audio del sistema (BlackHole 2ch) | Verificado |
-| Captura de micrófono | Verificado |
-| Envío de voz a BlackHole (micrófono virtual para la llamada) | Verificado |
-| Sin realimentación (voz traducida → bocinas, no → BlackHole) | Verificado |
-| Transcripción local (Parakeet v3; SenseVoice para zh/yue/ja/ko) | Verificado |
-| Traducción local (HY-MT2 1.8B con llama.cpp dentro de la app) | Verificado |
-| Groq (Whisper / qwen) | Fuera de la UI desde 2026-10-28; el código sigue en `groq.rs` |
-| Fonemas español/inglés (`espeak-ng`, dentro de la app) | Verificado |
-| Voz (Kokoro en sherpa-onnx, voces `em_alex` / `am_michael`) | Verificado |
-| Backend Rust compila | Verificado |
-| Frontend compila (`vite build`, JS/JSX) | Verificado |
-| App arranca (`tauri dev`) | Verificado |
-| Grabación desde la UI en WKWebView | **Sin verificar** (pendiente de prueba manual) |
-| Dirección B con una llamada real | **Sin verificar** |
+| System audio capture (BlackHole 2ch) | Verified |
+| Microphone capture | Verified |
+| Sending voice to BlackHole (virtual microphone for the call) | Verified |
+| No feedback loop (translated voice → speakers, not → BlackHole) | Verified |
+| Local transcription (Parakeet v3; SenseVoice for zh/yue/ja/ko) | Verified |
+| Local translation (HY-MT2 1.8B with llama.cpp inside the app) | Verified |
+| Groq (Whisper / qwen) | Out of the UI since 2026-10-28; the code remains in `groq.rs` |
+| Spanish/English phonemes (`espeak-ng`, inside the app) | Verified |
+| Voice (Kokoro in sherpa-onnx, voices `em_alex` / `am_michael`) | Verified |
+| Rust backend compiles | Verified |
+| Frontend compiles (`vite build`, JS/JSX) | Verified |
+| App starts (`tauri dev`) | Verified |
+| Recording from the UI in WKWebView | **Not verified** (pending manual test) |
+| Direction B with a real call | **Not verified** |
 
-## Arquitectura
+## Architecture
 
 ```
 Audio del sistema ──► Salida múltiple "Lingora" (Bocinas + BlackHole 2ch)
@@ -53,115 +54,118 @@ Audio del sistema ──► Salida múltiple "Lingora" (Bocinas + BlackHole 2ch)
                                               de salida elegido (nunca la salida múltiple)
 ```
 
-La dirección contraria usa el micrófono como entrada y BlackHole 2ch como salida
-(la llamada lo selecciona como micrófono).
+The opposite direction uses the microphone as input and BlackHole 2ch as
+output (the call app selects it as the microphone).
 
-### Por qué cada decisión
+### Why each decision
 
-- **Core Audio taps para Escuchar, BlackHole para Hablar**: en macOS 14.2+
-  Escuchar oye el audio del Mac con una tap global que excluye a Lingora
-  (`system_audio.rs`): sin driver, sin salida múltiple y sin que la voz
-  traducida vuelva a entrar. La primera vez macOS pide "Grabación de audio del
-  sistema". Hablar sigue necesitando BlackHole como micrófono virtual, porque
-  macOS no permite crear uno sin driver. En Macs más antiguos Escuchar puede
-  seguir usando BlackHole.
-- **Todo local, sin Groq** (desde 2026-10-28): gratis para cualquier número de
-  usuarios, sin cuotas ni errores 429, sin internet y sin que el audio salga
-  del equipo. A cambio, algo menos de calidad que Whisper + qwen en la nube,
-  y unos 2–2,5 GB de RAM con los modelos cargados (se sueltan tras 3 minutos
-  parado). Antes se usaba Groq: `qwen3.8-27b` fue el más rápido y estable
-  (344 ms de media).
-- **SenseVoice para chino, cantonés, japonés y coreano**: Parakeet no los
-  entiende. SenseVoice Small int8 (2024-07-17, ~240 MB) tarda ~0,3 s en 7 s de
-  audio y pone puntuación; la versión de 2025-09-09 no la pone y falla en
-  japonés. Los idiomas que ninguno de los dos escucha (árabe, hindi…) solo
-  sirven como destino hasta tener un Whisper local.
-- **Parakeet en local para cortar frases** (historia: antes el texto salía de Whisper): medido en
-  un M1 Pro. Parakeet v3 int8 (sherpa-onnx) tarda ~0,25 s en escuchar la frase
-  en curso, así que se puede repetir cada medio segundo y cortar el audio entre
-  dos palabras en cuanto termina una frase, en vez de esperar una pausa o
-  cortar a los 5 s a mitad de palabra. Pero en inglés comete más errores que
-  Whisper (7 frente a 3 en las pruebas), así que el texto que se traduce sigue
-  saliendo de Whisper. Whisper en local (whisper.cpp con Metal) da la misma
-  calidad que Groq pero tarda ~0,9 s por trozo: no aporta velocidad.
-- **Traducción local opcional con HY-MT2 1.8B**: qwen en Groq se queda sin
-  cuota en el plan gratuito (1.000 peticiones al día, 8.000 tokens por minuto)
-  y pierde trozos. HY-MT2 Q4_K_M (1,1 GB) tarda ~0,3 s por frase en un M1 Pro.
-  Va bien de inglés a español; con español coloquial y frases cortadas es más
-  flojo, así que en modo local va con un glosario de coloquialismos y sin
-  contexto (con contexto a veces lo traduce también). Con transcripción Precisa
-  además espera a que termine cada frase; con Rápida corta en las comas, porque
-  esperar al punto sumaba ~4 s de retraso.
-  TranslateGemma 4B se descartó: el doble de lento y alarga las traducciones.
-- **Kokoro para la voz**: Groq TTS solo tiene inglés y requiere aceptar términos.
-- **espeak-ng para fonemas**: con texto español directo Kokoro suena con
-  acento inglés. Con fonemas de espeak-ng la transcripción de la salida es
-  exacta. Se le pasan a Kokoro ya calculados (`phoneme_codepoints`).
-- **Kokoro dentro de la app, con sherpa-onnx** (antes Node + `kokoro-js` en un
-  proceso aparte): sin Node, menos memoria y la misma velocidad con 4 hilos
-  (~0,22× la duración del audio). Modelo `fp32`: el `int8` tarda 2,5 veces más
-  en Apple Silicon.
+- **Core Audio taps for Listen, BlackHole for Speak**: on macOS 14.2+ Listen
+  hears the Mac's audio through a global tap that excludes Lingora
+  (`system_audio.rs`): no driver, no multi-output device, and the translated
+  voice doesn't loop back in. The first time, macOS asks for "Screen & System
+  Audio Recording" permission. Speak still needs BlackHole as a virtual
+  microphone, because macOS doesn't allow creating one without a driver. On
+  older Macs Listen can still use BlackHole.
+- **Fully local, no Groq** (since 2026-10-28): free for any number of users,
+  no quotas or 429 errors, no internet, and the audio never leaves the machine.
+  In exchange, slightly lower quality than Whisper + qwen in the cloud, and
+  about 2–2.5 GB of RAM with the models loaded (they are released after 3
+  minutes idle). Groq was used before: `qwen3.8-27b` was the fastest and most
+  stable (344 ms on average).
+- **SenseVoice for Chinese, Cantonese, Japanese and Korean**: Parakeet doesn't
+  understand them. SenseVoice Small int8 (2024-07-17, ~240 MB) takes ~0.3 s for
+  7 s of audio and adds punctuation; the 2025-09-09 version doesn't add
+  punctuation and fails on Japanese. Languages that neither of the two can
+  listen to (Arabic, Hindi…) only work as targets until there is a local
+  Whisper.
+- **Parakeet locally to cut sentences** (history: the text used to come from
+  Whisper): measured on an M1 Pro. Parakeet v3 int8 (sherpa-onnx) takes ~0.25 s
+  to listen to the sentence in progress, so it can be repeated every half
+  second and the audio can be cut between two words as soon as a sentence ends,
+  instead of waiting for a pause or cutting at 5 s in the middle of a word. But
+  in English it makes more errors than Whisper (7 versus 3 in the tests), so the
+  text that is translated still comes from Whisper. Whisper locally (whisper.cpp
+  with Metal) gives the same quality as Groq but takes ~0.9 s per chunk: it
+  adds no speed.
+- **Optional local translation with HY-MT2 1.8B**: qwen on Groq runs out of
+  quota on the free plan (1,000 requests per day, 8,000 tokens per minute) and
+  drops chunks. HY-MT2 Q4_K_M (1.1 GB) takes ~0.3 s per sentence on an M1 Pro.
+  It works well from English to Spanish; with colloquial Spanish and cut-off
+  sentences it is weaker, so in local mode it runs with a glossary of
+  colloquialisms and without context (with context it sometimes translates the
+  context too). With Precise transcription it also waits for each sentence to
+  end; with Fast it cuts at commas, because waiting for the period added ~4 s of
+  delay.
+  TranslateGemma 4B was discarded: twice as slow and it makes translations longer.
+- **Kokoro for the voice**: Groq TTS only has English and requires accepting terms.
+- **espeak-ng for phonemes**: with direct Spanish text Kokoro sounds like it has
+  an English accent. With espeak-ng phonemes the output transcription is exact.
+  They are passed to Kokoro already computed (`phoneme_codepoints`).
+- **Kokoro inside the app, with sherpa-onnx** (before, Node + `kokoro-js` in a
+  separate process): no Node, less memory and the same speed with 4 threads
+  (~0.22× the audio duration). `fp32` model: `int8` takes 2.5 times longer on
+  Apple Silicon.
 
-## Problemas conocidos
+## Known problems
 
-La app revisa su propia configuración (panel de diagnóstico) y arregla lo que
-puede. Síntomas, causas y soluciones en
+The app checks its own configuration (diagnostics panel) and fixes what it
+can. Symptoms, causes and solutions are in
 [docs/problemas-conocidos.md](docs/problemas-conocidos.md).
 
-## Requisitos
+## Requirements
 
 ```bash
-pnpm install                 # frontend y Tauri CLI
-scripts/build-espeak.sh      # compila espeak-ng para meterlo en la app (una vez)
+pnpm install                 # frontend and Tauri CLI
+scripts/build-espeak.sh      # builds espeak-ng to bundle it in the app (once)
 ```
 
-Para compilar hacen falta `cmake` y las herramientas de Xcode (llama.cpp y
-espeak-ng se compilan dentro de la app). Quien usa la app no instala nada:
-`scripts/check-standalone.sh` comprueba que el `.app` no dependa de nada de
-fuera.
+To build, you need `cmake` and the Xcode tools (llama.cpp and espeak-ng are
+built inside the app). Whoever uses the app installs nothing:
+`scripts/check-standalone.sh` checks that the `.app` doesn't depend on anything
+external.
 
-El modelo de subtítulos en vivo (Parakeet, ~470 MB) se descarga desde el panel
-de diagnóstico («Descargar») en `~/Library/Application Support/lingora/models/`.
-Sin él la app funciona igual, cortando las frases solo por pausas.
+The live captions model (Parakeet, ~470 MB) is downloaded from the diagnostics
+panel ("Download") to `~/Library/Application Support/lingora/models/`. Without
+it the app works the same, cutting sentences only at pauses.
 
-La traducción local usa llama.cpp dentro de la app y el modelo HY-MT2
-(~1,1 GB), que también se descarga desde el diagnóstico.
+Local translation uses llama.cpp inside the app and the HY-MT2 model (~1.1 GB),
+which is also downloaded from the diagnostics panel.
 
-El proyecto usa **pnpm** y **JavaScript/JSX** sin
-TypeScript. Los tipos del puente con Rust están documentados con JSDoc.
+The project uses **pnpm** and **JavaScript/JSX** without TypeScript. The types
+of the bridge with Rust are documented with JSDoc.
 
-Rust (stable) es necesario para compilar la app.
+Rust (stable) is required to build the app.
 
-## Configuración
+## Configuration
 
-Crea un `.env` en la raíz (está en `.gitignore`):
+Create a `.env` file in the root (it is in `.gitignore`):
 
 ```
 GROQ_API_KEY=tu_clave
 ```
 
-Variables opcionales:
+Optional variables:
 
-| Variable | Por defecto |
+| Variable | Default |
 |---|---|
 | `LINGORA_STT_MODEL` | `whisper-large-v3-turbo` |
 | `LINGORA_TRANSLATION_MODEL` | `qwen/qwen3.8-27b` |
-| `LINGORA_ESPEAK_BIN` | El `espeak-ng` que va dentro de la app |
+| `LINGORA_ESPEAK_BIN` | The `espeak-ng` bundled inside the app |
 | `LINGORA_TTS_MODEL_DIR` | `models/kokoro-multi-lang-v1_0` |
-| `VITE_CALL_MODE` | `false`: «Traducir llamada» sale bloqueada mientras se termina. Se lee al compilar la interfaz (`.env` o entorno). |
+| `VITE_CALL_MODE` | `false`: "Translate call" stays blocked while it is being finished. It is read when the interface is built (`.env` or environment). |
 | `LINGORA_TRANSLATOR_MODEL` | `models/Hy-MT2-1.8B-Q4_K_M.gguf` |
-| `LINGORA_SPEAKER_MODEL` | `models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx` (distinguir personas en las notas) |
+| `LINGORA_SPEAKER_MODEL` | `models/3dspeaker_speech_eres2net_base_sv_zh-cn_3dspeaker_16k.onnx` (tells people apart in notes) |
 
-## Uso
+## Usage
 
-1. Crea la salida múltiple **Lingora** (Bocinas + BlackHole 2ch) en *Audio MIDI
-   Setup* y selecciónala como salida del sistema.
-2. Arranca la app: `pnpm tauri dev`.
-3. En la app, elige la entrada de cada dirección (BlackHole para el audio
-   remoto, micrófono para el tuyo) y la salida donde quieres oír la traducción.
-4. En la app de la llamada, selecciona **BlackHole 2ch** como micrófono.
+1. Create the **Lingora** multi-output device (Speakers + BlackHole 2ch) in
+   *Audio MIDI Setup* and select it as the system output.
+2. Start the app: `pnpm tauri dev`.
+3. In the app, choose the input for each direction (BlackHole for remote audio,
+   microphone for yours) and the output where you want to hear the translation.
+4. In the call app, select **BlackHole 2ch** as the microphone.
 
-## Estructura
+## Structure
 
 ```
 src/                  Frontend React en JS/JSX (UI, captura y reproducción)
@@ -177,15 +181,15 @@ src-tauri/src/
   config.rs           Ajustes por entorno
 ```
 
-## Gestor de paquetes
+## Package manager
 
-Se usa **pnpm**. pnpm 12 bloquea los scripts de instalación por defecto; el
-único paquete que los necesita (`esbuild`) está aprobado en
-`pnpm-workspace.yaml` (`allowBuilds`).
+**pnpm** is used. pnpm 12 blocks install scripts by default; the only package
+that needs them (`esbuild`) is approved in `pnpm-workspace.yaml`
+(`allowBuilds`).
 
-## Limitaciones conocidas
+## Known limitations
 
-- En inglés, Parakeet comete algo más de errores que Whisper en la nube.
-- Kokoro tarda ~0,22× la duración del audio. Para conversación fluida conviene
-  frases cortas.
-- Solo macOS.
+- In English, Parakeet makes a few more errors than Whisper in the cloud.
+- Kokoro takes ~0.22× the audio duration. For fluid conversation, short
+  sentences work best.
+- macOS only.

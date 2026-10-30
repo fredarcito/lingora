@@ -3,11 +3,11 @@ import { SwapIcon, cx } from "../shared";
 import styles from "./styles.module.css";
 
 /**
- * Los idiomas de la conversación, comunes a los dos carriles. Si se elige el
- * mismo en los dos lados, se intercambian. No se cambian con un carril en
- * marcha: la frase en curso quedaría a medio camino entre dos idiomas.
- * En modo vídeo se lee «Inglés → Español»: de lo que se oye a lo que se lee.
- * Con los subtítulos en el original (ajuste del panel), el destino se atenúa.
+ * The conversation languages, shared by both lanes. If the same language is picked
+ * on both sides, they are swapped. They cannot be changed while a lane
+ * is running: the sentence in progress would be left halfway between two languages.
+ * In video mode it reads "English → Spanish": from what is heard to what is read.
+ * With subtitles in the original (panel setting), the target is dimmed.
  * @param {{ pair: import("../../App/types").LangPair, onChange: (pair: import("../../App/types").LangPair) => void, locked: boolean, mode: import("../../App/types").Mode, noTranslate: boolean }} props
  */
 export default function PairBar({ pair, languages, onChange, locked, mode, noTranslate }) {
@@ -17,8 +17,8 @@ export default function PairBar({ pair, languages, onChange, locked, mode, noTra
     const other = side === "you" ? "them" : "you";
     onChange(code === pair[other] ? { you: pair.them, them: pair.you } : { ...pair, [side]: code });
   };
-  // Lo que se escucha tiene que poder escucharse en local; en una llamada
-  // también lo que hablas tú.
+  // What is heard must be audible locally; in a call
+  // so must what you say.
   /** @param {"you" | "them"} side */
   const listened = (side) => side === "them" || mode === "call";
   /** @param {"you" | "them"} side @param {string} label @param {string} hint */
@@ -30,7 +30,7 @@ export default function PairBar({ pair, languages, onChange, locked, mode, noTra
           <option key={l.code} value={l.code.toUpperCase()} disabled={listened(side) && !l.can_listen}>
             {listened(side) && !l.can_listen
               ? t("app.pair.soon", { name: l.name })
-              : // Sin voz en este equipo: solo subtítulos hacia ese idioma.
+              : // No voice on this device: subtitles only toward that language.
                 l.female_voice || l.male_voice
                 ? l.name
                 : t("app.pair.noVoice", { name: l.name })}
@@ -39,7 +39,7 @@ export default function PairBar({ pair, languages, onChange, locked, mode, noTra
       </select>
     </label>
   );
-  // Al intercambiar, tu idioma pasa a ser el que se escucha.
+  // When swapping, your language becomes the one that is heard.
   const canSwap = languages.find((l) => l.code.toUpperCase() === pair.you)?.can_listen ?? true;
   const swap = (
     <button

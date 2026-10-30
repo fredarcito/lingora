@@ -2,34 +2,34 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 
 /**
  * @typedef {Object} ModelStatus
- * @property {string} id Mismo id que su comprobación del diagnóstico.
- * @property {boolean} required Sin él no se puede empezar.
+ * @property {string} id Same id as its diagnostics check.
+ * @property {boolean} required Cannot start without it.
  * @property {boolean} installed
- * @property {boolean} partial Hay una descarga a medias.
+ * @property {boolean} partial A download is partly done.
  * @property {number} approx_bytes
  */
 
 /**
  * @typedef {Object} VoiceInfo
- * @property {string} id "kokoro:em_alex" o "system:<identificador>".
+ * @property {string} id "kokoro:em_alex" or "system:<identifier>".
  * @property {string} name
  * @property {"kokoro" | "system"} engine
  * @property {"female" | "male" | null} gender
- * @property {string} detail País y calidad ("México · Premium"), o vacío.
+ * @property {string} detail Country and quality ("México · Premium"), or empty.
  */
 
 /**
  * @typedef {"remote_to_local" | "local_to_remote"} Direction
- * Código de idioma de la app ("es", "ja", "zh-hant"…); la lista la da `languages`.
+ * App language code ("es", "ja", "zh-hant"…); the list comes from `languages`.
  * @typedef {string} Lang
  *
  * @typedef {Object} LanguageInfo
  * @property {Lang} code
- * @property {string} name Nombre en español.
- * @property {boolean} parakeet Lo escucha Parakeet (idiomas europeos).
- * @property {boolean} can_listen Se puede escuchar en local (Parakeet o SenseVoice); si no, solo sirve como idioma de la traducción.
- * @property {boolean} female_voice Hay voz de mujer en este equipo.
- * @property {boolean} male_voice Hay voz de hombre en este equipo.
+ * @property {string} name Name in Spanish.
+ * @property {boolean} parakeet Heard by Parakeet (European languages).
+ * @property {boolean} can_listen Can be heard locally (Parakeet or SenseVoice); if not, it only works as the translation language.
+ * @property {boolean} female_voice A female voice is available on this machine.
+ * @property {boolean} male_voice A male voice is available on this machine.
  *
  * @typedef {Object} Transcription
  * @property {Direction} direction
@@ -37,20 +37,20 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {Lang} target_lang
  * @property {string} transcript
  * @property {number} stt_ms
- * @property {string} source_wav_base64 Audio exacto enviado a Whisper (WAV 16 kHz, base64).
- * @property {number} source_duration_secs Duración de ese audio en segundos.
+ * @property {string} source_wav_base64 Exact audio sent to Whisper (WAV 16 kHz, base64).
+ * @property {number} source_duration_secs Duration of that audio in seconds.
  *
  * @typedef {Object} Translation
  * @property {string} translation
  * @property {number} translate_ms
  *
  * @typedef {Object} Speech
- * @property {number[]} audio Muestras mono float32.
+ * @property {number[]} audio Mono float32 samples.
  * @property {number} sample_rate
  * @property {number} phonemize_ms
  * @property {number} tts_ms
  *
- * @typedef {Object} Word Palabra reconocida en local, con su posición en segundos.
+ * @typedef {Object} Word Word recognized locally, with its position in seconds.
  * @property {string} text
  * @property {number} start
  * @property {number} end
@@ -61,15 +61,15 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {number} input_channels
  * @property {number} output_channels
  *
- * @typedef {Object} AudioRoute Lo que hay conectado para oír y hablar (Reunión en línea).
- * @property {"headphones" | "speakers" | "other"} output Auriculares (con cable, USB o
- *   Bluetooth), las bocinas del Mac u otra cosa (monitor, altavoz externo…): con
- *   las dos últimas el micrófono puede oír a los demás.
+ * @typedef {Object} AudioRoute What is connected for listening and speaking (Online meeting).
+ * @property {"headphones" | "speakers" | "other"} output Headphones (wired, USB or
+ *   Bluetooth), the Mac speakers or something else (monitor, external speaker…): with
+ *   the last two, the microphone can hear the others.
  * @property {string} output_name
- * @property {string} input_name La entrada por defecto.
+ * @property {string} input_name The default input.
  * @property {boolean} input_bluetooth
- * @property {boolean} input_busy Otra app ya usa la entrada por defecto.
- * @property {string | null} builtin_mic El micrófono del Mac, si lo hay.
+ * @property {boolean} input_busy Another app is already using the default input.
+ * @property {string | null} builtin_mic The Mac microphone, if there is one.
  *
  * @typedef {Object} SettingsSummary
  * @property {string} stt_model
@@ -77,39 +77,39 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {string} espeak_bin
  * @property {string} tts_bin
  * @property {boolean} has_api_key
- * @property {boolean} local_translation Si la traducción local está instalada.
+ * @property {boolean} local_translation Whether local translation is installed.
  *
  * @typedef {Object} Check
  * @property {string} id
  * @property {"ok" | "warning" | "error"} status
  * @property {string} title
  * @property {string} detail
- * @property {string | null} fix Texto del botón de arreglo automático.
+ * @property {string | null} fix Text of the automatic fix button.
  *
  * @typedef {Object} NoteSentence
- * @property {number} t Segundos desde `created_at` hasta que terminó la frase.
+ * @property {number} t Seconds from `created_at` until the sentence ended.
  * @property {Direction} direction
- * @property {Lang | "auto"} source_lang "auto" en Tomar notas (la escucha europea detecta el idioma).
+ * @property {Lang | "auto"} source_lang "auto" in Take notes (European listening detects the language).
  * @property {Lang | "auto"} target_lang
- * @property {number | null} speaker Número de persona; null si aún no se distinguen.
+ * @property {number | null} speaker Speaker number; null if they are not yet told apart.
  * @property {string} source
- * @property {string | null} translation Null en modo original (sin traducir).
+ * @property {string | null} translation Null in original mode (untranslated).
  *
- * @typedef {Object} Note Una conversación guardada (ver docs/plan-notas.md).
+ * @typedef {Object} Note A saved conversation (see docs/plan-notas.md).
  * @property {number} version
- * @property {string} id Fecha local de inicio; es el nombre del archivo.
+ * @property {string} id Local start date; it is the file name.
  * @property {string} title
  * @property {string} created_at ISO 8601.
  * @property {string | null} ended_at
  * @property {"video" | "call" | "notes"} mode
- * @property {"notes" | "translation"} [kind] Sin él, una traducción.
- * @property {string} [summary_lang] Idioma del resumen (solo en Tomar notas).
- * @property {Record<string, string>} speakers Nombre de cada persona ("1": "Ana").
+ * @property {"notes" | "translation"} [kind] Without it, a translation.
+ * @property {string} [summary_lang] Summary language (only in Take notes).
+ * @property {Record<string, string>} speakers Name of each speaker ("1": "Ana").
  * @property {NoteSentence[]} sentences
- * @property {{ at: number, secs: number }[]} [gaps] Ratos sin guardar: antes de la frase `at`, y cuánto duraron.
+ * @property {{ at: number, secs: number }[]} [gaps] Unsaved gaps: before sentence `at`, and how long they lasted.
  * @property {{ text: string, created_at: string } | null} summary
  *
- * @typedef {Object} NoteSummary Lo justo de una nota para listarla y buscar.
+ * @typedef {Object} NoteSummary The minimum of a note needed to list and search it.
  * @property {string} id
  * @property {string} title
  * @property {string} created_at
@@ -117,14 +117,14 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {number} sentences
  * @property {boolean} has_summary
  * @property {"notes" | "translation"} [kind]
- * @property {string} preview Primeros ~200 caracteres, para buscar.
- * @property {string | null} [source_lang] Idiomas de la primera frase.
+ * @property {string} preview First ~200 characters, for searching.
+ * @property {string | null} [source_lang] Languages of the first sentence.
  * @property {string | null} [target_lang]
- * @property {string | null} [summary_line] La primera frase del resumen, si hay.
+ * @property {string | null} [summary_line] The first sentence of the summary, if any.
  *
- * @typedef {"keychain" | "env" | "none"} SummaryKeyStatus Dónde está la clave de
- *   Groq para resumir: en el llavero, en el entorno de desarrollo
- *   (`GROQ_API_KEY`) o en ninguna parte.
+ * @typedef {"keychain" | "env" | "none"} SummaryKeyStatus Where the key for
+ *   Groq summaries is stored: in the keychain, in the development environment
+ *   (`GROQ_API_KEY`) or nowhere.
  *
  * @typedef {Object} AppError
  * @property {string} kind
@@ -145,24 +145,24 @@ export function errorMessage(e) {
 
 export const api = {
   /**
-   * Transcribe un trozo de audio.
+   * Transcribes a piece of audio.
    * @param {Uint8Array} wav @param {Direction} direction
    * @param {Lang} source @param {Lang} target
-   * @param {string} [prompt] Lo transcrito justo antes en este carril.
+   * @param {string} [prompt] What was transcribed just before in this lane.
    * @returns {Promise<Transcription>}
    */
   transcribe: (wav, direction, source, target, prompt = "") =>
     invoke("transcribe", { wav: Array.from(wav), direction, source, target, prompt }),
   /**
-   * Traduce texto ya transcrito. La traducción llega a trozos por `onDelta`
-   * según la escribe el modelo; la promesa resuelve con el texto completo.
+   * Translates text already transcribed. The translation arrives in chunks via `onDelta`
+   * as the model writes it; the promise resolves with the full text.
    * @param {string} text @param {Lang} source @param {Lang} target
-   * @param {string} [context] Texto anterior del carril, solo como referencia.
+   * @param {string} [context] Previous text of the lane, for reference only.
    * @param {(delta: string) => void} [onDelta]
-   * @param {boolean} [concise] Traducción condensada (sin muletillas), para que
-   *   la voz no se quede atrás.
-   * @param {boolean} [local] Traduce en local (HY-MT2) en vez de Groq; sin
-   *   contexto ni condensar.
+   * @param {boolean} [concise] Condensed translation (no filler words), so that
+   *   the voice does not fall behind.
+   * @param {boolean} [local] Translates locally (HY-MT2) instead of Groq; without
+   *   context or condensing.
    * @returns {Promise<Translation>}
    */
   translate: (text, source, target, context = "", onDelta = () => {}, concise = false, local = false) => {
@@ -171,73 +171,73 @@ export const api = {
     return invoke("translate", { text, source, target, context, concise, local, onDelta: channel });
   },
   /**
-   * Arranca la traducción local y carga el modelo (~1 s).
-   * @returns {Promise<boolean>} Si está disponible.
+   * Starts local translation and loads the model (~1 s).
+   * @returns {Promise<boolean>} Whether it is available.
    */
   translateWarmUp: () => invoke("translate_warm_up"),
   /**
-   * Sintetiza la voz de un fragmento de texto.
+   * Synthesizes speech for a text fragment.
    * @param {string} text @param {Lang} lang @param {"female" | "male"} voice
-   * @param {number} [speed] Velocidad de la voz; > 1 cuando hay frases en cola.
-   * @param {string | null} [voiceId] Una voz concreta (`VoiceInfo.id`); sin
-   *   ella, la mejor del género.
+   * @param {number} [speed] Voice speed; > 1 when there are sentences queued.
+   * @param {string | null} [voiceId] A specific voice (`VoiceInfo.id`); without
+   *   it, the best one for the gender.
    * @returns {Promise<Speech>}
    */
   speak: (text, lang, voice, speed = 1.0, voiceId = null) => invoke("speak", { text, lang, voice, speed, voiceId }),
   /**
-   * Las voces que se pueden elegir para un idioma: Kokoro y las del sistema.
+   * The voices that can be chosen for a language: Kokoro and the system ones.
    * @param {Lang} lang
    * @returns {Promise<VoiceInfo[]>}
    */
   voices: (lang) => invoke("voices", { lang }),
   /**
-   * Reproduce la voz en una salida (por nombre; "" = salida del sistema) y
-   * resuelve cuando termina de sonar.
+   * Plays the voice on an output (by name; "" = system output) and
+   * resolves when it finishes playing.
    * @param {number[]} samples @param {number} sampleRate @param {string} deviceName
-   * @param {number} [volume] Ganancia: 1 = original, hasta 2.
+   * @param {number} [volume] Gain: 1 = original, up to 2.
    * @returns {Promise<void>}
    */
   playAudio: (samples, sampleRate, deviceName, volume = 1) =>
     invoke("play_audio", { samples, sampleRate, deviceName, volume }),
   /**
-   * @param {boolean} full Incluye dependencias (lento); sin él, solo audio.
+   * @param {boolean} full Includes dependencies (slow); without it, audio only.
    * @returns {Promise<Check[]>}
    */
   runDiagnostics: (full) => invoke("run_diagnostics", { full }),
-  /** Aplica un arreglo automático. @param {string} id @returns {Promise<Check[]>} */
+  /** Applies an automatic fix. @param {string} id @returns {Promise<Check[]>} */
   fixDiagnostic: (id) => invoke("fix_diagnostic", { id }),
   /**
-   * Carga el modelo que escucha el idioma (Parakeet o SenseVoice).
+   * Loads the model that listens to the language (Parakeet or SenseVoice).
    * @param {Lang} lang
-   * @returns {Promise<boolean>} Si está disponible.
+   * @returns {Promise<boolean>} Whether it is available.
    */
   listenWarmUp: (lang) => invoke("listen_warm_up", { lang }),
   /**
-   * Suelta los modelos de escucha y traducción para liberar memoria. Se
-   * vuelven a cargar al empezar otra vez. @returns {Promise<void>}
+   * Releases the listening and translation models to free memory. They
+   * reload when starting again. @returns {Promise<void>}
    */
   releaseModels: () => invoke("release_models"),
   /**
-   * Reconoce en local la frase en curso. Va en crudo, no en JSON: se llama
-   * cada medio segundo con varios segundos de audio.
+   * Recognizes the current sentence locally. It is sent raw, not as JSON: it is called
+   * every half second with several seconds of audio.
    * @param {Float32Array} samples Mono 16 kHz.
-   * @param {Lang} lang Idioma que se oye: elige el modelo.
+   * @param {Lang} lang Language being heard: picks the model.
    * @returns {Promise<Word[]>}
    */
   listen: (samples, lang) =>
     invoke("listen", new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength), { headers: { lang } }),
   /**
-   * Huella de voz de una frase, para distinguir en las notas quién habla.
-   * En crudo, como `listen`.
+   * Voice fingerprint of a sentence, to tell who is speaking in the notes.
+   * Raw, like `listen`.
    * @param {Float32Array} samples Mono 16 kHz.
    * @returns {Promise<number[]>}
    */
   voicePrint: (samples) => invoke("voice_print", new Uint8Array(samples.buffer, samples.byteOffset, samples.byteLength)),
-  /** Carga el modelo de voz antes de la primera frase. @returns {Promise<void>} */
+  /** Loads the voice model before the first sentence. @returns {Promise<void>} */
   warmUp: () => invoke("warm_up"),
   /**
-   * Fuera del Mac Rust aún no lista los dispositivos: se usan los del WebView
-   * (sin las entradas «default» y «communications», que repiten otro).
+   * Outside the Mac, Rust does not list the devices yet: the WebView ones are used
+   * (without the «default» and «communications» entries, which repeat another).
    * @returns {Promise<DeviceInfo[]>}
    */
   listAudioDevices: () =>
@@ -254,15 +254,15 @@ export const api = {
   /** @returns {Promise<AudioRoute>} */
   audioRoute: () => invoke("audio_route"),
   /**
-   * Si este Mac puede capturar su audio sin BlackHole (macOS 14.2+).
+   * Whether this Mac can capture its audio without BlackHole (macOS 14.2+).
    * @returns {Promise<boolean>}
    */
   systemAudioSupported: () => invoke("system_audio_supported"),
   /**
-   * Captura lo que suena en el Mac, menos la propia Lingora. Los bloques
-   * llegan en crudo (float32 mono).
+   * Captures what plays on the Mac, except Lingora itself. The blocks
+   * arrive raw (mono float32).
    * @param {(samples: Float32Array) => void} onBlock
-   * @returns {Promise<number>} La frecuencia de muestreo.
+   * @returns {Promise<number>} The sample rate.
    */
   systemAudioStart: (onBlock) => {
     const channel = new Channel();
@@ -273,20 +273,20 @@ export const api = {
   /** @returns {Promise<void>} */
   systemAudioStop: () => invoke("system_audio_stop"),
   /**
-   * Deja un error de la interfaz en el registro (en Windows, un .txt en el escritorio).
+   * Logs a UI error to the log (on Windows, a .txt on the desktop).
    * @param {string} message
    * @returns {Promise<void>}
    */
   logUi: (message) => invoke("log_ui", { message }),
-  /** Idiomas de la app y qué voces tienen en este equipo. @returns {Promise<LanguageInfo[]>} */
+  /** App languages and which voices this machine has. @returns {Promise<LanguageInfo[]>} */
   languages: () => invoke("languages"),
   /**
-   * Qué modelos están descargados (para la bienvenida).
+   * Which models are downloaded (for the welcome screen).
    * @returns {Promise<ModelStatus[]>}
    */
   setupStatus: () => invoke("setup_status"),
   /**
-   * Descarga un modelo; sigue donde lo dejó si se cortó.
+   * Downloads a model; resumes where it left off if interrupted.
    * @param {string} id @param {(p: { downloaded: number, total: number }) => void} onProgress
    * @returns {Promise<void>}
    */
@@ -295,40 +295,40 @@ export const api = {
     channel.onmessage = onProgress;
     return invoke("download_model", { id, onProgress: channel });
   },
-  /** Abre (o muestra) la ventana de subtítulos flotantes. @returns {Promise<void>} */
+  /** Opens (or shows) the floating captions window. @returns {Promise<void>} */
   openCaptions: () => invoke("open_captions"),
   /** @returns {Promise<SettingsSummary>} */
   settingsSummary: () => invoke("settings_summary"),
-  /** Las notas guardadas, de la más nueva a la más vieja. @returns {Promise<NoteSummary[]>} */
+  /** Saved notes, from newest to oldest. @returns {Promise<NoteSummary[]>} */
   notesList: () => invoke("notes_list"),
   /** @param {string} id @returns {Promise<Note>} */
   noteRead: (id) => invoke("note_read", { id }),
-  /** Crea o reemplaza la nota (`note.id` es el archivo). @param {Note} note @returns {Promise<void>} */
+  /** Creates or replaces the note (`note.id` is the file). @param {Note} note @returns {Promise<void>} */
   noteSave: (note) => invoke("note_save", { note }),
   /** @param {string} id @returns {Promise<void>} */
   noteDelete: (id) => invoke("note_delete", { id }),
-  /** Muestra el archivo de la nota en Finder. @param {string} id @returns {Promise<void>} */
+  /** Shows the note's file in Finder. @param {string} id @returns {Promise<void>} */
   noteReveal: (id) => invoke("note_reveal", { id }),
   /**
-   * Escribe la nota en Descargas y la muestra en Finder.
+   * Writes the note to Downloads and shows it in Finder.
    * @param {string} id @param {"md" | "txt"} format
-   * @returns {Promise<string>} La ruta del archivo.
+   * @returns {Promise<string>} The file path.
    */
   noteExport: (id, format) => invoke("note_export", { id, format }),
   /** @returns {Promise<SummaryKeyStatus>} */
   summaryKeyStatus: () => invoke("summary_key_status"),
   /**
-   * Comprueba la clave de Groq y la guarda en el llavero del Mac.
+   * Checks the Groq key and saves it in the Mac keychain.
    * @param {string} key @returns {Promise<void>}
    */
   summaryKeySet: (key) => invoke("summary_key_set", { key }),
-  /** Borra la clave del llavero. @returns {Promise<void>} */
+  /** Deletes the key from the keychain. @returns {Promise<void>} */
   summaryKeyClear: () => invoke("summary_key_clear"),
-  /** Abre en el navegador la página donde se crea la clave de Groq. @returns {Promise<void>} */
+  /** Opens in the browser the page where the Groq key is created. @returns {Promise<void>} */
   summaryKeyHelp: () => invoke("summary_key_help"),
   /**
-   * Resume la nota con la IA y guarda el resumen en ella.
-   * @param {string} id @returns {Promise<string>} El resumen en Markdown.
+   * Summarizes the note with AI and saves the summary in it.
+   * @param {string} id @returns {Promise<string>} The summary in Markdown.
    */
   noteSummarize: (id) => invoke("note_summarize", { id }),
 };

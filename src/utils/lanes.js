@@ -1,21 +1,21 @@
-// Lo que comparten la pantalla Traducir (App) y las piezas de cada carril.
+// What the Translate screen (App) and the pieces of each lane share.
 
 /** @param {string} code @returns {import("./api").Lang} */
 export const apiLang = (code) => /** @type {import("./api").Lang} */ (code.toLowerCase());
 
 /**
- * Salidas que acaban en BlackHole. Reproducir ahí la traducción la vuelve a
- * meter en la captura y la app se traduce a sí misma en bucle.
+ * Outputs that end in BlackHole. Playing the translation there feeds it back into
+ * the capture, and the app translates itself in a loop.
  * @param {string} name
  */
 export const feedsCapture = (name) => /blackhole 2ch|^lingora$|salida múltiple|multi-output/i.test(name);
 
-/** Segundos sin sonido antes de avisar. */
+/** Seconds of silence before warning. */
 export const NO_SIGNAL_SECS = 8;
 
 /**
- * Idiomas mientras llega la lista de Rust (`api.languages`), que dice cuáles
- * entiende Parakeet y qué voces hay en este equipo. Ver docs/plan-idiomas.md.
+ * Languages while the list from Rust (`api.languages`) arrives, which says which
+ * ones Parakeet understands and which voices exist on this device. See docs/plan-idiomas.md.
  * @type {import("./api").LanguageInfo[]}
  */
 export const FALLBACK_LANGUAGES = [
@@ -24,12 +24,12 @@ export const FALLBACK_LANGUAGES = [
 ];
 
 /**
- * Tope por defecto: medido con Kokoro, 1,15x aún suena natural y 1,3x ya
- * suena apurado (y solo acorta la voz un 17 %: las pausas no se aceleran).
+ * Default cap: measured with Kokoro, 1.15x still sounds natural and 1.3x already
+ * sounds rushed (and it only shortens the voice by 17%: the pauses are not sped up).
  */
 const DEFAULT_MAX_SPEED = 1.15;
 
-/** Título y subtítulo salen de `lanes.<dirección>.*` al pintar. @type {Omit<import("../App/types").Lane, "title" | "subtitle">[]} */
+/** Title and subtitle come from `lanes.<direction>.*` when rendered. @type {Omit<import("../App/types").Lane, "title" | "subtitle">[]} */
 export const LANES = [
   {
     direction: "remote_to_local",

@@ -2,10 +2,10 @@ import { cx } from "../shared";
 import styles from "./styles.module.css";
 
 /**
- * Render mínimo del Markdown del resumen: `##`, listas con `-`, casillas
- * `- [ ]` (solo visuales), `**negrita**` y párrafos. Todo sale como elementos
- * de React, así que el texto nunca se interpreta como HTML. `className`, para
- * que quien lo usa lo coloque.
+ * Minimal rendering of the summary's Markdown: `##`, lists with `-`, checkboxes
+ * `- [ ]` (visual only), `**bold**` and paragraphs. Everything comes out as React
+ * elements, so the text is never interpreted as HTML. `className`, so that
+ * the caller can place it.
  * @param {{ text: string, className?: string }} props
  */
 export default function Markdown({ text, className }) {
@@ -50,7 +50,7 @@ export default function Markdown({ text, className }) {
   return <div className={cx(styles.md, className)}>{blocks}</div>;
 }
 
-/** Pasa `**negrita**` a <strong>; el resto queda como texto. @param {string} text */
+/** Turns `**bold**` into <strong>; the rest stays as text. @param {string} text */
 function inline(text) {
   return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
     part.startsWith("**") && part.endsWith("**") && part.length > 4 ? <strong key={i}>{part.slice(2, -2)}</strong> : part,

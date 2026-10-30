@@ -1,4 +1,4 @@
-// Los tipos de la pantalla Traducir (solo JSDoc), para App y las piezas de cada carril.
+// The types of the Translate screen (JSDoc only), for App and the pieces of each lane.
 
 /**
  * @typedef {"remote_to_local" | "local_to_remote"} Direction
@@ -7,50 +7,50 @@
  * @property {Direction} direction
  * @property {string} title
  * @property {string} subtitle
- * @property {string} sourceLang Código del idioma de origen ("EN"); lo elige el usuario.
- * @property {string} targetLang Código del idioma de destino ("ES"); lo elige el usuario.
- * @property {string} inputDeviceId ID del WebView para la entrada (BlackHole o micrófono), o
- *   `SYSTEM_AUDIO` para el audio del Mac sin BlackHole.
- * @property {string} outputDevice Nombre de Core Audio de la salida donde se oye la traducción.
- * @property {"female" | "male"} voice Voz de la traducción.
- * @property {Record<string, string>} voiceIds Voz concreta elegida por idioma
- *   de destino (`VoiceInfo.id`); sin ella, la mejor del género.
- * @property {number} maxSpeed Velocidad máxima de la voz cuando hay retraso (1 = nunca acelera).
- * @property {boolean} speak Decir la traducción en voz alta. Sin voz solo hay
- *   subtítulos: se oye el original y no se acumula retraso (el español dura
- *   más que el inglés). Se lee en cada trozo.
- * @property {boolean} [canListen] El idioma que se oye se puede escuchar en local (Parakeet o SenseVoice).
- * @property {{ female: boolean, male: boolean }} [voices] Qué voces hay en este equipo para el idioma de la traducción.
- * @property {boolean} [notes] Es el carril de Tomar notas: sin traducir, sin voz y sin precargar la voz.
- * @property {boolean} [showSource] Mostrar el texto original encima de cada
- *   traducción. Sin elegir, se muestra solo con voz: con solo subtítulos se
- *   quiere leer la traducción, no el original.
+ * @property {string} sourceLang Source language code ("EN"); the user chooses it.
+ * @property {string} targetLang Target language code ("ES"); the user chooses it.
+ * @property {string} inputDeviceId WebView ID for the input (BlackHole or microphone), or
+ *   `SYSTEM_AUDIO` for Mac audio without BlackHole.
+ * @property {string} outputDevice Core Audio name of the output where the translation is heard.
+ * @property {"female" | "male"} voice Voice of the translation.
+ * @property {Record<string, string>} voiceIds Specific voice chosen per target language
+ *   (`VoiceInfo.id`); without it, the best voice of the gender.
+ * @property {number} maxSpeed Maximum speed of the voice when there is lag (1 = never speeds up).
+ * @property {boolean} speak Speak the translation aloud. Without voice there are only
+ *   subtitles: the original is heard and no lag builds up (Spanish lasts
+ *   longer than English). It is read in each chunk.
+ * @property {boolean} [canListen] The language being heard can be listened to locally (Parakeet or SenseVoice).
+ * @property {{ female: boolean, male: boolean }} [voices] Which voices exist on this device for the translation language.
+ * @property {boolean} [notes] It is the Take notes lane: no translation, no voice and no voice preloading.
+ * @property {boolean} [showSource] Show the original text above each
+ *   translation. If not chosen, it is shown only with voice: with subtitles only
+ *   the translation is meant to be read, not the original.
  *
  * @typedef {import("../utils/api").Transcription & import("../utils/api").Translation & { id: number, lagSecs: number | null, skipped?: boolean, silent?: boolean, captionKey?: number }} Entry
  *
  * @typedef {Object} LaneState
  * @property {boolean} running
- * @property {boolean} starting Cargando el modelo de voz y abriendo la entrada.
+ * @property {boolean} starting Loading the voice model and opening the input.
  * @property {string | null} error
- * @property {number} pending Frases detectadas que aún no han terminado de sonar.
- * @property {Entry[]} history Más reciente primero.
- * @property {Array<{ key: number, text: string }>} heard Frases ya cortadas que
- *   se están traduciendo, tal como las entendió la escucha local.
- * @property {string} partial La frase en curso, mientras se habla.
- * @property {{ key: number, text: string, source?: string } | null} draft Sin voz: la
- *   traducción que se está escribiendo, para que el subtítulo avance palabra
- *   a palabra en vez de aparecer de golpe.
+ * @property {number} pending Detected sentences that have not finished playing yet.
+ * @property {Entry[]} history Most recent first.
+ * @property {Array<{ key: number, text: string }>} heard Sentences already split that
+ *   are being translated, as the local listening understood them.
+ * @property {string} partial The sentence in progress, while speaking.
+ * @property {{ key: number, text: string, source?: string } | null} draft Without voice: the
+ *   translation being written, so the subtitle advances word
+ *   by word instead of appearing all at once.
  */
 
 /**
- * Vídeo: solo se traduce lo que se oye. Llamada: también tu micrófono, para
- * la otra persona. Notas: se transcribe lo que se oye sin traducir ni hablar.
+ * Video: only what is heard is translated. Call: your microphone too, for
+ * the other person. Notes: what is heard is transcribed without translating or speaking.
  * @typedef {"video" | "call" | "notes"} Mode
  */
 
 /**
- * Los idiomas de la conversación: el tuyo y el de la otra persona. Los dos
- * carriles los usan, uno en cada sentido, así que no pueden contradecirse.
+ * The conversation languages: yours and the other person's. Both
+ * lanes use them, one in each direction, so they cannot contradict each other.
  * @typedef {{ you: string, them: string }} LangPair
  */
 

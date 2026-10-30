@@ -17,7 +17,7 @@
   font-size: 24px;
 }
 
-/* En lugar del volumen, cuando el carril no dice la traducción. */
+/* Instead of the volume, when the lane does not show the translation. */
 .subtitles-only {
   flex: none;
   padding-left: 12px;
@@ -40,8 +40,8 @@
   background: var(--surface);
   border: 1px solid var(--hairline);
   min-width: 0;
-  /* Cabe en la ventana; si los ajustes abiertos no caben, el panel hace
-     scroll en vez de encoger sus bloques hasta pisarse. */
+  /* It fits in the window; if the open settings do not fit, the panel
+     scrolls instead of shrinking its blocks until they overlap. */
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -49,7 +49,7 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Solo los subtítulos ceden espacio; el resto mantiene su tamaño. */
+/* Only the subtitles give up space; the rest keeps its size. */
 .lane > * {
   flex-shrink: 0;
 }
@@ -103,7 +103,7 @@
   margin-top: 2px;
 }
 
-/* Ajustes plegables */
+/* Collapsible settings */
 
 .settings {
   display: flex;
@@ -116,7 +116,7 @@
   animation: global(reveal) 0.18s ease-out;
 }
 
-/* Una fila por ajuste: etiqueta a la izquierda, control a la derecha. */
+/* One row per setting: label on the left, control on the right. */
 .setting-row {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
@@ -124,7 +124,7 @@
   gap: 12px;
 }
 
-/* En Traducir llamada (dos carriles, sin «single») la etiqueta ocupa menos. */
+/* In Translate call (two lanes, without «single») the label takes less space. */
 :global(.lanes):not(:global(.single)) .setting-row {
   grid-template-columns: 80px minmax(0, 1fr);
 }
@@ -135,7 +135,7 @@
   color: var(--text-2);
 }
 
-/* Voz concreta: selector y botón para escucharla. */
+/* Specific voice: selector and button to listen to it. */
 .voice-pick {
   display: flex;
   gap: 8px;
@@ -207,7 +207,7 @@
   }
 }
 
-/* Control principal */
+/* Main control */
 
 .control {
   display: flex;
@@ -312,7 +312,7 @@
   border-left: 1px solid var(--hairline);
 }
 
-/* Si la fila va justa, el deslizador encoge en vez de salirse de la tarjeta. */
+/* If the row is tight, the slider shrinks instead of overflowing the card. */
 .volume input[type="range"] {
   flex: 0 1 64px;
   min-width: 0;
@@ -325,7 +325,7 @@
   text-align: right;
 }
 
-/* En carriles estrechos el porcentaje sobra: el control ya lo muestra. */
+/* In narrow lanes the percentage is redundant: the control already shows it. */
 @container lane (max-width: 470px) {
   .volume-value {
     display: none;
@@ -344,7 +344,7 @@ input[type="range"].wide {
   font-variant-numeric: tabular-nums;
 }
 
-/* Avisos */
+/* Notices */
 
 .notice {
   font-size: 12.5px;
@@ -365,7 +365,7 @@ input[type="range"].wide {
   border: 1px solid rgba(248, 113, 113, 0.18);
 }
 
-/* Subtítulos */
+/* Subtitles */
 
 .feed {
   flex: 1;
@@ -435,7 +435,7 @@ input[type="range"].wide {
   color: var(--text-2);
 }
 
-/* Los datos técnicos solo al pasar el ratón por la frase. */
+/* Technical data only on hovering over the sentence. */
 .line .line-meta {
   opacity: 0;
   transition: opacity 0.15s;
@@ -458,8 +458,8 @@ input[type="range"].wide {
   color: var(--text-3);
 }
 
-/* Lo que se está oyendo ahora, antes de que llegue la traducción: discreto,
-   para que la vista vaya a la traducción. */
+/* What is being heard now, before the translation arrives: subtle,
+   so the eye goes to the translation. */
 .live {
   display: flex;
   align-items: baseline;
@@ -503,7 +503,7 @@ input[type="range"].wide {
   gap: 4px;
 }
 
-/* Velocidad de la voz en la tarjeta: el control y su valor en una línea. */
+/* Voice speed on the card: the control and its value on one line. */
 .speed-pick {
   flex: 1;
   min-width: 0;
@@ -529,15 +529,15 @@ input[type="range"].wide {
   min-height: var(--control-h);
 }
 
-/* Junto a las barras, separado como el volumen. La clase dos veces: la
-   especificidad de antes (.notes-switch.lane-save). */
+/* Next to the bars, separated like the volume. The class twice: the
+   specificity from before (.notes-switch.lane-save). */
 .lane-save.lane-save {
   flex: none;
   padding-right: 14px;
   border-right: 1px solid var(--hairline);
 }
 
-/* Sobre el fondo oscuro de la tarjeta, el carril apagado casi no se veía. */
+/* On the card's dark background, the lane switched off was barely visible. */
 .lane-save.lane-save input:not(:checked) {
   background: color-mix(in srgb, var(--text) 22%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent);

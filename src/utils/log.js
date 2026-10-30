@@ -1,7 +1,7 @@
 import { api } from "./api";
 
 /**
- * Convierte lo que llega a `console.error` o a un error sin atrapar en texto.
+ * Converts what arrives at `console.error` or an uncaught error into text.
  * @param {unknown} value
  * @returns {string}
  */
@@ -16,9 +16,9 @@ export function describe(value) {
 }
 
 /**
- * Manda al registro de la app los errores de la interfaz: los que se escriben con
- * `console.error`, los que nadie atrapa y las promesas rechazadas sin `catch`.
- * Así, en un equipo ajeno, el .txt del escritorio cuenta también lo que pasó aquí.
+ * Sends the interface errors to the app's log: those written with
+ * `console.error`, the ones nobody catches and the promises rejected without `catch`.
+ * That way, on someone else's computer, the .txt on the desktop also records what happened here.
  */
 export function captureErrors() {
   const send = (/** @type {string} */ message) => api.logUi(message).catch(() => {});

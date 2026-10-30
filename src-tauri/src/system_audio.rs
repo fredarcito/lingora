@@ -384,8 +384,17 @@ mod imp {
         Error::Audio(format!("captura del sistema: {e}"))
     }
 
+    /// Lo que devuelve la activación. La operación y el aviso se guardan mientras
+    /// dure la captura, como en el ejemplo de Microsoft, en vez de soltarlos
+    /// nada más activar.
+    struct Activation {
+        client: IAudioClient,
+        operation: IActivateAudioInterfaceAsyncOperation,
+        handler: IActivateAudioInterfaceCompletionHandler,
+    }
+
     /// Activa el cliente de captura de este proceso, con su árbol excluido.
-    unsafe fn activate_client() -> Result<IAudioClient> {
+    unsafe fn activate_client() -> Result<Activation> {
         let mut params = AUDIOCLIENT_ACTIVATION_PARAMS {
             ActivationType: AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK,
             Anonymous: AUDIOCLIENT_ACTIVATION_PARAMS_0 {
@@ -430,9 +439,12 @@ mod imp {
         operation.GetActivateResult(&mut status, &mut unknown).map_err(win)?;
         tracing::info!("captura del sistema: resultado {status:?}");
         status.ok().map_err(win)?;
-        unknown
-            .and_then(|u| u.cast::<IAudioClient>().ok())
-            .ok_or_else(|| Error::Audio("Windows no dejó capturar el audio del sistema".into()))
+        let unknown = unknown.ok_or_else(|| Error::Audio("Windows no dejó capturar el audio del sistema".into()))?;
+        let client = unknown.cast::<IAudioClient>().map_err(win)?;
+        tracing::info!("captura del sistema: cliente listo");
+        drop(unknown);
+        tracing::info!("captura del sistema: respuesta soltada");
+        Ok(Activation { client, operation, handler })
     }
 
     /// El aviso de Windows cuando llega audio; se cierra al soltarlo.
@@ -447,11 +459,14 @@ mod imp {
     }
 
     /// Lo necesario para leer la captura; se libera al soltarlo. El orden de
-    /// los campos importa: el aviso se cierra después de soltar el cliente.
+    /// los campos importa: el aviso se cierra después de soltar el cliente, y
+    /// la activación se suelta la última.
     struct Session {
         client: IAudioClient,
         capture: IAudioCaptureClient,
         event: Event,
+        _operation: IActivateAudioInterfaceAsyncOperation,
+        _handler: IActivateAudioInterfaceCompletionHandler,
     }
 
     impl Drop for Session {
@@ -467,7 +482,7 @@ mod imp {
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
         // Cada paso deja una línea en el registro: si la app se cae, dice hasta dónde llegó.
         tracing::info!("captura del sistema: activando");
-        let client = activate_client()?;
+        let Activation { client, operation, handler } = activate_client()?;
         tracing::info!("captura del sistema: activada");
         // En captura de proceso no vale GetMixFormat: hay que pedir el formato.
         let format = WAVEFORMATEX {
@@ -480,6 +495,7 @@ mod imp {
             cbSize: 0,
         };
         let event = Event(CreateEventW(None, false, false, None).map_err(win)?);
+        tracing::info!("captura del sistema: aviso creado");
         let flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM;
         // Búfer de 20 ms (en unidades de 100 ns), como el ejemplo de Microsoft: esta
         // captura no tiene periodo propio y con 0 Windows no puede calcular uno.
@@ -489,7 +505,7 @@ mod imp {
         let capture: IAudioCaptureClient = client.GetService().map_err(win)?;
         client.Start().map_err(win)?;
         tracing::info!("captura del sistema: en marcha");
-        Ok(Session { client, capture, event })
+        Ok(Session { client, capture, event, _operation: operation, _handler: handler })
     }
 
     /// Lee lo que llega y entrega bloques mono hasta que `stop` se active.

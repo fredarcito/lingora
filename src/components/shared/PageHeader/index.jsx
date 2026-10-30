@@ -1,9 +1,9 @@
 import styles from "./styles.module.css";
 
 /**
- * El título grande de una página (Notas, Ajustes), dentro de su columna y
- * alineado con el contenido. `subtitle` va debajo en gris; `children`, a la
- * derecha (filtros, acciones).
+ * The large title of a page (Notes, Settings), inside its column and
+ * aligned with the content. `subtitle` goes below in gray; `children`, on the
+ * right (filters, actions).
  * @param {{ title: import("react").ReactNode, subtitle?: import("react").ReactNode, children?: import("react").ReactNode }} props
  */
 export default function PageHeader({ title, subtitle, children }) {
