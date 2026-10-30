@@ -10,9 +10,11 @@ on:
 env:
   LLAMA_STATIC_CRT: "1"
   # Con Vulkan, llama-cpp-sys-2 apaga TrackFileAccess y añade /FS solo a llama.cpp;
-  # vulkan-shaders-gen (un proyecto aparte) falla sin él con C1041. cl.exe lee CL siempre.
+  # vulkan-shaders-gen (un proyecto CMake aparte) falla sin él con C1041. CMake toma
+  # CFLAGS/CXXFLAGS al configurar cada proyecto nuevo (MSBuild no pasa CL a cl.exe).
   # Con guion: Git Bash convertiría «/FS» en una ruta (C:/Program Files/Git/FS).
-  CL: -FS
+  CFLAGS: -FS
+  CXXFLAGS: -FS
 
 jobs:
   check:
