@@ -2,6 +2,10 @@ use crate::config::Lang;
 use crate::error::{Error, Result};
 use std::path::{Path, PathBuf};
 
+/// Lanza un programa de consola sin abrir su ventana (Windows).
+#[cfg(windows)]
+pub const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 /// Fonemiza texto a IPA con espeak-ng.
 ///
 /// Es imprescindible para el español: el fonemizador que trae `kokoro-js` solo
@@ -68,6 +72,9 @@ async fn espeak(bin: &str, text: &str, lang: Lang) -> Result<String> {
     if let Some(dir) = data_dir(bin) {
         command.current_dir(dir).arg("--path=.");
     }
+    // En Windows cada frase abriría una consola negra un instante.
+    #[cfg(windows)]
+    command.creation_flags(CREATE_NO_WINDOW);
     let output = command
         .args(["-v", lang.espeak_voice(), "-q", "--ipa", text])
         .output()

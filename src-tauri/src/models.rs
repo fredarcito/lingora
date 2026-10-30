@@ -257,6 +257,7 @@ async fn extract(archive: &Path, only: &[String]) -> bool {
         return false;
     }
     let ok = tokio::process::Command::new("tar")
+        .creation_flags(crate::phonemizer::CREATE_NO_WINDOW)
         .arg("xf")
         .arg(&tar_path)
         .arg("-C")

@@ -1,6 +1,11 @@
 # Plan: Lingora en Windows
 
-Estado: solo plan (2026-10-29). No hay código de Windows todavía. Sigue a
+Estado (2026-10-30): el `.exe` se compila en GitHub Actions
+(`.github/workflows/windows-check.yml`, rama `windows-build`). Hecho: Fase 1
+(por probar con audio real), Fase 2 con `vulkan` (por medir), Fase 3
+(espeak-ng y procesos sin ventana) y en la 6 la carpeta de modelos y el
+`keyring`. Sin Rust para listar dispositivos, la interfaz usa los del WebView
+(`listAudioDevices` en `api.js`). Sigue a
 `plan-autonomia.md`: como la traducción y la voz ya van dentro de la app,
 casi todo lo que falta es lo que toca el sistema (audio, voces, ventanas).
 

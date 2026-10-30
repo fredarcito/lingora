@@ -80,7 +80,10 @@ pub async fn run(settings: &Settings, full: bool) -> Vec<Check> {
 }
 
 async fn command_works(bin: &str, arg: &str) -> bool {
-    tokio::process::Command::new(bin)
+    let mut command = tokio::process::Command::new(bin);
+    #[cfg(windows)]
+    command.creation_flags(crate::phonemizer::CREATE_NO_WINDOW);
+    command
         .arg(arg)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())

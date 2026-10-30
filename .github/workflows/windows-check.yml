@@ -53,6 +53,16 @@ jobs:
           "$EXE" --path="$WORK/build" -v es -q --ipa "Hola, esto es una prueba."
 
       # Las DLL de sherpa-onnx que Tauri empaqueta (tauri.windows.conf.json) deben existir ya.
+      # La traducción usa Vulkan (Cargo.toml): compilar llama.cpp pide su SDK
+      # (cabeceras, vulkan-1.lib y glslc). La acción deja VULKAN_SDK puesto.
+      - name: SDK de Vulkan
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.4.309.0
+          install_runtime: false
+          cache: true
+          stripdown: true
+
       - name: sherpa-onnx (DLL)
         shell: bash
         run: bash scripts/fetch-sherpa.sh
@@ -110,6 +120,16 @@ jobs:
           EXE=$(find "$WORK/build" -name espeak-ng.exe | head -n 1)
           mkdir -p src-tauri/binaries
           cp "$EXE" src-tauri/binaries/espeak-ng-x86_64-pc-windows-msvc.exe
+
+      # La traducción usa Vulkan (Cargo.toml): compilar llama.cpp pide su SDK
+      # (cabeceras, vulkan-1.lib y glslc). La acción deja VULKAN_SDK puesto.
+      - name: SDK de Vulkan
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.4.309.0
+          install_runtime: false
+          cache: true
+          stripdown: true
 
       - name: sherpa-onnx (DLL)
         shell: bash
