@@ -145,7 +145,11 @@ trabajo aparte del flujo. Lo que se vio en GitHub Actions (`windows-latest`, VS 
   causa es la **longitud de la ruta** del `.pdb` (~268 caracteres dentro de
   `src-tauri/target/…`; `cl.exe` no pasa de 260). Ni `CL`/`CFLAGS=-FS` ni Ninja
   (que sí pone `/FS`) lo arreglan; Ninja además cambia `/MT` por `/MD`, que no
-  casa con sherpa-onnx. Se prueba con `CARGO_TARGET_DIR=C:\t` (MSBuild).
+  casa con sherpa-onnx. Con `CARGO_TARGET_DIR=C:\t` (MSBuild) se arregla:
+  `vulkan-shaders-gen.exe` ya compila.
+- Después falla su instalación: `Not a file: …/vulkan-shaders-gen-build/
+  cmake_install.cmake` (VS 2026 y CMake 4.4 en `windows-latest`). Se prueba a la
+  vez en `windows-2022` (VS 2022, CMake 3), y si falla se lista esa carpeta.
 - Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y su
   `/usr/bin/link` tapa el `link.exe` de Visual Studio: `cargo` va en `cmd`.
 - Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más

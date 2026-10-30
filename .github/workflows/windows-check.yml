@@ -67,7 +67,13 @@ jobs:
   # A prueba: la traducción por la GPU (Cargo.toml, opción `vulkan`). Va aparte para
   # que, si falla, el instalador (CPU) salga igual.
   vulkan:
-    runs-on: windows-latest
+    # Se prueba también con VS 2022 y CMake 3: con VS 2026 y CMake 4.4 la instalación
+    # de vulkan-shaders-gen falla («Not a file: …/cmake_install.cmake»).
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
     env:
       # Carpeta corta: dentro de target/, la prueba del compilador de vulkan-shaders-gen
       # pasa de 260 caracteres y cl.exe falla con C1041 (no puede abrir el .pdb; lo de
@@ -83,7 +89,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-          prefix-key: "vulkan"
+          prefix-key: "vulkan-${{ matrix.os }}"
 
       - name: SDK de Vulkan
         uses: jakoch/install-vulkan-sdk-action@v1
@@ -129,6 +135,9 @@ jobs:
           grep -n -i -E "error C[0-9]+|error LNK|FAILED:|CMake Error|fatal error|: error" build.log | grep -v "rerun-if" | head -40 || true
           echo "---- final de la salida de CMake ----"
           grep -v "rerun-if" build.log | tail -60
+          echo "---- versiones y carpeta de vulkan-shaders-gen ----"
+          cmake --version | head -1
+          ls -la /c/t/x86_64-pc-windows-msvc/debug/build/llama-cpp-sys-2-*/out/build/ggml/src/ggml-vulkan/vulkan-shaders-gen-prefix/src/vulkan-shaders-gen-build/ || true
 
   installer:
     runs-on: windows-latest
