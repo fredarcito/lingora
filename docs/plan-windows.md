@@ -79,7 +79,12 @@ del equipo la app se cerraba sola (`0xc0000374`, memoria corrompida, en
 al ejemplo de Microsoft: búfer de 20 ms (con 0 no hay periodo con que
 calcularlo), sin `SRC_DEFAULT_QUALITY`, el aviso de activación «agile», la
 operación viva hasta la respuesta y el aviso de eventos cerrado después del
-cliente. Por probar.
+cliente. Siguió cerrándose: el registro del escritorio se corta en
+«activando», o sea, dentro de `ActivateAudioInterfaceAsync` o al recoger su
+resultado. Ahora el aviso solo despierta al hilo de la captura, que lee el
+resultado él mismo (como el crate `wasapi`), y cada paso de la activación deja
+su línea. Por probar. Ojo: Microsoft da esta captura por buena desde la build
+20348; en Windows 10 (19041-19045) funciona en OBS, pero puede tener fallos.
 
 **Hoy en Mac:** una «process tap» de Core Audio copia lo que suena, menos la
 propia Lingora, para que su voz traducida no vuelva a entrar.

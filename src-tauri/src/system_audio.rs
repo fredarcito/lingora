@@ -361,27 +361,20 @@ mod imp {
     const RATE: u32 = 48_000;
     const CHANNELS: usize = 2;
 
-    /// Recibe el resultado de `ActivateAudioInterfaceAsync`, que es asíncrono.
-    /// Windows lo llama desde otro hilo: tiene que ser «agile» (lo pide su documentación).
+    /// Avisa de que `ActivateAudioInterfaceAsync`, que es asíncrono, terminó. El
+    /// resultado se lee después en el hilo de la captura, no aquí: Windows llama
+    /// a esto desde otro hilo y conviene hacer lo mínimo. Tiene que ser «agile»
+    /// (lo pide su documentación).
     #[implement(IActivateAudioInterfaceCompletionHandler, IAgileObject)]
     struct Activated {
-        tx: mpsc::Sender<Option<IAudioClient>>,
+        tx: mpsc::Sender<()>,
     }
 
     impl IAgileObject_Impl for Activated_Impl {}
 
     impl IActivateAudioInterfaceCompletionHandler_Impl for Activated_Impl {
-        fn ActivateCompleted(&self, operation: Ref<IActivateAudioInterfaceAsyncOperation>) -> WinResult<()> {
-            let mut client = None;
-            if let Some(operation) = operation.as_ref() {
-                let mut status = HRESULT(0);
-                let mut unknown: Option<IUnknown> = None;
-                unsafe { operation.GetActivateResult(&mut status, &mut unknown)? };
-                if status.is_ok() {
-                    client = unknown.and_then(|u| u.cast::<IAudioClient>().ok());
-                }
-            }
-            let _ = self.tx.send(client);
+        fn ActivateCompleted(&self, _operation: Ref<IActivateAudioInterfaceAsyncOperation>) -> WinResult<()> {
+            let _ = self.tx.send(());
             Ok(())
         }
     }
@@ -419,17 +412,26 @@ mod imp {
 
         let (tx, rx) = mpsc::channel();
         let handler: IActivateAudioInterfaceCompletionHandler = Activated { tx }.into();
-        // La operación se guarda hasta que Windows conteste: soltarla antes no es seguro.
-        let _operation = ActivateAudioInterfaceAsync(
+        tracing::info!("captura del sistema: pidiendo la captura a Windows");
+        // La operación se guarda hasta leer el resultado: soltarla antes no es seguro.
+        let operation = ActivateAudioInterfaceAsync(
             windows::core::w!("VAD\\Process_Loopback"),
             &IAudioClient::IID,
             Some(&prop as *const PROPVARIANT),
             &handler,
         )
         .map_err(win)?;
+        tracing::info!("captura del sistema: esperando la respuesta de Windows");
         rx.recv_timeout(Duration::from_secs(5))
-            .ok()
-            .flatten()
+            .map_err(|_| Error::Audio("Windows no respondió al pedir el audio del sistema".into()))?;
+        tracing::info!("captura del sistema: Windows respondió");
+        let mut status = HRESULT(0);
+        let mut unknown: Option<IUnknown> = None;
+        operation.GetActivateResult(&mut status, &mut unknown).map_err(win)?;
+        tracing::info!("captura del sistema: resultado {status:?}");
+        status.ok().map_err(win)?;
+        unknown
+            .and_then(|u| u.cast::<IAudioClient>().ok())
             .ok_or_else(|| Error::Audio("Windows no dejó capturar el audio del sistema".into()))
     }
 
