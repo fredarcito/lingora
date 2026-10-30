@@ -346,14 +346,14 @@ mod imp {
         IActivateAudioInterfaceCompletionHandler, IActivateAudioInterfaceCompletionHandler_Impl,
         IAudioCaptureClient, IAudioClient, AUDCLNT_BUFFERFLAGS_SILENT, AUDCLNT_SHAREMODE_SHARED,
         AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-        AUDCLNT_STREAMFLAGS_LOOPBACK, AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
+        AUDCLNT_STREAMFLAGS_LOOPBACK,
         AUDIOCLIENT_ACTIVATION_PARAMS, AUDIOCLIENT_ACTIVATION_PARAMS_0,
         AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK, AUDIOCLIENT_PROCESS_LOOPBACK_PARAMS,
         PROCESS_LOOPBACK_MODE_EXCLUDE_TARGET_PROCESS_TREE, WAVEFORMATEX,
     };
     use windows::Win32::Media::Multimedia::WAVE_FORMAT_IEEE_FLOAT;
     use windows::Win32::System::Com::StructuredStorage::{PROPVARIANT, PROPVARIANT_0, PROPVARIANT_0_0, PROPVARIANT_0_0_0};
-    use windows::Win32::System::Com::{CoInitializeEx, COINIT_MULTITHREADED};
+    use windows::Win32::System::Com::{CoInitializeEx, IAgileObject, IAgileObject_Impl, COINIT_MULTITHREADED};
     use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
     use windows::Win32::System::Variant::VT_BLOB;
 
@@ -362,10 +362,13 @@ mod imp {
     const CHANNELS: usize = 2;
 
     /// Recibe el resultado de `ActivateAudioInterfaceAsync`, que es asíncrono.
-    #[implement(IActivateAudioInterfaceCompletionHandler)]
+    /// Windows lo llama desde otro hilo: tiene que ser «agile» (lo pide su documentación).
+    #[implement(IActivateAudioInterfaceCompletionHandler, IAgileObject)]
     struct Activated {
         tx: mpsc::Sender<Option<IAudioClient>>,
     }
+
+    impl IAgileObject_Impl for Activated_Impl {}
 
     impl IActivateAudioInterfaceCompletionHandler_Impl for Activated_Impl {
         fn ActivateCompleted(&self, operation: Ref<IActivateAudioInterfaceAsyncOperation>) -> WinResult<()> {
@@ -416,7 +419,8 @@ mod imp {
 
         let (tx, rx) = mpsc::channel();
         let handler: IActivateAudioInterfaceCompletionHandler = Activated { tx }.into();
-        ActivateAudioInterfaceAsync(
+        // La operación se guarda hasta que Windows conteste: soltarla antes no es seguro.
+        let _operation = ActivateAudioInterfaceAsync(
             windows::core::w!("VAD\\Process_Loopback"),
             &IAudioClient::IID,
             Some(&prop as *const PROPVARIANT),
@@ -429,18 +433,29 @@ mod imp {
             .ok_or_else(|| Error::Audio("Windows no dejó capturar el audio del sistema".into()))
     }
 
-    /// Lo necesario para leer la captura; se libera al soltarlo.
+    /// El aviso de Windows cuando llega audio; se cierra al soltarlo.
+    struct Event(HANDLE);
+
+    impl Drop for Event {
+        fn drop(&mut self) {
+            unsafe {
+                let _ = CloseHandle(self.0);
+            }
+        }
+    }
+
+    /// Lo necesario para leer la captura; se libera al soltarlo. El orden de
+    /// los campos importa: el aviso se cierra después de soltar el cliente.
     struct Session {
         client: IAudioClient,
         capture: IAudioCaptureClient,
-        event: HANDLE,
+        event: Event,
     }
 
     impl Drop for Session {
         fn drop(&mut self) {
             unsafe {
                 let _ = self.client.Stop();
-                let _ = CloseHandle(self.event);
             }
         }
     }
@@ -459,13 +474,12 @@ mod imp {
             wBitsPerSample: 32,
             cbSize: 0,
         };
-        let event = CreateEventW(None, false, false, None).map_err(win)?;
-        let flags = AUDCLNT_STREAMFLAGS_LOOPBACK
-            | AUDCLNT_STREAMFLAGS_EVENTCALLBACK
-            | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
-            | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
-        client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 0, 0, &format, None).map_err(win)?;
-        client.SetEventHandle(event).map_err(win)?;
+        let event = Event(CreateEventW(None, false, false, None).map_err(win)?);
+        let flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM;
+        // Búfer de 20 ms (en unidades de 100 ns), como el ejemplo de Microsoft: esta
+        // captura no tiene periodo propio y con 0 Windows no puede calcular uno.
+        client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 200_000, 0, &format, None).map_err(win)?;
+        client.SetEventHandle(event.0).map_err(win)?;
         let capture: IAudioCaptureClient = client.GetService().map_err(win)?;
         client.Start().map_err(win)?;
         Ok(Session { client, capture, event })
@@ -477,7 +491,7 @@ mod imp {
         let mut delivered: u64 = 0;
         let mut pending: Vec<f32> = Vec::with_capacity(BLOCK_FRAMES * 2);
         while !stop.load(Ordering::Relaxed) {
-            WaitForSingleObject(session.event, 20);
+            WaitForSingleObject(session.event.0, 20);
             while let Ok(packet) = session.capture.GetNextPacketSize() {
                 if packet == 0 {
                     break;
