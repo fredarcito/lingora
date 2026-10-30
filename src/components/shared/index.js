@@ -6,6 +6,7 @@ export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as IconButton } from "./IconButton";
 export { default as LinkButton } from "./LinkButton";
 export { default as Menu, MenuItem, MenuSeparator, useDismiss } from "./Menu";
+export { default as PageHeader } from "./PageHeader";
 export { default as SearchBox } from "./SearchBox";
 export { default as Segmented } from "./Segmented";
 export { default as Select } from "./Select";

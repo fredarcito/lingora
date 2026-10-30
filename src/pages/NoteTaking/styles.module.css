@@ -12,14 +12,16 @@
   flex-direction: column;
 }
 
+/* Todo el ancho, como la tarjeta de Traducir: comparten cabecera y al cambiar
+   de pestaña el contenido no salta. */
+.note-taking :global(.notes-column) {
+  max-width: none;
+}
+
 .taking-start {
   align-self: flex-start;
   height: 36px;
   padding: 0 16px;
-}
-
-.taking-privacy {
-  font-size: 13px;
 }
 
 .taking-live {
@@ -27,7 +29,6 @@
   flex: 1;
   min-height: 0;
   width: 100%;
-  max-width: 760px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -85,6 +86,17 @@
   font-weight: 550;
 }
 
+/* «Cambiar en Ajustes»: subrayado, para que se vea que se puede pulsar. */
+.taking-summary-lang :global(.link) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Al pasar, un gris más claro: el blanco del texto resaltaba demasiado. */
+.taking-summary-lang :global(.link):hover {
+  color: var(--text-2);
+}
+
 .taking-start {
   min-height: var(--control-h);
 }
@@ -96,6 +108,7 @@
 .taking-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px 16px;
 }

@@ -7,7 +7,7 @@ import { loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, st
 import { KeyField, notifyKeyChanged, useSummaryKey } from "../../components/SummaryKey";
 import LanguagePicker from "../../components/LanguagePicker";
 import { useT } from "../../i18n";
-import { Button, Select, Switch, TextField, cx } from "../../components/shared";
+import { Button, PageHeader, Select, Switch, TextField, cx } from "../../components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -78,9 +78,12 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   return (
     <main className={cx("app notes-view", styles.prefsView)}>
       <header className="topbar notes-topbar">
-        <div className="brand">
+        {/* El título a la altura del menú y alineado con las secciones, como el buscador de Notas. */}
+        <div className={cx("brand", styles.prefsBrand)}>
           <MenuButton onClick={onMenu} recording={recording} />
-          <h1>{t("settings.title")}</h1>
+          <div className={styles.prefsTitle}>
+            <PageHeader title={t("settings.title")} />
+          </div>
         </div>
       </header>
 

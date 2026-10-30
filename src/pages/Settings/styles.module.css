@@ -20,3 +20,15 @@
 .prefs-view .prefs-diagnostics {
   margin: 0;
 }
+
+/* Cabecera: el menú a la izquierda y el título en la columna del contenido
+   (la misma rejilla que el buscador de Notas). */
+.prefs-brand {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, 760px) 1fr;
+}
+
+.prefs-title {
+  grid-column: 2;
+}

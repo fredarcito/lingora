@@ -343,6 +343,8 @@ function VoiceControls({ lane, volume, onChange }) {
   const t = useT();
   /** @type {[import("../../utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
+  /** Ya llegó la lista de voces del idioma; hasta entonces el selector está desactivado. */
+  const [voicesLoaded, setVoicesLoaded] = useState(false);
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
   const target = apiLang(lane.targetLang);
@@ -353,7 +355,8 @@ function VoiceControls({ lane, volume, onChange }) {
       api
         .voices(target)
         .then(setVoiceList)
-        .catch(() => setVoiceList([]));
+        .catch(() => setVoiceList([]))
+        .finally(() => setVoicesLoaded(true));
     load();
     window.addEventListener("focus", load);
     return () => window.removeEventListener("focus", load);
@@ -386,36 +389,41 @@ function VoiceControls({ lane, volume, onChange }) {
 
   return (
     <>
-      {voiceList.length > 1 && (
-        <div className={styles.settingRow}>
-          <span className={styles.settingLabel} />
-          <div className={styles.voicePick}>
-            <select value={voiceId} onChange={(e) => chooseVoice(e.target.value)} aria-label={t("app.voices.specific")}>
-              <option value="">{t(voice === "female" ? "app.voices.auto.female" : "app.voices.auto.male")}</option>
-              {[
-                ["kokoro", t("app.voices.group.kokoro")],
-                ["system", t("app.voices.group.system")],
-              ].map(([engine, label]) => {
-                const list = voiceList.filter((v) => v.engine === engine);
-                return (
-                  list.length > 0 && (
-                    <optgroup key={engine} label={label}>
-                      {list.map((v) => (
-                        <option key={v.id} value={v.id}>
-                          {voiceLabel(v)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )
-                );
-              })}
-            </select>
-            <button className={styles.voicePreview} onClick={previewVoice} disabled={previewing} title={t("app.voices.preview.hint")}>
-              {previewing ? <Spinner /> : t("app.voices.preview")}
-            </button>
-          </div>
+      {/* Siempre a la vista, para que la tarjeta no salte al llegar las voces:
+          desactivado mientras cargan o si el idioma solo tiene una. */}
+      <div className={styles.settingRow}>
+        <span className={styles.settingLabel} />
+        <div className={styles.voicePick}>
+          <select
+            value={voiceId}
+            onChange={(e) => chooseVoice(e.target.value)}
+            disabled={!voicesLoaded || voiceList.length <= 1}
+            aria-label={t("app.voices.specific")}
+          >
+            <option value="">{t(voice === "female" ? "app.voices.auto.female" : "app.voices.auto.male")}</option>
+            {[
+              ["kokoro", t("app.voices.group.kokoro")],
+              ["system", t("app.voices.group.system")],
+            ].map(([engine, label]) => {
+              const list = voiceList.filter((v) => v.engine === engine);
+              return (
+                list.length > 0 && (
+                  <optgroup key={engine} label={label}>
+                    {list.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {voiceLabel(v)}
+                      </option>
+                    ))}
+                  </optgroup>
+                )
+              );
+            })}
+          </select>
+          <button className={styles.voicePreview} onClick={previewVoice} disabled={previewing} title={t("app.voices.preview.hint")}>
+            {previewing ? <Spinner /> : t("app.voices.preview")}
+          </button>
         </div>
-      )}
+      </div>
       {previewError && <p className="settings-note">{previewError}</p>}
       <div className={styles.settingRow}>
         <span className={styles.settingLabel}>{t("app.voices.speed")}</span>

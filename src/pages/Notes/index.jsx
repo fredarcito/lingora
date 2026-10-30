@@ -35,6 +35,7 @@ import {
   MenuSeparator,
   MoreIcon,
   NoteIcon,
+  PageHeader,
   SearchBox,
   Select,
   Spinner,
@@ -289,13 +290,14 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
       ) : (
         <div className="notes-scroll" ref={scroller}>
           <div className="notes-column">
-            <div className={styles.notesHead}>
-              <div className={styles.notesHeadTitle}>
-                <h2>{t("notes.title")}</h2>
-                {loaded && notes.length > 0 && (
-                  <p>{shown.length === notes.length ? t("notes.count", { count: notes.length }) : t("notes.countOf", { shown: shown.length, count: notes.length })}</p>
-                )}
-              </div>
+            <PageHeader
+              title={t("notes.title")}
+              subtitle={
+                loaded &&
+                notes.length > 0 &&
+                (shown.length === notes.length ? t("notes.count", { count: notes.length }) : t("notes.countOf", { shown: shown.length, count: notes.length }))
+              }
+            >
               {notes.length > 0 && (
                 <div className={styles.notesFilters}>
                   <Select
@@ -321,7 +323,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
                   />
                 </div>
               )}
-            </div>
+            </PageHeader>
             {error && <p className="notes-error">{error}</p>}
             {loaded && !error && notes.length === 0 && (
               <div className={styles.notesEmptyState}>

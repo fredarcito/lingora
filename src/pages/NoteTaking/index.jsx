@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Button, ConfirmDialog, LinkButton, Segmented, StopIcon, cx } from "../../components/shared";
+import { Badge, Button, ConfirmDialog, LinkButton, Segmented, StopIcon, cx } from "../../components/shared";
 import { useT } from "../../i18n";
 import {
   NOTE_CHANGED_EVENT,
@@ -138,6 +138,8 @@ export default function NoteTaking({
           <div className={styles.takingBar}>
             <span className="note-live">{t("noteTaking.recording")}</span>
             <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
+            {/* De dónde se graba, por si se eligió el que no era. */}
+            <Badge>{t(`noteTaking.${effectiveInput}`)}</Badge>
             <p className={cx(styles.takingPeople, "muted")}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
             <Button variant="stop" onClick={onStop}>
               <StopIcon />
@@ -238,7 +240,6 @@ export default function NoteTaking({
                 <Button variant="primary" className={styles.takingStart} busy={starting || closing} disabled={starting || closing} onClick={begin}>
                   {closing ? t("noteTaking.finishing") : starting ? t("noteTaking.preparing") : t("noteTaking.start")}
                 </Button>
-                <p className={cx("muted", styles.takingPrivacy)}>{t("noteTaking.privacy")}</p>
               </div>
             </div>
           </section>
@@ -263,15 +264,15 @@ export default function NoteTaking({
 }
 
 /**
- * Qué pasará con lo que hay conectado ahora en una reunión en línea: si puede
- * haber eco y qué micrófono se usará (ver `utils/route.js`).
+ * Qué pasará con lo que hay conectado ahora en una reunión en línea: si tu voz
+ * queda separada (auriculares) y qué micrófono se usará (ver `utils/route.js`).
  * @param {{ route: import("../../utils/api").AudioRoute }} props
  */
 function RouteHint({ route }) {
   const t = useT();
   return (
     <>
-      {t(echoPossible(route) ? "noteTaking.route.speakers" : "noteTaking.route.headphones")}
+      {!echoPossible(route) && t("noteTaking.route.headphones")}
       {route.input_bluetooth && t(prefersMacMic(route) ? "noteTaking.route.macMic" : "noteTaking.route.bluetoothMic")}
     </>
   );
