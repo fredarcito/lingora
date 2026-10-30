@@ -150,8 +150,9 @@ trabajo aparte del flujo. Lo que se vio en GitHub Actions (`windows-latest`, VS 
   casa con sherpa-onnx. Con `CARGO_TARGET_DIR=C:\t` (MSBuild) se arregla:
   `vulkan-shaders-gen.exe` ya compila.
 - Después falla su instalación: `Not a file: …/vulkan-shaders-gen-build/
-  cmake_install.cmake` (VS 2026 y CMake 4.4 en `windows-latest`). Se prueba a la
-  vez en `windows-2022` (VS 2022, CMake 3), y si falla se lista esa carpeta.
+  cmake_install.cmake`, aunque el archivo existe. Igual en `windows-2022`
+  (VS 2022, CMake 3.31): no es la versión, apunta a MSBuild. Se prueba Ninja con
+  `C:\t` (falta resolver `/MT` → `/MD` para el instalador).
 - Ojo: Git Bash convierte `/FS` en una ruta (`C:/Program Files/Git/FS`) y su
   `/usr/bin/link` tapa el `link.exe` de Visual Studio: `cargo` va en `cmd`.
 - Peso: el instalador en CPU pesa ~10 MB; con Vulkan, unos 10-20 MB más
