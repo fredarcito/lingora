@@ -361,7 +361,7 @@
 }
 
 .speaker-name input {
-  height: 32px;
+  height: var(--control-h);
   padding: 0 10px;
   border-radius: 6px;
   border: 1px solid var(--n-input);
@@ -444,7 +444,7 @@
 
 .note-summary-lang select {
   width: auto;
-  height: 32px;
+  height: var(--control-h);
   padding-top: 0;
   padding-bottom: 0;
   border-radius: var(--n-radius);
