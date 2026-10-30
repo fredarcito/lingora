@@ -33,26 +33,22 @@ has been checked with real runs is marked below; what hasn't, is marked too.
 ## Architecture
 
 ```
-Audio del sistema ──► Salida múltiple "Lingora" (Bocinas + BlackHole 2ch)
-                              └──► BlackHole 2ch ──► WebView (captura)
-                                                          │ cada 0,5 s
-                                                          ▼
-                                              Rust: Parakeet (local) → subtítulos en
-                                                    vivo y dónde termina cada frase
-                                                          │ WAV 16 kHz de la frase
-                                                          ▼
-                                              Rust: Whisper (Groq) → qwen (Groq)
-                                                          │ texto
-                                                          ▼
-                                              espeak-ng → fonemas IPA
-                                                          │
-                                                          ▼
-                                              Kokoro (sherpa-onnx) → PCM 24 kHz
-                                                          │
-                                                          ▼
-                                              WebView: reproduce en el dispositivo
-                                              de salida elegido (nunca la salida múltiple)
+System audio ──► Core Audio process tap (Lingora excluded, no BlackHole)
+                          │ every 0.5 s
+                          ▼
+                  Rust: Parakeet (local) → live subtitles and sentence boundaries
+                          │ 16 kHz WAV per sentence
+                          ▼
+                  Rust: transcription and translation of the sentence
+                          │ text
+                          ▼
+                  Voice: espeak-ng → IPA phonemes → Kokoro (sherpa-onnx) → PCM 24 kHz
+                          │   (or the system voice where Kokoro has none)
+                          ▼
+                  Played on the chosen output device (never the multi-output device)
 ```
+
+Call mode uses BlackHole 2ch as a virtual microphone, so the other party hears the translated voice.
 
 The opposite direction uses the microphone as input and BlackHole 2ch as
 output (the call app selects it as the microphone).
