@@ -29,7 +29,9 @@ export default function LaneSettings({ lane, running, inputs, outputs, systemAud
       <label className="field">
         <span>{t("app.devices.outputTo")}</span>
         <select value={lane.outputDevice} onChange={(e) => onChange({ outputDevice: e.target.value })} disabled={running}>
-          <option value="">{t("app.lane.output.default")}</option>
+          <option value="">
+            {tapsMac && lane.direction === "remote_to_local" ? t("app.devices.outputRecommended") : t("app.lane.output.default")}
+          </option>
           {outputs.map((d) => (
             // Con el audio del Mac la voz de Lingora nunca entra en la captura.
             <option key={d.uid} value={d.name} disabled={!tapsMac && feedsCapture(d.name)}>

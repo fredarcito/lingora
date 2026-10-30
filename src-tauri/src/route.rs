@@ -23,22 +23,33 @@ pub struct AudioRoute {
 
 /// Lo que hay conectado ahora. Fuera de macOS no se sabe: se trata como
 /// altavoces, que es lo prudente (el filtro de eco apenas cuesta).
+/// Fuera del hilo de la ventana: con la captura del Mac recién creada y nada
+/// sonando, Core Audio puede tardar en contestar y la congelaría.
 #[tauri::command]
-pub fn audio_route() -> AudioRoute {
+pub async fn audio_route() -> AudioRoute {
+    tauri::async_runtime::spawn_blocking(route_now).await.unwrap_or_else(|_| unknown())
+}
+
+fn route_now() -> AudioRoute {
     #[cfg(target_os = "macos")]
     {
         imp::route()
     }
     #[cfg(not(target_os = "macos"))]
     {
-        AudioRoute {
-            output: "other",
-            output_name: String::new(),
-            input_name: String::new(),
-            input_bluetooth: false,
-            input_busy: false,
-            builtin_mic: None,
-        }
+        unknown()
+    }
+}
+
+/// Sin saber qué hay conectado: como altavoces.
+fn unknown() -> AudioRoute {
+    AudioRoute {
+        output: "other",
+        output_name: String::new(),
+        input_name: String::new(),
+        input_bluetooth: false,
+        input_busy: false,
+        builtin_mic: None,
     }
 }
 

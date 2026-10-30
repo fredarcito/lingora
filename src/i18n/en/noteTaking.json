@@ -39,5 +39,6 @@
   "route.speakers": " With speakers, Lingora removes from your microphone what already played on the Mac. Headphones give a cleaner result.",
   "route.macMic": " The Mac's microphone will be used so your headphones keep their quality.",
   "route.bluetoothMic": " Your microphone is a Bluetooth headset: it sounds a bit lower quality.",
+  "route.roomMic": " Your microphone is a Bluetooth headset: the Mac's microphone will be used, which sounds better and hears everyone in the room.",
   "micError": "Couldn't open your microphone; only the Mac audio is being noted. ({error})"
 }

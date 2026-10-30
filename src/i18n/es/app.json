@@ -94,6 +94,7 @@
   "devices.macRecommended": "Audio del Mac (recomendado)",
   "devices.unavailable": "{name} (no disponible)",
   "devices.outputTo": "Sacar la voz por",
+  "devices.outputRecommended": "Salida por defecto (recomendado)",
   "devices.loop": "{name} (crea un bucle)",
   "devices.outputHint": "Se usa cuando la voz está activada (Mujer u Hombre).",
   "devices.stopToChange": "Detén la traducción para cambiar los dispositivos."

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
 import { t } from "../i18n";
 import { withEchoFilter } from "../utils/echo.js";
-import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute } from "../utils/route.js";
+import { SYSTEM_AUDIO } from "../utils/audio.js";
+import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "../utils/route.js";
 
 /**
  * @typedef {import("../App/types").Lane} Lane
@@ -17,7 +18,8 @@ import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute } from "../utils/ro
  *   unos AirPods) o se pierde el micrófono, se vuelve a abrir sin parar la nota.
  * - Si se pierde el audio del Mac, la nota termina: también tu micrófono.
  * - `wrapRecorder` pone el filtro de eco delante del grabador.
- * Sin reunión (`meeting` falso) solo se usa el carril del Mac, como siempre.
+ * Sin reunión (`meeting` falso) solo se usa el carril del Mac, como siempre; si
+ * es el micrófono (en persona), se elige con `roomMic`.
  * @param {{
  *   mode: import("../App/types").Mode,
  *   meeting: boolean,
@@ -37,6 +39,8 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
   const meetingRef = useRef(false);
   /** Lo que hay conectado; null si no se sabe (se trata como altavoces). */
   const routeRef = useRef(/** @type {import("../utils/api").AudioRoute | null} */ (null));
+  /** El audio del Mac llegó a arrancar en esta toma de notas (el micrófono se abre antes). */
+  const macRan = useRef(false);
 
   const inMeeting = mode === "notes" && meetingRef.current;
   const remote = state.remote_to_local;
@@ -45,20 +49,35 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
   /** El carril del micrófono con los ajustes de ahora. */
   const micLane = () => lanesRef.current.find((l) => l.direction === "local_to_remote") ?? localLane;
 
-  /** Abre tu micrófono con lo que hay conectado ahora. */
-  const startMic = async () => {
+  /** Qué micrófono abrir con lo que hay conectado ahora. */
+  const chooseMic = async () => {
     const route = await readRoute();
     routeRef.current = route;
-    await start({ ...micLane(), inputDeviceId: await meetingMic(route).catch(() => "") });
+    return meetingMic(route).catch(() => "");
+  };
+
+  /** Abre tu micrófono; `inputDeviceId`, si ya se eligió. @param {string} [inputDeviceId] */
+  const startMic = async (inputDeviceId) => {
+    await start({ ...micLane(), inputDeviceId: inputDeviceId ?? (await chooseMic()) });
   };
 
   const startNotes = async () => {
     meetingRef.current = meeting;
-    if (!meeting) return start(remoteLane);
+    macRan.current = false;
+    if (!meeting) {
+      if (remoteLane.inputDeviceId === SYSTEM_AUDIO) return start(remoteLane);
+      // En persona, con unos auriculares Bluetooth, el micrófono del Mac (`roomMic`).
+      return start({ ...remoteLane, inputDeviceId: await roomMic(await readRoute()).catch(() => "") });
+    }
+    // Tu micrófono se abre antes de capturar el audio del Mac: con la captura
+    // recién creada y nada sonando, Core Audio no contesta hasta que suena algo.
+    const mic = await chooseMic();
+    await startMic(mic);
     await start(remoteLane);
     // Sin el audio del Mac no hay reunión; sin el micrófono, sí (solo los demás).
     // Se mira la captura, no el estado: React aún no ha repintado con `running`.
-    if (runtime.current.remote_to_local.capture) await startMic();
+    if (runtime.current.remote_to_local.capture) macRan.current = true;
+    else await stop(micLane());
   };
 
   const stopNotes = () => {
@@ -102,7 +121,7 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
     return () => window.clearInterval(timer);
   }, [meetingOn]);
 
-  const macLost = inMeeting && !remote.running && !remote.starting && local.running;
+  const macLost = inMeeting && macRan.current && !remote.running && !remote.starting && local.running;
   useEffect(() => {
     if (macLost) stopNotes();
   }, [macLost]);

@@ -31,7 +31,7 @@ Los textos llegan por props, ya traducidos con `t()`.
 
 | Componente | Para qué | Props | Ejemplo |
 |---|---|---|---|
-| `Button` | Botón de notas y ajustes (estilo shadcn) | `variant`: `"default"` \| `"primary"` \| `"danger"`; `busy` (spinner delante); `className`; el resto, incluido `ref`, al `<button>` | `<Button variant="primary" busy={saving} onClick={save}>{t("x.save")}</Button>` |
+| `Button` | Botón de notas y ajustes (estilo shadcn) | `variant`: `"default"` \| `"primary"` \| `"danger"` \| `"stop"` (con `<StopIcon />` delante); `busy` (spinner delante); `className`; el resto, incluido `ref`, al `<button>` | `<Button variant="primary" busy={saving} onClick={save}>{t("x.save")}</Button>` |
 | `IconButton` | Botón cuadrado con solo un icono | `active`, `small`, `label` (a `aria-label` y `title`; un `title` propio lo sustituye), `className`, el resto al `<button>` | `<IconButton active={open} title={t("x.settings")} onClick={toggle}><SlidersIcon /></IconButton>` |
 | `LinkButton` | Botón con aspecto de enlace | `className`, el resto al `<button>` | `<LinkButton onClick={onBack}>{t("notes.back")}</LinkButton>` |
 | `Switch` | Interruptor | `checked`, `onChange(bool)`, `label`, `disabled`, `className`, `title`. Sin `label` se pinta como `<span>`, para ir dentro de otra etiqueta (filas de Ajustes) | `<Switch checked={on} onChange={setOn} label={t("x.showSource")} />` |

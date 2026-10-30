@@ -39,5 +39,6 @@
   "route.speakers": " Con altavoces, Lingora quita de tu micrófono lo que ya sonó en el Mac. Con auriculares queda más limpio.",
   "route.macMic": " Se usará el micrófono del Mac para que tus auriculares no pierdan calidad.",
   "route.bluetoothMic": " Tu micrófono son unos auriculares Bluetooth: se oye con algo menos de calidad.",
+  "route.roomMic": " Tu micrófono son unos auriculares Bluetooth: se usará el del Mac, que oye mejor y a todos en la sala.",
   "micError": "No se pudo abrir tu micrófono; se anota solo el audio del Mac. ({error})"
 }

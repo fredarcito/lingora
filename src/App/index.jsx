@@ -535,9 +535,12 @@ export default function App() {
   }, []);
 
   // Core Audio da los nombres fiables; el WebView da los IDs que acepta
-  // getUserMedia. Se emparejan por nombre.
-  const loadDevices = useCallback(() => {
-    Promise.all([api.listAudioDevices(), listWebviewDevices(), api.systemAudioSupported().catch(() => false)])
+  // getUserMedia. Se emparejan por nombre. `askMic` abre el micrófono un
+  // instante para tener los nombres; al conectar algo no hace falta (el permiso
+  // ya está) y abrirlo crearía otro `devicechange`.
+  const loadDevices = useCallback((askMic = true) => {
+    const web = askMic ? listWebviewDevices() : navigator.mediaDevices.enumerateDevices();
+    Promise.all([api.listAudioDevices(), web, api.systemAudioSupported().catch(() => false)])
       .then(([core, web, canTap]) => {
         const paired = pairDevices(core, web);
         setDevices(paired);
@@ -550,11 +553,13 @@ export default function App() {
         const blackhole = paired.inputs.find((d) => d.webId && /blackhole 2ch/i.test(d.name));
         const listenFrom = canTap ? SYSTEM_AUDIO : (blackhole?.webId ?? "");
         setLanes((prev) =>
-          prev.map((l) => ({
-            ...l,
-            outputDevice: l.outputDevice || safe?.name || "",
-            inputDeviceId: l.inputDeviceId || (l.direction === "remote_to_local" ? listenFrom : ""),
-          })),
+          prev.map((l) => {
+            const inputDeviceId = l.inputDeviceId || (l.direction === "remote_to_local" ? listenFrom : "");
+            // Con el audio del Mac la voz de Lingora no entra en la captura: la
+            // salida por defecto es segura y sigue a los auriculares si se conectan.
+            const followsSystem = l.direction === "remote_to_local" && inputDeviceId === SYSTEM_AUDIO;
+            return { ...l, outputDevice: l.outputDevice || (followsSystem ? "" : safe?.name || ""), inputDeviceId };
+          }),
         );
       })
       .catch(() => setDevices({ inputs: [], outputs: [] }));
@@ -562,6 +567,22 @@ export default function App() {
 
   useEffect(() => {
     loadDevices();
+    // Un micrófono o unos auriculares que se conectan aparecen en Ajustes al
+    // momento. Grabando no: el audio del Mac crea su propio dispositivo al
+    // empezar (y en una reunión `useMeetingNotes` ya sigue el micrófono). Los
+    // avisos seguidos cuentan como uno y no abren el micrófono.
+    const media = navigator.mediaDevices;
+    let timer = 0;
+    const onChange = () => {
+      window.clearTimeout(timer);
+      if (anyRunningRef.current) return;
+      timer = window.setTimeout(() => loadDevices(false), 500);
+    };
+    media?.addEventListener("devicechange", onChange);
+    return () => {
+      window.clearTimeout(timer);
+      media?.removeEventListener("devicechange", onChange);
+    };
   }, [loadDevices]);
 
   /** @param {Direction} direction @param {Partial<Lane>} patch */
@@ -994,7 +1015,7 @@ export default function App() {
   // queda en su control: los subtítulos necesitan el espacio.
   const focused = mode === "call" && running.length === 1 ? running[0].direction : null;
   // Antes de empezar, lo que hay conectado, para la pista de Reunión en línea.
-  const shownRoute = useAudioRoute(meeting && !anyRunning && view === "translate");
+  const shownRoute = useAudioRoute(mode === "notes" && !anyRunning && view === "translate");
   const tapsMac = laneSettings.find((l) => l.direction === "remote_to_local")?.inputDeviceId === SYSTEM_AUDIO;
 
   return (
@@ -1071,7 +1092,12 @@ export default function App() {
         languages={shownLanguages}
         onFixed={loadDevices}
         onMenu={() => setMenuOpen(true)}
-        lanes={(mode === "notes" ? [] : visible).map((lane) => ({
+        // En Tomar notas la entrada del carril es la que se eligió allí: aquí van
+        // los dispositivos guardados de Escuchar, para que no desaparezcan.
+        lanes={(mode === "notes"
+          ? laneSettings.filter((l) => l.direction === "remote_to_local").map((l) => ({ ...l, title: t(`lanes.${l.direction}.title`) }))
+          : visible
+        ).map((lane) => ({
           key: lane.direction,
           title: lane.title,
           subtitle: t(`lanes.${lane.direction}.settingsSubtitle`),

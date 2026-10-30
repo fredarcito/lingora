@@ -150,6 +150,20 @@ Salida del sistema: "Lingora" (salida múltiple)
 - **A mano:** volver a pulsar "Traducir en automático"; si no responde,
   reiniciar Lingora.
 
+### Reunión en línea: tu voz no aparece hasta que suena el Mac
+
+- **Síntoma:** en Tomar notas → Reunión en línea, si empiezas hablando tú, no
+  sale nada (ni la línea `[lingora] entrada:` de tu micrófono) hasta que suena
+  algo en el Mac (un vídeo, la otra persona). El reloj puede quedarse en 00:00.
+- **Causa:** con la captura del audio del Mac recién creada y nada sonando,
+  Core Audio no contesta hasta que pasa audio por ella. Abrir el micrófono
+  después se quedaba esperando, y las consultas de dispositivos en el hilo de
+  la ventana la congelaban.
+- **Arreglo:** `startNotes` (`useMeetingNotes.js`) abre tu micrófono **antes**
+  de capturar el Mac, y `audio_route` y `list_audio_devices` corren fuera del
+  hilo de la ventana (`spawn_blocking`). Al conectar un aparato no se recargan
+  los dispositivos mientras se graba. No cambies ese orden.
+
 ---
 
 ## Voz y transcripción

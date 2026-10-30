@@ -94,6 +94,7 @@
   "devices.macRecommended": "Mac audio (recommended)",
   "devices.unavailable": "{name} (unavailable)",
   "devices.outputTo": "Play the voice through",
+  "devices.outputRecommended": "Default output (recommended)",
   "devices.loop": "{name} (creates a loop)",
   "devices.outputHint": "Used when the voice is on (Female or Male).",
   "devices.stopToChange": "Stop translating to change devices."

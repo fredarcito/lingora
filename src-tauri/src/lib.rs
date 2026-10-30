@@ -348,9 +348,12 @@ async fn open_captions(app: tauri::AppHandle) -> error::Result<()> {
     captions_window::open(&app).map_err(|e| error::Error::Audio(format!("no se pudo abrir los subtítulos: {e}")))
 }
 
+/// Fuera del hilo de la ventana, como `audio_route`: Core Audio puede tardar.
 #[tauri::command]
-fn list_audio_devices() -> error::Result<Vec<audio::DeviceInfo>> {
-    audio::list_devices()
+async fn list_audio_devices() -> error::Result<Vec<audio::DeviceInfo>> {
+    tauri::async_runtime::spawn_blocking(audio::list_devices)
+        .await
+        .map_err(|e| error::Error::Audio(format!("no se pudo leer los dispositivos: {e}")))?
 }
 
 #[tauri::command]

@@ -104,3 +104,16 @@
 .note-action {
   padding: 0 16px;
 }
+
+/* Detener una grabación: el botón normal con un cuadrito rojo delante y un
+   tinte rojizo al pasar. No es destructivo (la nota se guarda). */
+.note-action.stop svg {
+  width: 11px;
+  height: 11px;
+  color: var(--danger);
+}
+
+.note-action.stop:hover:not(:disabled) {
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(248, 113, 113, 0.1);
+}

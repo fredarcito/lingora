@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Button, ConfirmDialog, LinkButton, Segmented, cx } from "../../components/shared";
+import { Button, ConfirmDialog, LinkButton, Segmented, StopIcon, cx } from "../../components/shared";
 import { useT } from "../../i18n";
 import {
   NOTE_CHANGED_EVENT,
@@ -11,7 +11,7 @@ import {
   paragraphs,
   storeNotesConsent,
 } from "../../utils/notes.js";
-import { echoPossible, prefersMacMic } from "../../utils/route.js";
+import { echoPossible, prefersMacMic, prefersRoomMic } from "../../utils/route.js";
 import { splitWords, wordDelayMs } from "../../utils/words.js";
 import styles from "./styles.module.css";
 
@@ -139,7 +139,10 @@ export default function NoteTaking({
             <span className="note-live">{t("noteTaking.recording")}</span>
             <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
             <p className={cx(styles.takingPeople, "muted")}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
-            <Button onClick={onStop}>{t("noteTaking.stop")}</Button>
+            <Button variant="stop" onClick={onStop}>
+              <StopIcon />
+              {t("noteTaking.stop")}
+            </Button>
           </div>
           {noSignal && <p className={styles.takingWarning}>{t("noteTaking.noSignal")}</p>}
           {micError && <p className={styles.takingWarning}>{t("noteTaking.micError", { error: micError })}</p>}
@@ -202,6 +205,7 @@ export default function NoteTaking({
                   <small className="field-hint">
                     {t(`noteTaking.hint.${effectiveInput}`)}
                     {effectiveInput === "meeting" && route && <RouteHint route={route} />}
+                    {effectiveInput === "mic" && prefersRoomMic(route) && t("noteTaking.route.roomMic")}
                     {!systemAudio && t("noteTaking.hint.need")}
                   </small>
                 </div>
