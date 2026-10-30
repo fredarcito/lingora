@@ -61,7 +61,16 @@ jobs:
           vulkan_version: 1.4.309.0
           install_runtime: false
           cache: true
-          stripdown: true
+
+      # ggml-vulkan busca SPIRV-Headers con find_package y el SDK no trae su
+      # configuración de CMake: se instalan las de la misma versión del SDK.
+      - name: SPIRV-Headers
+        shell: bash
+        run: |
+          git clone --depth 1 --branch vulkan-sdk-1.4.309.0 https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
+          cmake -S spirv-headers -B spirv-headers/build -DSPIRV_HEADERS_ENABLE_TESTS=OFF
+          cmake --install spirv-headers/build --prefix spirv-headers-install
+          echo "CMAKE_PREFIX_PATH=$(cygpath -w "$PWD/spirv-headers-install")" >> "$GITHUB_ENV"
 
       - name: sherpa-onnx (DLL)
         shell: bash
@@ -129,7 +138,16 @@ jobs:
           vulkan_version: 1.4.309.0
           install_runtime: false
           cache: true
-          stripdown: true
+
+      # ggml-vulkan busca SPIRV-Headers con find_package y el SDK no trae su
+      # configuración de CMake: se instalan las de la misma versión del SDK.
+      - name: SPIRV-Headers
+        shell: bash
+        run: |
+          git clone --depth 1 --branch vulkan-sdk-1.4.309.0 https://github.com/KhronosGroup/SPIRV-Headers.git spirv-headers
+          cmake -S spirv-headers -B spirv-headers/build -DSPIRV_HEADERS_ENABLE_TESTS=OFF
+          cmake --install spirv-headers/build --prefix spirv-headers-install
+          echo "CMAKE_PREFIX_PATH=$(cygpath -w "$PWD/spirv-headers-install")" >> "$GITHUB_ENV"
 
       - name: sherpa-onnx (DLL)
         shell: bash
