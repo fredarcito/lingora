@@ -9,6 +9,9 @@ on:
 # y no casa con sherpa-onnx (/MT) al enlazar.
 env:
   LLAMA_STATIC_CRT: "1"
+  # Con Vulkan, llama-cpp-sys-2 apaga TrackFileAccess y añade /FS solo a llama.cpp;
+  # vulkan-shaders-gen (un proyecto aparte) falla sin él con C1041. cl.exe lee CL siempre.
+  CL: /FS
 
 jobs:
   check:
