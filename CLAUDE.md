@@ -148,7 +148,7 @@ documentación o su código).
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
   nube (llama.cpp y espeak-ng dentro de la app, resumen local, firma).
 - `docs/plan-windows.md`: lo que falta para Windows (solo plan).
-- `docs/plan-creditos.md`: la pantalla de licencias de terceros (por hacer).
+- `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su
   clave en `src/i18n/es/` y `en/`**; no escribas texto fijo en los componentes.
