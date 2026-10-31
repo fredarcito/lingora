@@ -152,7 +152,7 @@ export default function NotePage({ id, live, languages, onBack }) {
           <LinkButton className={styles.notesBack} onClick={onBack}>
             {t("notes.back")}
           </LinkButton>
-          <p className={error ? "notes-error" : "muted"}>{error || t("notes.opening")}</p>
+          <p className={error ? "notes-error" : cx("muted", styles.notesOpening)}>{error || t("notes.opening")}</p>
         </div>
       </div>
     );

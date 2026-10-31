@@ -17,6 +17,17 @@
   background: var(--n-hover);
 }
 
+/* A local note usually loads at once: the text only appears if it takes a while, so it does not flash. */
+.notes-opening {
+  animation: global(fade-in) 0.14s ease-out 0.3s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notes-opening {
+    animation: none;
+  }
+}
+
 .note-head {
   display: flex;
   flex-direction: column;

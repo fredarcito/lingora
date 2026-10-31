@@ -127,7 +127,8 @@ export default function NoteTaking({
 
   const begin = () => (loadNotesConsent() ? onStart() : setAskConsent(true));
 
-  if (running) {
+  // While the note is being finished the transcript stays: the options would flash before the note opens.
+  if (running || closing) {
     // Live, people are provisional (the review merges them when it finishes):
     // the text is shown without them and paragraphs are split only by pauses.
     // "Yo" (your microphone in an online meeting) is reliable and gets marked.
@@ -141,10 +142,16 @@ export default function NoteTaking({
             {/* Where it is recorded from, in case the wrong one was chosen. */}
             <Badge>{t(`noteTaking.${effectiveInput}`)}</Badge>
             <p className={cx(styles.takingPeople, "muted")}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
-            <Button variant="stop" onClick={onStop}>
-              <StopIcon />
-              {t("noteTaking.stop")}
-            </Button>
+            {closing ? (
+              <Button busy disabled>
+                {t("noteTaking.finishing")}
+              </Button>
+            ) : (
+              <Button variant="stop" onClick={onStop}>
+                <StopIcon />
+                {t("noteTaking.stop")}
+              </Button>
+            )}
           </div>
           {noSignal && <p className={styles.takingWarning}>{t("noteTaking.noSignal")}</p>}
           {micError && <p className={styles.takingWarning}>{t("noteTaking.micError", { error: micError })}</p>}
@@ -164,7 +171,7 @@ export default function NoteTaking({
             <span className={live ? "captions-status is-live" : "captions-status"}>
               <span className="live-dot" />
               <span className="captions-status-text" dir="auto">
-                {live ? (live.length > LIVE_CHARS ? `…${live.slice(-LIVE_CHARS)}` : live) : t("noteTaking.listening")}
+                {live ? (live.length > LIVE_CHARS ? `…${live.slice(-LIVE_CHARS)}` : live) : t(closing ? "noteTaking.finishing" : "noteTaking.listening")}
               </span>
             </span>
           </div>
@@ -237,8 +244,8 @@ export default function NoteTaking({
                 </p>
               )}
               <div className={styles.takingActions}>
-                <Button variant="primary" className={styles.takingStart} busy={starting || closing} disabled={starting || closing} onClick={begin}>
-                  {closing ? t("noteTaking.finishing") : starting ? t("noteTaking.preparing") : t("noteTaking.start")}
+                <Button variant="primary" className={styles.takingStart} busy={starting} disabled={starting} onClick={begin}>
+                  {starting ? t("noteTaking.preparing") : t("noteTaking.start")}
                 </Button>
               </div>
             </div>

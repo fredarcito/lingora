@@ -80,8 +80,10 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
     else await stop(micLane());
   };
 
+  // The microphone first: while the Mac audio is still running the screen keeps
+  // the transcript, so the options do not flash when both have stopped.
   const stopNotes = () => {
-    stopping.current = Promise.all([stop(remoteLane), inMeeting && stop(localLane)]).then(() => {});
+    stopping.current = (inMeeting ? stop(localLane) : Promise.resolve()).then(() => stop(remoteLane));
   };
 
   /** @param {Recorder} recorder @returns {Recorder} */

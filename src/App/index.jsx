@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, errorMessage } from "../utils/api";
 import Diagnostics from "../components/Diagnostics";
 import LaneCard from "../components/LaneCard";
@@ -666,7 +666,8 @@ export default function App() {
   // guarda (las frases que aún suenan en la cola se añaden después).
   // En Tomar notas la nota se graba siempre, y al parar se espera a que la cola
   // termine (con tope) para cerrarla y abrirla ya completa y con las personas repasadas.
-  useEffect(() => {
+  // Antes de pintar: si no, al parar asoman un instante las opciones de Tomar notas.
+  useLayoutEffect(() => {
     if (anyRunning) {
       const recorder = createRecorder({ mode, summaryLang: loadNotesLang(), paused: mode !== "notes" && !loadSaveNotes() });
       // Reunión en línea: lo que tu micrófono oyó de los demás no es tuyo.
@@ -694,13 +695,14 @@ export default function App() {
         window.clearTimeout(timer);
         return recorder.finish();
       })
-      .finally(() => setClosing(false))
       .then((id) => {
         // Sin frases no hay nota: se queda en la pantalla del modo.
         if (!id) return;
         setView("notes");
         setOpenRequest({ id, nonce: Date.now() });
-      });
+      })
+      // Después de cambiar de pantalla: si no, las opciones de Tomar notas asoman un instante.
+      .finally(() => setClosing(false));
   }, [anyRunning]);
   // Con un solo carril en marcha, ese ocupa casi todo el ancho y el otro se
   // queda en su control: los subtítulos necesitan el espacio.

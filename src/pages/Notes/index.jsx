@@ -46,7 +46,8 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     setOpenId(id);
   };
 
-  useEffect(() => {
+  // Before painting: otherwise the list shows for a frame on the way from Take notes to the note.
+  useLayoutEffect(() => {
     if (openRequest) setOpenId(openRequest.id);
   }, [openRequest]);
 
