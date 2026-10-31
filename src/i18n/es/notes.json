@@ -77,7 +77,7 @@
   "nothingTranscribed": "No se transcribió nada. Estas son tus notas:",
   "marks.title": "Anotaciones en la transcripción",
   "marks.all": "Todas",
-  "marks.notes": "Tus notas · {n}",
-  "marks.bookmarks": "Momentos · {n}",
+  "marks.notes": "Tus notas",
+  "marks.bookmarks": "Momentos",
   "marks.jump": "Ver en la transcripción"
 }

@@ -20,6 +20,7 @@ import {
 } from "../../utils/notes.js";
 import {
   ArrowIcon,
+  BookmarkIcon,
   Button,
   ConfirmDialog,
   CopyIcon,
@@ -29,8 +30,8 @@ import {
   MenuSeparator,
   MoreIcon,
   NoteIcon,
+  PenIcon,
   RefreshIcon,
-  Segmented,
   Spinner,
   Switch,
   cx,
@@ -295,18 +296,25 @@ export default function NotePage({ id, live, languages, onBack }) {
           )}
           {/* Take notes: all of the transcript, or only the paragraphs with your notes or bookmarks. */}
           {tab === "transcript" && note.sentences.length > 0 && marks.length > 0 && (
-            <div className={styles.noteMarksFilter} title={t("notes.marks.title")}>
-              <Segmented
-                small
-                check={false}
-                value={markFilter}
-                onChange={(v) => setMarkFilter(/** @type {"all" | "note" | "bookmark"} */ (v))}
-                options={[
-                  { value: "all", label: t("notes.marks.all") },
-                  { value: "note", label: t("notes.marks.notes", { n: noteCount }), disabled: noteCount === 0 },
-                  { value: "bookmark", label: t("notes.marks.bookmarks", { n: marks.length - noteCount }), disabled: noteCount === marks.length },
-                ]}
-              />
+            <div className={styles.noteMarksFilter} role="radiogroup" aria-label={t("notes.marks.title")}>
+              {[
+                { value: "all", label: t("notes.marks.all"), icon: null, n: null },
+                { value: "note", label: t("notes.marks.notes"), icon: <PenIcon />, n: noteCount },
+                { value: "bookmark", label: t("notes.marks.bookmarks"), icon: <BookmarkIcon />, n: marks.length - noteCount },
+              ].map((o) => (
+                <button
+                  key={o.value}
+                  role="radio"
+                  aria-checked={markFilter === o.value}
+                  className={cx(styles.noteMarksOption, markFilter === o.value && styles.isSelected)}
+                  disabled={o.n === 0}
+                  onClick={() => setMarkFilter(/** @type {"all" | "note" | "bookmark"} */ (o.value))}
+                >
+                  {o.icon}
+                  {o.label}
+                  {o.n !== null && <span className={styles.noteMarksCount}>{o.n}</span>}
+                </button>
+              ))}
             </div>
           )}
         </div>

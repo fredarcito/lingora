@@ -549,10 +549,55 @@
   height: var(--control-h);
 }
 
-/* The filter of your notes and bookmarks, on the right of the tabs. */
-.note-marks-filter [role="radiogroup"] button {
-  padding-left: 12px;
-  padding-right: 12px;
+/* The filter of your notes and bookmarks, on the right of the tabs: light,
+   like the rest of the page, so it reads as part of the Transcript tab. */
+.note-marks-filter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.note-marks-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-3);
+  transition: color 0.12s, background 0.12s;
+}
+
+.note-marks-option svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.note-marks-option:hover:not(:disabled) {
+  color: var(--text-2);
+}
+
+.note-marks-option.is-selected {
+  color: var(--text);
+  background: var(--n-muted);
+}
+
+.note-marks-option:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.note-marks-option:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 1px;
+}
+
+.note-marks-count {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
 }
 
 /* The tabs (and the filter) stay at the top while reading a long note. */
