@@ -5,7 +5,8 @@ import App from "./App";
 import FloatingCaptions from "./pages/FloatingCaptions";
 import LangOffer from "./components/LangOffer";
 import Welcome, { WelcomeBoundary, needsWelcome } from "./pages/Welcome";
-import { I18nProvider } from "./i18n";
+import { ErrorBoundary } from "./components/shared";
+import { I18nProvider, t } from "./i18n";
 import { captureErrors } from "./utils/log";
 import { ensureSpeakers } from "./utils/notes";
 
@@ -45,6 +46,10 @@ function Main() {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <I18nProvider>{floating ? <FloatingCaptions /> : <Main />}</I18nProvider>
+    <I18nProvider>
+      <ErrorBoundary title={t("errorBoundary.title")} body={t("errorBoundary.body")} reloadLabel={t("errorBoundary.reload")}>
+        {floating ? <FloatingCaptions /> : <Main />}
+      </ErrorBoundary>
+    </I18nProvider>
   </StrictMode>,
 );

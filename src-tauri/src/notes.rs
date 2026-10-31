@@ -616,6 +616,22 @@ mod tests {
         assert_eq!(first_summary_line("## Resumen\n"), None);
     }
 
+    /// Same cases as `paragraphs` in src/utils/notes.test.js: both sides must
+    /// group the same way.
+    #[test]
+    fn paragraphs_match_shared_fixture() {
+        let cases: Vec<Value> = serde_json::from_str(include_str!("../../tests/fixtures/paragraphs.json")).unwrap();
+        for case in &cases {
+            let sentences = case["sentences"].as_array().unwrap();
+            let groups: Vec<Vec<usize>> = paragraphs(sentences)
+                .iter()
+                .map(|block| block.iter().map(|s| sentences.iter().position(|x| std::ptr::eq(x, *s)).unwrap()).collect())
+                .collect();
+            let expected: Vec<Vec<usize>> = serde_json::from_value(case["groups"].clone()).unwrap();
+            assert_eq!(groups, expected, "{}", case["name"]);
+        }
+    }
+
     #[test]
     fn groups_sentences_into_paragraphs() {
         let note = serde_json::json!({

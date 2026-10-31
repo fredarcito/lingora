@@ -1,0 +1,23 @@
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 100vh;
+  padding: 24px;
+  text-align: center;
+}
+
+.error-boundary h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.error-boundary p {
+  max-width: 420px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}

@@ -35,7 +35,8 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
 - **El agrupado en párrafos:** `paragraphs` en `src/utils/notes.js` y en
   `src-tauri/src/notes.rs` aplican las mismas reglas (cambio de persona,
   pausa de más de 12 s, más de 700 caracteres). Si cambias una, cambia la
-  otra.
+  otra. Las dos se prueban con los mismos casos
+  (`tests/fixtures/paragraphs.json`): `pnpm test` y `cargo test`.
 - **En `src-tauri/src`:** `audio.rs`, `system_audio.rs`, `listener.rs`,
   `translator.rs`, `tts.rs`, `pipeline.rs`, `phonemizer.rs`,
   `system_voice.rs`, `speakers.rs`, `models.rs`, `doctor.rs` y `config.rs`.
@@ -68,11 +69,12 @@ documentación o su código).
 - **Calidad frente a velocidad.** Los cambios que bajan la latencia sin
   perder calidad, adelante. Los que pierden calidad van detrás de un
   interruptor, con lo preciso por defecto.
-- **Al terminar:** `npx vite build` y `cargo check` (en `src-tauri`) sin
-  errores. Si tocaste CSS, también `scripts/css-check.mjs` (cómo, en
+- **Al terminar:** `npx vite build`, `pnpm test` y `cargo check` (en
+  `src-tauri`) sin errores. Si tocaste CSS, también `scripts/css-check.mjs` (cómo, en
   `docs/componentes.md`). Di qué probaste y qué no.
-- **No es un repositorio git.** No hay historial para deshacer: mira bien
-  antes de borrar o sobrescribir.
+- **Es un repositorio git.** Antes de un cambio grande, comprueba que el
+  árbol está limpio (o pide un commit) para poder deshacerlo. Aun así, mira
+  bien antes de borrar o sobrescribir.
 - **No borres** modelos descargados, notas guardadas ni archivos de prueba
   sin que te lo pidan.
 

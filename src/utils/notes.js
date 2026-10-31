@@ -464,7 +464,7 @@ function centroid(prints) {
  *   partió de más y se renumera por orden de aparición.
  * Escribe la persona directamente en cada frase de la nota.
  */
-function createSpeakerTracker() {
+export function createSpeakerTracker() {
   /** @type {Array<{ mean: number[], n: number }>} */
   let people = [];
   /** @type {Array<{ entry: import("./api").NoteSentence, print: number[], secs: number }>} */

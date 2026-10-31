@@ -1,0 +1,249 @@
+[
+ {
+  "name": "same speaker joins",
+  "sentences": [
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "a",
+    "translation": null
+   },
+   {
+    "t": 2,
+    "speaker": 1,
+    "source": "b",
+    "translation": null
+   },
+   {
+    "t": 3,
+    "speaker": 1,
+    "source": "c",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1,
+    2
+   ]
+  ]
+ },
+ {
+  "name": "speaker change splits",
+  "sentences": [
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "a",
+    "translation": null
+   },
+   {
+    "t": 2,
+    "speaker": 2,
+    "source": "b",
+    "translation": null
+   },
+   {
+    "t": 3,
+    "speaker": 1,
+    "source": "c",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0
+   ],
+   [
+    1
+   ],
+   [
+    2
+   ]
+  ]
+ },
+ {
+  "name": "null speaker stays together",
+  "sentences": [
+   {
+    "t": 1,
+    "speaker": null,
+    "source": "a",
+    "translation": null
+   },
+   {
+    "t": 2,
+    "speaker": null,
+    "source": "b",
+    "translation": null
+   },
+   {
+    "t": 3,
+    "speaker": 0,
+    "source": "c",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1
+   ],
+   [
+    2
+   ]
+  ]
+ },
+ {
+  "name": "gap of exactly 12 s joins",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "a",
+    "translation": null
+   },
+   {
+    "t": 12,
+    "speaker": 1,
+    "source": "b",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1
+   ]
+  ]
+ },
+ {
+  "name": "gap over 12 s splits",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "a",
+    "translation": null
+   },
+   {
+    "t": 12.5,
+    "speaker": 1,
+    "source": "b",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0
+   ],
+   [
+    1
+   ]
+  ]
+ },
+ {
+  "name": "700 chars fit",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "translation": null
+   },
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1
+   ]
+  ]
+ },
+ {
+  "name": "over 700 chars splits",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "translation": null
+   },
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "translation": null
+   },
+   {
+    "t": 2,
+    "speaker": 1,
+    "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1
+   ],
+   [
+    2
+   ]
+  ]
+ },
+ {
+  "name": "length counts the translation",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "a",
+    "translation": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+   },
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "c",
+    "translation": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+   }
+  ],
+  "groups": [
+   [
+    0
+   ],
+   [
+    1
+   ]
+  ]
+ },
+ {
+  "name": "accented text counts characters",
+  "sentences": [
+   {
+    "t": 0,
+    "speaker": 1,
+    "source": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+    "translation": null
+   },
+   {
+    "t": 1,
+    "speaker": 1,
+    "source": "ññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññññ",
+    "translation": null
+   }
+  ],
+  "groups": [
+   [
+    0,
+    1
+   ]
+  ]
+ }
+]
