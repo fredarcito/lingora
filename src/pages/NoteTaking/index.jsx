@@ -4,11 +4,14 @@ import {
   Button,
   ChoiceCards,
   ConfirmDialog,
+  FloatIcon,
+  IconButton,
   LinkButton,
   MicIcon,
   MonitorIcon,
   PlayIcon,
   Segmented,
+  Select,
   ShieldIcon,
   StopIcon,
   VideoIcon,
@@ -61,6 +64,9 @@ function elapsedLabel(secs) {
  *   listen: "EN" | "ZH", onListen: (value: "EN" | "ZH") => void,
  *   systemAudio: boolean, languages: import("@utils/api").LanguageInfo[],
  *   route: import("@utils/api").AudioRoute | null,
+ *   captions: import("@utils/notes.js").NotesCaptions,
+ *   onCaptions: (value: import("@utils/notes.js").NotesCaptions) => void,
+ *   floating: boolean, onFloating: () => void,
  *   onOpenSettings: () => void, onStart: () => void, onStop: () => void,
  *   notesActions: import("@components/MyNotes").MyNotesActions & { addBookmark: () => void },
  * }} props
@@ -81,6 +87,10 @@ export default function NoteTaking({
   systemAudio,
   languages,
   route,
+  captions,
+  onCaptions,
+  floating,
+  onFloating,
   onOpenSettings,
   onStart,
   onStop,
@@ -186,6 +196,15 @@ export default function NoteTaking({
     }
   };
 
+  // Without captions, a language to translate the others into, or what is heard as is.
+  const captionOptions = [
+    { value: "off", label: t("noteTaking.captions.off") },
+    { value: "original", label: t("noteTaking.captions.original") },
+    ...languages.map((l) => ({ value: l.code, label: l.name })),
+  ];
+  const captionsLabel = captionOptions.find((o) => o.value === captions)?.label ?? captions;
+  const captionsHint = t(captions === "off" || captions === "original" ? `noteTaking.captions.${captions}.hint` : "noteTaking.captions.translate.hint");
+
   const begin = () => (loadNotesConsent() ? onStart() : setAskConsent(true));
 
   // While the note is being finished the transcript stays: the options would flash before the note opens.
@@ -205,6 +224,21 @@ export default function NoteTaking({
                 <h2 className={styles.takingTitle}>{note?.title ?? notesTitle(startedAt)}</h2>
                 <span className="note-live">{t("noteTaking.recording")}</span>
                 <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
+                {/* Captions can change while recording: from the next sentence on. */}
+                <span className={styles.takingCaptions}>
+                  <Select value={captions} onChange={onCaptions} options={captionOptions} label={t("noteTaking.captions")} />
+                  {captions !== "off" && (
+                    <IconButton
+                      small
+                      active={floating}
+                      onClick={onFloating}
+                      title={floating ? t("app.lane.floatClose") : t("app.lane.floatOpen")}
+                      aria-pressed={floating}
+                    >
+                      <FloatIcon />
+                    </IconButton>
+                  )}
+                </span>
               </div>
             </header>
             <div className={styles.takingBar}>
@@ -318,6 +352,13 @@ export default function NoteTaking({
                 <p className={styles.setupHint}>{t("noteTaking.summaryLangHint")}</p>
               </div>
             </section>
+            <section className={styles.setupSection}>
+              <h3 className={styles.setupLabel}>{t("noteTaking.captions")}</h3>
+              <div className={styles.setupSummary}>
+                <Select value={captions} onChange={onCaptions} options={captionOptions} label={t("noteTaking.captions")} />
+                <p className={styles.setupHint}>{captionsHint}</p>
+              </div>
+            </section>
             {error && (
               <p className="notes-error" role="alert">
                 {error}
@@ -331,6 +372,12 @@ export default function NoteTaking({
                 {t("noteTaking.recap.lang")} <strong>{t(listen === "ZH" ? "noteTaking.zh" : "noteTaking.auto")}</strong>
                 {" · "}
                 {t("noteTaking.recap.summary")} <strong>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</strong>
+                {captions !== "off" && (
+                  <>
+                    {" · "}
+                    {t("noteTaking.recap.captions")} <strong>{captionsLabel}</strong>
+                  </>
+                )}
               </p>
               <Button variant="primary" className={styles.takingStart} busy={starting} disabled={starting} onClick={begin}>
                 {starting ? t("noteTaking.preparing") : <><PlayIcon />{t("noteTaking.start")}</>}

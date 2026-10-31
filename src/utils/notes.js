@@ -8,6 +8,7 @@ const SPEAKERS_KEY = "lingora.speakers";
 const NOTES_INPUT_KEY = "lingora.notesInput";
 const NOTES_LISTEN_KEY = "lingora.notesListen";
 const NOTES_LANG_KEY = "lingora.notesLang";
+const NOTES_CAPTIONS_KEY = "lingora.notesCaptions";
 const NOTES_CONSENT_KEY = "lingora.notesConsent";
 const MY_NAME_KEY = "lingora.myName";
 /** Se emite en `window` cuando la nota que se está grabando cambia (frase nueva o persona asignada). */
@@ -183,6 +184,30 @@ export function storeNotesLang(code) {
     localStorage.setItem(NOTES_LANG_KEY, code);
   } catch {
     // Sin almacenamiento solo dura esta sesión.
+  }
+}
+
+/**
+ * Take notes: the captions of the floating window. `"off"` (none, by default),
+ * `"original"` (what is heard, untranslated) or the code of a language to
+ * translate the others into. The note always keeps the original.
+ * @typedef {"off" | "original" | string} NotesCaptions
+ * @returns {NotesCaptions}
+ */
+export function loadNotesCaptions() {
+  try {
+    return localStorage.getItem(NOTES_CAPTIONS_KEY) || "off";
+  } catch {
+    return "off";
+  }
+}
+
+/** @param {NotesCaptions} value */
+export function storeNotesCaptions(value) {
+  try {
+    localStorage.setItem(NOTES_CAPTIONS_KEY, value);
+  } catch {
+    // Without storage it only lasts this session.
   }
 }
 

@@ -53,5 +53,12 @@
   "bookmarked": "Marked moment",
   "myNotesHint": "Saved with the note and used in the summary.",
   "addNote": "Add note",
-  "jumpTo": "Go to this moment"
+  "jumpTo": "Go to this moment",
+  "captions": "Captions",
+  "captions.off": "No captions",
+  "captions.original": "Original language",
+  "captions.off.hint": "Only notes are taken. If you turn them on, they appear in a floating window on top of any other.",
+  "captions.original.hint": "What is heard, as is, in a floating window on top of any other. Handy for practicing a language.",
+  "captions.translate.hint": "What the others say, translated, in a floating window on top of any other. The note keeps the original.",
+  "recap.captions": "Captions:"
 }

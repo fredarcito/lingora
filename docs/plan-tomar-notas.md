@@ -516,10 +516,33 @@ Translate call. No new dependencies.
 8. A narrow window: the panel goes below and the transcript is still readable.
 9. Translate audio and Translate call record exactly as before.
 
-## Phase 4: optional translation (later on)
+## Phase 4: optional translation
 
-The small translation below each paragraph, for those who want both
-things.
+### 4.1 Floating captions (built 2026-10-31; manual tests pending)
+
+For learning a language: take notes and read captions at the same time.
+
+- **"Captions"** on the mode's screen and in the bar while recording:
+  "No captions" (default), "Original language" or a language. Saved in
+  `lingora.notesCaptions` (`"off"`, `"original"` or a language code).
+- With a language, only the Listen lane gets that `targetLang` (in
+  `App/index.jsx`, the computation of `lanes`); "Me" is never translated and
+  nothing is spoken. The translator doesn't need the source language, so it
+  works with the automatic detection. Each sentence reads the lane, so the
+  choice can change while recording (the first translated sentence waits
+  for the model to load).
+- They show in the same floating window as Translate audio. It opens when
+  starting with captions on (or when turning them on while recording) and
+  closes when turning them off. In this mode its ▶ / ❚❚ starts and stops the
+  whole note.
+- The note keeps only the original: the recorder still drops the
+  translation in `kind: "notes"`.
+
+### 4.2 Later on
+
+The small translation below each paragraph of the note, for those who want
+both things. It needs `notes.rs` (summary and export use the translation
+when there is one).
 
 ---
 

@@ -9,7 +9,7 @@ import Notes from "@pages/Notes";
 import { cx } from "@components/shared";
 import Settings from "@pages/Settings";
 import Sidebar from "@components/Sidebar";
-import { createRecorder, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesInput, storeNotesListen, storeSaveNotes } from "@utils/notes.js";
+import { createRecorder, loadNotesCaptions, loadNotesConsent, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesCaptions, storeNotesInput, storeNotesListen, storeSaveNotes } from "@utils/notes.js";
 import { t, useT } from "@i18n";
 import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "@utils/audio";
 import { useAudioRoute } from "@hooks/useAudioRoute.js";
@@ -250,6 +250,7 @@ export default function App() {
   // Tomar notas: qué se escucha y la familia de idiomas; no tocan los ajustes de Escuchar.
   const [notesInput, setNotesInput] = useState(loadNotesInput);
   const [notesListen, setNotesListen] = useState(loadNotesListen);
+  const [notesCaptions, setNotesCaptions] = useState(loadNotesCaptions);
   const [laneSettings, setLanes] = useState(loadLaneSettings);
   const { languages, languagesRef, langInfo, shownLanguages } = useLanguages();
   // Antes de los dispositivos: al conectar algo no se releen mientras traduce.
@@ -266,6 +267,11 @@ export default function App() {
     // allí. En una reunión en línea, Hablar también: es tu micrófono ("Yo").
     const taking = mode === "notes" && (l.direction === "remote_to_local" || meeting);
     if (taking) langs.sourceLang = langs.targetLang = notesListen;
+    // Captions in a language: only the others are translated; "Yo" stays as said.
+    // Each sentence reads it, so it can change while recording.
+    if (taking && l.direction === "remote_to_local" && notesCaptions !== "off" && notesCaptions !== "original") {
+      langs.targetLang = notesCaptions.toUpperCase();
+    }
     // Local por defecto, pero solo si el modelo está instalado; si no, la nube.
     const source = langInfo(langs.sourceLang);
     const target = langInfo(langs.targetLang);
@@ -329,6 +335,14 @@ export default function App() {
   const changeNotesListen = (next) => {
     setNotesListen(next);
     storeNotesListen(next);
+  };
+
+  /** @param {import("@utils/notes.js").NotesCaptions} next */
+  const changeNotesCaptions = (next) => {
+    setNotesCaptions(next);
+    storeNotesCaptions(next);
+    // Turning them on while recording opens the floating window; turning them off closes it.
+    if (next === "off" ? floating : anyRunning && !floating) toggleFloating();
   };
 
   /** @param {boolean} next */
@@ -639,7 +653,6 @@ export default function App() {
 
   const remoteLane = /** @type {Lane} */ (lanes.find((l) => l.direction === "remote_to_local"));
   const remoteState = state.remote_to_local;
-  const { floating, toggleFloating } = useFloatingCaptions({ remoteLane, remoteState, start, stop });
 
   const { inputs, outputs } = devices;
   // En modo vídeo solo se traduce lo que se oye.
@@ -662,6 +675,22 @@ export default function App() {
     stopping,
   });
   const { inMeeting } = meetingNotes;
+  // In Take notes the floating ▶ / ❚❚ starts and stops the whole note (both lanes in a meeting).
+  const { floating, toggleFloating } = useFloatingCaptions(
+    mode === "notes"
+      ? {
+          remoteLane,
+          remoteState,
+          // The privacy notice is only shown on the Take notes screen.
+          start: async () => void (loadNotesConsent() && meetingNotes.startNotes()),
+          stop: async () => meetingNotes.stopNotes(),
+        }
+      : { remoteLane, remoteState, start, stop },
+  );
+  const startNotes = () => {
+    meetingNotes.startNotes();
+    if (notesCaptions !== "off" && !floating) toggleFloating();
+  };
 
   // Al parar (o al volver de Ajustes), el interruptor vuelve al ajuste guardado.
   useEffect(() => {
@@ -764,7 +793,11 @@ export default function App() {
             languages={shownLanguages}
             route={shownRoute}
             onOpenSettings={() => setView("settings")}
-            onStart={meetingNotes.startNotes}
+            captions={notesCaptions}
+            onCaptions={changeNotesCaptions}
+            floating={floating}
+            onFloating={toggleFloating}
+            onStart={startNotes}
             onStop={meetingNotes.stopNotes}
             notesActions={notesActions}
           />
