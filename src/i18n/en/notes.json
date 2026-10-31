@@ -79,5 +79,7 @@
   "marks.all": "All",
   "marks.notes": "Your notes",
   "marks.bookmarks": "Moments",
-  "marks.jump": "See in the transcript"
+  "marks.jump": "See in the transcript",
+  "summaryWithNotes": "Include my notes",
+  "summaryWithNotesHint": "Adds your notes at the end of the summary, each with what was being said at that moment. Their text is not sent: only when you wrote them."
 }

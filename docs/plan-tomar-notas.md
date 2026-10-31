@@ -474,7 +474,8 @@ first, between two, after the last, without sentences, with gaps).
 - **`user_marks_text(note) -> String`** (new, pure): `[mm:ss] text` per note and
   `[mm:ss] (marked moment)` per bookmark, merged by `t`. Empty if there is
   nothing.
-- **`note_summarize`:** if `user_marks_text` is not empty, it is appended after the
+- **`note_summarize`** (changed 2026-10-31: my notes only with `summary_with_notes`, off by default, as they may be private; bookmarks always, in their own "Momentos destacados" section):
+  originally, if `user_marks_text` is not empty, it is appended after the
   transcript under a header "Notas del usuario (lo que considera importante):".
   `SUMMARY_SYSTEM` gets one more line: "Si hay notas del usuario o momentos
   marcados, dales prioridad en Puntos clave, Decisiones y Tareas; no las
@@ -532,3 +533,4 @@ Without breaking the notes that already exist; all are optional when reading.
 | `summary_lang` | 1 | Summary language |
 | `my_notes` | 3 | `[{ t, text }]` |
 | `bookmarks` | 3 | `[{ t }]` |
+| `summary_with_notes` | 3 | The summary adds a "Mis notas" section (off by default): each note as written, by the app, with one line of context by the model. The model gets only the times (N1 [01:52]…), never the text, so notes can't leak into other sections or leave the Mac. Order: … Tareas, Momentos destacados, Mis notas. Bookmarks always go, in "Momentos destacados" |

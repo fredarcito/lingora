@@ -79,5 +79,7 @@
   "marks.all": "Todas",
   "marks.notes": "Tus notas",
   "marks.bookmarks": "Momentos",
-  "marks.jump": "Ver en la transcripción"
+  "marks.jump": "Ver en la transcripción",
+  "summaryWithNotes": "Incluir mis notas",
+  "summaryWithNotesHint": "Añade al final del resumen tus notas, cada una con lo que se decía en ese momento. Su texto no se envía: solo la hora en que las escribiste."
 }

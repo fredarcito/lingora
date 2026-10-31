@@ -42,3 +42,25 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+
+/* A time at the start of an item (Highlighted moments, My notes). */
+.md-time {
+  margin-right: 8px;
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* My notes: the user's words stand out; the context of the moment goes below, quieter. */
+.md-quote {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.md-context {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: var(--text-3);
+}

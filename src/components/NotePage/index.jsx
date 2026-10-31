@@ -184,11 +184,13 @@ export default function NotePage({ id, live, languages, onBack }) {
   // The summary is no longer in the chosen language: "Summarize again" becomes the primary button.
   const stale = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
   const hasPeople = note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined);
-  // Take notes: what the user wrote also counts, even if nothing was transcribed.
   const marks = userMarks(note);
-  const hasContent = note.sentences.length > 0 || marks.length > 0;
   const noteCount = marks.filter((m) => m.kind === "note").length;
-  const summaryHint = !note.summary && !live && hasContent && (
+  // Take notes: your notes may be private, so they count for the summary (and
+  // can make one without a transcript) only if you include them.
+  const withNotes = Boolean(note.summary_with_notes) && noteCount > 0;
+  const summarizable = note.sentences.length > 0 || withNotes;
+  const summaryHint = !note.summary && !live && summarizable && (
     <p className={cx(styles.noteSummaryHint, "muted")}>
       <LinkButton onClick={() => setTab("summary")}>{t("notes.goSummary")}</LinkButton>
     </p>
@@ -342,6 +344,20 @@ export default function NotePage({ id, live, languages, onBack }) {
                   ))}
                 </select>
               </label>
+              {noteCount > 0 && (
+                <Switch
+                  className={styles.noteSummaryNotes}
+                  checked={Boolean(note.summary_with_notes)}
+                  disabled={live || summarizing}
+                  label={t("notes.summaryWithNotes")}
+                  title={t("notes.summaryWithNotesHint")}
+                  onChange={(on) => {
+                    const next = { ...note, summary_with_notes: on };
+                    setNote(next);
+                    run(() => api.noteSave(next));
+                  }}
+                />
+              )}
               <div className={styles.noteSummaryActions}>
                 {note.summary && (
                   <Button
@@ -354,14 +370,14 @@ export default function NotePage({ id, live, languages, onBack }) {
                   </Button>
                 )}
                 {!note.summary && (
-                  <Button title={t("notes.copyTitle")} disabled={!hasContent} onClick={copyForChat}>
+                  <Button title={t("notes.copyTitle")} disabled={!summarizable} onClick={copyForChat}>
                     {t("notes.copyForChat")}
                   </Button>
                 )}
                 <Button
                   variant={note.summary && !stale ? "default" : "primary"}
                   busy={summarizing}
-                  disabled={live || summarizing || !hasContent}
+                  disabled={live || summarizing || !summarizable}
                   title={live ? t("notes.waitFinish") : undefined}
                   onClick={askSummary}
                 >

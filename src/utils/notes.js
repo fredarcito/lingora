@@ -329,13 +329,14 @@ export function speakerShares(note) {
 
 /**
  * La nota como texto, igual que el que escribe Rust al exportar (sin `#`
- * en el título): sirve para pegarla en un chat de IA.
+ * en el título): sirve para pegarla en un chat de IA. The user's notes go
+ * only with `summary_with_notes`, as in the summary; bookmarks always.
  * @param {import("./api").Note} note
  */
 export function noteToText(note) {
   const lines = [note.title, formatSpan(note), ""];
   if (note.summary?.text) lines.push("## Resumen", note.summary.text, "");
-  const marks = userMarks(note);
+  const marks = userMarks(note).filter((m) => m.kind === "bookmark" || note.summary_with_notes);
   if (marks.length) {
     lines.push("## Mis notas");
     for (const m of marks) lines.push(`[${formatClock(m.t)}] ${m.text ?? "(momento marcado)"}`);

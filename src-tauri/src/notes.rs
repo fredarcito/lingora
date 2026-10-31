@@ -296,14 +296,25 @@ fn export_text(note: &Value, markdown: bool) -> String {
 /// `[mm:ss] text` or `[mm:ss] (momento marcado)`. Empty if there are none.
 /// The same order as `userMarks` in `src/utils/notes.js`.
 fn user_marks_text(note: &Value) -> String {
+    marks_text(note, true, true)
+}
+
+/// Like `user_marks_text`, with only the notes, only the bookmarks or both.
+fn marks_text(note: &Value, notes: bool, bookmarks: bool) -> String {
     let list = |key: &str| note.get(key).and_then(Value::as_array).map(Vec::as_slice).unwrap_or_default();
     let t = |v: &Value| v.get("t").and_then(Value::as_f64).unwrap_or(0.0).max(0.0);
-    let mut marks: Vec<(f64, &str)> = list("my_notes")
-        .iter()
-        .map(|n| (t(n), str_field(n, "text").trim()))
-        .filter(|(_, text)| !text.is_empty())
-        .collect();
-    marks.extend(list("bookmarks").iter().map(|b| (t(b), "(momento marcado)")));
+    let mut marks: Vec<(f64, &str)> = Vec::new();
+    if notes {
+        marks.extend(
+            list("my_notes")
+                .iter()
+                .map(|n| (t(n), str_field(n, "text").trim()))
+                .filter(|(_, text)| !text.is_empty()),
+        );
+    }
+    if bookmarks {
+        marks.extend(list("bookmarks").iter().map(|b| (t(b), "(momento marcado)")));
+    }
     marks.sort_by(|a, b| a.0.total_cmp(&b.0));
     marks
         .iter()
@@ -314,16 +325,140 @@ fn user_marks_text(note: &Value) -> String {
         .collect()
 }
 
-/// What is sent to be summarized: the transcript and, after it, the user's
-/// notes as what they consider important.
+/// Whether the summary also uses the user's notes: only if they turned it on
+/// for this note (`summary_with_notes`), since notes may be private.
+fn summary_with_notes(note: &Value) -> bool {
+    note.get("summary_with_notes").and_then(Value::as_bool).unwrap_or(false)
+}
+
+/// What is sent to be summarized: the transcript, when the user wrote notes
+/// (if they chose to include them) and the moments they marked, which always
+/// go. Only the times of the notes: their text never leaves the Mac, nor can
+/// it end up in other sections; the app writes it in (`with_user_notes`).
 fn summary_input(note: &Value) -> String {
     let mut text = transcript_text(note, false);
-    let marks = user_marks_text(note);
-    if !marks.is_empty() {
-        text.push_str("\nNotas del usuario (lo que considera importante):\n");
-        text.push_str(&marks);
+    let notes = if summary_with_notes(note) { user_notes(note) } else { Vec::new() };
+    if !notes.is_empty() {
+        // Numbered: the summary refers to them as N1, N2… and the app writes their text.
+        text.push_str("\nMomentos en que el usuario escribió una nota:\n");
+        for (i, (t, _)) in notes.iter().enumerate() {
+            text.push_str(&format!("N{} {}\n", i + 1, clock(*t)));
+        }
+    }
+    let bookmarks = marks_text(note, false, true);
+    if !bookmarks.is_empty() {
+        text.push_str("\nMomentos marcados por el usuario:\n");
+        text.push_str(&bookmarks);
     }
     text
+}
+
+/// The user's notes in time order, each on one line, without the empty ones.
+fn user_notes(note: &Value) -> Vec<(f64, String)> {
+    let mut notes: Vec<(f64, String)> = note
+        .get("my_notes")
+        .and_then(Value::as_array)
+        .map(Vec::as_slice)
+        .unwrap_or_default()
+        .iter()
+        .map(|n| {
+            let t = n.get("t").and_then(Value::as_f64).unwrap_or(0.0).max(0.0);
+            (t, str_field(n, "text").split_whitespace().collect::<Vec<_>>().join(" "))
+        })
+        .filter(|(_, text)| !text.is_empty())
+        .collect();
+    notes.sort_by(|a, b| a.0.total_cmp(&b.0));
+    notes
+}
+
+/// "[01:52]".
+fn clock(t: f64) -> String {
+    let secs = t as u64;
+    format!("[{:02}:{:02}]", secs / 60, secs % 60)
+}
+
+/// The summary writes, for each note, only `- N1: context`; here the line
+/// becomes `- [01:52] «the note, as written» — context`, so the model never
+/// rewrites the user's words. Notes it left out go after the last one it wrote
+/// (or, if it wrote none, in a section of their own). The section goes last:
+/// what the user wrote closes the summary.
+fn with_user_notes(summary: &str, notes: &[(f64, String)]) -> String {
+    if notes.is_empty() {
+        return summary.to_string();
+    }
+    let line_for = |i: usize, context: Option<&str>| {
+        let (t, text) = &notes[i];
+        match context.filter(|c| !c.is_empty()) {
+            Some(c) => format!("- {} «{text}» — {c}", clock(*t)),
+            None => format!("- {} «{text}»", clock(*t)),
+        }
+    };
+    let mut used = vec![false; notes.len()];
+    let mut ours: Vec<String> = Vec::new();
+    let mut out: Vec<String> = Vec::new();
+    let mut last = None;
+    for line in summary.lines() {
+        match note_ref(line).filter(|(i, _)| *i < notes.len() && !used[*i]) {
+            Some((i, context)) => {
+                used[i] = true;
+                ours.push(line_for(i, Some(&context)));
+                out.push(line_for(i, Some(&context)));
+                last = Some(out.len());
+            }
+            None => out.push(line.to_string()),
+        }
+    }
+    let missing: Vec<String> = (0..notes.len()).filter(|&i| !used[i]).map(|i| line_for(i, None)).collect();
+    match last {
+        Some(at) => {
+            ours.extend(missing.iter().cloned());
+            out.splice(at..at, missing);
+            // The section (from its heading to the next one) moves to the end.
+            let first = out.iter().position(|l| ours.contains(l)).unwrap_or(at);
+            let start = out[..first].iter().rposition(|l| l.trim_start().starts_with('#')).unwrap_or(first);
+            let end = out[first..].iter().position(|l| l.trim_start().starts_with('#')).map_or(out.len(), |i| first + i);
+            if end < out.len() {
+                let section: Vec<String> = out.drain(start..end).collect();
+                while out.last().is_some_and(|l| l.trim().is_empty()) {
+                    out.pop();
+                }
+                out.push(String::new());
+                out.extend(section.into_iter().rev().skip_while(|l| l.trim().is_empty()).collect::<Vec<_>>().into_iter().rev());
+            }
+        }
+        None => {
+            while out.last().is_some_and(|l| l.trim().is_empty()) {
+                out.pop();
+            }
+            out.push(String::new());
+            out.push("## Mis notas".to_string());
+            out.extend(missing);
+        }
+    }
+    out.join("\n")
+}
+
+/// `- N2: context` (also with `*`, bold or a dot) → (1, "context").
+fn note_ref(line: &str) -> Option<(usize, String)> {
+    let rest = line.trim().strip_prefix(['-', '*'])?.trim_start().trim_start_matches("**");
+    let rest = rest.strip_prefix('N')?;
+    let digits = rest.chars().take_while(char::is_ascii_digit).count();
+    let n: usize = rest[..digits].parse().ok()?;
+    let context = rest[digits..].trim_start_matches("**").trim_start_matches([':', '.', ')', '—', '-']).trim();
+    Some((n.checked_sub(1)?, context.to_string()))
+}
+
+/// The instructions for the summary, with the lines for the user's notes and
+/// bookmarks only when they go in.
+fn summary_system(note: &Value) -> String {
+    let mut system = SUMMARY_SYSTEM.replace("{idioma}", summary_language(note));
+    if summary_with_notes(note) && !user_notes(note).is_empty() {
+        system.push_str(SUMMARY_NOTES);
+    }
+    if !marks_text(note, false, true).is_empty() {
+        system.push_str(SUMMARY_BOOKMARKS);
+    }
+    system
 }
 
 /// "Sin guardar · 2 min": la marca de un rato que no se guardó.
@@ -436,8 +571,14 @@ y solo estas secciones, omitiendo las que no tengan contenido:\n\
 ## Puntos clave (lista)\n\
 ## Decisiones (lista)\n\
 ## Tareas (lista; \"- [ ] tarea — responsable\" si se menciona)\n\
-No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.\n\
-Si hay notas del usuario o momentos marcados, dales prioridad en Puntos clave, Decisiones y Tareas; no las copies tal cual.";
+No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.";
+/// Added when the user includes their notes in the summary.
+const SUMMARY_NOTES: &str = "\nEl usuario escribió notas en ciertos momentos (N1, N2…, con su hora). Añade la sección \
+## Mis notas al final de todo (después de Momentos destacados), con una línea por nota: \"- N1: qué se decía en ese momento\" \
+(una frase, según la transcripción). No las menciones en las demás secciones.";
+/// Added when the note has bookmarks: they always go, in their own section.
+const SUMMARY_BOOKMARKS: &str = "\nHay momentos marcados por el usuario: añade al final la sección ## Momentos destacados, \
+con una línea por momento: \"- [mm:ss] qué se dijo en ese momento\" (una frase, según la transcripción).";
 
 fn keychain_entry() -> Result<keyring::Entry> {
     keyring::Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT).map_err(|e| Error::Notes(format!("no se pudo abrir el llavero: {e}")))
@@ -573,11 +714,14 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
         .map_err(|e| Error::Notes(format!("no se pudo consultar el llavero: {e}")))?
         .ok_or_else(|| Error::Notes("Falta la clave de Groq. Ponla en la pestaña Resumen o en Ajustes.".into()))?;
 
-    let transcript = summary_input(&note);
-    if transcript.trim().is_empty() {
+    // Bookmarks alone are not enough: they point at what was said.
+    let notes = if summary_with_notes(&note) { user_notes(&note) } else { Vec::new() };
+    let has_notes = !notes.is_empty();
+    if transcript_text(&note, false).trim().is_empty() && !has_notes {
         return Err(Error::Notes("La nota no tiene frases que resumir.".into()));
     }
-    let system = SUMMARY_SYSTEM.replace("{idioma}", summary_language(&note));
+    let transcript = summary_input(&note);
+    let system = summary_system(&note);
 
     let text = summarize_text(&Groq::new(key), &model, &system, &transcript)
         .await
@@ -585,6 +729,7 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
             Error::Api { status: 401 | 403, .. } => Error::Notes("La clave de Groq no es válida. Cámbiala en Ajustes.".into()),
             other => other,
         })?;
+    let text = with_user_notes(&text, &notes);
 
     // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
     let mut note = read_note(&path)?;
@@ -656,12 +801,43 @@ mod tests {
 
         let mut with_notes = plain.clone();
         with_notes["my_notes"] = serde_json::json!([{ "t": 1.0, "text": "importante" }]);
-        assert!(export_text(&with_notes, true).contains("## Mis notas\n[00:01] importante\n"));
-        assert!(summary_input(&with_notes).contains("Notas del usuario (lo que considera importante):\n[00:01] importante"));
+        with_notes["bookmarks"] = serde_json::json!([{ "t": 2.0 }]);
+        // The export is the whole record: notes and bookmarks.
+        assert!(export_text(&with_notes, true).contains("## Mis notas\n[00:01] importante\n[00:02] (momento marcado)\n"));
+        // The summary: bookmarks always, notes only if the user includes them.
+        let input = summary_input(&with_notes);
+        assert!(!input.contains("importante"));
+        assert!(input.contains("Momentos marcados por el usuario:\n[00:02] (momento marcado)"));
+        assert!(summary_system(&with_notes).contains("Momentos destacados"));
+        assert!(!summary_system(&with_notes).contains("notas del usuario"));
+        with_notes["summary_with_notes"] = serde_json::json!(true);
+        // Included: only when they were written, never what they say.
+        let input = summary_input(&with_notes);
+        assert!(input.contains("Momentos en que el usuario escribió una nota:\nN1 [00:01]\n"));
+        assert!(!input.contains("importante"));
+        assert!(summary_system(&with_notes).contains("## Mis notas"));
+    }
 
-        // Nothing transcribed but with notes: there is still something to summarize.
-        let only_notes = serde_json::json!({ "speakers": {}, "sentences": [], "my_notes": [{ "t": 0.0, "text": "idea" }] });
-        assert!(!summary_input(&only_notes).trim().is_empty());
+    #[test]
+    fn user_notes_go_in_as_written() {
+        let notes = vec![(112.0, "me encantó esta parte".to_string()), (200.0, "llamar a Ana".to_string())];
+        // The model writes only the context; the note's text is the user's.
+        let summary = "## Resumen\nAlgo.\n\n## My notes\n- N1: they talked about the water park\n- **N2**: se habló del precio";
+        assert_eq!(
+            with_user_notes(summary, &notes),
+            "## Resumen\nAlgo.\n\n## My notes\n- [01:52] «me encantó esta parte» — they talked about the water park\n- [03:20] «llamar a Ana» — se habló del precio"
+        );
+        // One left out goes after the last one written, and the section goes last.
+        assert_eq!(
+            with_user_notes("## Mis notas\n- N2: precio\n\n## Momentos destacados\n- [07:26] Pikachu", &notes),
+            "## Momentos destacados\n- [07:26] Pikachu\n\n## Mis notas\n- [03:20] «llamar a Ana» — precio\n- [01:52] «me encantó esta parte»"
+        );
+        // None written: a section of their own at the end.
+        assert_eq!(
+            with_user_notes("## Resumen\nAlgo.\n", &notes),
+            "## Resumen\nAlgo.\n\n## Mis notas\n- [01:52] «me encantó esta parte»\n- [03:20] «llamar a Ana»"
+        );
+        assert_eq!(with_user_notes("## Resumen", &[]), "## Resumen");
     }
 
     #[test]

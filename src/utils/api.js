@@ -109,6 +109,7 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {{ at: number, secs: number }[]} [gaps] Unsaved gaps: before sentence `at`, and how long they lasted.
  * @property {MyNote[]} [my_notes] What the user wrote while recording (Take notes), ordered by `t`.
  * @property {{ t: number }[]} [bookmarks] Moments the user marked while recording, ordered by `t`.
+ * @property {boolean} [summary_with_notes] The summary also uses `my_notes` (off by default: they may be private).
  * @property {{ text: string, created_at: string } | null} summary
  *
  * @typedef {Object} MyNote

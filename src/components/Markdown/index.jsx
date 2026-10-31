@@ -3,7 +3,10 @@ import styles from "./styles.module.css";
 
 /**
  * Minimal rendering of the summary's Markdown: `##`, lists with `-`, checkboxes
- * `- [ ]` (visual only), `**bold**` and paragraphs. Everything comes out as React
+ * `- [ ]` (visual only), `**bold**` and paragraphs. A list item that starts
+ * with a time (`[07:26] …`, Highlighted moments) shows it apart; with a quote
+ * after it (`[01:52] «note» — context`, My notes) the user's words stand out
+ * and the context goes below, quieter. Everything comes out as React
  * elements, so the text is never interpreted as HTML. `className`, so that
  * the caller can place it.
  * @param {{ text: string, className?: string }} props
@@ -40,7 +43,7 @@ export default function Markdown({ text, className }) {
         // In one span: bold and text stay together even if the item is laid out as a grid.
         list.push(
           <li key={list.length}>
-            <span>{inline(/** @type {RegExpMatchArray} */ (item)[1])}</span>
+            <span>{timed(/** @type {RegExpMatchArray} */ (item)[1])}</span>
           </li>,
         );
       }
@@ -53,6 +56,30 @@ export default function Markdown({ text, className }) {
   }
   flush();
   return <div className={cx(styles.md, className)}>{blocks}</div>;
+}
+
+/**
+ * `[mm:ss] rest`: the time apart, in gray. If the rest is `«quote» — context`,
+ * the quote (what the user wrote) and the context on its own line.
+ * @param {string} text
+ */
+function timed(text) {
+  const at = text.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/);
+  if (!at) return inline(text);
+  const quote = at[2].match(/^«([^»]*)»\s*(?:—\s*(.*))?$/);
+  return (
+    <>
+      <span className={styles.mdTime}>{at[1]}</span>
+      {quote ? (
+        <>
+          <span className={styles.mdQuote}>«{quote[1]}»</span>
+          {quote[2] && <span className={styles.mdContext}>{inline(quote[2])}</span>}
+        </>
+      ) : (
+        inline(at[2])
+      )}
+    </>
+  );
 }
 
 /** Turns `**bold**` into <strong>; the rest stays as text. @param {string} text */
