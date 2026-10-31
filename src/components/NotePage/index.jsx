@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import Markdown from "../Markdown";
-import { langName as langInSentence, useT } from "../../i18n";
-import { KeyPanel, useSummaryKey } from "../SummaryKey";
-import SpeakerBar from "../SpeakerBar";
-import Transcript, { UserMarks } from "../Transcript";
-import { NOTES_REFRESH_MS } from "../../utils/noteList.js";
+import { api, errorMessage } from "@utils/api";
+import Markdown from "@components/Markdown";
+import { langName as langInSentence, useT } from "@i18n";
+import { KeyPanel, useSummaryKey } from "@components/SummaryKey";
+import SpeakerBar from "@components/SpeakerBar";
+import Transcript, { UserMarks } from "@components/Transcript";
+import { NOTES_REFRESH_MS } from "@utils/noteList.js";
 import {
   discardActive,
   formatSpan,
@@ -17,7 +17,7 @@ import {
   summaryLangOf,
   summaryPrompt,
   userMarks,
-} from "../../utils/notes.js";
+} from "@utils/notes.js";
 import {
   ArrowIcon,
   BookmarkIcon,
@@ -37,16 +37,16 @@ import {
   Switch,
   cx,
   useDismiss,
-} from "../shared";
+} from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
  * A note's page: editable title, actions and tabs.
- * @param {{ id: string, live: boolean, languages: import("../../utils/api").LanguageInfo[], onBack: () => void }} props
+ * @param {{ id: string, live: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void }} props
  */
 export default function NotePage({ id, live, languages, onBack }) {
   const t = useT();
-  const [note, setNote] = useState(/** @type {import("../../utils/api").Note | null} */ (null));
+  const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [error, setError] = useState("");
   const [tab, setTab] = useState(/** @type {"summary" | "transcript" | null} */ (null));
   const [showSource, setShowSource] = useState(false);

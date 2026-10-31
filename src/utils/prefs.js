@@ -4,10 +4,10 @@ import { LANES } from "./lanes";
  * Translate settings saved in `localStorage`. The keys are the ones the app
  * has always used: renaming them would lose people's settings. Storage may be
  * unavailable: then the default is used and a change only lasts this session.
- * @typedef {import("../App/types").Mode} Mode
- * @typedef {import("../App/types").LangPair} LangPair
- * @typedef {import("../App/types").Lane} Lane
- * @typedef {import("../App/types").Direction} Direction
+ * @typedef {import("@app/types").Mode} Mode
+ * @typedef {import("@app/types").LangPair} LangPair
+ * @typedef {import("@app/types").Lane} Lane
+ * @typedef {import("@app/types").Direction} Direction
  */
 
 const MODE_KEY = "lingora.mode";

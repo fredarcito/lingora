@@ -1,4 +1,4 @@
-import { api } from "../utils/api";
+import { api } from "@utils/api";
 import { englishStrings, saveGenerated } from ".";
 
 const CONTEXT = "Short user-interface text of a voice translation app (button, label, menu or message). Keep it brief and natural; do not add explanations.";

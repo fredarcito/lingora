@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
-import Diagnostics from "../../components/Diagnostics";
-import { MenuButton } from "../../components/Sidebar";
-import { api, errorMessage } from "../../utils/api";
-import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "../../utils/notes.js";
-import { KeyField, notifyKeyChanged, useSummaryKey } from "../../components/SummaryKey";
-import LanguagePicker from "../../components/LanguagePicker";
-import { useT } from "../../i18n";
-import { Button, PageHeader, Select, Switch, TextField, cx } from "../../components/shared";
+import Diagnostics from "@components/Diagnostics";
+import { MenuButton } from "@components/Sidebar";
+import { api, errorMessage } from "@utils/api";
+import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notes.js";
+import { KeyField, notifyKeyChanged, useSummaryKey } from "@components/SummaryKey";
+import LanguagePicker from "@components/LanguagePicker";
+import { useT } from "@i18n";
+import { Button, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -16,7 +16,7 @@ import styles from "./styles.module.css";
  * Each lane's settings arrive already mounted in `lanes` (see
  * `components/LaneSettings`), so its logic is not repeated here.
  * @param {{ lanes: Array<{ key: string, title: string, subtitle: string, content: React.ReactNode }>,
- *   mode: "video" | "call", systemAudio: boolean, recording: boolean, languages: import("../../utils/api").LanguageInfo[],
+ *   mode: "video" | "call", systemAudio: boolean, recording: boolean, languages: import("@utils/api").LanguageInfo[],
  *   onFixed: () => void, onMenu: () => void }} props
  */
 export default function Settings({ lanes, mode, systemAudio, recording, languages, onFixed, onMenu }) {

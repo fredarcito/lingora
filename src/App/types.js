@@ -26,7 +26,7 @@
  *   translation. If not chosen, it is shown only with voice: with subtitles only
  *   the translation is meant to be read, not the original.
  *
- * @typedef {import("../utils/api").Transcription & import("../utils/api").Translation & { id: number, lagSecs: number | null, skipped?: boolean, silent?: boolean, captionKey?: number }} Entry
+ * @typedef {import("@utils/api").Transcription & import("@utils/api").Translation & { id: number, lagSecs: number | null, skipped?: boolean, silent?: boolean, captionKey?: number }} Entry
  *
  * @typedef {Object} LaneState
  * @property {boolean} running

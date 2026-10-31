@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { api } from "../utils/api";
-import { SYSTEM_AUDIO, listWebviewDevices, pairDevices } from "../utils/audio";
-import { feedsCapture } from "../utils/lanes";
+import { api } from "@utils/api";
+import { SYSTEM_AUDIO, listWebviewDevices, pairDevices } from "@utils/audio";
+import { feedsCapture } from "@utils/lanes";
 
 /**
  * The audio inputs and outputs, and whether the Mac audio can be heard without
@@ -9,7 +9,7 @@ import { feedsCapture } from "../utils/lanes";
  * safe default (see `loadDevices`). They are read again when something is
  * connected, except while translating.
  * @param {{
- *   setLanes: React.Dispatch<React.SetStateAction<import("../App/types").Lane[]>>,
+ *   setLanes: React.Dispatch<React.SetStateAction<import("@app/types").Lane[]>>,
  *   anyRunningRef: React.MutableRefObject<boolean>,
  * }} options
  */

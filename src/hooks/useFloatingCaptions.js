@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { Window } from "@tauri-apps/api/window";
-import { api } from "../utils/api";
-import { CAPTION_SENTENCES } from "../components/Captions";
-import { EMPTY_STATE } from "../utils/lanes";
+import { api } from "@utils/api";
+import { CAPTION_SENTENCES } from "@components/Captions";
+import { EMPTY_STATE } from "@utils/lanes";
 
 /**
  * Floating captions: always from Listen, which is what the other person or the
  * video says. The main window keeps doing all the work and sends them the
  * latest sentences; the floating one can start and stop Listen.
  * @param {{
- *   remoteLane: import("../App/types").Lane,
- *   remoteState: import("../App/types").LaneState,
- *   start: (lane: import("../App/types").Lane) => Promise<void>,
- *   stop: (lane: import("../App/types").Lane) => Promise<void>,
+ *   remoteLane: import("@app/types").Lane,
+ *   remoteState: import("@app/types").LaneState,
+ *   start: (lane: import("@app/types").Lane) => Promise<void>,
+ *   stop: (lane: import("@app/types").Lane) => Promise<void>,
  * }} options
  */
 export function useFloatingCaptions({ remoteLane, remoteState, start, stop }) {

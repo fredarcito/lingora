@@ -120,6 +120,11 @@ documentación o su código).
   `useAlgo.js`) y `src/App/` (el armazón y Traducir; la cabecera y la
   tarjeta de cada carril están en `components/TopBar` y
   `components/LaneCard`, y los tipos en `App/types.js`).
+- **Imports:** nada de `../`. Entre carpetas se usan los alias `@app`,
+  `@pages`, `@components` (lo básico es `@components/shared`), `@utils`,
+  `@hooks` e `@i18n` (en `vite.config.js` y `jsconfig.json`; si añades uno,
+  en los dos). Dentro del mismo componente, `./` (p. ej.
+  `./styles.module.css`).
 - **Código modular.** Lo nuevo no se amontona en un archivo (sobre todo en
   `App/index.jsx`): las funciones puras van exportadas en `src/utils/`, la
   lógica con estado en un hook de `src/hooks/` y la interfaz en su

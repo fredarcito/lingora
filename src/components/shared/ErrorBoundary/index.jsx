@@ -1,5 +1,5 @@
 import { Component } from "react";
-import Button from "../Button";
+import Button from "@components/shared/Button";
 import styles from "./styles.module.css";
 
 /**

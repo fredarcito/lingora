@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import { ensureSpeakers, loadSpeakers } from "../../utils/notes";
-import { t, useT } from "../../i18n";
-import { LinkButton, Spinner, cx } from "../shared";
+import { api, errorMessage } from "@utils/api";
+import { ensureSpeakers, loadSpeakers } from "@utils/notes";
+import { t, useT } from "@i18n";
+import { LinkButton, Spinner, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /** How often the audio is checked: detects headphones connected in the middle of use. */
@@ -63,10 +63,10 @@ const FIX_LABEL = {
   translator: "diagnostics.fix.translator",
 };
 
-/** @param {import("../../utils/api").Check} c */
+/** @param {import("@utils/api").Check} c */
 const isProblem = (c) => c.status !== "ok" && !isOptional(c.id);
 
-/** @param {import("../../utils/api").Check[]} checks */
+/** @param {import("@utils/api").Check[]} checks */
 function groupStatus(checks) {
   if (checks.some((c) => isProblem(c) && c.status === "error")) return "error";
   if (checks.some(isProblem)) return "warning";
@@ -74,7 +74,7 @@ function groupStatus(checks) {
   return "ok";
 }
 
-/** @param {import("../../utils/api").Check[]} checks */
+/** @param {import("@utils/api").Check[]} checks */
 function groupSummary(checks) {
   const problems = checks.filter(isProblem).length;
   if (problems) return t("diagnostics.problems", { count: problems });
@@ -96,7 +96,7 @@ function groupSummary(checks) {
  */
 export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyProblems = false, expanded = false, className }) {
   const t = useT();
-  /** @type {[import("../../utils/api").Check[], Function]} */
+  /** @type {[import("@utils/api").Check[], Function]} */
   const [allChecks, setChecks] = useState([]);
   // In video mode the microphone is not used: it is not a problem and does not need to be shown.
   const checks = allChecks.filter(
@@ -155,7 +155,7 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
     (g) => g.checks.length > 0,
   );
 
-  /** @param {import("../../utils/api").Check} c */
+  /** @param {import("@utils/api").Check} c */
   const fixButton = (c) =>
     c.fix &&
     c.status !== "ok" && (

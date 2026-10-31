@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { cx } from "../cx";
+import { cx } from "@components/shared/cx";
 import styles from "./styles.module.css";
 
 /**

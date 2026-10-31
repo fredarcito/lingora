@@ -13,10 +13,10 @@ import {
   StopIcon,
   VideoIcon,
   cx,
-} from "../../components/shared";
-import LiveStatus from "../../components/LiveStatus";
-import MyNotes from "../../components/MyNotes";
-import { useT } from "../../i18n";
+} from "@components/shared";
+import LiveStatus from "@components/LiveStatus";
+import MyNotes from "@components/MyNotes";
+import { useT } from "@i18n";
 import {
   NOTE_CHANGED_EVENT,
   getActiveNote,
@@ -27,9 +27,9 @@ import {
   paragraphs,
   storeNotesConsent,
   userMarks,
-} from "../../utils/notes.js";
-import { echoPossible, prefersMacMic, prefersRoomMic } from "../../utils/route.js";
-import { splitWords, wordDelayMs } from "../../utils/words.js";
+} from "@utils/notes.js";
+import { echoPossible, prefersMacMic, prefersRoomMic } from "@utils/route.js";
+import { splitWords, wordDelayMs } from "@utils/words.js";
 import styles from "./styles.module.css";
 
 /** The icon of each source, as in the options before starting. */
@@ -56,13 +56,13 @@ function elapsedLabel(secs) {
  *   running: boolean, starting: boolean, closing: boolean, error: string | null,
  *   micError: string | null,
  *   heard: Array<{ key: number, text: string }>, partial: string, noSignal: boolean,
- *   input: import("../../utils/notes.js").NotesInput,
- *   onInput: (value: import("../../utils/notes.js").NotesInput) => void,
+ *   input: import("@utils/notes.js").NotesInput,
+ *   onInput: (value: import("@utils/notes.js").NotesInput) => void,
  *   listen: "EN" | "ZH", onListen: (value: "EN" | "ZH") => void,
- *   systemAudio: boolean, languages: import("../../utils/api").LanguageInfo[],
- *   route: import("../../utils/api").AudioRoute | null,
+ *   systemAudio: boolean, languages: import("@utils/api").LanguageInfo[],
+ *   route: import("@utils/api").AudioRoute | null,
  *   onOpenSettings: () => void, onStart: () => void, onStop: () => void,
- *   notesActions: import("../../components/MyNotes").MyNotesActions & { addBookmark: () => void },
+ *   notesActions: import("@components/MyNotes").MyNotesActions & { addBookmark: () => void },
  * }} props
  */
 export default function NoteTaking({
@@ -90,7 +90,7 @@ export default function NoteTaking({
   // It is chosen in Settings; when coming back here, the screen is repainted and reads it.
   const summaryLang = loadNotesLang();
   const [askConsent, setAskConsent] = useState(false);
-  const [note, setNote] = useState(/** @type {import("../../utils/api").Note | null} */ (null));
+  const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [elapsed, setElapsed] = useState(0);
   // Until the first sentence there is no note yet: its title is shown as it will be.
   const [startedAt, setStartedAt] = useState(() => new Date());
@@ -266,7 +266,7 @@ export default function NoteTaking({
               <h3 className={styles.setupLabel}>{t("noteTaking.whatToListen")}</h3>
               <ChoiceCards
                 value={effectiveInput}
-                onChange={(v) => onInput(/** @type {import("../../utils/notes.js").NotesInput} */ (v))}
+                onChange={(v) => onInput(/** @type {import("@utils/notes.js").NotesInput} */ (v))}
                 options={[
                   {
                     value: "meeting",
@@ -364,7 +364,7 @@ export default function NoteTaking({
 /**
  * What will happen with what is connected now in an online meeting: whether your voice
  * stays separate (headphones) and which microphone will be used (see `utils/route.js`).
- * @param {{ route: import("../../utils/api").AudioRoute }} props
+ * @param {{ route: import("@utils/api").AudioRoute }} props
  */
 function RouteHint({ route }) {
   const t = useT();
@@ -381,11 +381,11 @@ function RouteHint({ route }) {
  * word by word, at the pace of the Translate audio subtitles, so that
  * it does not look jumpy. Each paragraph is a row, as on the note page.
  * With `writing`, the last paragraph is highlighted as the one in progress.
- * @param {{ note: import("../../utils/api").Note, onReveal: () => void, writing: boolean }} props
+ * @param {{ note: import("@utils/api").Note, onReveal: () => void, writing: boolean }} props
  */
 function LiveTranscript({ note, onReveal, writing }) {
   const t = useT();
-  /** @type {Map<import("../../utils/api").NoteSentence, number>} */
+  /** @type {Map<import("@utils/api").NoteSentence, number>} */
   const index = new Map(note.sentences.map((x, i) => [x, i]));
   /**
    * The words of each sentence, with a stable key (sentence:word). The sentence

@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useT } from "../../i18n";
-import LiveStatus from "../LiveStatus";
-import { cx } from "../shared";
+import { useT } from "@i18n";
+import LiveStatus from "@components/LiveStatus";
+import { cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -50,7 +50,7 @@ const wordDelayMs = (waiting) => (waiting > 14 ? 50 : waiting > 7 ? 110 : 190);
  * With `showSource` ("Both"), the original goes small above each sentence.
  * In the floating window (`floating`) only the sentences: no foot, no history.
  * `className` places it from outside; App sets the text size with `--captions-size`.
- * @param {{ state: import("../../App/types").LaneState, live?: string, showSource: boolean,
+ * @param {{ state: import("@app/types").LaneState, live?: string, showSource: boolean,
  *   onHistory?: () => void, floating?: boolean, className?: string }} props
  */
 export default function Captions({ state: s, live = "", showSource, onHistory, floating = false, className }) {

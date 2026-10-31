@@ -1,7 +1,7 @@
 import { Component, useEffect, useRef, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import { WaveIcon } from "../../components/shared/icons";
-import { t, useLang, useT } from "../../i18n";
+import { api, errorMessage } from "@utils/api";
+import { WaveIcon } from "@components/shared/icons";
+import { t, useLang, useT } from "@i18n";
 import styles from "./styles.module.css";
 
 const WELCOMED_KEY = "lingora.welcomed";

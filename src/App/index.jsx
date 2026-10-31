@@ -1,28 +1,28 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { api, errorMessage } from "../utils/api";
-import Diagnostics from "../components/Diagnostics";
-import LaneCard from "../components/LaneCard";
-import LaneSettings from "../components/LaneSettings";
-import TopBar from "../components/TopBar";
-import NoteTaking from "../pages/NoteTaking";
-import Notes from "../pages/Notes";
-import { cx } from "../components/shared";
-import Settings from "../pages/Settings";
-import Sidebar from "../components/Sidebar";
-import { createRecorder, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesInput, storeNotesListen, storeSaveNotes } from "../utils/notes.js";
-import { t, useT } from "../i18n";
-import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "../utils/audio";
-import { useAudioRoute } from "../hooks/useAudioRoute.js";
-import { useDevices } from "../hooks/useDevices.js";
-import { useFloatingCaptions } from "../hooks/useFloatingCaptions.js";
-import { useLaneMeters } from "../hooks/useLaneMeters.js";
-import { useLanguages } from "../hooks/useLanguages.js";
-import { useVolumes } from "../hooks/useVolumes.js";
-import { useWidth } from "../hooks/useWidth.js";
-import { useMeetingNotes } from "../hooks/useMeetingNotes.js";
-import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor } from "../utils/lanes";
-import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "../utils/prefs.js";
-import { trimSilence } from "../utils/voice";
+import { api, errorMessage } from "@utils/api";
+import Diagnostics from "@components/Diagnostics";
+import LaneCard from "@components/LaneCard";
+import LaneSettings from "@components/LaneSettings";
+import TopBar from "@components/TopBar";
+import NoteTaking from "@pages/NoteTaking";
+import Notes from "@pages/Notes";
+import { cx } from "@components/shared";
+import Settings from "@pages/Settings";
+import Sidebar from "@components/Sidebar";
+import { createRecorder, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesInput, storeNotesListen, storeSaveNotes } from "@utils/notes.js";
+import { t, useT } from "@i18n";
+import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "@utils/audio";
+import { useAudioRoute } from "@hooks/useAudioRoute.js";
+import { useDevices } from "@hooks/useDevices.js";
+import { useFloatingCaptions } from "@hooks/useFloatingCaptions.js";
+import { useLaneMeters } from "@hooks/useLaneMeters.js";
+import { useLanguages } from "@hooks/useLanguages.js";
+import { useVolumes } from "@hooks/useVolumes.js";
+import { useWidth } from "@hooks/useWidth.js";
+import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
+import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor } from "@utils/lanes";
+import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
+import { trimSilence } from "@utils/voice";
 import styles from "./styles.module.css";
 
 /**
@@ -203,8 +203,8 @@ function toBase64(bytes) {
 /**
  * Transcripción en local (Parakeet o SenseVoice, según el idioma) sobre el
  * trozo entero, ~0,1–0,3 s; sin coste si la escucha en vivo ya lo oyó entero.
- * @param {Lane} lane @param {Uint8Array} wav @param {import("../utils/audio").SegmentInfo} info
- * @returns {Promise<import("../utils/api").Transcription>}
+ * @param {Lane} lane @param {Uint8Array} wav @param {import("@utils/audio").SegmentInfo} info
+ * @returns {Promise<import("@utils/api").Transcription>}
  */
 async function transcribeLocally(lane, wav, info) {
   const t0 = performance.now();
@@ -304,7 +304,7 @@ export default function App() {
     /** @param {number} index */
     removeBookmark: (index) => recorderRef.current?.removeBookmark(index),
   }));
-  const [view, setView] = useState(/** @type {import("../components/Sidebar").View} */ ("translate"));
+  const [view, setView] = useState(/** @type {import("@components/Sidebar").View} */ ("translate"));
   // Al terminar Tomar notas se abre la nota; `stopping` es la parada en curso.
   const [openRequest, setOpenRequest] = useState(/** @type {{ id: string, nonce: number } | null} */ (null));
   const stopping = useRef(/** @type {Promise<void> | null} */ (null));
@@ -319,7 +319,7 @@ export default function App() {
     storeMode(next);
   };
 
-  /** @param {import("../utils/notes.js").NotesInput} next */
+  /** @param {import("@utils/notes.js").NotesInput} next */
   const changeNotesInput = (next) => {
     setNotesInput(next);
     storeNotesInput(next);
@@ -351,7 +351,7 @@ export default function App() {
    * (texto, voz y reproducción), cuántos trozos quedan por sonar, y el texto
    * que se arrastra entre trozos: `prompt` para Whisper, `context` para el
    * traductor y `carry` con la frase sin terminar.
-   * @type {React.MutableRefObject<Record<string, typeof EMPTY_RUNTIME & { capture?: import("../utils/audio").AutoCapture }>>}
+   * @type {React.MutableRefObject<Record<string, typeof EMPTY_RUNTIME & { capture?: import("@utils/audio").AutoCapture }>>}
    */
   const runtime = useRef({
     remote_to_local: { ...EMPTY_RUNTIME },
@@ -402,7 +402,7 @@ export default function App() {
    *    traducción llega en streaming y cada frase se manda a la voz en cuanto
    *    se completa.
    * 3. La reproducción suena cada frase en cuanto está lista.
-   * @param {Lane} lane @param {Uint8Array} wav @param {import("../utils/audio").SegmentInfo} info
+   * @param {Lane} lane @param {Uint8Array} wav @param {import("@utils/audio").SegmentInfo} info
    */
   const enqueue = (lane, wav, info) => {
     const rt = runtime.current[lane.direction];
@@ -427,7 +427,7 @@ export default function App() {
     const stt = transcribeLocally(current, wav, info);
     stt.catch(() => {});
 
-    /** @type {ReturnType<typeof phraseQueue<Promise<import("../utils/api").Speech>>>} */
+    /** @type {ReturnType<typeof phraseQueue<Promise<import("@utils/api").Speech>>>} */
     const phrases = phraseQueue();
     /** Lo que la reproducción necesita para mostrar la frase antes de que acabe la traducción. */
     const draft = { transcription: null, transcript: "", translation: "" };

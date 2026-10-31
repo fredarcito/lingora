@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef } from "react";
-import { cx } from "../cx";
-import Spinner from "../Spinner";
+import { cx } from "@components/shared/cx";
+import Spinner from "@components/shared/Spinner";
 import styles from "./styles.module.css";
 
 /**

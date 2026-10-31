@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import { SYSTEM_AUDIO } from "../../utils/audio";
-import { NO_SIGNAL_SECS, apiLang } from "../../utils/lanes";
-import { trimSilence } from "../../utils/voice";
-import { useStickToBottom } from "../../hooks/useStickToBottom";
-import { useArrivalTimes } from "../../hooks/useArrivalTimes";
-import { t, useT } from "../../i18n";
-import Captions from "../Captions";
-import LiveStatus from "../LiveStatus";
+import { api, errorMessage } from "@utils/api";
+import { SYSTEM_AUDIO } from "@utils/audio";
+import { NO_SIGNAL_SECS, apiLang } from "@utils/lanes";
+import { trimSilence } from "@utils/voice";
+import { useStickToBottom } from "@hooks/useStickToBottom";
+import { useArrivalTimes } from "@hooks/useArrivalTimes";
+import { t, useT } from "@i18n";
+import Captions from "@components/Captions";
+import LiveStatus from "@components/LiveStatus";
 import {
   ArrowIcon,
   FloatIcon,
@@ -21,7 +21,7 @@ import {
   Switch,
   VolumeIcon,
   cx,
-} from "../shared";
+} from "@components/shared";
 import styles from "./styles.module.css";
 
 /** The lane direction's class: its color. */
@@ -48,7 +48,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [detailsId, setDetailsId] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
-  /** @type {[import("../../utils/api").VoiceInfo[], Function]} */
+  /** @type {[import("@utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
   const target = apiLang(lane.targetLang);
 
@@ -358,7 +358,7 @@ function clock(ms) {
   return ms ? new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 }
 
-/** "Paulina · mujer, México · Premium" @param {import("../../utils/api").VoiceInfo} v */
+/** "Paulina · mujer, México · Premium" @param {import("@utils/api").VoiceInfo} v */
 const voiceLabel = (v) =>
   [v.name, [v.gender === "female" ? t("app.voices.gender.female") : v.gender === "male" ? t("app.voices.gender.male") : "", v.detail].filter(Boolean).join(", ")]
     .filter(Boolean)
@@ -367,12 +367,12 @@ const voiceLabel = (v) =>
 /**
  * The specific voice (with preview) and the maximum speed, on the lane's card:
  * they are changed often and must be at hand.
- * @param {{ lane: import("../../App/types").Lane & { voices: { female: boolean, male: boolean } }, volume: number,
- *   onChange: (patch: Partial<import("../../App/types").Lane>) => void }} props
+ * @param {{ lane: import("@app/types").Lane & { voices: { female: boolean, male: boolean } }, volume: number,
+ *   onChange: (patch: Partial<import("@app/types").Lane>) => void }} props
  */
 function VoiceControls({ lane, volume, onChange }) {
   const t = useT();
-  /** @type {[import("../../utils/api").VoiceInfo[], Function]} */
+  /** @type {[import("@utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
   /** The voice list for the language has arrived; until then the selector is disabled. */
   const [voicesLoaded, setVoicesLoaded] = useState(false);

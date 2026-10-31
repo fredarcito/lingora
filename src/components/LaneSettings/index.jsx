@@ -1,12 +1,12 @@
-import { SYSTEM_AUDIO } from "../../utils/audio";
-import { feedsCapture } from "../../utils/lanes";
-import { useT } from "../../i18n";
+import { SYSTEM_AUDIO } from "@utils/audio";
+import { feedsCapture } from "@utils/lanes";
+import { useT } from "@i18n";
 
 /**
  * The devices of a lane, on the Settings page: where it listens from and
  * where it speaks. They are chosen once; same rules the card had.
- * @param {{ lane: import("../../App/types").Lane, running: boolean, inputs: any[], outputs: any[], systemAudio: boolean,
- *   onChange: (patch: Partial<import("../../App/types").Lane>) => void }} props
+ * @param {{ lane: import("@app/types").Lane, running: boolean, inputs: any[], outputs: any[], systemAudio: boolean,
+ *   onChange: (patch: Partial<import("@app/types").Lane>) => void }} props
  */
 export default function LaneSettings({ lane, running, inputs, outputs, systemAudio, onChange }) {
   const t = useT();

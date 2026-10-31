@@ -7,7 +7,7 @@ const SILENCE_RMS = 0.0005;
  * The level of each lane's capture, read 10 times per second for the meter,
  * and how long it has been silent (to warn when no audio arrives).
  * `lastSignal` is the last moment with signal per lane; setting it to 0 restarts the count.
- * @param {React.MutableRefObject<Record<string, { capture?: import("../utils/audio").AutoCapture }>>} runtime
+ * @param {React.MutableRefObject<Record<string, { capture?: import("@utils/audio").AutoCapture }>>} runtime
  */
 export function useLaneMeters(runtime) {
   const [meters, setMeters] = useState({ remote_to_local: null, local_to_remote: null });

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import { useT } from "../../i18n";
-import { Button, LinkButton } from "../shared";
+import { api, errorMessage } from "@utils/api";
+import { useT } from "@i18n";
+import { Button, LinkButton } from "@components/shared";
 import styles from "./styles.module.css";
 
 /** Notice between views (Notes, Settings, menu) that the key changed. */
@@ -10,10 +10,10 @@ const KEY_EVENT = "lingora:summary-key";
 /**
  * Where the Groq key is. `status` is null while it is being checked.
  * `hasKey` also counts the key from the development environment.
- * @returns {{ status: import("../../utils/api").SummaryKeyStatus | null, hasKey: boolean }}
+ * @returns {{ status: import("@utils/api").SummaryKeyStatus | null, hasKey: boolean }}
  */
 export function useSummaryKey() {
-  const [status, setStatus] = useState(/** @type {import("../../utils/api").SummaryKeyStatus | null} */ (null));
+  const [status, setStatus] = useState(/** @type {import("@utils/api").SummaryKeyStatus | null} */ (null));
   const load = useCallback(() => {
     api
       .summaryKeyStatus()

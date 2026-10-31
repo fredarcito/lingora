@@ -1,4 +1,4 @@
-import { cx } from "../cx";
+import { cx } from "@components/shared/cx";
 
 /**
  * Button that looks like a link ("Back", "View details").

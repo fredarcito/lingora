@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { BookmarkIcon, Button, CloseIcon, IconButton, PenIcon, PlusIcon, cx } from "../shared";
-import { useT } from "../../i18n";
-import { formatClock } from "../../utils/notes.js";
+import { BookmarkIcon, Button, CloseIcon, IconButton, PenIcon, PlusIcon, cx } from "@components/shared";
+import { useT } from "@i18n";
+import { formatClock } from "@utils/notes.js";
 import styles from "./styles.module.css";
 
 /**
@@ -19,7 +19,7 @@ import styles from "./styles.module.css";
  * letter was typed. Notes can be edited (click) and anything deleted until
  * recording ends (`readOnly`). `onJump` takes the transcript to a time.
  * @param {{
- *   marks: import("../../utils/notes.js").UserMark[], actions: MyNotesActions,
+ *   marks: import("@utils/notes.js").UserMark[], actions: MyNotesActions,
  *   onJump?: (t: number) => void, readOnly?: boolean, className?: string,
  * }} props
  */

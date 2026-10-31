@@ -1,5 +1,5 @@
-import { cx } from "../cx";
-import { SearchIcon } from "../icons";
+import { cx } from "@components/shared/cx";
+import { SearchIcon } from "@components/shared/icons";
 import styles from "./styles.module.css";
 
 /**

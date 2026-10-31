@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { api, errorMessage } from "../../utils/api";
-import { nativeName } from "../LanguagePicker";
-import { OFFER_KEY, generatedLangs, rawSystemLang, useLang, useT } from "../../i18n";
-import { generateLanguage } from "../../i18n/generate";
-import { Button } from "../shared";
+import { api, errorMessage } from "@utils/api";
+import { nativeName } from "@components/LanguagePicker";
+import { OFFER_KEY, generatedLangs, rawSystemLang, useLang, useT } from "@i18n";
+import { generateLanguage } from "@i18n/generate";
+import { Button } from "@components/shared";
 import styles from "./styles.module.css";
 
 /** @returns {boolean} */

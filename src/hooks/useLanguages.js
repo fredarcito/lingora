@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api } from "../utils/api";
-import { langName, useLang } from "../i18n";
-import { FALLBACK_LANGUAGES } from "../utils/lanes";
+import { api } from "@utils/api";
+import { langName, useLang } from "@i18n";
+import { FALLBACK_LANGUAGES } from "@utils/lanes";
 
 /**
  * The languages the app can use (from Rust), read again when the window gets

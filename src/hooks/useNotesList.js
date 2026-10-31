@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, errorMessage } from "../utils/api";
-import { NOTES_REFRESH_MS, fold, groupByLabel, groupLabel, haystack, inPeriod, olderMonths } from "../utils/noteList.js";
+import { api, errorMessage } from "@utils/api";
+import { NOTES_REFRESH_MS, fold, groupByLabel, groupLabel, haystack, inPeriod, olderMonths } from "@utils/noteList.js";
 
 /**
  * The saved notes, read from disk every so often while `active`, with the
@@ -8,12 +8,12 @@ import { NOTES_REFRESH_MS, fold, groupByLabel, groupLabel, haystack, inPeriod, o
  * @param {{
  *   active: boolean,
  *   live: string | null,
- *   formats: import("../utils/noteList.js").DateFormats,
- *   t: import("../i18n").t,
+ *   formats: import("@utils/noteList.js").DateFormats,
+ *   t: import("@i18n").t,
  * }} options `live` is the id of the note being recorded: in "Most recent" it comes first.
  */
 export function useNotesList({ active, live, formats, t }) {
-  /** @type {[import("../utils/api").NoteSummary[], Function]} */
+  /** @type {[import("@utils/api").NoteSummary[], Function]} */
   const [notes, setNotes] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");

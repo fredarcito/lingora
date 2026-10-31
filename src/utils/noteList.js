@@ -72,7 +72,7 @@ export function monthLabel(key, formats, now = new Date()) {
  * The note separator: "Hoy · jueves, 29 de octubre", "Ayer · …",
  * "Esta semana" and, from there back, the month. This way a list of months does not
  * fill up with day headers.
- * @param {string} iso @param {DateFormats} formats @param {import("../i18n").t} t @param {Date} [now]
+ * @param {string} iso @param {DateFormats} formats @param {import("@i18n").t} t @param {Date} [now]
  */
 export function groupLabel(iso, formats, t, now = new Date()) {
   const date = new Date(iso);

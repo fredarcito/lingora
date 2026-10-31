@@ -1,5 +1,5 @@
-import { useT } from "../../i18n";
-import { SwapIcon, cx } from "../shared";
+import { useT } from "@i18n";
+import { SwapIcon, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -8,7 +8,7 @@ import styles from "./styles.module.css";
  * is running: the sentence in progress would be left halfway between two languages.
  * In video mode it reads "English → Spanish": from what is heard to what is read.
  * With subtitles in the original (panel setting), the target is dimmed.
- * @param {{ pair: import("../../App/types").LangPair, onChange: (pair: import("../../App/types").LangPair) => void, locked: boolean, mode: import("../../App/types").Mode, noTranslate: boolean }} props
+ * @param {{ pair: import("@app/types").LangPair, onChange: (pair: import("@app/types").LangPair) => void, locked: boolean, mode: import("@app/types").Mode, noTranslate: boolean }} props
  */
 export default function PairBar({ pair, languages, onChange, locked, mode, noTranslate }) {
   const t = useT();

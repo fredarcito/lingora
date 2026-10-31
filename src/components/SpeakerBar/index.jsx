@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useT } from "../../i18n";
-import { speakerLabel, speakerName, speakerShares } from "../../utils/notes.js";
-import { Button, Menu, MenuItem, cx, useDismiss } from "../shared";
-import { speakerColor } from "../Transcript";
+import { useT } from "@i18n";
+import { speakerLabel, speakerName, speakerShares } from "@utils/notes.js";
+import { Button, Menu, MenuItem, cx, useDismiss } from "@components/shared";
+import { speakerColor } from "@components/Transcript";
 import styles from "./styles.module.css";
 
 /**
@@ -12,7 +12,7 @@ import styles from "./styles.module.css";
  * can sound different for a while). It cannot be edited while recording: the recorder
  * would rewrite the note.
  * `aside` goes on the right of the title row (the note page puts the summary hint there).
- * @param {{ note: import("../../utils/api").Note, live: boolean, onChange: (note: import("../../utils/api").Note) => void,
+ * @param {{ note: import("@utils/api").Note, live: boolean, onChange: (note: import("@utils/api").Note) => void,
  *   aside?: import("react").ReactNode }} props
  */
 export default function SpeakerBar({ note, live, onChange, aside }) {

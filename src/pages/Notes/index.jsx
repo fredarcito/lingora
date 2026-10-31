@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useLang, useT } from "../../i18n";
-import { MenuButton } from "../../components/Sidebar";
-import NotePage from "../../components/NotePage";
-import { useNotesList } from "../../hooks/useNotesList.js";
-import { activeNoteId, formatDuration } from "../../utils/notes.js";
-import { dateFormats, daysAgo, langPair, monthLabel, timeRange } from "../../utils/noteList.js";
-import { Badge, ChevronIcon, NoteIcon, PageHeader, SearchBox, Select, TranslateIcon, cx } from "../../components/shared";
+import { useLang, useT } from "@i18n";
+import { MenuButton } from "@components/Sidebar";
+import NotePage from "@components/NotePage";
+import { useNotesList } from "@hooks/useNotesList.js";
+import { activeNoteId, formatDuration } from "@utils/notes.js";
+import { dateFormats, daysAgo, langPair, monthLabel, timeRange } from "@utils/noteList.js";
+import { Badge, ChevronIcon, NoteIcon, PageHeader, SearchBox, Select, TranslateIcon, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -14,7 +14,7 @@ import styles from "./styles.module.css";
  * is kept), but it only reads from disk while it is visible.
  * `openRequest` opens a specific note (when Take notes finishes): the `nonce`
  * tells apart two consecutive requests for the same note.
- * @param {{ visible: boolean, recording: boolean, languages: import("../../utils/api").LanguageInfo[], onMenu: () => void,
+ * @param {{ visible: boolean, recording: boolean, languages: import("@utils/api").LanguageInfo[], onMenu: () => void,
  *   openRequest?: { id: string, nonce: number } | null }} props
  */
 export default function Notes({ visible, recording, languages, onMenu, openRequest = null }) {

@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef } from "react";
-import Button from "../Button";
-import { cx } from "../cx";
+import Button from "@components/shared/Button";
+import { cx } from "@components/shared/cx";
 import styles from "./styles.module.css";
 
 /**

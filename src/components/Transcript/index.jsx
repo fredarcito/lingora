@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { BookmarkIcon, PenIcon, cx } from "../shared";
-import { useT } from "../../i18n";
-import { formatClock, gapLabel, marksByPart, speakerLabel, transcriptParts } from "../../utils/notes.js";
+import { BookmarkIcon, PenIcon, cx } from "@components/shared";
+import { useT } from "@i18n";
+import { formatClock, gapLabel, marksByPart, speakerLabel, transcriptParts } from "@utils/notes.js";
 import styles from "./styles.module.css";
 
 /** One color per person; "Yo" (0) uses the app color. */
@@ -19,7 +19,7 @@ export const speakerColor = (n) => (n === 0 || n === null || n === undefined ? "
  * - `focus`: the paragraph (index of `transcriptParts`) to bring into view and
  *   highlight briefly; a new `nonce` repeats it.
  * @param {{
- *   note: import("../../utils/api").Note, showSource?: boolean,
+ *   note: import("@utils/api").Note, showSource?: boolean,
  *   only?: "note" | "bookmark" | null, onJump?: (part: number) => void,
  *   focus?: { part: number, nonce: number } | null,
  * }} props
@@ -90,7 +90,7 @@ export default function Transcript({ note, showSource = false, only = null, onJu
 /**
  * The user's notes and bookmarks, read-only: icon and time on a line, the text
  * below. Also on their own, for a note where nothing was transcribed.
- * @param {{ marks: import("../../utils/notes.js").UserMark[] }} props
+ * @param {{ marks: import("@utils/notes.js").UserMark[] }} props
  */
 export function UserMarks({ marks }) {
   const t = useT();
@@ -114,8 +114,8 @@ export function UserMarks({ marks }) {
 /**
  * A note or bookmark in the filtered views: it leads, at its own time; the
  * paragraph that was being heard goes below, quieter and cut short, as context.
- * @param {{ note: import("../../utils/api").Note, mark: import("../../utils/notes.js").UserMark,
- *   block: import("../../utils/api").NoteSentence[], onJump?: () => void }} props
+ * @param {{ note: import("@utils/api").Note, mark: import("@utils/notes.js").UserMark,
+ *   block: import("@utils/api").NoteSentence[], onJump?: () => void }} props
  */
 function MarkRow({ note, mark, block, onJump }) {
   const t = useT();

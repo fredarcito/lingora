@@ -1,7 +1,7 @@
-import { useT } from "../../i18n";
-import PairBar from "../PairBar";
-import { MenuButton } from "../Sidebar";
-import { WaveIcon, cx } from "../shared";
+import { useT } from "@i18n";
+import PairBar from "@components/PairBar";
+import { MenuButton } from "@components/Sidebar";
+import { WaveIcon, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -10,9 +10,9 @@ import styles from "./styles.module.css";
  * languages can be changed. `callMode`: "Translate call" is already
  * available; otherwise it is shown locked. `modeRef` gets the mode selector, so
  * Take notes can line My notes up with it.
- * @param {{ mode: import("../../App/types").Mode, onMode: (mode: import("../../App/types").Mode) => void, callMode: boolean,
- *   running: boolean, onMenu: () => void, pair: import("../../App/types").LangPair,
- *   languages: import("../../utils/api").LanguageInfo[], onPair: (pair: import("../../App/types").LangPair) => void,
+ * @param {{ mode: import("@app/types").Mode, onMode: (mode: import("@app/types").Mode) => void, callMode: boolean,
+ *   running: boolean, onMenu: () => void, pair: import("@app/types").LangPair,
+ *   languages: import("@utils/api").LanguageInfo[], onPair: (pair: import("@app/types").LangPair) => void,
  *   noTranslate: boolean, modeRef?: (el: HTMLElement | null) => void }} props
  */
 export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, languages, onPair, noTranslate, modeRef }) {
@@ -54,7 +54,7 @@ export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, 
               role="radio"
               aria-checked={mode === value}
               className={mode === value ? styles.isSelected : ""}
-              onClick={() => onMode(/** @type {import("../../App/types").Mode} */ (value))}
+              onClick={() => onMode(/** @type {import("@app/types").Mode} */ (value))}
               disabled={running || (value === "call" && !callMode)}
               title={running ? undefined : hint}
             >

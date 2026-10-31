@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import { useSummaryKey } from "../SummaryKey";
-import { useT } from "../../i18n";
-import { CloseIcon, IconButton, LockIcon, MenuIcon, NoteIcon, SettingsIcon, WaveIcon, cx } from "../shared";
+import { useSummaryKey } from "@components/SummaryKey";
+import { useT } from "@i18n";
+import { CloseIcon, IconButton, LockIcon, MenuIcon, NoteIcon, SettingsIcon, WaveIcon, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**

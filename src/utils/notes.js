@@ -1,5 +1,5 @@
 import { api } from "./api";
-import { langName, t } from "../i18n";
+import { langName, t } from "@i18n";
 import { splitWords } from "./words.js";
 
 const SAVE_NOTES_KEY = "lingora.saveNotes";

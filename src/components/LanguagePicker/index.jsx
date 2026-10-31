@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
-import { errorMessage } from "../../utils/api";
-import { BUNDLED_LANGS, generatedLangs, removeGenerated, systemLang, useLang, useT } from "../../i18n";
-import { generateLanguage } from "../../i18n/generate";
-import { Button, Select, cx } from "../shared";
+import { errorMessage } from "@utils/api";
+import { BUNDLED_LANGS, generatedLangs, removeGenerated, systemLang, useLang, useT } from "@i18n";
+import { generateLanguage } from "@i18n/generate";
+import { Button, Select, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 const NEW = "__new";
@@ -21,7 +21,7 @@ export function nativeName(code, fallback) {
 /**
  * Interface language selector: the built-in ones, the ones generated on this device
  * and "Generate another language…", which translates the interface with the local model.
- * @param {{ languages: import("../../utils/api").LanguageInfo[] }} props
+ * @param {{ languages: import("@utils/api").LanguageInfo[] }} props
  */
 export default function LanguagePicker({ languages }) {
   const t = useT();

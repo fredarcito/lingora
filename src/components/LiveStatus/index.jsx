@@ -1,4 +1,4 @@
-import { cx } from "../shared";
+import { cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /** Characters of what is being heard that fit on one line. */

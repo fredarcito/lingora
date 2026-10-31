@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { PhysicalPosition, PhysicalSize, Window, getCurrentWindow } from "@tauri-apps/api/window";
-import Captions from "../../components/Captions";
-import { useT } from "../../i18n";
+import Captions from "@components/Captions";
+import { useT } from "@i18n";
 import styles from "./styles.module.css";
 
 const PREFS_KEY = "lingora.floating";
@@ -42,7 +42,7 @@ function savePrefs(patch) {
  */
 export default function FloatingCaptions() {
   const t = useT();
-  /** @type {[{ state: import("../../App/types").LaneState, showSource: boolean, live?: string } | null, Function]} */
+  /** @type {[{ state: import("@app/types").LaneState, showSource: boolean, live?: string } | null, Function]} */
   const [data, setData] = useState(null);
   const [prefs, setPrefs] = useState(loadPrefs);
   const win = getCurrentWindow();

@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
-import { t } from "../i18n";
-import { withEchoFilter } from "../utils/echo.js";
-import { SYSTEM_AUDIO } from "../utils/audio.js";
-import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "../utils/route.js";
+import { t } from "@i18n";
+import { withEchoFilter } from "@utils/echo.js";
+import { SYSTEM_AUDIO } from "@utils/audio.js";
+import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "@utils/route.js";
 
 /**
- * @typedef {import("../App/types").Lane} Lane
- * @typedef {import("../App/types").LaneState} LaneState
- * @typedef {ReturnType<typeof import("../utils/notes.js").createRecorder>} Recorder
+ * @typedef {import("@app/types").Lane} Lane
+ * @typedef {import("@app/types").LaneState} LaneState
+ * @typedef {ReturnType<typeof import("@utils/notes.js").createRecorder>} Recorder
  */
 
 /**
@@ -21,12 +21,12 @@ import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "..
  * Without a meeting (`meeting` false) only the Mac lane is used, as always; if
  * it is the microphone (in person), it is chosen with `roomMic`.
  * @param {{
- *   mode: import("../App/types").Mode,
+ *   mode: import("@app/types").Mode,
  *   meeting: boolean,
  *   remoteLane: Lane, localLane: Lane,
  *   state: Record<string, LaneState>,
  *   lanesRef: React.MutableRefObject<Lane[]>,
- *   runtime: React.MutableRefObject<Record<string, { pending: number, capture?: import("../utils/audio").AutoCapture }>>,
+ *   runtime: React.MutableRefObject<Record<string, { pending: number, capture?: import("@utils/audio").AutoCapture }>>,
  *   start: (lane: Lane) => Promise<void>,
  *   stop: (lane: Lane) => Promise<void>,
  *   stopping: React.MutableRefObject<Promise<void> | null>,
@@ -38,7 +38,7 @@ export function useMeetingNotes({ mode, meeting, remoteLane, localLane, state, l
   /** Whether the note-taking in progress is an online meeting (set when it starts). */
   const meetingRef = useRef(false);
   /** What is connected; null if unknown (treated as speakers). */
-  const routeRef = useRef(/** @type {import("../utils/api").AudioRoute | null} */ (null));
+  const routeRef = useRef(/** @type {import("@utils/api").AudioRoute | null} */ (null));
   /** The Mac audio did start in this note-taking session (the microphone opens first). */
   const macRan = useRef(false);
 
