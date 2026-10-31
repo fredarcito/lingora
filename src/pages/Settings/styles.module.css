@@ -12,6 +12,11 @@
   font-size: 14px;
 }
 
+.prefs-credits {
+  align-self: flex-start;
+  margin-left: -4px;
+}
+
 .prefs-about span {
   color: var(--text-3);
 }

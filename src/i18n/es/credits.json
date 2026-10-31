@@ -1,0 +1,21 @@
+{
+  "title": "Licencias de terceros",
+  "hint": "Lingora usa modelos y librerías libres. Gracias a sus autores; aquí están sus licencias.",
+  "models": "Modelos",
+  "libraries": "Librerías",
+  "close": "Cerrar",
+  "source": "Origen",
+  "loadError": "No se pudo cargar el texto de la licencia.",
+  "purpose.parakeet": "La escucha (idiomas europeos)",
+  "purpose.sensevoice": "La escucha (chino, cantonés, japonés, coreano)",
+  "purpose.hymt": "La traducción y los idiomas de interfaz generados",
+  "purpose.kokoro": "La voz",
+  "purpose.eres2net": "Distinguir a las personas",
+  "purpose.sherpa": "Ejecuta la escucha, la voz y las personas",
+  "purpose.onnxruntime": "Viene dentro de sherpa-onnx",
+  "purpose.llamacpp": "Ejecuta la traducción",
+  "purpose.llamacpp2": "Conecta llama.cpp con la app",
+  "purpose.espeak": "Fonemas para la voz (programa aparte)",
+  "purpose.tauri": "El marco de la app",
+  "purpose.react": "La interfaz"
+}

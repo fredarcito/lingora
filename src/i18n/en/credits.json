@@ -1,0 +1,21 @@
+{
+  "title": "Third-party licenses",
+  "hint": "Lingora uses free models and libraries. Thanks to their authors; here are their licenses.",
+  "models": "Models",
+  "libraries": "Libraries",
+  "close": "Close",
+  "source": "Source",
+  "loadError": "The license text could not be loaded.",
+  "purpose.parakeet": "Listening (European languages)",
+  "purpose.sensevoice": "Listening (Chinese, Cantonese, Japanese, Korean)",
+  "purpose.hymt": "Translation and generated interface languages",
+  "purpose.kokoro": "Voice",
+  "purpose.eres2net": "Telling speakers apart",
+  "purpose.sherpa": "Runs listening, voice and speakers",
+  "purpose.onnxruntime": "Comes inside sherpa-onnx",
+  "purpose.llamacpp": "Runs the translation",
+  "purpose.llamacpp2": "Connects llama.cpp to the app",
+  "purpose.espeak": "Phonemes for the voice (separate program)",
+  "purpose.tauri": "The app's frame",
+  "purpose.react": "The interface"
+}

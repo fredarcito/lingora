@@ -1,0 +1,120 @@
+/**
+ * Third-party models and libraries that ship with Lingora (or that it downloads) and whose
+ * licenses ask for credit. Names, authors and licenses are proper names: they are not translated.
+ * What each one does in Lingora is `credits.purpose.<id>` in `src/i18n`.
+ * @typedef {{ id: string, kind: "model" | "library", name: string, author: string,
+ *   license: string, licenseFile: string, url: string }} Credit
+ */
+
+/** @type {Credit[]} */
+export const CREDITS = [
+  {
+    id: "parakeet",
+    kind: "model",
+    name: "Parakeet TDT 0.6B v3",
+    author: "NVIDIA",
+    license: "CC-BY-4.0",
+    licenseFile: "CC-BY-4.0.txt",
+    url: "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3",
+  },
+  {
+    id: "sensevoice",
+    kind: "model",
+    name: "SenseVoice Small",
+    author: "Alibaba (FunAudioLLM)",
+    license: "FunASR Model License v1.1",
+    licenseFile: "FunASR-Model-License.txt",
+    url: "https://huggingface.co/FunAudioLLM/SenseVoiceSmall",
+  },
+  {
+    id: "hymt",
+    kind: "model",
+    name: "Hy-MT2 1.8B",
+    author: "Tencent",
+    license: "Apache-2.0",
+    licenseFile: "Apache-2.0-Hy-MT2.txt",
+    url: "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF",
+  },
+  {
+    id: "kokoro",
+    kind: "model",
+    name: "Kokoro 82M v1.0",
+    author: "hexgrad",
+    license: "Apache-2.0",
+    licenseFile: "Apache-2.0.txt",
+    url: "https://huggingface.co/hexgrad/Kokoro-82M",
+  },
+  {
+    id: "eres2net",
+    kind: "model",
+    name: "ERes2Net (3D-Speaker)",
+    author: "Alibaba (3D-Speaker)",
+    license: "Apache-2.0",
+    licenseFile: "Apache-2.0.txt",
+    url: "https://github.com/modelscope/3D-Speaker",
+  },
+  {
+    id: "sherpa",
+    kind: "library",
+    name: "sherpa-onnx",
+    author: "k2-fsa / Next-gen Kaldi",
+    license: "Apache-2.0",
+    licenseFile: "Apache-2.0.txt",
+    url: "https://github.com/k2-fsa/sherpa-onnx",
+  },
+  {
+    id: "onnxruntime",
+    kind: "library",
+    name: "ONNX Runtime",
+    author: "Microsoft",
+    license: "MIT",
+    licenseFile: "MIT-onnxruntime.txt",
+    url: "https://github.com/microsoft/onnxruntime",
+  },
+  {
+    id: "llamacpp",
+    kind: "library",
+    name: "llama.cpp",
+    author: "ggml authors",
+    license: "MIT",
+    licenseFile: "MIT-llama.cpp.txt",
+    url: "https://github.com/ggml-org/llama.cpp",
+  },
+  {
+    id: "llamacpp2",
+    kind: "library",
+    name: "llama-cpp-2",
+    author: "utilityai",
+    license: "MIT OR Apache-2.0",
+    licenseFile: "MIT-llama-cpp-2.txt",
+    url: "https://crates.io/crates/llama-cpp-2",
+  },
+  {
+    id: "espeak",
+    kind: "library",
+    name: "espeak-ng 1.52.0",
+    author: "espeak-ng contributors",
+    license: "GPL-3.0-or-later",
+    licenseFile: "GPL-3.0.txt",
+    // The exact release Lingora builds (`VERSION` in scripts/build-espeak.sh): the offer of its source code.
+    url: "https://github.com/espeak-ng/espeak-ng/archive/refs/tags/1.52.0.tar.gz",
+  },
+  {
+    id: "tauri",
+    kind: "library",
+    name: "Tauri",
+    author: "Tauri Programme",
+    license: "MIT OR Apache-2.0",
+    licenseFile: "MIT-tauri.txt",
+    url: "https://github.com/tauri-apps/tauri",
+  },
+  {
+    id: "react",
+    kind: "library",
+    name: "React",
+    author: "Meta",
+    license: "MIT",
+    licenseFile: "MIT-react.txt",
+    url: "https://github.com/facebook/react",
+  },
+];

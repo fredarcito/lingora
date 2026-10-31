@@ -19,6 +19,7 @@
 #     at a short path.
 set -euo pipefail
 
+# If you change it, change it in `src/utils/credits.js` too.
 VERSION=1.52.0
 SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
 # Only the languages the voice pronounces (the `espeak` field of LANGS in config.rs).

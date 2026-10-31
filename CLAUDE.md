@@ -94,7 +94,8 @@ documentación o su código).
   integra en la app o se descarga desde ella.
 - **Nada de nombres de modelos en la interfaz** ("Parakeet", "Kokoro",
   "HY-MT2", "qwen", "ERes2Net"…). Usa textos genéricos: "la escucha", "la
-  voz", "el resumen", "un modelo pequeño".
+  voz", "el resumen", "un modelo pequeño", salvo en Ajustes → Acerca de →
+  Licencias de terceros, donde las licencias obligan a citarlos.
 - **Interfaz en español neutro.** Los textos de la interfaz van en
   `src/i18n/es` y `en` (con `t()`).
 - **Comentarios y documentación en inglés.** Comentarios del código,
@@ -147,6 +148,7 @@ documentación o su código).
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
   nube (llama.cpp y espeak-ng dentro de la app, resumen local, firma).
 - `docs/plan-windows.md`: lo que falta para Windows (solo plan).
+- `docs/plan-creditos.md`: la pantalla de licencias de terceros (por hacer).
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su
   clave en `src/i18n/es/` y `en/`**; no escribas texto fijo en los componentes.

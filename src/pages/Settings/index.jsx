@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
+import Credits from "@components/Credits";
 import Diagnostics from "@components/Diagnostics";
 import { MenuButton } from "@components/Sidebar";
 import { api, errorMessage } from "@utils/api";
@@ -7,7 +8,7 @@ import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers,
 import { KeyField, notifyKeyChanged, useSummaryKey } from "@components/SummaryKey";
 import LanguagePicker from "@components/LanguagePicker";
 import { useT } from "@i18n";
-import { Button, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
+import { Button, LinkButton, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -21,6 +22,7 @@ import styles from "./styles.module.css";
  */
 export default function Settings({ lanes, mode, systemAudio, recording, languages, onFixed, onMenu }) {
   const t = useT();
+  const [showCredits, setShowCredits] = useState(false);
   const [saveOn, setSaveOn] = useState(loadSaveNotes);
   const [speakersOn, setSpeakersOn] = useState(loadSpeakers);
   const [summaryLang, setSummaryLang] = useState(loadNotesLang);
@@ -210,6 +212,10 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
                   ? t("settings.aboutWithKey")
                   : t("settings.aboutPrivate")}
               </p>
+              <LinkButton className={styles.prefsCredits} aria-expanded={showCredits} onClick={() => setShowCredits((v) => !v)}>
+                {t("credits.title")}
+              </LinkButton>
+              {showCredits && <Credits />}
             </div>
           </section>
         </div>
