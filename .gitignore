@@ -8,3 +8,6 @@ src-tauri/sherpa-libs/
 *.log
 .DS_Store
 .codegraph/
+
+# Claude Code personal settings
+.claude/settings.local.json

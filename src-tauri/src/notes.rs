@@ -458,6 +458,9 @@ fn summary_system(note: &Value) -> String {
     if !marks_text(note, false, true).is_empty() {
         system.push_str(SUMMARY_BOOKMARKS);
     }
+    // Last, so it wins over the Spanish headings and a transcript in another language.
+    let english = summary_lang_info(note).map_or("Spanish", |l| l.english);
+    system.push_str(&SUMMARY_LANGUAGE.replace("{idioma}", summary_language(note)).replace("{language}", english));
     system
 }
 
@@ -577,6 +580,10 @@ const SUMMARY_NOTES: &str = "\nEl usuario escribió notas en ciertos momentos (N
 ## Mis notas al final de todo (después de Momentos destacados), con una línea por nota: \"- N1: qué se decía en ese momento\" \
 (una frase, según la transcripción). No las menciones en las demás secciones.";
 /// Added when the note has bookmarks: they always go, in their own section.
+/// Closes the instructions: without it, the model follows the Spanish headings
+/// and the transcript and ignores the chosen language.
+const SUMMARY_LANGUAGE: &str = "\nIMPORTANTE: escribe todo el resumen, también los títulos de las secciones, en {idioma} \
+({language}), aunque la transcripción y estas instrucciones estén en otro idioma. Write the whole summary in {language}.";
 const SUMMARY_BOOKMARKS: &str = "\nHay momentos marcados por el usuario: añade al final la sección ## Momentos destacados, \
 con una línea por momento: \"- [mm:ss] qué se dijo en ese momento\" (una frase, según la transcripción).";
 
@@ -694,11 +701,16 @@ async fn summarize_text(groq: &Groq, model: &str, system: &str, transcript: &str
 /// El idioma del resumen: `summary_lang` si la nota lo trae (Tomar notas); si
 /// no, el de la traducción de la primera frase y, sin él, español.
 fn summary_language(note: &Value) -> &'static str {
+    summary_lang_info(note).map_or("español", |l| l.spanish)
+}
+
+/// The summary language's entry, as `summary_language` chooses it.
+fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
     ["/summary_lang", "/sentences/0/target_lang"]
         .iter()
         .filter_map(|p| note.pointer(p).and_then(Value::as_str))
         .find_map(crate::config::Lang::from_code)
-        .map_or("español", |l| l.info().spanish)
+        .map(|l| l.info())
 }
 
 /// Resume la nota con Groq, guarda el resumen en ella y lo devuelve.
@@ -778,6 +790,15 @@ mod tests {
         let fr = serde_json::json!({ "sentences": [{ "target_lang": "fr" }] });
         assert_eq!(summary_language(&fr), crate::config::Lang::from_code("fr").unwrap().info().spanish);
         assert_eq!(summary_language(&serde_json::json!({ "sentences": [] })), "español");
+    }
+
+    #[test]
+    fn summary_system_ends_with_the_language() {
+        let zh = serde_json::json!({ "summary_lang": "zh", "sentences": [] });
+        let info = crate::config::Lang::from_code("zh").unwrap().info();
+        let system = summary_system(&zh);
+        assert!(system.ends_with(&format!("Write the whole summary in {}.", info.english)));
+        assert!(system.contains(info.spanish));
     }
 
     #[test]
