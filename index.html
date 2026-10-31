@@ -4,9 +4,45 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lingora</title>
+    <!-- Dark background and splash before the CSS and React load, so the
+         window never flashes white. The floating subtitles window loads this
+         same page and must stay transparent. -->
+    <style>
+      html {
+        background: #0b0c10;
+        color-scheme: dark;
+      }
+      html.view-captions {
+        background: transparent;
+      }
+      #splash {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font: 600 22px -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        letter-spacing: 0.02em;
+        color: #eef0f5;
+        opacity: 0;
+        /* Delayed so a fast start shows no flicker at all. */
+        animation: splash-in 0.4s 0.15s ease forwards;
+      }
+      html.view-captions #splash {
+        display: none;
+      }
+      @keyframes splash-in {
+        to {
+          opacity: 0.8;
+        }
+      }
+    </style>
+    <script>
+      if (window.__LINGORA_VIEW === "captions") document.documentElement.classList.add("view-captions");
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- React replaces the splash on its first render. -->
+    <div id="root"><div id="splash">Lingora</div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
