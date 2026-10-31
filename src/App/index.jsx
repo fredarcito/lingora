@@ -251,6 +251,8 @@ export default function App() {
   const [notesInput, setNotesInput] = useState(loadNotesInput);
   const [notesListen, setNotesListen] = useState(loadNotesListen);
   const [notesCaptions, setNotesCaptions] = useState(loadNotesCaptions);
+  // The floating captions window; here because Take notes only translates while it is open.
+  const [floating, setFloating] = useState(false);
   const [laneSettings, setLanes] = useState(loadLaneSettings);
   const { languages, languagesRef, langInfo, shownLanguages } = useLanguages();
   // Antes de los dispositivos: al conectar algo no se releen mientras traduce.
@@ -267,9 +269,9 @@ export default function App() {
     // allí. En una reunión en línea, Hablar también: es tu micrófono ("Yo").
     const taking = mode === "notes" && (l.direction === "remote_to_local" || meeting);
     if (taking) langs.sourceLang = langs.targetLang = notesListen;
-    // Captions in a language: only the others are translated; "Yo" stays as said.
-    // Each sentence reads it, so it can change while recording.
-    if (taking && l.direction === "remote_to_local" && notesCaptions !== "off" && notesCaptions !== "original") {
+    // Captions in a language, with the floating window open: only the others are
+    // translated; "Yo" stays as said. Each sentence reads it, so it can change while recording.
+    if (taking && l.direction === "remote_to_local" && floating && notesCaptions !== "original") {
       langs.targetLang = notesCaptions.toUpperCase();
     }
     // Local por defecto, pero solo si el modelo está instalado; si no, la nube.
@@ -341,8 +343,6 @@ export default function App() {
   const changeNotesCaptions = (next) => {
     setNotesCaptions(next);
     storeNotesCaptions(next);
-    // Turning them on while recording opens the floating window; turning them off closes it.
-    if (next === "off" ? floating : anyRunning && !floating) toggleFloating();
   };
 
   /** @param {boolean} next */
@@ -676,21 +676,19 @@ export default function App() {
   });
   const { inMeeting } = meetingNotes;
   // In Take notes the floating ▶ / ❚❚ starts and stops the whole note (both lanes in a meeting).
-  const { floating, toggleFloating } = useFloatingCaptions(
+  const { toggleFloating } = useFloatingCaptions(
     mode === "notes"
       ? {
+          floating,
+          setFloating,
           remoteLane,
           remoteState,
           // The privacy notice is only shown on the Take notes screen.
           start: async () => void (loadNotesConsent() && meetingNotes.startNotes()),
           stop: async () => meetingNotes.stopNotes(),
         }
-      : { remoteLane, remoteState, start, stop },
+      : { floating, setFloating, remoteLane, remoteState, start, stop },
   );
-  const startNotes = () => {
-    meetingNotes.startNotes();
-    if (notesCaptions !== "off" && !floating) toggleFloating();
-  };
 
   // Al parar (o al volver de Ajustes), el interruptor vuelve al ajuste guardado.
   useEffect(() => {
@@ -797,7 +795,7 @@ export default function App() {
             onCaptions={changeNotesCaptions}
             floating={floating}
             onFloating={toggleFloating}
-            onStart={startNotes}
+            onStart={meetingNotes.startNotes}
             onStop={meetingNotes.stopNotes}
             notesActions={notesActions}
           />

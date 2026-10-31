@@ -188,17 +188,18 @@ export function storeNotesLang(code) {
 }
 
 /**
- * Take notes: the captions of the floating window. `"off"` (none, by default),
- * `"original"` (what is heard, untranslated) or the code of a language to
- * translate the others into. The note always keeps the original.
- * @typedef {"off" | "original" | string} NotesCaptions
+ * Take notes: the language of the floating captions. `"original"` (what is
+ * heard, untranslated, by default) or the code of a language to translate
+ * the others into. The note always keeps the original.
+ * @typedef {"original" | string} NotesCaptions
  * @returns {NotesCaptions}
  */
 export function loadNotesCaptions() {
   try {
-    return localStorage.getItem(NOTES_CAPTIONS_KEY) || "off";
+    const saved = localStorage.getItem(NOTES_CAPTIONS_KEY);
+    return saved && saved !== "off" ? saved : "original";
   } catch {
-    return "off";
+    return "original";
   }
 }
 

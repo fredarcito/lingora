@@ -522,19 +522,21 @@ Translate call. No new dependencies.
 
 For learning a language: take notes and read captions at the same time.
 
-- **"Captions"** on the mode's screen and in the bar while recording:
-  "No captions" (default), "Original language" or a language. Saved in
-  `lingora.notesCaptions` (`"off"`, `"original"` or a language code).
-- With a language, only the Listen lane gets that `targetLang` (in
-  `App/index.jsx`, the computation of `lanes`); "Me" is never translated and
-  nothing is spoken. The translator doesn't need the source language, so it
-  works with the automatic detection. Each sentence reads the lane, so the
-  choice can change while recording (the first translated sentence waits
-  for the model to load).
-- They show in the same floating window as Translate audio. It opens when
-  starting with captions on (or when turning them on while recording) and
-  closes when turning them off. In this mode its ▶ / ❚❚ starts and stops the
-  whole note.
+- **While recording**, to the right of the title: the captions language
+  (an `InlineSelect`: "Original language", the default, or a language) and
+  the button that opens and closes the floating window. The button turns
+  them on and off; the select only picks the language. Saved in
+  `lingora.notesCaptions` (`"original"` or a language code; an old `"off"`
+  reads as `"original"`).
+- With a language **and the window open**, only the Listen lane gets that
+  `targetLang` (in `App/index.jsx`, the computation of `lanes`; `floating`
+  lives in App for this). With the window closed nothing is translated.
+  "Me" is never translated and nothing is spoken. The translator doesn't
+  need the source language, so it works with the automatic detection. Each
+  sentence reads the lane, so it can change while recording (the first
+  translated sentence waits for the model to load).
+- They show in the same floating window as Translate audio. In this mode
+  its ▶ / ❚❚ starts and stops the whole note.
 - The note keeps only the original: the recorder still drops the
   translation in `kind: "notes"`.
 

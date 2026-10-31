@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
 import { Window } from "@tauri-apps/api/window";
 import { api } from "@utils/api";
@@ -8,16 +8,19 @@ import { EMPTY_STATE } from "@utils/lanes";
 /**
  * Floating captions: always from Listen, which is what the other person or the
  * video says. The main window keeps doing all the work and sends them the
- * latest sentences; the floating one can start and stop Listen.
+ * latest sentences; the floating one can start and stop Listen. Whether it is
+ * open lives in App, which needs it before the lanes (Take notes only
+ * translates while it is open).
  * @param {{
+ *   floating: boolean,
+ *   setFloating: (open: boolean) => void,
  *   remoteLane: import("@app/types").Lane,
  *   remoteState: import("@app/types").LaneState,
  *   start: (lane: import("@app/types").Lane) => Promise<void>,
  *   stop: (lane: import("@app/types").Lane) => Promise<void>,
  * }} options
  */
-export function useFloatingCaptions({ remoteLane, remoteState, start, stop }) {
-  const [floating, setFloating] = useState(false);
+export function useFloatingCaptions({ floating, setFloating, remoteLane, remoteState, start, stop }) {
   const floatingPayload = useRef(/** @type {object | null} */ (null));
   const toggleRemote = useRef(() => {});
   toggleRemote.current = () => (remoteState.running ? stop(remoteLane) : start(remoteLane));
@@ -66,5 +69,5 @@ export function useFloatingCaptions({ remoteLane, remoteState, start, stop }) {
     }
   };
 
-  return { floating, toggleFloating };
+  return { toggleFloating };
 }

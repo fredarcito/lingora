@@ -55,10 +55,5 @@
   "addNote": "Añadir nota",
   "jumpTo": "Ir a este momento",
   "captions": "Subtítulos",
-  "captions.off": "Sin subtítulos",
-  "captions.original": "Idioma original",
-  "captions.off.hint": "Solo se toman notas. Si los activas, aparecen en una ventana flotante encima de cualquier otra.",
-  "captions.original.hint": "Lo que se oye, tal cual, en una ventana flotante encima de cualquier otra. Útil para practicar un idioma.",
-  "captions.translate.hint": "Lo que dicen los demás, traducido, en una ventana flotante encima de cualquier otra. La nota guarda el original.",
-  "recap.captions": "Subtítulos:"
+  "captions.original": "Idioma original"
 }
