@@ -21,10 +21,10 @@ import {
 import {
   ArrowIcon,
   BookmarkIcon,
-  ChevronIcon,
   Button,
   ConfirmDialog,
   CopyIcon,
+  InlineSelect,
   LinkButton,
   Menu,
   MenuItem,
@@ -327,29 +327,18 @@ export default function NotePage({ id, live, languages, onBack }) {
             <div className={styles.noteSummaryBar}>
               <label className={styles.noteSummaryLang}>
                 <span>{t("notes.summaryIn")}</span>
-                {/* What shows is the chosen language with its arrow right after it; the real select is
-                    on top, invisible: on its own it would be as wide as the longest language. */}
-                <span className={styles.noteSummaryLangPick}>
-                  <span aria-hidden>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</span>
-                  <ChevronIcon />
-                  <select
-                    value={summaryLang}
-                    disabled={live || summarizing}
-                    aria-label={t("notes.summaryLang")}
-                    onChange={(e) => {
-                      if (note.summary && summaryWasIn === null) setSummaryWasIn(summaryLang);
-                      const next = { ...note, summary_lang: e.target.value };
-                      setNote(next);
-                      run(() => api.noteSave(next));
-                    }}
-                  >
-                    {languages.map((l) => (
-                      <option key={l.code} value={l.code}>
-                        {l.name}
-                      </option>
-                    ))}
-                  </select>
-                </span>
+                <InlineSelect
+                  value={summaryLang}
+                  disabled={live || summarizing}
+                  label={t("notes.summaryLang")}
+                  options={languages.map((l) => ({ value: l.code, label: l.name }))}
+                  onChange={(value) => {
+                    if (note.summary && summaryWasIn === null) setSummaryWasIn(summaryLang);
+                    const next = { ...note, summary_lang: value };
+                    setNote(next);
+                    run(() => api.noteSave(next));
+                  }}
+                />
               </label>
               {noteCount > 0 && (
                 <Switch

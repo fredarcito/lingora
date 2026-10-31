@@ -7,6 +7,7 @@ export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as Dialog } from "./Dialog";
 export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as IconButton } from "./IconButton";
+export { default as InlineSelect } from "./InlineSelect";
 export { default as LinkButton } from "./LinkButton";
 export { default as Menu, MenuItem, MenuSeparator, useDismiss } from "./Menu";
 export { default as PageHeader } from "./PageHeader";

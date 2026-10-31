@@ -6,6 +6,7 @@ import {
   ConfirmDialog,
   FloatIcon,
   IconButton,
+  InlineSelect,
   LinkButton,
   MicIcon,
   MonitorIcon,
@@ -226,7 +227,7 @@ export default function NoteTaking({
                 <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
                 {/* Captions can change while recording: from the next sentence on. */}
                 <span className={styles.takingCaptions}>
-                  <Select value={captions} onChange={onCaptions} options={captionOptions} label={t("noteTaking.captions")} />
+                  <InlineSelect value={captions} onChange={onCaptions} options={captionOptions} label={t("noteTaking.captions")} />
                   {captions !== "off" && (
                     <IconButton
                       small
