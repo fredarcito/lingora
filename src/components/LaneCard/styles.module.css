@@ -141,6 +141,17 @@
   grid-template-columns: 80px minmax(0, 1fr);
 }
 
+/* The specific voice belongs to «Voz»: closer to it, and apart from the speed. */
+.setting-sub {
+  margin-top: -4px;
+  margin-bottom: 6px;
+}
+
+/* The slider is thin: its row is as tall as the others, so the gaps match. */
+.speed-row {
+  min-height: var(--control-h);
+}
+
 .setting-label {
   font-size: 13px;
   font-weight: 550;

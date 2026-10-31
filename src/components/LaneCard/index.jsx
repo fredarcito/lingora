@@ -422,7 +422,7 @@ function VoiceControls({ lane, volume, onChange }) {
     <>
       {/* Always in view, so the card does not jump when the voices arrive:
           disabled while they load or if the language has only one. */}
-      <div className={styles.settingRow}>
+      <div className={cx(styles.settingRow, styles.settingSub)}>
         <span className={styles.settingLabel} />
         <div className={styles.voicePick}>
           <select
@@ -456,7 +456,7 @@ function VoiceControls({ lane, volume, onChange }) {
         </div>
       </div>
       {previewError && <p className="settings-note">{previewError}</p>}
-      <div className={styles.settingRow}>
+      <div className={cx(styles.settingRow, styles.speedRow)}>
         <span className={styles.settingLabel}>{t("app.voices.speed")}</span>
         <label className={styles.speedPick} title={t("app.voices.speed.hint")}>
           <input

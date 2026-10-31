@@ -4,25 +4,36 @@
   }
 }
 
-/* Video | Call */
+/* Video | Notes | Call: flat like Segmented, but it is navigation, so the
+   chosen one is only lighter (no ✓ or green). */
 .mode-switch {
   display: inline-flex;
-  padding: 2px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--hairline);
+  min-height: var(--control-h);
+  border-radius: var(--n-radius, 8px);
+  border: 1px solid var(--n-border, var(--hairline));
+  background: var(--surface-2);
+  overflow: hidden;
 }
 
 .mode-switch button {
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--control-h) - 2px);
+  padding: 0 14px;
+  border-radius: 0;
+  font-size: 13px;
   color: var(--text-3);
   transition: background 0.15s, color 0.15s;
 }
 
-.mode-switch button:hover:not(:disabled) {
+.mode-switch button + button {
+  border-left: 1px solid var(--n-border, var(--hairline));
+}
+
+.mode-switch button:hover:not(:disabled):not(.is-selected) {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .mode-switch button.is-selected {
@@ -42,37 +53,8 @@
 
 @media (max-width: 1100px) {
   .mode-switch button {
-    padding: 4px 10px;
+    padding: 0 10px;
   }
-}
-
-/* Segmented controls: the same track and the chosen one, darker and sunken. */
-.mode-switch {
-  border-radius: 9px;
-  border: 1px solid var(--hairline);
-  background: var(--surface-2);
-}
-
-.mode-switch button {
-  border-radius: 7px;
-}
-
-.mode-switch button.is-selected {
-  color: var(--text);
-  background: #1b1e24;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border, var(--hairline));
-}
-
-.mode-switch {
-  min-height: var(--control-h);
-}
-
-/* Inside a track, the button takes all the height left by the padding. */
-.mode-switch button {
-  min-height: calc(var(--control-h) - 8px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* Take notes has no language selector, but keeps its place in the header. */

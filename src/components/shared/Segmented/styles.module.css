@@ -1,57 +1,55 @@
+/* Flat: the options touch, split by a hairline; no inner padding around them. */
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding: 3px;
-  border-radius: 9px;
+  min-height: var(--control-h);
+  border-radius: var(--n-radius, 8px);
+  border: 1px solid var(--n-border, var(--hairline));
   background: var(--surface-2);
-  border: 1px solid var(--hairline);
+  overflow: hidden;
 }
 
 .segmented button {
-  padding: 5px 0;
-  border-radius: 7px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--control-h) - 2px);
+  padding: 0 12px;
+  border-radius: 0;
   font-size: 13px;
   color: var(--text-2);
   transition: background 0.15s, color 0.15s;
 }
 
+.segmented button + button {
+  border-left: 1px solid var(--n-border, var(--hairline));
+}
+
+.segmented button:hover:not(:disabled):not(.is-selected) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.segmented.small {
+  min-height: 30px;
+}
+
 .segmented.small button {
-  padding: 3px 0;
+  min-height: 28px;
   font-size: 12.5px;
 }
 
+/* The selected option of a form control gets a ✓ and a touch of the accent
+   color; its border covers the hairlines next to it. The mode selector and the
+   tabs are navigation: they have their own style, without ✓ or green. */
 .segmented button.is-selected {
   color: var(--text);
-  background: var(--surface-3);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
-.segmented button.is-selected {
-  color: var(--text);
-  background: #1b1e24;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border, var(--hairline));
-}
-
-.segmented {
-  min-height: var(--control-h);
-}
-
-.segmented button {
-  min-height: calc(var(--control-h) - 8px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* The selected option in a segmented form control gets a ✓ and a touch of the
-   accent color. The mode selector and the tabs are navigation: no ✓
-   or green, only the darker button. */
 .seg-check {
   margin-left: 8px;
   color: color-mix(in srgb, var(--accent) 70%, var(--text-2));
-}
-
-.segmented button.is-selected {
-  background: color-mix(in srgb, var(--accent) 3%, #1b1e24);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px color-mix(in srgb, var(--accent) 10%, transparent);
 }
