@@ -226,6 +226,13 @@ select {
   text-overflow: ellipsis;
 }
 
+/* Windows (WebView2) draws the native dropdown list from the options' own
+   colors; with the translucent select background it came out white on white. */
+select option {
+  background-color: var(--n-popover, #111317);
+  color: var(--text);
+}
+
 select:focus,
 button:focus-visible,
 input:focus-visible {
