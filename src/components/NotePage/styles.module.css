@@ -600,17 +600,77 @@
   color: var(--text-3);
 }
 
-/* The tabs (and the filter) stay at the top while reading a long note. */
-.note-tabs {
-  position: sticky;
-  top: -4px;
-  z-index: 2;
-  padding: 8px 0;
-  background: var(--bg);
-}
 
 /* "Include my notes": next to the summary language, before the actions. */
 .note-summary-notes {
   font-size: 13px;
   color: var(--text-2);
+}
+
+/* The summary bar, light like the rest of the page: the language as inline
+   text ("Resumen en Español ⌄"), the switch, and Summarize at the page's
+   button height. No line of its own: the tabs already have one. */
+.note-summary-bar {
+  padding: 4px 0 8px;
+  border-bottom: 0;
+}
+
+.note-summary-lang > span:first-child {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  margin-right: 0;
+}
+
+/* The chosen language and its arrow, on a soft background so it reads as a
+   control; the select covers it, invisible. (Not the uppercase of the label
+   before it: an older rule styles every span of the label.) */
+.note-summary-lang > .note-summary-lang-pick {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  margin: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  background: var(--n-muted);
+  transition: background 0.12s;
+}
+
+/* The shared chevron points right: turned down, as in a dropdown. */
+.note-summary-lang-pick svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text-2);
+  transform: rotate(90deg);
+}
+
+.note-summary-lang > .note-summary-lang-pick:hover,
+.note-summary-lang > .note-summary-lang-pick:has(select:focus-visible) {
+  background: var(--surface-3);
+}
+
+.note-summary-lang .note-summary-lang-pick select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.note-summary-lang-pick:has(select:disabled) {
+  opacity: 0.5;
+}
+
+.note-summary-actions .note-summarize {
+  height: 32px;
 }

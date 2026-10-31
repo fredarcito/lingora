@@ -21,6 +21,7 @@ import {
 import {
   ArrowIcon,
   BookmarkIcon,
+  ChevronIcon,
   Button,
   ConfirmDialog,
   CopyIcon,
@@ -326,23 +327,29 @@ export default function NotePage({ id, live, languages, onBack }) {
             <div className={styles.noteSummaryBar}>
               <label className={styles.noteSummaryLang}>
                 <span>{t("notes.summaryIn")}</span>
-                <select
-                  value={summaryLang}
-                  disabled={live || summarizing}
-                  aria-label={t("notes.summaryLang")}
-                  onChange={(e) => {
-                    if (note.summary && summaryWasIn === null) setSummaryWasIn(summaryLang);
-                    const next = { ...note, summary_lang: e.target.value };
-                    setNote(next);
-                    run(() => api.noteSave(next));
-                  }}
-                >
-                  {languages.map((l) => (
-                    <option key={l.code} value={l.code}>
-                      {l.name}
-                    </option>
-                  ))}
-                </select>
+                {/* What shows is the chosen language with its arrow right after it; the real select is
+                    on top, invisible: on its own it would be as wide as the longest language. */}
+                <span className={styles.noteSummaryLangPick}>
+                  <span aria-hidden>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</span>
+                  <ChevronIcon />
+                  <select
+                    value={summaryLang}
+                    disabled={live || summarizing}
+                    aria-label={t("notes.summaryLang")}
+                    onChange={(e) => {
+                      if (note.summary && summaryWasIn === null) setSummaryWasIn(summaryLang);
+                      const next = { ...note, summary_lang: e.target.value };
+                      setNote(next);
+                      run(() => api.noteSave(next));
+                    }}
+                  >
+                    {languages.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
+                </span>
               </label>
               {noteCount > 0 && (
                 <Switch
@@ -369,12 +376,8 @@ export default function NotePage({ id, live, languages, onBack }) {
                     <CopyIcon />
                   </Button>
                 )}
-                {!note.summary && (
-                  <Button title={t("notes.copyTitle")} disabled={!summarizable} onClick={copyForChat}>
-                    {t("notes.copyForChat")}
-                  </Button>
-                )}
                 <Button
+                  className={styles.noteSummarize}
                   variant={note.summary && !stale ? "default" : "primary"}
                   busy={summarizing}
                   disabled={live || summarizing || !summarizable}
