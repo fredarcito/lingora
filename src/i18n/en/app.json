@@ -58,6 +58,7 @@
   "lane.noSignal.mic": "No sound is coming from the microphone. Check the input and its volume in System Settings → Sound.",
   "lane.history": "History",
   "lane.backToCaptions": "Back to captions",
+  "lane.jumpToLatest": "Jump to latest",
   "lane.empty1": "Translations will appear here,",
   "lane.empty2": "as captions, as soon as each sentence ends.",
   "lane.soon": "playing shortly…",

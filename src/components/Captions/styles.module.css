@@ -79,13 +79,21 @@
   margin: auto 0;
 }
 
+/* Separated by a line: below it, the status and what is being heard, not the translation. */
 .captions-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 20px;
-  padding: 0 4px;
+  padding: 12px 4px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+/* Paused and without history there is nothing below: no lonely line. */
+.captions-foot:empty {
+  border-top: none;
+  padding-top: 0;
 }
 
 /* Floating window (`floating`): only the sentences, larger and centered.

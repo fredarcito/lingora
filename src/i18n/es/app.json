@@ -58,6 +58,7 @@
   "lane.noSignal.mic": "No llega sonido del micrófono. Revisa la entrada y su volumen en Ajustes del Sistema → Sonido.",
   "lane.history": "Historial",
   "lane.backToCaptions": "Volver a los subtítulos",
+  "lane.jumpToLatest": "Volver a lo último",
   "lane.empty1": "Las traducciones aparecerán aquí,",
   "lane.empty2": "como subtítulos, en cuanto termine cada frase.",
   "lane.soon": "sonando en breve…",

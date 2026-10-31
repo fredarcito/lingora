@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { api, errorMessage } from "../../utils/api";
 import { SYSTEM_AUDIO } from "../../utils/audio";
 import { NO_SIGNAL_SECS, apiLang } from "../../utils/lanes";
 import { trimSilence } from "../../utils/voice";
+import { useStickToBottom } from "../../hooks/useStickToBottom";
 import { t, useT } from "../../i18n";
 import Captions from "../Captions";
 import {
@@ -24,6 +25,9 @@ import styles from "./styles.module.css";
 /** The lane direction's class: its color. */
 const LANE_CLASS = { local_to_remote: styles.laneLocalToRemote };
 
+/** Height of each level bar (share of the full height): uneven, like a sound wave. */
+const BAR_SHAPE = [0.4, 0.8, 0.55, 0.95, 0.45, 0.7];
+
 /** Sample sentence to test a voice, in its language. For the others, the Spanish one is translated. */
 const VOICE_SAMPLES = {
   es: "Hola, así sonará la traducción con esta voz.",
@@ -44,7 +48,6 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const [showHistory, setShowHistory] = useState(false);
   /** @type {[import("../../utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
-  const feed = useRef(null);
   const target = apiLang(lane.targetLang);
 
   // The voices of the language; they are checked again when returning to the app in case one was downloaded.
@@ -62,10 +65,13 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const latestId = s.history[0]?.id;
   const live = [...s.heard.map((h) => h.text), s.partial].filter(Boolean).join(" ");
 
-  // Follows the latest translation and what is being heard, like subtitles.
+  // Follows the latest translation and what is being heard, unless the user scrolled up to reread.
+  const feed = useStickToBottom([latestId, live, showHistory]);
+  const { toBottom } = feed;
+  // When the history opens, it starts at the latest.
   useEffect(() => {
-    feed.current?.scrollTo({ top: feed.current.scrollHeight, behavior: "smooth" });
-  }, [latestId, live]);
+    if (showHistory) toBottom("instant");
+  }, [showHistory, toBottom]);
 
   const status = s.starting
     ? t("app.lane.status.preparing")
@@ -77,6 +83,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const noSignal = s.running && meter && meter.silentSecs > NO_SIGNAL_SECS;
   // Square root: the voice through BlackHole comes in at a low level.
   const level = s.running && meter ? Math.min(1, Math.sqrt(meter.level) * 3) : 0;
+  const barsMode = !s.running || noSignal ? null : meter?.speaking ? "isSpeaking" : "isListening";
   const entries = [...s.history].reverse();
   const same = lane.sourceLang === lane.targetLang;
   const speaks = lane.speak && !same;
@@ -230,9 +237,14 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             label={t("app.lane.saveNotes")}
           />
         )}
-        <div className={cx(styles.bars, meter?.speaking && styles.isSpeaking)} aria-hidden>
-          {[0.55, 0.85, 1, 0.75, 0.5].map((f, i) => (
-            <span key={i} style={{ transform: `scaleY(${Math.max(0.12, level * f)})` }} />
+        {/* The wave shape is always visible; the real level only stretches it, and the
+            pulse inside says "someone is speaking" or, softer, "listening". Still when
+            paused or without signal. */}
+        <div className={cx(styles.bars, barsMode && styles[barsMode])} aria-hidden>
+          {BAR_SHAPE.map((f, i) => (
+            <span key={i} style={{ height: `${f * (s.running ? 0.6 + 0.4 * level : 0.5) * 100}%` }}>
+              <i />
+            </span>
           ))}
         </div>
         {speaks ? (
@@ -278,7 +290,8 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
         </div>
       )}
       {!compact && showHistory && (
-      <div className={styles.feed} ref={feed}>
+      <div className={styles.feedWrap}>
+      <div className={styles.feed} ref={feed.ref} onScroll={feed.onScroll}>
         {entries.length === 0 && !live ? (
           <div className={styles.empty}>
             <p>{t("app.lane.empty1")}</p>
@@ -321,6 +334,13 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             </p>
           </div>
         )}
+      </div>
+      {feed.away && (
+        <button className={styles.jump} onClick={() => toBottom()}>
+          <ArrowIcon />
+          {t("app.lane.jumpToLatest")}
+        </button>
+      )}
       </div>
       )}
     </section>
