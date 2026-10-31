@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Badge, Button, ConfirmDialog, LinkButton, Segmented, StopIcon, cx } from "../../components/shared";
+import LiveStatus from "../../components/LiveStatus";
 import { useT } from "../../i18n";
 import {
   NOTE_CHANGED_EVENT,
@@ -17,9 +18,6 @@ import styles from "./styles.module.css";
 
 /** Distance from the bottom beyond which the user is considered to have scrolled up to read. */
 const STICK_PX = 48;
-
-/** Characters of what is being heard now that fit at the bottom, as in the subtitles. */
-const LIVE_CHARS = 90;
 
 /** "03:25", or "1:03:25" from one hour on. @param {number} secs */
 function elapsedLabel(secs) {
@@ -167,13 +165,8 @@ export default function NoteTaking({
               {t("noteTaking.toEnd")}
             </Button>
           )}
-          <div className={cx("captions-foot", styles.takingHeard)}>
-            <span className={live ? "captions-status is-live" : "captions-status"}>
-              <span className="live-dot" />
-              <span className="captions-status-text" dir="auto">
-                {live ? (live.length > LIVE_CHARS ? `…${live.slice(-LIVE_CHARS)}` : live) : t(closing ? "noteTaking.finishing" : "noteTaking.listening")}
-              </span>
-            </span>
+          <div className={styles.takingHeard}>
+            <LiveStatus live={live} idle={t(closing ? "noteTaking.finishing" : "noteTaking.listening")} />
           </div>
         </div>
       </div>
@@ -353,7 +346,7 @@ function LiveTranscript({ note, onReveal }) {
               )}
               <span dir="auto">
                 {words.map((w) => (
-                  <span key={w.key} className="word is-current">
+                  <span key={w.key} className={styles.word}>
                     {w.text}
                   </span>
                 ))}

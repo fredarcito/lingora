@@ -13,8 +13,8 @@ src/
                             types.js, sus tipos JSDoc (Lane, LaneState, Mode…)
   pages/                    Notes, NoteTaking, Settings, Welcome, FloatingCaptions
   components/               Captions, Diagnostics, LaneCard (con VoiceControls),
-                            LaneSettings, LangOffer, LanguagePicker, Markdown,
-                            PairBar, Sidebar, SummaryKey, TopBar
+                            LaneSettings, LangOffer, LanguagePicker, LiveStatus,
+                            Markdown, PairBar, Sidebar, SummaryKey, TopBar
   components/shared/        las piezas básicas (esta tabla) e icons.jsx
   utils/                    api, audio, notes, words, lanes, voice: lo que no
                             es interfaz
@@ -75,8 +75,7 @@ reset, elements, `@keyframes`, the structure of the screens (`app`,
 `topbar`, `brand`, `notes-scroll`, `prefs-section`, `prefs-row`, `field`…) and
 the classes shared by several components (`muted`, `notes-error`, `link`,
 `spinner`, `live-dot`, the transcript `note-line`…). In JSX they are written as
-plain text: `className="muted"`. Captions is also global, in
-`Captions/styles.css`.
+plain text: `className="muted"`.
 
 **Inside a module:**
 

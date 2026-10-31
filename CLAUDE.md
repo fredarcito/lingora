@@ -19,9 +19,10 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
 - **`src/utils/audio.js` entero:** VAD, cortes de frase, `FILLER`, `LONE_NOD`,
   umbrales y tiempos.
 - **`src/components/Captions` y `src/pages/FloatingCaptions`:** ritmo de
-  palabras, animaciones y recortes. Captions usa CSS global
-  (`Captions/styles.css`), no módulo: App, FloatingCaptions y Tomar notas
-  también le dan estilo.
+  palabras, animaciones y recortes. Captions es un módulo CSS: la ventana
+  flotante es su variante `floating`, App cambia el tamaño con
+  `--captions-size` y LaneCard la coloca con `className`. El pie de lo que
+  se oye es `components/LiveStatus` (también en Tomar notas).
 - **En `src/App/index.jsx`:**
   - `speedFor`, `MAX_VOICE_LAG_SECS` y `trimSilence` (este, en
     `src/utils/voice.js`: lo comparte con la prueba de voz);

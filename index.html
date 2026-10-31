@@ -27,7 +27,10 @@
         /* Delayed so a fast start shows no flicker at all. */
         animation: splash-in 0.4s 0.15s ease forwards;
       }
-      html.view-captions #splash {
+      /* Stays until React draws something, even while it renders nothing yet
+         (checking whether the welcome is due). */
+      html.view-captions #splash,
+      #root:not(:empty) ~ #splash {
         display: none;
       }
       @keyframes splash-in {
@@ -41,8 +44,8 @@
     </script>
   </head>
   <body>
-    <!-- React replaces the splash on its first render. -->
-    <div id="root"><div id="splash">Lingora</div></div>
+    <div id="root"></div>
+    <div id="splash">Lingora</div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -27,8 +27,9 @@
   }
 }
 
-:global(.lanes):global(.single) :global(.captions-text) {
-  font-size: 28px;
+/* With a single lane, larger subtitles (Captions reads the variable). */
+:global(.lanes):global(.single) {
+  --captions-size: 28px;
 }
 
 /* Content fades in when switching between Listen and Take notes. */

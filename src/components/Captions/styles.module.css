@@ -1,0 +1,123 @@
+/* Subtitles without voice: one continuous text anchored at the bottom; older
+   text rises and fades out at the top. */
+.captions {
+  flex: 1;
+  /* Fixed minimum: with 0, what didn't fit overflowed at the top (it is
+     anchored at the bottom) and covered the settings; without a minimum, it
+     grew with all the text and the panel scrolled. ~3 lines plus the one of
+     what is being heard. */
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  /* Subtitles and what is being heard, stuck to the bottom of the panel even with spare height. */
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.captions-scroll {
+  /* Takes the panel's free height; older text is clipped at the top. */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding: 0 4px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%);
+  mask-image: linear-gradient(to bottom, transparent, #000 45%);
+}
+
+.caption-line + .caption-line {
+  margin-top: 4px;
+}
+
+/* "Both": the original, small, above each translated sentence. */
+.caption-source {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: var(--text-3);
+  margin-top: 6px;
+}
+
+.captions-text {
+  /* Reference to measure the position of each sentence (offsetTop). */
+  position: relative;
+  /* App enlarges it with a single lane (`--captions-size`). */
+  font-size: var(--captions-size, 22px);
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.word {
+  color: var(--text-3);
+  transition: color 0.6s;
+  animation: global(word-in) 0.28s ease-out;
+}
+
+.word.is-current {
+  color: var(--text);
+}
+
+.word.is-previous {
+  color: color-mix(in srgb, var(--text) 78%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none;
+  }
+}
+
+.captions-empty {
+  font-size: 15px;
+  color: var(--text-3);
+  text-align: center;
+  margin: auto 0;
+}
+
+.captions-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 20px;
+  padding: 0 4px;
+}
+
+/* Floating window (`floating`): only the sentences, larger and centered.
+   Its size comes from `--floating-font`, set by FloatingCaptions. */
+.captions.is-floating {
+  min-height: 0;
+  gap: 0;
+}
+
+.is-floating .captions-text {
+  font-size: var(--floating-font, 28px);
+  line-height: 1.35;
+  font-weight: 600;
+  text-align: center;
+  /* Readable even when the background is almost transparent and the video is light. */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.9),
+    0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+.is-floating .caption-source {
+  font-size: 0.55em;
+  color: var(--text-2);
+}
+
+.is-floating .captions-empty {
+  color: var(--text-2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+/* With only a couple of lines, the fade sits at the edge, not halfway up. */
+.is-floating .captions-scroll {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 24px);
+  mask-image: linear-gradient(to bottom, transparent, #000 24px);
+}

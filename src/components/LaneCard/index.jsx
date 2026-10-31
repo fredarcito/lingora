@@ -268,7 +268,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       {s.error && <p className={cx(styles.notice, styles.noticeError)}>{s.error}</p>}
 
       {!compact && !showHistory && (
-        <Captions state={s} live={live} showSource={showSource} onHistory={() => setShowHistory(true)} />
+        <Captions className={styles.captions} state={s} live={live} showSource={showSource} onHistory={() => setShowHistory(true)} />
       )}
       {/* Outside the list: the list scrolls down by itself to the last sentence, and the button would stay hidden at the top. */}
       {!compact && showHistory && (

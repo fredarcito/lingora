@@ -11,33 +11,17 @@
   -webkit-user-select: none;
 }
 
-.floating :global(.captions) {
-  min-height: 0;
-  gap: 0;
-}
-
-.floating :global(.captions-text) {
-  font-size: var(--floating-font, 28px);
-  line-height: 1.35;
-  font-weight: 600;
+/* The subtitles are styled in Captions (`floating`). This is the notice
+   shown until the first state arrives, with the same look. */
+.floating-connecting {
+  font-size: 15px;
+  color: var(--text-2);
   text-align: center;
-  /* Legible aunque el fondo sea casi transparente y el vídeo claro. */
-  text-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.9),
-    0 0 12px rgba(0, 0, 0, 0.6);
-}
-
-.floating :global(.caption-source) {
-  font-size: 0.55em;
-  color: var(--text-2);
-}
-
-.floating :global(.captions-empty) {
-  color: var(--text-2);
+  margin: auto 0;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* Los controles solo aparecen al pasar el ratón. */
+/* The controls only appear on hover. */
 .floating-tools {
   position: absolute;
   top: 8px;
@@ -71,7 +55,7 @@
   background: rgba(55, 58, 70, 0.95);
 }
 
-/* Interruptor encendido (En vivo). */
+/* Switch turned on (Live). */
 .floating-tools button.is-on {
   color: var(--accent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
@@ -99,7 +83,7 @@
   opacity: 0.7;
 }
 
-/* Lo que se oye ahora: una sección aparte bajo los subtítulos. */
+/* What is being heard now: a separate section below the subtitles. */
 .floating-live {
   flex: none;
   display: flex;
@@ -126,10 +110,4 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Con solo un par de líneas, el desvanecido va en el borde, no a media altura. */
-.floating :global(.captions-scroll) {
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 24px);
-  mask-image: linear-gradient(to bottom, transparent, #000 24px);
 }

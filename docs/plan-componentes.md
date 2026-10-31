@@ -306,12 +306,10 @@ the component or change the CSS to make it fit.
 
 What didn't fit without changing the look, or what is left for another plan:
 
-- **Captions uses global CSS** (`src/components/Captions/styles.css`, not a
-  module). App (`.lane > .captions`), FloatingCaptions (`.floating
-  .captions-text`) and Take notes (`captions-status`, `live-dot`, `word`)
-  style it from outside. To make it a module, Captions would have to
-  accept classes through props, and that means changing its code beyond the
-  `className`s.
+- ~~**Captions uses global CSS**~~ (done 2026-10-31). It is a module now:
+  the floating window styles are its `floating` variant, App sets the size
+  with `--captions-size`, LaneCard places it with `className`, and the
+  "heard now" line is `components/LiveStatus`, shared with Take notes.
 - **`.taking-end` stays global** (`src/styles.css`). In the original, a later
   `.note-action` rule overrides its `background`, so the "Jump to end" button
   looks like the normal buttons' background. In a module it would come later and would

@@ -54,7 +54,7 @@
   flex-shrink: 0;
 }
 
-.lane > :global(.captions),
+.lane > .captions,
 .lane > .feed {
   flex-shrink: 1;
 }

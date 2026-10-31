@@ -72,7 +72,24 @@
 
 /* What is being heard now, like the subtitles at the bottom. */
 .taking-heard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-height: 22px;
+  padding: 0 4px;
+}
+
+/* Each word of the live transcript fades in, like the subtitles. */
+.word {
+  color: var(--text);
+  animation: global(word-in) 0.28s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none;
+  }
 }
 
 .taking-summary-lang {

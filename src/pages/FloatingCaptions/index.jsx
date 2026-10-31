@@ -6,11 +6,11 @@ import { useT } from "../../i18n";
 import styles from "./styles.module.css";
 
 const PREFS_KEY = "lingora.floating";
-/** Tamaños de letra entre los que se mueven A− y A+. */
+/** Font sizes that A− and A+ step through. */
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 28, 34, 40, 48];
-/** Opacidades del fondo; el botón pasa a la siguiente. La última, negro del todo. */
+/** Background opacities; the button moves to the next one. The last one is fully black. */
 const OPACITIES = [0.3, 0.55, 0.8, 1];
-/** Caracteres de lo que se oye ahora; se recorta por el principio. */
+/** Characters of what is being heard now; it is trimmed from the start. */
 const LIVE_CHARS = 140;
 
 /**
@@ -30,15 +30,15 @@ function savePrefs(patch) {
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({ ...loadPrefs(), ...patch }));
   } catch {
-    // Sin almacenamiento los ajustes solo duran mientras esté abierta.
+    // Without storage the settings only last while the window is open.
   }
 }
 
 /**
- * Subtítulos flotantes: una ventana aparte, por encima de todo, que solo
- * muestra las últimas frases de Escuchar. La ventana principal le manda el
- * texto (`captions`) y recibe la pausa (`captions-control`) y el cierre
- * (`captions-closed`). Los controles salen al pasar el ratón.
+ * Floating subtitles: a separate window, on top of everything, that only
+ * shows the latest sentences from Listen. The main window sends it the
+ * text (`captions`) and receives the pause (`captions-control`) and the close
+ * (`captions-closed`). The controls appear on hover.
  */
 export default function FloatingCaptions() {
   const t = useT();
@@ -49,12 +49,12 @@ export default function FloatingCaptions() {
 
   useEffect(() => {
     const off = listen("captions", (e) => setData(/** @type {any} */ (e.payload)));
-    // Pide el estado actual: lo que ya se dijo antes de abrirla.
+    // Asks for the current state: what was already said before opening it.
     off.then(() => emitTo("main", "captions-ready"));
     return () => void off.then((f) => f());
   }, []);
 
-  // Vuelve a donde la dejó quien la usa y recuerda dónde la deja.
+  // Goes back to where the user left it and remembers where they leave it.
   useEffect(() => {
     const saved = loadPrefs();
     if (saved.x !== undefined && saved.y !== undefined) win.setPosition(new PhysicalPosition(saved.x, saved.y));
@@ -84,7 +84,7 @@ export default function FloatingCaptions() {
     await main?.setFocus();
   };
 
-  /** Arrastra la ventana desde cualquier sitio que no sea un botón. @param {React.MouseEvent} e */
+  /** Drags the window from anywhere that is not a button. @param {React.MouseEvent} e */
   const drag = (e) => {
     if (e.button === 0 && !(/** @type {HTMLElement} */ (e.target).closest("button"))) win.startDragging();
   };
@@ -145,10 +145,10 @@ export default function FloatingCaptions() {
       {data ? (
         <Captions state={data.state} showSource={data.showSource} floating />
       ) : (
-        <p className="captions-empty">{t("floating.connecting")}</p>
+        <p className={styles.floatingConnecting}>{t("floating.connecting")}</p>
       )}
-      {/* Aparte, lo que se está oyendo ahora, tal cual lo entiende la escucha.
-          Se queda en los silencios para que la ventana no cambie de forma. */}
+      {/* Separately, what is being heard now, exactly as the listener understands it.
+          It stays during silences so the window does not change shape. */}
       {running && prefs.showLive && (
         <div className={live ? styles.floatingLive : `${styles.floatingLive} ${styles.isIdle}`}>
           <span className="live-dot" />
