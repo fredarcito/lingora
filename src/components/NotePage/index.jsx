@@ -18,6 +18,7 @@ import {
   summaryPrompt,
 } from "../../utils/notes.js";
 import {
+  ArrowIcon,
   Button,
   ConfirmDialog,
   CopyIcon,
@@ -26,6 +27,8 @@ import {
   MenuItem,
   MenuSeparator,
   MoreIcon,
+  NoteIcon,
+  RefreshIcon,
   Spinner,
   Switch,
   cx,
@@ -307,6 +310,16 @@ export default function NotePage({ id, live, languages, onBack }) {
                 </select>
               </label>
               <div className={styles.noteSummaryActions}>
+                {note.summary && (
+                  <Button
+                    className={styles.noteSummaryCopy}
+                    aria-label={t("notes.copySummary")}
+                    title={t("notes.copySummary")}
+                    onClick={() => run(() => navigator.clipboard.writeText(/** @type {{ text: string }} */ (note.summary).text), t("notes.copied"))}
+                  >
+                    <CopyIcon />
+                  </Button>
+                )}
                 {!note.summary && (
                   <Button title={t("notes.copyTitle")} disabled={note.sentences.length === 0} onClick={copyForChat}>
                     {t("notes.copyForChat")}
@@ -319,7 +332,16 @@ export default function NotePage({ id, live, languages, onBack }) {
                   title={live ? t("notes.waitFinish") : undefined}
                   onClick={askSummary}
                 >
-                  {summarizing ? t("notes.summarizing") : note.summary ? t("notes.resummarize") : t("notes.summarize")}
+                  {summarizing ? (
+                    t("notes.summarizing")
+                  ) : note.summary ? (
+                    <>
+                      <RefreshIcon />
+                      {t("notes.resummarize")}
+                    </>
+                  ) : (
+                    t("notes.summarize")
+                  )}
                 </Button>
               </div>
             </div>
@@ -340,20 +362,23 @@ export default function NotePage({ id, live, languages, onBack }) {
             )}
             {note.summary && (
               <div className={cx(styles.noteSummary, styles.noteSummaryCard)}>
-                <Button
-                  className={styles.noteSummaryCopy}
-                  aria-label={t("notes.copySummary")}
-                  title={t("notes.copySummary")}
-                  onClick={() => run(() => navigator.clipboard.writeText(/** @type {{ text: string }} */ (note.summary).text), t("notes.copied"))}
-                >
-                  <CopyIcon />
-                </Button>
                 <Markdown className={styles.summaryMd} text={note.summary.text} />
-                <p className={styles.noteSummaryFoot}>{t("notes.summaryFoot")}</p>
+                <div className={styles.noteSummaryFoot}>
+                  <span>{t("notes.summaryFoot")}</span>
+                  <LinkButton className={styles.noteToTranscript} onClick={() => setTab("transcript")}>
+                    <ArrowIcon />
+                    {t("notes.goTranscript")}
+                  </LinkButton>
+                </div>
               </div>
             )}
             {!note.summary && !summarizing && hasKey && (
-              <p className="muted notes-empty">{t("notes.noSummary")}</p>
+              <div className={styles.noteSummaryEmpty}>
+                <span className={styles.noteSummaryEmptyIcon} aria-hidden>
+                  <NoteIcon />
+                </span>
+                <p>{t("notes.noSummary")}</p>
+              </div>
             )}
             {keyStatus !== null && !hasKey && (!note.summary || askKey) && <KeyPanel onSaved={() => setAskKey(false)} />}
           </>

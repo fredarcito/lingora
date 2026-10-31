@@ -31,13 +31,18 @@ export default function Markdown({ text, className }) {
       if (task) {
         const done = task[1] !== " ";
         list.push(
-          <li key={list.length} className={styles.mdTask}>
+          <li key={list.length} className={styles.mdTask} data-task>
             <span className={cx(styles.mdCheck, done && styles.isDone)} aria-hidden />
             <span>{inline(task[2])}</span>
           </li>,
         );
       } else {
-        list.push(<li key={list.length}>{inline(/** @type {RegExpMatchArray} */ (item)[1])}</li>);
+        // In one span: bold and text stay together even if the item is laid out as a grid.
+        list.push(
+          <li key={list.length}>
+            <span>{inline(/** @type {RegExpMatchArray} */ (item)[1])}</span>
+          </li>,
+        );
       }
     } else if (line.trim()) {
       flush();

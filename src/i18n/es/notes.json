@@ -69,7 +69,8 @@
   "sendTitle": "¿Resumir esta conversación?",
   "sendBody": "La transcripción se enviará a Groq. ¿Continuar?",
   "continue": "Continuar",
-  "shareHint": "Cuánto habló cada persona (% de las palabras)",
+  "shareHint": "Cuánto habló cada persona (% de la conversación)",
   "share": "{pct} %",
-  "saved": "Sesión guardada"
+  "saved": "Sesión guardada",
+  "goTranscript": "Ir a la transcripción"
 }

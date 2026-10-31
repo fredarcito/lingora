@@ -69,7 +69,8 @@
   "sendTitle": "Summarize this conversation?",
   "sendBody": "The transcript will be sent to Groq. Continue?",
   "continue": "Continue",
-  "shareHint": "How much each person spoke (% of the words)",
+  "shareHint": "How much each person spoke (% of the conversation)",
   "share": "{pct}%",
-  "saved": "Saved session"
+  "saved": "Saved session",
+  "goTranscript": "Go to transcript"
 }
