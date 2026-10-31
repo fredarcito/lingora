@@ -207,3 +207,30 @@ export function TranslateIcon() {
     </svg>
   );
 }
+
+/** A ribbon: a moment marked while taking notes. */
+export function BookmarkIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M6 3h12v18l-6-4-6 4z" />
+    </svg>
+  );
+}
+
+/** A pencil: a note written by the user. */
+export function PenIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />
+    </svg>
+  );
+}
+
+/** A plus: add something. */
+export function PlusIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}

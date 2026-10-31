@@ -50,19 +50,10 @@ export default function SpeakerBar({ note, live, onChange, aside }) {
 
   return (
     <div className={styles.speakerBar}>
-      <div className={styles.speakerBarHead}>
-        <span className={styles.speakerBarLabel}>{t("notes.speakers")}</span>
-        <span className={styles.speakerBarHint}>{t("notes.shareHint")}</span>
-        {aside && <div className={styles.speakerBarAside}>{aside}</div>}
-      </div>
-      {/* The split at a glance: one thin line with a stretch of each person's color. */}
-      {people.length > 1 && (
-        <div className={styles.speakerSplit} aria-hidden>
-          {people.map((n) => (
-            <span key={n} style={{ "--who": speakerColor(n), flexGrow: shares.get(n) }} />
-          ))}
-        </div>
-      )}
+      {/* One line: the label (what the % means, on hover), the people and, on the right, `aside`. */}
+      <span className={styles.speakerBarLabel} title={t("notes.shareHint")}>
+        {t("notes.speakers")}
+      </span>
       {people.map((n) => (
         <div key={n} className={styles.speakerWrap} onClick={(e) => e.stopPropagation()}>
           <button
@@ -110,6 +101,15 @@ export default function SpeakerBar({ note, live, onChange, aside }) {
           )}
         </div>
       ))}
+      {aside && <div className={styles.speakerBarAside}>{aside}</div>}
+      {/* The split at a glance, below: one thin line with a stretch of each person's color. */}
+      {people.length > 1 && (
+        <div className={styles.speakerSplit} aria-hidden>
+          {people.map((n) => (
+            <span key={n} style={{ "--who": speakerColor(n), flexGrow: shares.get(n) }} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

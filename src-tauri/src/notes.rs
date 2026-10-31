@@ -89,6 +89,11 @@ fn summarize(id: &str, note: &Value) -> NoteSummary {
         }
         preview.push_str(shown_text(s));
     }
+    // Nothing transcribed (Take notes): the user's notes, so it can be found.
+    if preview.is_empty() {
+        let notes = note.get("my_notes").and_then(Value::as_array).map(Vec::as_slice).unwrap_or_default();
+        preview = notes.iter().map(|n| str_field(n, "text")).collect::<Vec<_>>().join(" ");
+    }
     NoteSummary {
         id: id.to_string(),
         title: str_field(note, "title").to_string(),
@@ -278,9 +283,47 @@ fn export_text(note: &Value, markdown: bool) -> String {
     if let Some(text) = note.pointer("/summary/text").and_then(Value::as_str) {
         out.push_str(&format!("{h2}Resumen\n{text}\n\n"));
     }
+    let marks = user_marks_text(note);
+    if !marks.is_empty() {
+        out.push_str(&format!("{h2}Mis notas\n{marks}\n"));
+    }
     out.push_str(&format!("{h2}Transcripción\n"));
     out.push_str(&transcript_text(note, true));
     out
+}
+
+/// The user's notes and bookmarks (Take notes) in time order, one per line:
+/// `[mm:ss] text` or `[mm:ss] (momento marcado)`. Empty if there are none.
+/// The same order as `userMarks` in `src/utils/notes.js`.
+fn user_marks_text(note: &Value) -> String {
+    let list = |key: &str| note.get(key).and_then(Value::as_array).map(Vec::as_slice).unwrap_or_default();
+    let t = |v: &Value| v.get("t").and_then(Value::as_f64).unwrap_or(0.0).max(0.0);
+    let mut marks: Vec<(f64, &str)> = list("my_notes")
+        .iter()
+        .map(|n| (t(n), str_field(n, "text").trim()))
+        .filter(|(_, text)| !text.is_empty())
+        .collect();
+    marks.extend(list("bookmarks").iter().map(|b| (t(b), "(momento marcado)")));
+    marks.sort_by(|a, b| a.0.total_cmp(&b.0));
+    marks
+        .iter()
+        .map(|(t, text)| {
+            let secs = *t as u64;
+            format!("[{:02}:{:02}] {text}\n", secs / 60, secs % 60)
+        })
+        .collect()
+}
+
+/// What is sent to be summarized: the transcript and, after it, the user's
+/// notes as what they consider important.
+fn summary_input(note: &Value) -> String {
+    let mut text = transcript_text(note, false);
+    let marks = user_marks_text(note);
+    if !marks.is_empty() {
+        text.push_str("\nNotas del usuario (lo que considera importante):\n");
+        text.push_str(&marks);
+    }
+    text
 }
 
 /// "Sin guardar · 2 min": la marca de un rato que no se guardó.
@@ -393,7 +436,8 @@ y solo estas secciones, omitiendo las que no tengan contenido:\n\
 ## Puntos clave (lista)\n\
 ## Decisiones (lista)\n\
 ## Tareas (lista; \"- [ ] tarea — responsable\" si se menciona)\n\
-No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.";
+No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.\n\
+Si hay notas del usuario o momentos marcados, dales prioridad en Puntos clave, Decisiones y Tareas; no las copies tal cual.";
 
 fn keychain_entry() -> Result<keyring::Entry> {
     keyring::Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT).map_err(|e| Error::Notes(format!("no se pudo abrir el llavero: {e}")))
@@ -529,7 +573,7 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
         .map_err(|e| Error::Notes(format!("no se pudo consultar el llavero: {e}")))?
         .ok_or_else(|| Error::Notes("Falta la clave de Groq. Ponla en la pestaña Resumen o en Ajustes.".into()))?;
 
-    let transcript = transcript_text(&note, false);
+    let transcript = summary_input(&note);
     if transcript.trim().is_empty() {
         return Err(Error::Notes("La nota no tiene frases que resumir.".into()));
     }
@@ -589,6 +633,35 @@ mod tests {
         let fr = serde_json::json!({ "sentences": [{ "target_lang": "fr" }] });
         assert_eq!(summary_language(&fr), crate::config::Lang::from_code("fr").unwrap().info().spanish);
         assert_eq!(summary_language(&serde_json::json!({ "sentences": [] })), "español");
+    }
+
+    #[test]
+    fn user_marks_merge_in_time_order() {
+        let note = serde_json::json!({
+            "my_notes": [{ "t": 65.4, "text": " Fecha límite: viernes " }, { "t": 3.0, "text": "" }],
+            "bookmarks": [{ "t": 12.0 }]
+        });
+        assert_eq!(user_marks_text(&note), "[00:12] (momento marcado)\n[01:05] Fecha límite: viernes\n");
+        assert_eq!(user_marks_text(&serde_json::json!({ "sentences": [] })), "");
+    }
+
+    #[test]
+    fn export_and_summary_include_user_notes() {
+        let plain = serde_json::json!({
+            "title": "Notas", "speakers": {},
+            "sentences": [{ "t": 1.0, "speaker": null, "source": "hola", "translation": null }]
+        });
+        assert!(!export_text(&plain, true).contains("Mis notas"));
+        assert!(!summary_input(&plain).contains("Notas del usuario"));
+
+        let mut with_notes = plain.clone();
+        with_notes["my_notes"] = serde_json::json!([{ "t": 1.0, "text": "importante" }]);
+        assert!(export_text(&with_notes, true).contains("## Mis notas\n[00:01] importante\n"));
+        assert!(summary_input(&with_notes).contains("Notas del usuario (lo que considera importante):\n[00:01] importante"));
+
+        // Nothing transcribed but with notes: there is still something to summarize.
+        let only_notes = serde_json::json!({ "speakers": {}, "sentences": [], "my_notes": [{ "t": 0.0, "text": "idea" }] });
+        assert!(!summary_input(&only_notes).trim().is_empty());
     }
 
     #[test]

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
+  BookmarkIcon,
   Button,
   ChoiceCards,
   ConfirmDialog,
@@ -14,6 +15,7 @@ import {
   cx,
 } from "../../components/shared";
 import LiveStatus from "../../components/LiveStatus";
+import MyNotes from "../../components/MyNotes";
 import { useT } from "../../i18n";
 import {
   NOTE_CHANGED_EVENT,
@@ -21,10 +23,10 @@ import {
   loadNotesConsent,
   loadNotesLang,
   formatClock,
-  loadSpeakers,
   notesTitle,
   paragraphs,
   storeNotesConsent,
+  userMarks,
 } from "../../utils/notes.js";
 import { echoPossible, prefersMacMic, prefersRoomMic } from "../../utils/route.js";
 import { splitWords, wordDelayMs } from "../../utils/words.js";
@@ -35,6 +37,8 @@ const SOURCE_ICON = { meeting: <VideoIcon />, system: <MonitorIcon />, mic: <Mic
 
 /** Distance from the bottom beyond which the user is considered to have scrolled up to read. */
 const STICK_PX = 48;
+/** Room above a paragraph reached from My notes: below the top fade of the transcript. */
+const JUMP_MARGIN_PX = 28;
 
 /** "03:25", or "1:03:25" from one hour on. @param {number} secs */
 function elapsedLabel(secs) {
@@ -58,6 +62,7 @@ function elapsedLabel(secs) {
  *   systemAudio: boolean, languages: import("../../utils/api").LanguageInfo[],
  *   route: import("../../utils/api").AudioRoute | null,
  *   onOpenSettings: () => void, onStart: () => void, onStop: () => void,
+ *   notesActions: import("../../components/MyNotes").MyNotesActions & { addBookmark: () => void },
  * }} props
  */
 export default function NoteTaking({
@@ -79,6 +84,7 @@ export default function NoteTaking({
   onOpenSettings,
   onStart,
   onStop,
+  notesActions,
 }) {
   const t = useT();
   // It is chosen in Settings; when coming back here, the screen is repainted and reads it.
@@ -118,6 +124,20 @@ export default function NoteTaking({
     };
   }, [running]);
 
+  // ⌘B marks the moment from anywhere on the screen, also while writing a note.
+  const addBookmark = notesActions.addBookmark;
+  useEffect(() => {
+    if (!running || closing) return;
+    /** @param {KeyboardEvent} e */
+    const onKey = (e) => {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || e.key.toLowerCase() !== "b") return;
+      e.preventDefault();
+      addBookmark();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [running, closing, addBookmark]);
+
   const live = [...heard.map((h) => h.text), partial].filter(Boolean).join(" ");
 
   // Scrolls down by itself, smoothly, while the user is at the bottom.
@@ -143,6 +163,29 @@ export default function NoteTaking({
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   };
 
+  // From My notes: the paragraph that was being heard at `t` (the first one if
+  // it came before), with a brief highlight. The jump is instant: a smooth one
+  // starts near the end, so following the end would pull it back down.
+  /** @param {number} t */
+  const jumpTo = (t) => {
+    const el = scroller.current;
+    if (!el) return;
+    const rows = /** @type {HTMLElement[]} */ ([...el.querySelectorAll("[data-t]")]);
+    const row = rows.filter((r) => Number(r.dataset.t) <= t).pop() ?? rows[0];
+    if (!row) return;
+    const top = el.scrollTop + row.getBoundingClientRect().top - el.getBoundingClientRect().top - JUMP_MARGIN_PX;
+    el.scrollTop = Math.max(0, top);
+    // Following the end resumes only if the paragraph is already at the bottom.
+    stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_PX;
+    setAway(!stick.current);
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      row.animate([{ backgroundColor: "color-mix(in srgb, var(--accent) 14%, transparent)" }, { backgroundColor: "transparent" }], {
+        duration: 1400,
+        easing: "ease-out",
+      });
+    }
+  };
+
   const begin = () => (loadNotesConsent() ? onStart() : setAskConsent(true));
 
   // While the note is being finished the transcript stays: the options would flash before the note opens.
@@ -153,48 +196,62 @@ export default function NoteTaking({
     const anonymous = note && { ...note, sentences: note.sentences.map((x) => ({ ...x, speaker: x.speaker === 0 ? 0 : null })) };
     return (
       <div className={styles.noteTaking}>
-        <div className={styles.takingLive}>
-          <header className={styles.takingHead}>
-            <p className={styles.takingEyebrow}>{t("app.mode.notes")}</p>
-            <h2 className={styles.takingTitle}>{note?.title ?? notesTitle(startedAt)}</h2>
-          </header>
-          <div className={styles.takingBar}>
-            <span className="note-live">{t("noteTaking.recording")}</span>
-            <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
-            {/* Where it is recorded from, in case the wrong one was chosen. */}
-            <span className={styles.takingSource}>
-              {SOURCE_ICON[effectiveInput]}
-              {t(`noteTaking.${effectiveInput}`)}
-            </span>
-            <p className={styles.takingPeople}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
-            {closing ? (
-              <Button busy disabled>
-                {t("noteTaking.finishing")}
-              </Button>
-            ) : (
-              <Button variant="stop" onClick={onStop}>
-                <StopIcon />
-                {t("noteTaking.stop")}
+        <div className={styles.takingColumns}>
+          <div className={styles.takingLive}>
+            <header className={styles.takingHead}>
+              <p className={styles.takingEyebrow}>{t("app.mode.notes")}</p>
+              {/* Recording and its time go with the title: the bar below keeps room for the buttons. */}
+              <div className={styles.takingTitleRow}>
+                <h2 className={styles.takingTitle}>{note?.title ?? notesTitle(startedAt)}</h2>
+                <span className="note-live">{t("noteTaking.recording")}</span>
+                <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
+              </div>
+            </header>
+            <div className={styles.takingBar}>
+              {/* Where it is recorded from, in case the wrong one was chosen. */}
+              <span className={styles.takingSource}>
+                {SOURCE_ICON[effectiveInput]}
+                {t(`noteTaking.${effectiveInput}`)}
+              </span>
+              <span className={styles.takingButtons}>
+                {!closing && (
+                  <Button onClick={notesActions.addBookmark} title={t("noteTaking.bookmarkHint")}>
+                    <BookmarkIcon />
+                    {t("noteTaking.bookmark")}
+                    <kbd className={styles.takingKey}>⌘B</kbd>
+                  </Button>
+                )}
+                {closing ? (
+                  <Button busy disabled>
+                    {t("noteTaking.finishing")}
+                  </Button>
+                ) : (
+                  <Button variant="stop" onClick={onStop}>
+                    <StopIcon />
+                    {t("noteTaking.stop")}
+                  </Button>
+                )}
+              </span>
+            </div>
+            {noSignal && <p className={styles.takingWarning}>{t("noteTaking.noSignal")}</p>}
+            {micError && <p className={styles.takingWarning}>{t("noteTaking.micError", { error: micError })}</p>}
+            <div className={styles.takingScroll} ref={scroller} onScroll={onScroll}>
+              {anonymous && anonymous.sentences.length > 0 ? (
+                <LiveTranscript note={anonymous} onReveal={follow} writing={!closing} />
+              ) : (
+                <p className="muted notes-empty">{t("noteTaking.listeningHere")}</p>
+              )}
+            </div>
+            {away && (
+              <Button className={styles.takingEnd} onClick={toEnd}>
+                {t("noteTaking.toEnd")}
               </Button>
             )}
+            <div className={styles.takingHeard}>
+              <LiveStatus live={live} idle={t(closing ? "noteTaking.finishing" : "noteTaking.listening")} />
+            </div>
           </div>
-          {noSignal && <p className={styles.takingWarning}>{t("noteTaking.noSignal")}</p>}
-          {micError && <p className={styles.takingWarning}>{t("noteTaking.micError", { error: micError })}</p>}
-          <div className={styles.takingScroll} ref={scroller} onScroll={onScroll}>
-            {anonymous && anonymous.sentences.length > 0 ? (
-              <LiveTranscript note={anonymous} onReveal={follow} writing={!closing} />
-            ) : (
-              <p className="muted notes-empty">{t("noteTaking.listeningHere")}</p>
-            )}
-          </div>
-          {away && (
-            <Button className="taking-end" onClick={toEnd}>
-              {t("noteTaking.toEnd")}
-            </Button>
-          )}
-          <div className={styles.takingHeard}>
-            <LiveStatus live={live} idle={t(closing ? "noteTaking.finishing" : "noteTaking.listening")} />
-          </div>
+          <MyNotes className={styles.takingMyNotes} marks={note ? userMarks(note) : []} actions={notesActions} onJump={jumpTo} readOnly={closing} />
         </div>
       </div>
     );
@@ -381,7 +438,7 @@ function LiveTranscript({ note, onReveal, writing }) {
         // The paragraph still being written, highlighted, so it is clear where the transcript is.
         const current = writing && i === blocks.length - 1;
         return (
-          <li key={words[0].key} className={cx("note-line", me && "has-who", current && styles.isCurrent)}>
+          <li key={words[0].key} data-t={block[0].t} className={cx("note-line", me && "has-who", current && styles.isCurrent)}>
             <span className="note-time">{formatClock(block[0].t)}</span>
             <span className="note-text">
               {current && <span className={styles.currentLabel}>{t("noteTaking.current")}</span>}

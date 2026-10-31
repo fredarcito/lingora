@@ -134,33 +134,19 @@
 .speaker-bar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 4px 12px;
 }
 
-.speaker-bar-head {
-  flex-basis: 100%;
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
 .speaker-bar-label {
-  margin-right: 0;
+  margin-right: 4px;
   letter-spacing: 0.12em;
+  cursor: help;
 }
 
-.speaker-bar-hint {
-  font-size: 12.5px;
-  color: var(--text-3);
-}
-
-/* On the right; in a narrow window it drops below instead of squeezing the title. */
+/* On the right; in a narrow window it drops below instead of squeezing the people. */
 .speaker-bar-aside {
   margin-left: auto;
-}
-
-.speaker-bar-head {
-  flex-wrap: wrap;
 }
 
 .speaker-split {

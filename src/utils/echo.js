@@ -225,6 +225,12 @@ export function withEchoFilter(recorder, { echoPossible, macIdle }) {
       return recorder.saving;
     },
     setSaving: (on) => recorder.setSaving(on),
+    // The user's notes and bookmarks have no echo: straight through.
+    addMyNote: (text, startedTyping) => recorder.addMyNote(text, startedTyping),
+    editMyNote: (index, text) => recorder.editMyNote(index, text),
+    removeMyNote: (index) => recorder.removeMyNote(index),
+    addBookmark: () => recorder.addBookmark(),
+    removeBookmark: (index) => recorder.removeBookmark(index),
     /** @param {Sentence} sentence @param {Voice} [voice] @param {Info} [info] */
     add(sentence, voice = null, info) {
       if (!info) return recorder.add(sentence, voice, info);

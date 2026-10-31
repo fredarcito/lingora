@@ -44,6 +44,8 @@ const SAVE_EVERY_MS = 5000;
  * se dijo justo antes, aún sin guardar, y que tardó en traducirse.
  */
 const RESUME_GRACE_MS = 2000;
+/** Two bookmarks closer than this are one (a double ⌘B). */
+const BOOKMARK_REPEAT_SECS = 3;
 
 /** Guardar las conversaciones, sí o no (sí por defecto); el almacenamiento puede no estar disponible. */
 export function loadSaveNotes() {
@@ -333,6 +335,12 @@ export function speakerShares(note) {
 export function noteToText(note) {
   const lines = [note.title, formatSpan(note), ""];
   if (note.summary?.text) lines.push("## Resumen", note.summary.text, "");
+  const marks = userMarks(note);
+  if (marks.length) {
+    lines.push("## Mis notas");
+    for (const m of marks) lines.push(`[${formatClock(m.t)}] ${m.text ?? "(momento marcado)"}`);
+    lines.push("");
+  }
   lines.push("## Transcripción");
   for (const part of transcriptParts(note)) {
     if ("gap" in part) {
@@ -405,6 +413,57 @@ export function transcriptParts(note) {
     out.push({ block: part });
   }
   if (gaps.has(i)) out.push({ gap: /** @type {number} */ (gaps.get(i)) });
+  return out;
+}
+
+/**
+ * A note of the user, trimmed and with its first letter in capitals (after an
+ * opening "¿", "¡", quote or parenthesis). The rest is left as they wrote it,
+ * and so is a word like "iPhone" (second letter in capitals).
+ * @param {string} text
+ */
+export function tidyNote(text) {
+  return text.trim().replace(/^([¿¡"'«“(]*)(\p{Ll})(?!\p{Lu})/u, (_, open, letter) => open + letter.toLocaleUpperCase());
+}
+
+/**
+ * @typedef {{ t: number, kind: "note" | "bookmark", index: number, text: string | null }} UserMark
+ * One of the user's notes (`text`) or bookmarks (`text: null`); `index` is its
+ * position in `my_notes` or `bookmarks`, to edit or delete it.
+ */
+
+/**
+ * The user's notes and bookmarks together, in time order. Like
+ * `user_marks_text` in notes.rs (export and summary).
+ * @param {import("./api").Note} note
+ * @returns {UserMark[]}
+ */
+export function userMarks(note) {
+  return [
+    ...(note.my_notes ?? []).map((n, index) => ({ t: n.t, kind: /** @type {const} */ ("note"), index, text: n.text })),
+    ...(note.bookmarks ?? []).map((b, index) => ({ t: b.t, kind: /** @type {const} */ ("bookmark"), index, text: null })),
+  ].sort((a, b) => a.t - b.t);
+}
+
+/**
+ * The user's marks under the paragraph that was being heard when they were
+ * made: from its start until the next one starts. Those before the first
+ * paragraph go with it. One list per part of `transcriptParts`; with no
+ * paragraphs, all are empty (show `userMarks` on its own).
+ * @param {import("./api").Note} note
+ * @param {ReturnType<typeof transcriptParts>} parts
+ * @returns {UserMark[][]}
+ */
+export function marksByPart(note, parts) {
+  /** @type {UserMark[][]} */
+  const out = parts.map(() => []);
+  const starts = parts.flatMap((p, i) => ("block" in p ? [{ i, t: p.block[0].t }] : []));
+  if (!starts.length) return out;
+  for (const mark of userMarks(note)) {
+    let at = starts[0].i;
+    for (const s of starts) if (s.t <= mark.t) at = s.i;
+    out[at].push(mark);
+  }
   return out;
 }
 
@@ -653,6 +712,49 @@ export function createRecorder({ mode, summaryLang = "es", paused = false }) {
     }
   };
 
+  // The note is created with the first sentence or, in Take notes, with the
+  // user's first note or bookmark. `heardAt` (performance.now()) is its zero.
+  /** @param {Date} now @param {number} heardAt */
+  const ensureNote = (now, heardAt) => {
+    if (note) return;
+    startedAt = heardAt;
+    note = {
+      version: 1,
+      id: localId(now),
+      title: notes ? notesTitle(now) : t("notesLib.convTitle", { date: dayMonth(now), time: clock(now) }),
+      created_at: now.toISOString(),
+      ended_at: now.toISOString(),
+      mode,
+      ...(notes && { kind: "notes", summary_lang: summaryLang }),
+      // Tu nombre va en la nota: así lo usan también la exportación y el resumen.
+      speakers: loadMyName() ? { 0: loadMyName() } : {},
+      sentences: [],
+      summary: null,
+    };
+    active = {
+      id: note.id,
+      setTitle: (title) => note && (note.title = title),
+      setSummary: (summary) => note && (note.summary = summary),
+      discard: () => (discarded = true),
+      get: () => ({
+        ...note,
+        sentences: note.sentences.map((s) => ({ ...s })),
+        ...(note.my_notes && { my_notes: note.my_notes.map((n) => ({ ...n })) }),
+        ...(note.bookmarks && { bookmarks: note.bookmarks.map((b) => ({ ...b })) }),
+      }),
+    };
+  };
+
+  /** Seconds since the note's zero, one decimal. @param {number} when performance.now() */
+  const secsAt = (when) => Math.max(0, Math.round((when - startedAt) / 100) / 10);
+
+  // A change by the user: saved with the same timer as sentences.
+  const touched = () => {
+    if (note) note.ended_at = new Date().toISOString();
+    if (timer === null) timer = window.setTimeout(save, SAVE_EVERY_MS);
+    changed();
+  };
+
   return {
     /**
      * `voice`: la huella de la frase y su duración, para saber quién habla.
@@ -669,36 +771,15 @@ export function createRecorder({ mode, summaryLang = "es", paused = false }) {
       if (discarded || paused || performance.now() - resumedAt < RESUME_GRACE_MS) return;
       const now = new Date();
       const heardAt = info?.endedAt ?? performance.now();
-      if (!note) {
-        startedAt = heardAt;
-        note = {
-          version: 1,
-          id: localId(now),
-          title: notes ? notesTitle(now) : t("notesLib.convTitle", { date: dayMonth(now), time: clock(now) }),
-          created_at: now.toISOString(),
-          ended_at: now.toISOString(),
-          mode,
-          ...(notes && { kind: "notes", summary_lang: summaryLang }),
-          // Tu nombre va en la nota: así lo usan también la exportación y el resumen.
-          speakers: loadMyName() ? { 0: loadMyName() } : {},
-          sentences: [],
-          summary: null,
-        };
-        active = {
-          id: note.id,
-          setTitle: (title) => note && (note.title = title),
-          setSummary: (summary) => note && (note.summary = summary),
-          discard: () => (discarded = true),
-          get: () => ({ ...note, sentences: note.sentences.map((s) => ({ ...s })) }),
-        };
-      }
+      ensureNote(now, heardAt);
+      if (!note) return;
       /** @type {import("./api").NoteSentence} */
       // Tomar notas no fija el idioma: "auto" (escucha europea) o "zh".
       if (notes) {
         const lang = sentence.source_lang === "zh" ? "zh" : "auto";
         sentence = { ...sentence, source_lang: lang, target_lang: lang, translation: null };
       }
-      const entry = { ...sentence, t: Math.max(0, Math.round((heardAt - startedAt) / 100) / 10), speaker: null };
+      const entry = { ...sentence, t: secsAt(heardAt), speaker: null };
       let at = note.sentences.length;
       while (at > 0 && note.sentences[at - 1].t > entry.t) at--;
       note.sentences.splice(at, 0, entry);
@@ -727,6 +808,57 @@ export function createRecorder({ mode, summaryLang = "es", paused = false }) {
      * o null si quedó vacía.
      * @returns {Promise<string | null>}
      */
+    /**
+     * One of the user's notes (Take notes). Its time is `startedTyping`
+     * (performance.now()): they write about what was just said.
+     * @param {string} text @param {number} startedTyping
+     */
+    addMyNote(text, startedTyping) {
+      const clean = tidyNote(text);
+      if (discarded || !clean) return;
+      ensureNote(new Date(), startedTyping);
+      if (!note) return;
+      const entry = { t: secsAt(startedTyping), text: clean };
+      const list = (note.my_notes ??= []);
+      let at = list.length;
+      while (at > 0 && list[at - 1].t > entry.t) at--;
+      list.splice(at, 0, entry);
+      touched();
+    },
+    /** Empty text deletes it. @param {number} index @param {string} text */
+    editMyNote(index, text) {
+      const entry = note?.my_notes?.[index];
+      if (discarded || !entry) return;
+      const clean = tidyNote(text);
+      if (clean) entry.text = clean;
+      else note?.my_notes?.splice(index, 1);
+      touched();
+    },
+    /** @param {number} index */
+    removeMyNote(index) {
+      if (discarded || !note?.my_notes?.[index]) return;
+      note.my_notes.splice(index, 1);
+      touched();
+    },
+    /** Marks this moment; a second one within `BOOKMARK_REPEAT_SECS` is ignored (double ⌘B). */
+    addBookmark() {
+      if (discarded) return;
+      const at = performance.now();
+      ensureNote(new Date(), at);
+      if (!note) return;
+      const t = secsAt(at);
+      const list = (note.bookmarks ??= []);
+      if (list.some((b) => Math.abs(b.t - t) < BOOKMARK_REPEAT_SECS)) return;
+      list.push({ t });
+      list.sort((a, b) => a.t - b.t);
+      touched();
+    },
+    /** @param {number} index */
+    removeBookmark(index) {
+      if (discarded || !note?.bookmarks?.[index]) return;
+      note.bookmarks.splice(index, 1);
+      touched();
+    },
     /** Si se está guardando lo que llega. */
     get saving() {
       return !paused;

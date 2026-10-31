@@ -1,6 +1,5 @@
 {
   "recording": "Grabando",
-  "peopleLater": "Al detener se identifican las personas",
   "stop": "Detener",
   "noSignal": "No llega sonido. Revisa que se esté reproduciendo algo o que el micrófono esté activo.",
   "listeningHere": "Escuchando… las notas aparecerán aquí.",
@@ -43,5 +42,16 @@
   "permission.system": "Si es la primera vez, macOS pedirá permiso para grabar el audio del sistema.",
   "permission.meeting": "Si es la primera vez, macOS pedirá permiso para usar el micrófono y grabar el audio del sistema.",
   "hint.mic": "Se anota lo que oye el micrófono: tu voz y la de quienes estén cerca.",
-  "current": "En curso"
+  "current": "En curso",
+  "myNotes": "Mis notas",
+  "myNotesEmpty": "Escribe lo que te importa o marca un momento con ⌘B.",
+  "writeNote": "Escribe una idea o recordatorio…",
+  "editNote": "Editar la nota",
+  "removeMark": "Borrar",
+  "bookmark": "Marcar momento",
+  "bookmarkHint": "Marca este momento para encontrarlo después en la transcripción",
+  "bookmarked": "Momento marcado",
+  "myNotesHint": "Se guardan con la nota y van al resumen.",
+  "addNote": "Añadir nota",
+  "jumpTo": "Ir a este momento"
 }

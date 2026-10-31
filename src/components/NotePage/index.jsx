@@ -4,7 +4,7 @@ import Markdown from "../Markdown";
 import { langName as langInSentence, useT } from "../../i18n";
 import { KeyPanel, useSummaryKey } from "../SummaryKey";
 import SpeakerBar from "../SpeakerBar";
-import Transcript from "../Transcript";
+import Transcript, { UserMarks } from "../Transcript";
 import { NOTES_REFRESH_MS } from "../../utils/noteList.js";
 import {
   discardActive,
@@ -16,6 +16,7 @@ import {
   storeSummaryConsent,
   summaryLangOf,
   summaryPrompt,
+  userMarks,
 } from "../../utils/notes.js";
 import {
   ArrowIcon,
@@ -29,6 +30,7 @@ import {
   MoreIcon,
   NoteIcon,
   RefreshIcon,
+  Segmented,
   Spinner,
   Switch,
   cx,
@@ -46,6 +48,9 @@ export default function NotePage({ id, live, languages, onBack }) {
   const [error, setError] = useState("");
   const [tab, setTab] = useState(/** @type {"summary" | "transcript" | null} */ (null));
   const [showSource, setShowSource] = useState(false);
+  // Transcript tab: all of it, or only the paragraphs with your notes or bookmarks.
+  const [markFilter, setMarkFilter] = useState(/** @type {"all" | "note" | "bookmark"} */ ("all"));
+  const [focus, setFocus] = useState(/** @type {{ part: number, nonce: number } | null} */ (null));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -178,7 +183,11 @@ export default function NotePage({ id, live, languages, onBack }) {
   // The summary is no longer in the chosen language: "Summarize again" becomes the primary button.
   const stale = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
   const hasPeople = note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined);
-  const summaryHint = !note.summary && !live && note.sentences.length > 0 && (
+  // Take notes: what the user wrote also counts, even if nothing was transcribed.
+  const marks = userMarks(note);
+  const hasContent = note.sentences.length > 0 || marks.length > 0;
+  const noteCount = marks.filter((m) => m.kind === "note").length;
+  const summaryHint = !note.summary && !live && hasContent && (
     <p className={cx(styles.noteSummaryHint, "muted")}>
       <LinkButton onClick={() => setTab("summary")}>{t("notes.goSummary")}</LinkButton>
     </p>
@@ -284,6 +293,22 @@ export default function NotePage({ id, live, languages, onBack }) {
           {tab === "transcript" && !taking && (
             <Switch checked={showSource} onChange={setShowSource} label={t("notes.showSource")} />
           )}
+          {/* Take notes: all of the transcript, or only the paragraphs with your notes or bookmarks. */}
+          {tab === "transcript" && note.sentences.length > 0 && marks.length > 0 && (
+            <div className={styles.noteMarksFilter} title={t("notes.marks.title")}>
+              <Segmented
+                small
+                check={false}
+                value={markFilter}
+                onChange={(v) => setMarkFilter(/** @type {"all" | "note" | "bookmark"} */ (v))}
+                options={[
+                  { value: "all", label: t("notes.marks.all") },
+                  { value: "note", label: t("notes.marks.notes", { n: noteCount }), disabled: noteCount === 0 },
+                  { value: "bookmark", label: t("notes.marks.bookmarks", { n: marks.length - noteCount }), disabled: noteCount === marks.length },
+                ]}
+              />
+            </div>
+          )}
         </div>
 
         {tab === "summary" && (
@@ -321,14 +346,14 @@ export default function NotePage({ id, live, languages, onBack }) {
                   </Button>
                 )}
                 {!note.summary && (
-                  <Button title={t("notes.copyTitle")} disabled={note.sentences.length === 0} onClick={copyForChat}>
+                  <Button title={t("notes.copyTitle")} disabled={!hasContent} onClick={copyForChat}>
                     {t("notes.copyForChat")}
                   </Button>
                 )}
                 <Button
                   variant={note.summary && !stale ? "default" : "primary"}
                   busy={summarizing}
-                  disabled={live || summarizing || note.sentences.length === 0}
+                  disabled={live || summarizing || !hasContent}
                   title={live ? t("notes.waitFinish") : undefined}
                   onClick={askSummary}
                 >
@@ -400,10 +425,24 @@ export default function NotePage({ id, live, languages, onBack }) {
         )}
 
         {tab === "transcript" &&
-          (note.sentences.length === 0 ? (
+          (note.sentences.length === 0 && marks.length > 0 ? (
+            <>
+              <p className="muted notes-empty">{t("notes.nothingTranscribed")}</p>
+              <UserMarks marks={marks} />
+            </>
+          ) : note.sentences.length === 0 ? (
             <p className="muted notes-empty">{t("notes.noSentences")}</p>
           ) : (
-            <Transcript note={note} showSource={showSource} />
+            <Transcript
+              note={note}
+              showSource={showSource}
+              only={markFilter === "all" ? null : markFilter}
+              focus={focus}
+              onJump={(part) => {
+                setMarkFilter("all");
+                setFocus({ part, nonce: Date.now() });
+              }}
+            />
           ))}
       </div>
 

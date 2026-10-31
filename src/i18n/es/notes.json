@@ -73,5 +73,11 @@
   "share": "{pct} %",
   "saved": "Sesión guardada",
   "goTranscript": "Ir a la transcripción",
-  "badge.conversation": "Traducción"
+  "badge.conversation": "Traducción",
+  "nothingTranscribed": "No se transcribió nada. Estas son tus notas:",
+  "marks.title": "Anotaciones en la transcripción",
+  "marks.all": "Todas",
+  "marks.notes": "Tus notas · {n}",
+  "marks.bookmarks": "Momentos · {n}",
+  "marks.jump": "Ver en la transcripción"
 }

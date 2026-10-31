@@ -1,6 +1,5 @@
 {
   "recording": "Recording",
-  "peopleLater": "Speakers are identified when you stop",
   "stop": "Stop",
   "noSignal": "No sound is coming in. Check that something is playing or that the microphone is on.",
   "listeningHere": "Listening… notes will appear here.",
@@ -43,5 +42,16 @@
   "permission.system": "The first time, macOS will ask for permission to record system audio.",
   "permission.meeting": "The first time, macOS will ask for permission to use the microphone and record system audio.",
   "hint.mic": "Notes what the microphone hears: your voice and anyone nearby.",
-  "current": "In progress"
+  "current": "In progress",
+  "myNotes": "My notes",
+  "myNotesEmpty": "Write what matters to you or mark a moment with ⌘B.",
+  "writeNote": "Write an idea or reminder…",
+  "editNote": "Edit the note",
+  "removeMark": "Delete",
+  "bookmark": "Mark moment",
+  "bookmarkHint": "Mark this moment to find it later in the transcript",
+  "bookmarked": "Marked moment",
+  "myNotesHint": "Saved with the note and used in the summary.",
+  "addNote": "Add note",
+  "jumpTo": "Go to this moment"
 }

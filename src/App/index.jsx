@@ -18,6 +18,7 @@ import { useFloatingCaptions } from "../hooks/useFloatingCaptions.js";
 import { useLaneMeters } from "../hooks/useLaneMeters.js";
 import { useLanguages } from "../hooks/useLanguages.js";
 import { useVolumes } from "../hooks/useVolumes.js";
+import { useWidth } from "../hooks/useWidth.js";
 import { useMeetingNotes } from "../hooks/useMeetingNotes.js";
 import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor } from "../utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "../utils/prefs.js";
@@ -290,6 +291,19 @@ export default function App() {
   lanesRef.current = lanes;
   // La conversación que se está guardando (ver notes.js) y el menú ☰.
   const recorderRef = useRef(/** @type {ReturnType<typeof createRecorder> | null} */ (null));
+  // What the My notes panel of Take notes asks of the recorder; stable, for ⌘B.
+  const [modeRef, modeWidth] = useWidth();
+  const [notesActions] = useState(() => ({
+    /** @param {string} text @param {number} startedTyping */
+    addMyNote: (text, startedTyping) => recorderRef.current?.addMyNote(text, startedTyping),
+    /** @param {number} index @param {string} text */
+    editMyNote: (index, text) => recorderRef.current?.editMyNote(index, text),
+    /** @param {number} index */
+    removeMyNote: (index) => recorderRef.current?.removeMyNote(index),
+    addBookmark: () => recorderRef.current?.addBookmark(),
+    /** @param {number} index */
+    removeBookmark: (index) => recorderRef.current?.removeBookmark(index),
+  }));
   const [view, setView] = useState(/** @type {import("../components/Sidebar").View} */ ("translate"));
   // Al terminar Tomar notas se abre la nota; `stopping` es la parada en curso.
   const [openRequest, setOpenRequest] = useState(/** @type {{ id: string, nonce: number } | null} */ (null));
@@ -715,6 +729,7 @@ export default function App() {
     <>
     <main className="app" hidden={view !== "translate"}>
       <TopBar
+        modeRef={modeRef}
         mode={mode}
         onMode={changeMode}
         callMode={CALL_MODE}
@@ -729,7 +744,8 @@ export default function App() {
       {/* Aquí solo si algo falla; el detalle está en Ajustes. */}
       <Diagnostics mode={mode === "call" ? "call" : "video"} systemAudio={tapsMac} onFixed={loadDevices} onlyProblems />
 
-      <div key={mode} className={styles.modeBody}>
+      {/* In Take notes, My notes is as wide as the mode selector above it. */}
+      <div key={mode} className={styles.modeBody} style={modeWidth ? { "--mode-w": `${modeWidth}px` } : undefined}>
         {mode === "notes" ? (
           <NoteTaking
             running={remoteState.running}
@@ -750,6 +766,7 @@ export default function App() {
             onOpenSettings={() => setView("settings")}
             onStart={meetingNotes.startNotes}
             onStop={meetingNotes.stopNotes}
+            notesActions={notesActions}
           />
         ) : (
           <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>

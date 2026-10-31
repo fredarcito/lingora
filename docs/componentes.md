@@ -46,14 +46,15 @@ Texts arrive as props, already translated with `t()`.
 | `Spinner` | Wait indicator | `small` | `<Spinner small />` |
 | `SearchBox` | Search field with a magnifying glass | `value`, `onChange(value)`, `placeholder` (also `aria-label`), `shortcut`, `inputRef`, `className`. Escape clears it | `<SearchBox value={q} onChange={setQ} placeholder={t("notes.search")} shortcut="⌘K" />` |
 | `ChoiceCards` | Single choice as cards (icon, title, description in view), for a decision that needs explaining (what to record in Take notes) | `value`, `onChange(value)`, `options: {value, label, hint?, icon?, disabled?}[]` | `<ChoiceCards value={input} onChange={setInput} options={inputs} />` |
-| `Segmented` | Single-choice buttons | `value`, `onChange(value)`, `options: {value, label, hint?, disabled?}[]`, `small` | `<Segmented value={mode} onChange={setMode} options={modes} />` |
+| `Segmented` | Single-choice buttons | `value`, `onChange(value)`, `options: {value, label, hint?, disabled?}[]`, `small`, `check` (the ✓ of the selected one; `false` for a filter, not a setting) | `<Segmented value={mode} onChange={setMode} options={modes} />` |
 | `cx` | Joins classes and removes the empty ones | `cx(...names)` | `className={cx(styles.item, open && styles.isOpen)}` |
 | Icons (`icons.jsx`) | The UI icons, each with its own size | no props | `<CopyIcon />` |
 
 Icons: `WaveIcon`, `NoteIcon`, `MenuIcon`, `CloseIcon`, `SettingsIcon`,
 `LockIcon`, `SearchIcon`, `MoreIcon`, `CopyIcon`, `ChevronIcon`, `SwapIcon`,
 `ArrowIcon`, `FloatIcon`, `SlidersIcon`, `PlayIcon`, `StopIcon`,
-`VolumeIcon`. The diagnostics status marks (✓, ✕, !) are specific to
+`VolumeIcon`, `BookmarkIcon` (a marked moment), `PenIcon` (a note of the
+user), `PlusIcon`. The diagnostics status marks (✓, ✕, !) are specific to
 `Diagnostics`.
 
 ## CSS

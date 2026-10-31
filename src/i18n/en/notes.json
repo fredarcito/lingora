@@ -73,5 +73,11 @@
   "share": "{pct}%",
   "saved": "Saved session",
   "goTranscript": "Go to transcript",
-  "badge.conversation": "Translation"
+  "badge.conversation": "Translation",
+  "nothingTranscribed": "Nothing was transcribed. These are your notes:",
+  "marks.title": "Annotations in the transcript",
+  "marks.all": "All",
+  "marks.notes": "Your notes · {n}",
+  "marks.bookmarks": "Moments · {n}",
+  "marks.jump": "See in the transcript"
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import cases from "../../tests/fixtures/paragraphs.json";
-import { createSpeakerTracker, paragraphs, speakerShares, transcriptParts } from "./notes";
+import { createSpeakerTracker, marksByPart, paragraphs, speakerShares, tidyNote, transcriptParts, userMarks } from "./notes";
 
 describe("paragraphs", () => {
   // Same fixture as `paragraphs_match_shared_fixture` in src-tauri/src/notes.rs:
@@ -91,5 +91,58 @@ describe("speakerShares", () => {
   it("thirds still add up to 100", () => {
     const shares = speakerShares(note([[1, "a"], [2, "b"], [3, "c"]]));
     expect([...shares.values()].reduce((a, b) => a + b, 0)).toBe(100);
+  });
+});
+
+describe("userMarks and marksByPart", () => {
+  const sentence = (/** @type {number} */ t, /** @type {number} */ speaker) => ({ t, speaker, source: "x", translation: null });
+  const sentences = [sentence(2, 1), sentence(4, 1), sentence(20, 2), sentence(25, 2)];
+
+  it("merges notes and bookmarks in time order", () => {
+    const note = /** @type {any} */ ({ sentences: [], my_notes: [{ t: 5, text: "b" }, { t: 9, text: "c" }], bookmarks: [{ t: 1 }, { t: 7 }] });
+    expect(userMarks(note).map((m) => [m.kind, m.index, m.t])).toEqual([
+      ["bookmark", 0, 1],
+      ["note", 0, 5],
+      ["bookmark", 1, 7],
+      ["note", 1, 9],
+    ]);
+  });
+
+  it("puts each mark under the paragraph being heard; earlier ones go with the first", () => {
+    const note = /** @type {any} */ ({ sentences, my_notes: [{ t: 0.5, text: "before" }, { t: 10, text: "between" }, { t: 40, text: "after" }], bookmarks: [{ t: 20 }] });
+    const parts = transcriptParts(note);
+    expect(parts).toHaveLength(2);
+    const marks = marksByPart(note, parts).map((list) => list.map((m) => m.text ?? "bookmark"));
+    expect(marks).toEqual([["before", "between"], ["bookmark", "after"]]);
+  });
+
+  it("skips unsaved gaps", () => {
+    const note = /** @type {any} */ ({ sentences, gaps: [{ at: 1, secs: 30 }], my_notes: [{ t: 4.5, text: "a" }] });
+    const parts = transcriptParts(note);
+    const marks = marksByPart(note, parts);
+    expect(parts.map((p) => ("gap" in p ? "gap" : "block"))).toEqual(["block", "gap", "block", "block"]);
+    expect(marks.map((list) => list.length)).toEqual([0, 0, 1, 0]);
+  });
+
+  it("without sentences every list is empty", () => {
+    const note = /** @type {any} */ ({ sentences: [], my_notes: [{ t: 1, text: "a" }] });
+    expect(marksByPart(note, transcriptParts(note))).toEqual([]);
+    expect(userMarks(note)).toHaveLength(1);
+  });
+});
+
+describe("tidyNote", () => {
+  it("capitalizes only the first letter, also after ¿ ¡ or quotes", () => {
+    expect(tidyNote("  me encanto esta parte  ")).toBe("Me encanto esta parte");
+    expect(tidyNote("¿qué precio tiene?")).toBe("¿Qué precio tiene?");
+    expect(tidyNote("«ojo» con esto")).toBe("«Ojo» con esto");
+    expect(tidyNote("éxito total")).toBe("Éxito total");
+  });
+
+  it("leaves the rest as written", () => {
+    expect(tidyNote("iPhone nuevo")).toBe("iPhone nuevo");
+    expect(tidyNote("3 ideas")).toBe("3 ideas");
+    expect(tidyNote("Ya Está")).toBe("Ya Está");
+    expect(tidyNote("   ")).toBe("");
   });
 });

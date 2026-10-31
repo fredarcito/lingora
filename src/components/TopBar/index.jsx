@@ -8,13 +8,14 @@ import styles from "./styles.module.css";
  * The Translate header: ☰, logo, the conversation languages and the mode
  * (Video, Take notes, Call). With a lane running (`running`) neither the mode nor the
  * languages can be changed. `callMode`: "Translate call" is already
- * available; otherwise it is shown locked.
+ * available; otherwise it is shown locked. `modeRef` gets the mode selector, so
+ * Take notes can line My notes up with it.
  * @param {{ mode: import("../../App/types").Mode, onMode: (mode: import("../../App/types").Mode) => void, callMode: boolean,
  *   running: boolean, onMenu: () => void, pair: import("../../App/types").LangPair,
  *   languages: import("../../utils/api").LanguageInfo[], onPair: (pair: import("../../App/types").LangPair) => void,
- *   noTranslate: boolean }} props
+ *   noTranslate: boolean, modeRef?: (el: HTMLElement | null) => void }} props
  */
-export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, languages, onPair, noTranslate }) {
+export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, languages, onPair, noTranslate, modeRef }) {
   const t = useT();
   return (
     <header className="topbar">
@@ -40,7 +41,7 @@ export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, 
             noTranslate={noTranslate}
           />
         </div>
-        <div className={styles.modeSwitch} role="radiogroup" title={running ? t("app.mode.stopToChange") : undefined}>
+        <div ref={modeRef} className={styles.modeSwitch} role="radiogroup" title={running ? t("app.mode.stopToChange") : undefined}>
           {[
             ["video", t("app.mode.video"), t("app.mode.video.hint")],
             ["notes", t("app.mode.notes"), t("app.mode.notes.hint")],

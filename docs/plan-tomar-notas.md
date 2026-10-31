@@ -355,16 +355,165 @@ plays through the meeting app.
 6. Connect and remove the AirPods in the middle of a meeting: the note carries on without cuts.
 7. Check the order of the sentences in a fast conversation.
 
-## Phase 3: my notes and bookmarks (later)
+## Phase 3: my notes and bookmarks (built 2026-10-31; manual tests pending)
 
-- **My notes:** a side panel "My notes" while recording (at the bottom on narrow
-  windows). Each line stores the minute it was written and goes in
-  `my_notes: [{ t, text }]`.
-- **Bookmarks:** "Mark moment" (⌘B) saves `bookmarks: [{ t }]`. In the transcript a
-  bookmark is seen next to that paragraph.
-- **In the summary and the export:** the summary receives the notes and the
-  bookmarks as "what the user considered important", and the export
-  includes them.
+Goal: while recording, the user writes their own notes and marks important
+moments. The transcript says what was said; this says what mattered to them.
+The summary gives it priority and the export includes it.
+
+### 3.0 Decisions (taken by the user)
+
+- **My notes are edited and deleted only while recording.** On the saved note they
+  are read-only.
+- **A note with my notes or bookmarks but no sentences is saved** (and opens
+  when stopping). Without sentences, notes or bookmarks, nothing changes: no note.
+- **Bookmarks are only the minute**, with no label. To write something, there are
+  my notes.
+- **The "My notes" panel is always visible** while recording: next to the
+  transcript, at the bottom on narrow windows.
+- Only in Take notes mode (`kind: "notes"`). Translate audio and Translate call
+  don't change.
+
+### 3.1 The data
+
+In the note, both optional (old notes don't have them):
+
+- `my_notes: [{ t, text }]`, ordered by `t`.
+- `bookmarks: [{ t }]`, ordered by `t`.
+
+`t` is in seconds with the same base as `sentences[].t`, so a note and the
+sentence being heard at that moment line up. Types in `src/utils/api.js`
+(`Note`).
+
+**The `t` of a note is when the user started writing it** (first keystroke of
+the draft), not when they pressed Enter: they write about what was just said,
+and a long note would otherwise land several paragraphs later.
+
+### 3.2 The recorder (`src/utils/notes.js`, `createRecorder`)
+
+`createSpeakerTracker` and `paragraphs` are not touched.
+
+- **Create the note on demand.** Today the note is created inside `add` on the
+  first sentence. Extract that block into an internal `ensureNote(now, heardAt)`
+  and call it from `add` and from the new methods. If a note or bookmark comes
+  before any sentence, `startedAt` is that moment and the first sentence
+  gets `t > 0` (correct: it was said later).
+- New methods, all ignored if `discarded`; they save with the same timer
+  (`SAVE_EVERY_MS`) and call `changed()`:
+  - `secsAt(when)` (internal): the `t` (seconds, one decimal) of a
+    `performance.now()` instant; `add` uses it too.
+  - `addMyNote(text, startedTyping)`: trims the text; empty → nothing. Inserts in
+    order by `t`.
+  - `editMyNote(index, text)`: empty text → deletes it.
+  - `removeMyNote(index)`.
+  - `addBookmark()`: `t` = now. If there is already one within 3 s, it is
+    not repeated (double ⌘B).
+- `active.get()` also copies `my_notes` and `bookmarks`.
+- `finish()` doesn't change: it already returns the id whenever the note exists,
+  and now it also exists with only notes or bookmarks.
+- **The echo wrapper** (`withEchoFilter` in `src/utils/echo.js`) returns an object
+  with the same shape: it must forward the new methods as is.
+
+### 3.3 Where they are shown in the transcript
+
+A pure function in `src/utils/notes.js`, `marksByPart(note, parts)`
+(`parts` = the result of `transcriptParts(note)`): for each paragraph,
+my notes and bookmarks whose `t` falls from its start up to the start of the next one.
+The ones before the first paragraph go with the first; with no paragraphs,
+all of them go in a single list. Tested in `notes.test.js` (before the
+first, between two, after the last, without sentences, with gaps).
+
+### 3.4 While recording (`src/pages/NoteTaking/` + `src/components/MyNotes/`)
+
+- **Layout:** `takingLive` goes from one column to two: on the left what there is now
+  (bar, transcript, what is heard); on the right the "My notes" panel, about
+  300 px. Below ~820 px the panel goes under the transcript, with a maximum height
+  and its own scroll. The CSS in each component's `styles.module.css`, with the
+  `--n-*` variables.
+- **`MyNotes` component** (new, `src/components/MyNotes/index.jsx` +
+  `styles.module.css`; a piece of this screen, not `shared`):
+  - title "My notes" and, below, the list in order: each note with its time
+    (`formatClock`) and text; bookmarks as a line with the bookmark icon and
+    "Marked moment" with its time.
+  - Clicking a note edits it in place (`TextField`/textarea); Enter saves,
+    Escape cancels; a delete button (`IconButton`) on hover.
+    Bookmarks can be deleted too (in case of a wrong ⌘B).
+  - At the bottom, the writing box: Enter saves, Shift+Enter is a new line.
+    Placeholder: "Write a note…". The `startedTyping` instant is taken on
+    the first keystroke of an empty draft.
+  - The list follows the end when something is added.
+  - Empty: a gray hint "Write what matters to you or mark a moment with ⌘B. It
+    goes into the summary."
+- **"Mark moment" button** in the top bar (`takingBar`), next to Stop,
+  with a bookmark icon (`BookmarkIcon`, new in `shared/icons.jsx`) and the
+  hint "⌘B". **⌘B** works anywhere on the screen while recording
+  (also inside the writing box). Brief feedback: the new line appears in
+  the panel.
+- **How it reaches the recorder:** `App` passes to `NoteTaking` a `notesActions`
+  object (`addMyNote`, `editMyNote`, `removeMyNote`, `removeBookmark`,
+  `addBookmark`) that calls `recorderRef.current`. It is read back via
+  `getActiveNote()` and the `lingora-note-changed` event, as the transcript
+  already does. `removeBookmark(index)` goes in the recorder too.
+- The live transcript (`LiveTranscript`) is not changed: the marks are seen in
+  the panel. Next to the paragraph they are seen in the saved note.
+- While `closing` the panel is read-only.
+
+### 3.5 The saved note (`src/components/NotePage`, `src/components/Transcript`)
+
+- **Transcript tab:** under each paragraph, its notes and bookmarks
+  (`marksByPart`), read-only, in a discreet style: bookmark icon + time, or
+  pencil icon + time + text. Same `--n-*` variables.
+- **No sentences but with notes:** instead of "no sentences", the list of notes and
+  bookmarks, with a gray line "Nothing was transcribed".
+- **Summary tab:** nothing new; the summary already takes them into account (3.6).
+- **Notes list** (`summarize` in `notes.rs`, `preview`): if there are no sentences,
+  the preview is the text of the first notes.
+
+### 3.6 Rust (`src-tauri/src/notes.rs` only, a single block, warn first)
+
+- **`user_marks_text(note) -> String`** (new, pure): `[mm:ss] text` per note and
+  `[mm:ss] (marked moment)` per bookmark, merged by `t`. Empty if there is
+  nothing.
+- **`note_summarize`:** if `user_marks_text` is not empty, it is appended after the
+  transcript under a header "Notas del usuario (lo que considera importante):".
+  `SUMMARY_SYSTEM` gets one more line: "Si hay notas del usuario o momentos
+  marcados, dales prioridad en Puntos clave, Decisiones y Tareas; no las
+  copies tal cual." The "no sentences to summarize" error only if there
+  are no sentences **nor** notes.
+- **`export_text`:** after the summary and before the transcript, a section
+  "Mis notas" with `user_marks_text`, only if there is something.
+- **`summarize`** (list): the preview as in 3.5.
+- Tests: `user_marks_text` orders by `t` and formats the time; `export_text`
+  includes the section only when there are notes; a note with no sentences but with
+  notes does not give the empty error (test the pure part).
+
+### 3.7 Texts (`src/i18n/es` and `en`, with `t()`)
+
+In `noteTaking.json`: panel title, placeholder, empty hint, "Mark moment",
+"⌘B", "Marked moment", edit/delete labels. In `notes.json`: "Nothing was
+transcribed" and the labels of the marks in the transcript.
+
+### 3.8 What it does NOT touch
+
+`audio.js`, `createSpeakerTracker`, `paragraphs` (JS and Rust), the `enqueue` /
+`texted` / `playback` flow, `start` / `stop`, Captions, Translate audio and
+Translate call. No new dependencies.
+
+### Manual tests (phase 3)
+
+1. Record, write three notes at different moments: in the saved note each
+   appears under the paragraph that was being heard when you started writing it.
+2. ⌘B with the focus in the writing box and outside it: both mark. A double ⌘B
+   leaves a single bookmark.
+3. Edit and delete a note while recording; on the saved note they can't be edited.
+4. Write a note and stop without anyone speaking: the note is saved and opens,
+   with "Nothing was transcribed" and the note.
+5. Stop without speaking, writing or marking: no note (as before).
+6. Summarize a meeting with notes ("Fecha límite: viernes"): the summary
+   reflects it in Tasks or Key points.
+7. Export as Markdown and as text: "Mis notas" section only if there are notes.
+8. A narrow window: the panel goes below and the transcript is still readable.
+9. Translate audio and Translate call record exactly as before.
 
 ## Phase 4: optional translation (later on)
 

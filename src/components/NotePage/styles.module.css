@@ -548,3 +548,18 @@
   width: var(--control-h);
   height: var(--control-h);
 }
+
+/* The filter of your notes and bookmarks, on the right of the tabs. */
+.note-marks-filter [role="radiogroup"] button {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* The tabs (and the filter) stay at the top while reading a long note. */
+.note-tabs {
+  position: sticky;
+  top: -4px;
+  z-index: 2;
+  padding: 8px 0;
+  background: var(--bg);
+}

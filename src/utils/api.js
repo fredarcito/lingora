@@ -107,7 +107,13 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {Record<string, string>} speakers Name of each speaker ("1": "Ana").
  * @property {NoteSentence[]} sentences
  * @property {{ at: number, secs: number }[]} [gaps] Unsaved gaps: before sentence `at`, and how long they lasted.
+ * @property {MyNote[]} [my_notes] What the user wrote while recording (Take notes), ordered by `t`.
+ * @property {{ t: number }[]} [bookmarks] Moments the user marked while recording, ordered by `t`.
  * @property {{ text: string, created_at: string } | null} summary
+ *
+ * @typedef {Object} MyNote
+ * @property {number} t Seconds, on the same clock as `sentences[].t`: when the user started writing it.
+ * @property {string} text
  *
  * @typedef {Object} NoteSummary The minimum of a note needed to list and search it.
  * @property {string} id
