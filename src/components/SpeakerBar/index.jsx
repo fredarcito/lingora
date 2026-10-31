@@ -1,27 +1,26 @@
 import { useState } from "react";
 import { useT } from "../../i18n";
-import { speakerLabel, speakerName } from "../../utils/notes.js";
+import { speakerLabel, speakerName, speakerShares } from "../../utils/notes.js";
 import { Button, Menu, MenuItem, cx, useDismiss } from "../shared";
 import { speakerColor } from "../Transcript";
 import styles from "./styles.module.css";
 
 /**
- * The people in the note, to correct what was detected: changing their
+ * The people in the note, each with how much they said (share of the words),
+ * to correct what was detected: changing their
  * name ("Persona 2" → "Ana") or merging two that are the same person (the same voice
  * can sound different for a while). It cannot be edited while recording: the recorder
  * would rewrite the note.
- * @param {{ note: import("../../utils/api").Note, live: boolean, onChange: (note: import("../../utils/api").Note) => void }} props
+ * `aside` goes on the right of the title row (the note page puts the summary hint there).
+ * @param {{ note: import("../../utils/api").Note, live: boolean, onChange: (note: import("../../utils/api").Note) => void,
+ *   aside?: import("react").ReactNode }} props
  */
-export default function SpeakerBar({ note, live, onChange }) {
+export default function SpeakerBar({ note, live, onChange, aside }) {
   const t = useT();
   const [editing, setEditing] = useState(/** @type {number | null} */ (null));
   const [name, setName] = useState("");
-  /** @type {Map<number, number>} */
-  const counts = new Map();
-  for (const s of note.sentences) {
-    if (s.speaker !== null && s.speaker !== undefined) counts.set(s.speaker, (counts.get(s.speaker) ?? 0) + 1);
-  }
-  const people = [...counts.keys()].sort((a, b) => a - b);
+  const shares = speakerShares(note);
+  const people = [...shares.keys()].sort((a, b) => a - b);
   /** @param {number} n */
   const label = (n) => speakerLabel(note, /** @type {any} */ ({ speaker: n }));
   /** What is edited: your name without "(Yo)"; for the others, "Persona n" if they do not have one yet. @param {number} n */
@@ -51,7 +50,19 @@ export default function SpeakerBar({ note, live, onChange }) {
 
   return (
     <div className={styles.speakerBar}>
-      <span className={styles.speakerBarLabel}>{t("notes.speakers")}</span>
+      <div className={styles.speakerBarHead}>
+        <span className={styles.speakerBarLabel}>{t("notes.speakers")}</span>
+        <span className={styles.speakerBarHint}>{t("notes.shareHint")}</span>
+        {aside && <div className={styles.speakerBarAside}>{aside}</div>}
+      </div>
+      {/* The split at a glance: one thin line with a stretch of each person's color. */}
+      {people.length > 1 && (
+        <div className={styles.speakerSplit} aria-hidden>
+          {people.map((n) => (
+            <span key={n} style={{ "--who": speakerColor(n), flexGrow: shares.get(n) }} />
+          ))}
+        </div>
+      )}
       {people.map((n) => (
         <div key={n} className={styles.speakerWrap} onClick={(e) => e.stopPropagation()}>
           <button
@@ -65,8 +76,8 @@ export default function SpeakerBar({ note, live, onChange }) {
             }}
           >
             <span className={styles.speakerDot} style={{ "--who": speakerColor(n) }} />
-            {label(n)}
-            <span className={styles.speakerCount}>{counts.get(n)}</span>
+            <span className={styles.speakerChipName}>{label(n)}</span>
+            <span className={styles.speakerCount}>{t("notes.share", { pct: shares.get(n) })}</span>
           </button>
           {editing === n && (
             <Menu className={styles.speakerMenu}>

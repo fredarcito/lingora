@@ -1,5 +1,6 @@
 import { api } from "./api";
 import { langName, t } from "../i18n";
+import { splitWords } from "./words.js";
 
 const SAVE_NOTES_KEY = "lingora.saveNotes";
 const SUMMARY_CONSENT_KEY = "lingora.summaryConsent";
@@ -290,6 +291,38 @@ export function speakerLabel(note, s) {
   const name = speakerName(note, s.speaker);
   if (s.speaker === 0) return name ? `${name} (${t("notesLib.me")})` : t("notesLib.me");
   return name || t("notesLib.person", { n: s.speaker });
+}
+
+/**
+ * How much each person said: their share of the words of the note, in whole
+ * percents that add up to 100 (largest remainder). Words, not time: the note
+ * does not keep how long each sentence lasted, and the words are exact.
+ * People not yet told apart (`speaker: null`) are left out.
+ * @param {import("./api").Note} note
+ * @returns {Map<number, number>}
+ */
+export function speakerShares(note) {
+  /** @type {Map<number, number>} */
+  const words = new Map();
+  for (const s of note.sentences) {
+    if (s.speaker === null || s.speaker === undefined) continue;
+    words.set(s.speaker, (words.get(s.speaker) ?? 0) + splitWords(s.source).length);
+  }
+  const total = [...words.values()].reduce((a, b) => a + b, 0);
+  /** @type {Map<number, number>} */
+  const shares = new Map();
+  if (!total) {
+    for (const n of words.keys()) shares.set(n, 0);
+    return shares;
+  }
+  const exact = [...words].map(([n, w]) => ({ n, value: (w / total) * 100 }));
+  for (const e of exact) shares.set(e.n, Math.floor(e.value));
+  let left = 100 - [...shares.values()].reduce((a, b) => a + b, 0);
+  for (const e of [...exact].sort((a, b) => (b.value % 1) - (a.value % 1))) {
+    if (left-- <= 0) break;
+    shares.set(e.n, /** @type {number} */ (shares.get(e.n)) + 1);
+  }
+  return shares;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import cases from "../../tests/fixtures/paragraphs.json";
-import { createSpeakerTracker, paragraphs, transcriptParts } from "./notes";
+import { createSpeakerTracker, paragraphs, speakerShares, transcriptParts } from "./notes";
 
 describe("paragraphs", () => {
   // Same fixture as `paragraphs_match_shared_fixture` in src-tauri/src/notes.rs:
@@ -75,5 +75,21 @@ describe("createSpeakerTracker", () => {
     turns.push([c, 2]);
     const speakers = track(turns);
     expect(new Set(speakers)).toEqual(new Set([1, 2]));
+  });
+});
+
+describe("speakerShares", () => {
+  /** @param {Array<[number | null, string]>} said */
+  const note = (said) => /** @type {any} */ ({ sentences: said.map(([speaker, source]) => ({ speaker, source })) });
+
+  it("splits by words and adds up to 100", () => {
+    const shares = speakerShares(note([[1, "one two"], [2, "one"], [3, "one two three"], [null, "not counted at all"]]));
+    expect(Object.fromEntries(shares)).toEqual({ 1: 33, 2: 17, 3: 50 });
+    expect([...shares.values()].reduce((a, b) => a + b, 0)).toBe(100);
+  });
+
+  it("thirds still add up to 100", () => {
+    const shares = speakerShares(note([[1, "a"], [2, "b"], [3, "c"]]));
+    expect([...shares.values()].reduce((a, b) => a + b, 0)).toBe(100);
   });
 });

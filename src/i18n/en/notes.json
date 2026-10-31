@@ -55,8 +55,7 @@
   "summaryFoot": "Generated from the transcript",
   "summaryStale": "The summary is still in {lang}. Summarize again to change it.",
   "noSummary": "No summary yet. Press “Summarize”, or copy the note and paste it into your AI chat.",
-  "summaryHint": "Want a summary?",
-  "goSummary": "Go to Summary",
+  "goSummary": "View summary",
   "noSentences": "This note has no sentences.",
   "speakers": "Speakers",
   "speakerEditLater": "You can edit this once recording ends",
@@ -69,5 +68,8 @@
   "cancel": "Cancel",
   "sendTitle": "Summarize this conversation?",
   "sendBody": "The transcript will be sent to Groq. Continue?",
-  "continue": "Continue"
+  "continue": "Continue",
+  "shareHint": "How much each person spoke (% of the words)",
+  "share": "{pct}%",
+  "saved": "Saved session"
 }

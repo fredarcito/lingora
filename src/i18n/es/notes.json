@@ -55,8 +55,7 @@
   "summaryFoot": "Generado a partir de la transcripción",
   "summaryStale": "El resumen sigue en {lang}. Vuelve a resumir para cambiarlo.",
   "noSummary": "Aún no hay resumen. Pulsa «Resumir», o copia la nota y pégala en tu chat de IA.",
-  "summaryHint": "¿Quieres un resumen?",
-  "goSummary": "Ir a Resumen",
+  "goSummary": "Ver resumen",
   "noSentences": "Esta nota no tiene frases.",
   "speakers": "Interlocutores",
   "speakerEditLater": "Se puede editar al terminar de grabar",
@@ -69,5 +68,8 @@
   "cancel": "Cancelar",
   "sendTitle": "¿Resumir esta conversación?",
   "sendBody": "La transcripción se enviará a Groq. ¿Continuar?",
-  "continue": "Continuar"
+  "continue": "Continuar",
+  "shareHint": "Cuánto habló cada persona (% de las palabras)",
+  "share": "{pct} %",
+  "saved": "Sesión guardada"
 }

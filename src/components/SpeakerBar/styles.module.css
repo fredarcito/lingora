@@ -128,3 +128,71 @@
   text-transform: uppercase;
   color: var(--text-3);
 }
+
+/* Light, like a legend: each person as text (dot, name, share), with a
+   soft background only on hover; above them, one line with the split. */
+.speaker-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.speaker-bar-head {
+  flex-basis: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.speaker-bar-label {
+  margin-right: 0;
+  letter-spacing: 0.12em;
+}
+
+.speaker-bar-hint {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+
+/* On the right; in a narrow window it drops below instead of squeezing the title. */
+.speaker-bar-aside {
+  margin-left: auto;
+}
+
+.speaker-bar-head {
+  flex-wrap: wrap;
+}
+
+.speaker-split {
+  flex-basis: 100%;
+  display: flex;
+  gap: 2px;
+  height: 3px;
+  margin: 6px 0 4px;
+}
+
+.speaker-split span {
+  flex-basis: 0;
+  min-width: 3px;
+  border-radius: 2px;
+  background: var(--who, var(--accent));
+  opacity: 0.7;
+}
+
+.speaker-wrap .speaker-chip {
+  height: 32px;
+  padding: 0 8px;
+  margin-left: -8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+}
+
+.speaker-wrap .speaker-chip:hover:not(:disabled),
+.speaker-wrap .speaker-chip.is-open {
+  background: var(--n-hover);
+}
+
+.speaker-count {
+  font-size: 12.5px;
+}

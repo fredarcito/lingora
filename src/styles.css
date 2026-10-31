@@ -691,9 +691,22 @@ select {
 }
 
 .note-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* The person's color as a dot, as in the people cards. */
+.note-who::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--who, var(--accent));
+  flex: none;
 }
 
 .note-time {

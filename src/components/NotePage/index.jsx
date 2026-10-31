@@ -174,6 +174,12 @@ export default function NotePage({ id, live, languages, onBack }) {
   const summaryLang = summaryLangOf(note, languages);
   // The summary is no longer in the chosen language: "Summarize again" becomes the primary button.
   const stale = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
+  const hasPeople = note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined);
+  const summaryHint = !note.summary && !live && note.sentences.length > 0 && (
+    <p className={cx(styles.noteSummaryHint, "muted")}>
+      <LinkButton onClick={() => setTab("summary")}>{t("notes.goSummary")}</LinkButton>
+    </p>
+  );
   const copyForChat = () => run(() => navigator.clipboard.writeText(`${summaryPrompt(note, languages)}\n\n${noteToText(note)}`), t("notes.copied"));
 
   return (
@@ -188,6 +194,7 @@ export default function NotePage({ id, live, languages, onBack }) {
 
         <div className={cx(styles.noteHead, styles.noteHeadRow)}>
           <div className={styles.noteTitleBlock}>
+            {!live && <p className={styles.noteEyebrow}>{t("notes.saved")}</p>}
             {editing ? (
               <input
                 className={styles.noteTitleInput}
@@ -352,16 +359,14 @@ export default function NotePage({ id, live, languages, onBack }) {
           </>
         )}
 
-        {tab === "transcript" && !note.summary && !live && note.sentences.length > 0 && (
-          <p className={cx(styles.noteSummaryHint, "muted")}>
-            {t("notes.summaryHint")} <LinkButton onClick={() => setTab("summary")}>{t("notes.goSummary")}</LinkButton>
-          </p>
-        )}
+        {/* With people, the hint goes on the right of their row; without them, on its own. */}
+        {tab === "transcript" && !hasPeople && summaryHint}
 
-        {tab === "transcript" && note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined) && (
+        {tab === "transcript" && hasPeople && (
           <SpeakerBar
             note={note}
             live={live}
+            aside={summaryHint}
             onChange={(next) => {
               setNote(next);
               run(() => api.noteSave(next));
