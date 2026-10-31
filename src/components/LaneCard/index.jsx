@@ -4,8 +4,10 @@ import { SYSTEM_AUDIO } from "../../utils/audio";
 import { NO_SIGNAL_SECS, apiLang } from "../../utils/lanes";
 import { trimSilence } from "../../utils/voice";
 import { useStickToBottom } from "../../hooks/useStickToBottom";
+import { useArrivalTimes } from "../../hooks/useArrivalTimes";
 import { t, useT } from "../../i18n";
 import Captions from "../Captions";
+import LiveStatus from "../LiveStatus";
 import {
   ArrowIcon,
   FloatIcon,
@@ -66,7 +68,8 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const live = [...s.heard.map((h) => h.text), s.partial].filter(Boolean).join(" ");
 
   // Follows the latest translation and what is being heard, unless the user scrolled up to reread.
-  const feed = useStickToBottom([latestId, live, showHistory]);
+  const feed = useStickToBottom([latestId, showHistory]);
+  const arrived = useArrivalTimes(s.history);
   const { toBottom } = feed;
   // When the history opens, it starts at the latest.
   useEffect(() => {
@@ -292,7 +295,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       {!compact && showHistory && (
       <div className={styles.feedWrap}>
       <div className={styles.feed} ref={feed.ref} onScroll={feed.onScroll}>
-        {entries.length === 0 && !live ? (
+        {entries.length === 0 ? (
           <div className={styles.empty}>
             <p>{t("app.lane.empty1")}</p>
             <p>{t("app.lane.empty2")}</p>
@@ -302,17 +305,23 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             const latest = h.id === latestId;
             return (
               <article key={h.id} className={cx(styles.line, latest && styles.isLatest)}>
-                {showSource && <p className={styles.lineSource} dir="auto">{h.transcript}</p>}
-                <p className={styles.lineTarget} dir="auto">{h.translation}</p>
-                {/* Technical data: shown on hover; "voice skipped" is always visible. */}
-                <button
-                  className={cx(styles.lineMeta, (h.skipped || detailsId === h.id) && styles.isVisible)}
-                  onClick={() => setDetailsId(detailsId === h.id ? null : h.id)}
-                >
-                  {h.lagSecs === null
-                    ? t("app.lane.soon")
-                    : t(h.skipped ? "app.lane.lagSkipped" : "app.lane.lag", { secs: h.lagSecs.toFixed(1) })}
-                </button>
+                <div className={styles.lineBody}>
+                  {/* To check what was said, the original always goes here (if it was translated). */}
+                  {!same && h.transcript && <p className={styles.lineSource} dir="auto">{h.transcript}</p>}
+                  <p className={styles.lineTarget} dir="auto">{h.translation}</p>
+                </div>
+                <div className={styles.lineAside}>
+                  <time className={styles.lineTime}>{clock(arrived.get(h.id))}</time>
+                  {/* Technical data: shown on hover; "voice skipped" is always visible. */}
+                  <button
+                    className={cx(styles.lineMeta, (h.skipped || detailsId === h.id) && styles.isVisible)}
+                    onClick={() => setDetailsId(detailsId === h.id ? null : h.id)}
+                  >
+                    {h.lagSecs === null
+                      ? t("app.lane.soon")
+                      : t(h.skipped ? "app.lane.lagSkipped" : "app.lane.lag", { secs: h.lagSecs.toFixed(1) })}
+                  </button>
+                </div>
                 {detailsId === h.id && (
                   <div className={styles.details}>
                     <p>
@@ -325,15 +334,6 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             );
           })
         )}
-        {live && (
-          <div className={styles.live} aria-live="polite">
-            <span className="live-dot" />
-            <p className={styles.liveText} dir="auto">
-              {live}
-              <span className={styles.caret} />
-            </p>
-          </div>
-        )}
       </div>
       {feed.away && (
         <button className={styles.jump} onClick={() => toBottom()}>
@@ -343,8 +343,19 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       )}
       </div>
       )}
+      {/* The same foot as the subtitles: below the line, what is being heard. */}
+      {!compact && showHistory && s.running && (
+        <div className={styles.feedFoot}>
+          <LiveStatus live={live} idle={s.heard.length ? t("captions.translating") : t("captions.listening")} />
+        </div>
+      )}
     </section>
   );
+}
+
+/** "12:04", in the system's format; empty without a time. @param {number | undefined} ms */
+function clock(ms) {
+  return ms ? new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
 }
 
 /** "Paulina · mujer, México · Premium" @param {import("../../utils/api").VoiceInfo} v */
