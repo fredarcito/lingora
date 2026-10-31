@@ -1,8 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { emitTo, listen } from "@tauri-apps/api/event";
-import { Window } from "@tauri-apps/api/window";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api, errorMessage } from "../utils/api";
-import { CAPTION_SENTENCES } from "../components/Captions";
 import Diagnostics from "../components/Diagnostics";
 import LaneCard from "../components/LaneCard";
 import LaneSettings from "../components/LaneSettings";
@@ -13,11 +10,17 @@ import { cx } from "../components/shared";
 import Settings from "../pages/Settings";
 import Sidebar from "../components/Sidebar";
 import { createRecorder, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesInput, storeNotesListen, storeSaveNotes } from "../utils/notes.js";
-import { langName, t, useLang, useT } from "../i18n";
-import { FILLER, SYSTEM_AUDIO, joinWords, listWebviewDevices, pairDevices, startAutoCapture } from "../utils/audio";
+import { t, useT } from "../i18n";
+import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "../utils/audio";
 import { useAudioRoute } from "../hooks/useAudioRoute.js";
+import { useDevices } from "../hooks/useDevices.js";
+import { useFloatingCaptions } from "../hooks/useFloatingCaptions.js";
+import { useLaneMeters } from "../hooks/useLaneMeters.js";
+import { useLanguages } from "../hooks/useLanguages.js";
+import { useVolumes } from "../hooks/useVolumes.js";
 import { useMeetingNotes } from "../hooks/useMeetingNotes.js";
-import { FALLBACK_LANGUAGES, LANES, NO_SIGNAL_SECS, apiLang, feedsCapture } from "../utils/lanes";
+import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor } from "../utils/lanes";
+import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "../utils/prefs.js";
 import { trimSilence } from "../utils/voice";
 import styles from "./styles.module.css";
 
@@ -46,100 +49,6 @@ function speedFor(pending, lag, max) {
   const byLag = lag > 6 ? 1 : lag > 4.5 ? 0.7 : lag > 3.5 ? 0.4 : lag > 2.5 ? 0.2 : 0;
   const byQueue = pending >= 4 ? 1 : pending === 3 ? 0.5 : 0;
   return 1 + (max - 1) * Math.max(byLag, byQueue);
-}
-
-const MODE_KEY = "lingora.mode";
-/**
- * «Traducir llamada» sigue en desarrollo (falta un micrófono virtual): sale
- * bloqueada salvo con `VITE_CALL_MODE=true` en el entorno al compilar o en `.env`.
- */
-const CALL_MODE = import.meta.env.VITE_CALL_MODE === "true";
-const SPEAK_KEY = "lingora.speak";
-const VOICE_IDS_KEY = "lingora.voiceIds";
-const SHOW_SOURCE_KEY = "lingora.showSource";
-/** @returns {Mode} */
-function loadMode() {
-  try {
-    const saved = localStorage.getItem(MODE_KEY);
-    if (saved === "notes") return "notes";
-    return CALL_MODE && saved === "call" ? "call" : "video";
-  } catch {
-    return "video";
-  }
-}
-
-/** Voz sí o no por carril; el almacenamiento puede no estar disponible. */
-function loadSpeak() {
-  try {
-    return JSON.parse(localStorage.getItem(SPEAK_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-/** Voz elegida por carril e idioma; el almacenamiento puede no estar disponible. */
-function loadVoiceIds() {
-  try {
-    return JSON.parse(localStorage.getItem(VOICE_IDS_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-/** Si se muestra el original, por carril; el almacenamiento puede no estar disponible. */
-function loadShowSource() {
-  try {
-    return JSON.parse(localStorage.getItem(SHOW_SOURCE_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-const NO_TRANSLATE_KEY = "lingora.noTranslate";
-
-/** Subtítulos en el idioma original, sin traducir; el almacenamiento puede no estar disponible. */
-function loadNoTranslate() {
-  try {
-    return localStorage.getItem(NO_TRANSLATE_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-const PAIR_KEY = "lingora.pair";
-
-/** @returns {LangPair} */
-function loadPair() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PAIR_KEY) ?? "{}");
-    // Los códigos se comprueban al llegar la lista de idiomas.
-    const valid = (c) => typeof c === "string" && c.length > 0;
-    if (valid(saved.you) && valid(saved.them) && saved.you !== saved.them) return saved;
-  } catch {
-    // Sin almacenamiento se usa el par por defecto.
-  }
-  return { you: "ES", them: "EN" };
-}
-
-/**
- * Idiomas de un carril según el par: "Escuchar" va de la otra persona a ti y
- * "Hablar", al revés.
- * @param {Direction} direction @param {LangPair} pair
- */
-const langsFor = (direction, pair) =>
-  direction === "remote_to_local"
-    ? { sourceLang: pair.them, targetLang: pair.you }
-    : { sourceLang: pair.you, targetLang: pair.them };
-
-const MAX_SPEED_KEY = "lingora.maxSpeed";
-
-/** Tope de velocidad guardado por carril; el almacenamiento puede no estar disponible. */
-function loadMaxSpeeds() {
-  try {
-    return JSON.parse(localStorage.getItem(MAX_SPEED_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
 }
 
 /**
@@ -315,26 +224,11 @@ async function transcribeLocally(lane, wav, info) {
 
 let entryId = 0;
 
-const VOLUME_KEY = "lingora.volume";
-
-/** Volumen guardado por carril; el almacenamiento puede no estar disponible. */
-function loadVolumes() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(VOLUME_KEY) ?? "{}");
-    return { remote_to_local: 1, local_to_remote: 1, ...saved };
-  } catch {
-    return { remote_to_local: 1, local_to_remote: 1 };
-  }
-}
-
 /** Tiempo parado tras el que se liberan los modelos de la memoria. */
 const RELEASE_MODELS_MS = 3 * 60_000;
 
 /** Tope de espera a que termine la cola de Tomar notas antes de cerrar la nota. */
 const NOTES_SETTLE_MS = 20_000;
-
-/** Nivel RMS por debajo del cual se considera que no llega sonido. */
-const SILENCE_RMS = 0.0005;
 
 const EMPTY_RUNTIME = {
   texting: Promise.resolve(),
@@ -345,15 +239,9 @@ const EMPTY_RUNTIME = {
   carry: "",
 };
 
-/** @type {LaneState} */
-const EMPTY_STATE = { running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };
-
 export default function App() {
   // Repinta al cambiar de idioma; los textos se piden con `t` del módulo.
   useT();
-  const [devices, setDevices] = useState({ inputs: [], outputs: [] });
-  // Si se puede oír el audio del Mac sin BlackHole (macOS 14.2+).
-  const [systemAudio, setSystemAudio] = useState(false);
   const [pair, setPair] = useState(loadPair);
   const [mode, setMode] = useState(loadMode);
   // Solo en Traducir audio: en una llamada la otra persona necesita oírte traducido.
@@ -361,34 +249,11 @@ export default function App() {
   // Tomar notas: qué se escucha y la familia de idiomas; no tocan los ajustes de Escuchar.
   const [notesInput, setNotesInput] = useState(loadNotesInput);
   const [notesListen, setNotesListen] = useState(loadNotesListen);
-  const [laneSettings, setLanes] = useState(() => {
-    const saved = loadMaxSpeeds();
-    const speak = loadSpeak();
-    const showSource = loadShowSource();
-    const voiceIds = loadVoiceIds();
-    return LANES.map((l) => ({
-      ...l,
-      maxSpeed: saved[l.direction] ?? l.maxSpeed,
-      speak: speak[l.direction] ?? l.speak,
-      showSource: showSource[l.direction],
-      voiceIds: voiceIds[l.direction] ?? {},
-    }));
-  });
-  const [languages, setLanguages] = useState(FALLBACK_LANGUAGES);
-  const languagesRef = useRef(languages);
-  languagesRef.current = languages;
-  /** @param {string} code */
-  const langInfo = (code) => languages.find((l) => l.code.toUpperCase() === code);
-  useEffect(() => {
-    const load = () => api.languages().then(setLanguages).catch(() => {});
-    load();
-    // Las voces se pueden descargar con la app abierta: se vuelve a mirar al volver a ella.
-    window.addEventListener("focus", load);
-    return () => window.removeEventListener("focus", load);
-  }, []);
-  // Rust nombra los idiomas en español: en pantalla van en el de la interfaz.
-  const { lang: uiLang } = useLang();
-  const shownLanguages = useMemo(() => languages.map((l) => ({ ...l, name: langName(l.code, l.name) })), [languages, uiLang]);
+  const [laneSettings, setLanes] = useState(loadLaneSettings);
+  const { languages, languagesRef, langInfo, shownLanguages } = useLanguages();
+  // Antes de los dispositivos: al conectar algo no se releen mientras traduce.
+  const anyRunningRef = useRef(false);
+  const { devices, systemAudio, loadDevices } = useDevices({ setLanes, anyRunningRef });
 
   // Reunión en línea: el audio del Mac y tu micrófono a la vez.
   const meeting = mode === "notes" && notesInput === "meeting" && systemAudio;
@@ -437,11 +302,7 @@ export default function App() {
   /** @param {Mode} next */
   const changeMode = (next) => {
     setMode(next);
-    try {
-      localStorage.setItem(MODE_KEY, next);
-    } catch {
-      // Sin almacenamiento el modo solo dura esta sesión.
-    }
+    storeMode(next);
   };
 
   /** @param {import("../utils/notes.js").NotesInput} next */
@@ -459,21 +320,13 @@ export default function App() {
   /** @param {boolean} next */
   const changeNoTranslate = (next) => {
     setNoTranslate(next);
-    try {
-      localStorage.setItem(NO_TRANSLATE_KEY, next ? "1" : "0");
-    } catch {
-      // Sin almacenamiento solo dura esta sesión.
-    }
+    storeNoTranslate(next);
   };
 
   /** @param {LangPair} next */
   const changePair = (next) => {
     setPair(next);
-    try {
-      localStorage.setItem(PAIR_KEY, JSON.stringify(next));
-    } catch {
-      // Sin almacenamiento los idiomas solo duran esta sesión.
-    }
+    storePair(next);
   };
   const [state, setState] = useState({
     remote_to_local: EMPTY_STATE,
@@ -490,23 +343,8 @@ export default function App() {
     remote_to_local: { ...EMPTY_RUNTIME },
     local_to_remote: { ...EMPTY_RUNTIME },
   });
-  const [meters, setMeters] = useState({ remote_to_local: null, local_to_remote: null });
-  const [volumes, setVolumes] = useState(loadVolumes);
-  // La cola de reproducción lee el volumen en cada frase: así el control
-  // funciona mientras traduce, sin reiniciar el carril.
-  const volumesRef = useRef(volumes);
-
-  /** @param {Direction} direction @param {number} value */
-  const changeVolume = (direction, value) => {
-    const next = { ...volumesRef.current, [direction]: value };
-    volumesRef.current = next;
-    setVolumes(next);
-    try {
-      localStorage.setItem(VOLUME_KEY, JSON.stringify(next));
-    } catch {
-      // Sin almacenamiento el volumen solo dura esta sesión.
-    }
-  };
+  const { meters, lastSignal } = useLaneMeters(runtime);
+  const { volumes, volumesRef, changeVolume } = useVolumes();
   // «Guardar en notas» de la tarjeta: parado es el ajuste de siempre; en marcha
   // pausa y reanuda la nota en curso sin cambiar el ajuste.
   const [saveNotes, setSaveNotes] = useState(loadSaveNotes);
@@ -516,107 +354,11 @@ export default function App() {
     if (recorderRef.current && anyRunningRef.current) recorderRef.current.setSaving(on);
     else storeSaveNotes(on);
   };
-  /** Último instante con señal por carril, para avisar si no llega audio. */
-  const lastSignal = useRef({ remote_to_local: 0, local_to_remote: 0 });
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const read = (d) => {
-        const c = runtime.current[d].capture;
-        if (!c) return null;
-        const level = c.level();
-        const now = performance.now();
-        if (level > SILENCE_RMS || !lastSignal.current[d]) lastSignal.current[d] = now;
-        return { level, speaking: c.speaking(), silentSecs: (now - lastSignal.current[d]) / 1000 };
-      };
-      setMeters({ remote_to_local: read("remote_to_local"), local_to_remote: read("local_to_remote") });
-    }, 100);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  // Core Audio da los nombres fiables; el WebView da los IDs que acepta
-  // getUserMedia. Se emparejan por nombre. `askMic` abre el micrófono un
-  // instante para tener los nombres; al conectar algo no hace falta (el permiso
-  // ya está) y abrirlo crearía otro `devicechange`.
-  const loadDevices = useCallback((askMic = true) => {
-    const web = askMic ? listWebviewDevices() : navigator.mediaDevices.enumerateDevices();
-    Promise.all([api.listAudioDevices(), web, api.systemAudioSupported().catch(() => false)])
-      .then(([core, web, canTap]) => {
-        const paired = pairDevices(core, web);
-        setDevices(paired);
-        setSystemAudio(canTap);
-        // Por defecto, la primera salida segura (las bocinas, normalmente).
-        const safe = paired.outputs.find((d) => !feedsCapture(d.name));
-        // Escuchar oye la llamada o el vídeo del audio del Mac (sin la voz de
-        // Lingora) o, en Macs antiguos, por BlackHole. Con el micrófono por
-        // defecto oiría su propia voz por las bocinas y la repetiría en bucle.
-        const blackhole = paired.inputs.find((d) => d.webId && /blackhole 2ch/i.test(d.name));
-        const listenFrom = canTap ? SYSTEM_AUDIO : (blackhole?.webId ?? "");
-        setLanes((prev) =>
-          prev.map((l) => {
-            const inputDeviceId = l.inputDeviceId || (l.direction === "remote_to_local" ? listenFrom : "");
-            // Con el audio del Mac la voz de Lingora no entra en la captura: la
-            // salida por defecto es segura y sigue a los auriculares si se conectan.
-            const followsSystem = l.direction === "remote_to_local" && inputDeviceId === SYSTEM_AUDIO;
-            return { ...l, outputDevice: l.outputDevice || (followsSystem ? "" : safe?.name || ""), inputDeviceId };
-          }),
-        );
-      })
-      .catch(() => setDevices({ inputs: [], outputs: [] }));
-  }, []);
-
-  useEffect(() => {
-    loadDevices();
-    // Un micrófono o unos auriculares que se conectan aparecen en Ajustes al
-    // momento. Grabando no: el audio del Mac crea su propio dispositivo al
-    // empezar (y en una reunión `useMeetingNotes` ya sigue el micrófono). Los
-    // avisos seguidos cuentan como uno y no abren el micrófono.
-    const media = navigator.mediaDevices;
-    let timer = 0;
-    const onChange = () => {
-      window.clearTimeout(timer);
-      if (anyRunningRef.current) return;
-      timer = window.setTimeout(() => loadDevices(false), 500);
-    };
-    media?.addEventListener("devicechange", onChange);
-    return () => {
-      window.clearTimeout(timer);
-      media?.removeEventListener("devicechange", onChange);
-    };
-  }, [loadDevices]);
-
   /** @param {Direction} direction @param {Partial<Lane>} patch */
   const updateLane = (direction, patch) => {
     setLanes((prev) => {
       const next = prev.map((l) => (l.direction === direction ? { ...l, ...patch } : l));
-      if ("maxSpeed" in patch) {
-        try {
-          localStorage.setItem(MAX_SPEED_KEY, JSON.stringify(Object.fromEntries(next.map((l) => [l.direction, l.maxSpeed]))));
-        } catch {
-          // Sin almacenamiento el tope solo dura esta sesión.
-        }
-      }
-      if ("showSource" in patch) {
-        try {
-          localStorage.setItem(SHOW_SOURCE_KEY, JSON.stringify(Object.fromEntries(next.map((l) => [l.direction, l.showSource]))));
-        } catch {
-          // Sin almacenamiento solo dura esta sesión.
-        }
-      }
-      if ("voiceIds" in patch) {
-        try {
-          localStorage.setItem(VOICE_IDS_KEY, JSON.stringify(Object.fromEntries(next.map((l) => [l.direction, l.voiceIds]))));
-        } catch {
-          // Sin almacenamiento solo dura esta sesión.
-        }
-      }
-      if ("speak" in patch) {
-        try {
-          localStorage.setItem(SPEAK_KEY, JSON.stringify(Object.fromEntries(next.map((l) => [l.direction, l.speak]))));
-        } catch {
-          // Sin almacenamiento solo dura esta sesión.
-        }
-      }
+      storeLaneSettings(next, patch);
       return next;
     });
   };
@@ -881,66 +623,15 @@ export default function App() {
     [],
   );
 
-  // Subtítulos flotantes: siempre de Escuchar, que es lo que dice la otra
-  // persona o el vídeo. Esta ventana sigue haciendo todo el trabajo y les
-  // manda las últimas frases.
-  const [floating, setFloating] = useState(false);
   const remoteLane = /** @type {Lane} */ (lanes.find((l) => l.direction === "remote_to_local"));
   const remoteState = state.remote_to_local;
-  const floatingPayload = useRef(/** @type {object | null} */ (null));
-  const toggleRemote = useRef(() => {});
-  toggleRemote.current = () => (remoteState.running ? stop(remoteLane) : start(remoteLane));
-
-  useEffect(() => {
-    const same = remoteLane.sourceLang === remoteLane.targetLang;
-    floatingPayload.current = {
-      state: {
-        ...EMPTY_STATE,
-        running: remoteState.running,
-        draft: remoteState.draft,
-        history: remoteState.history
-          .slice(0, CAPTION_SENTENCES)
-          .map((h) => ({ id: h.id, captionKey: h.captionKey, translation: h.translation, transcript: h.transcript })),
-      },
-      showSource: !same && (remoteLane.showSource ?? (remoteLane.speak && !same)),
-      // Lo que se está oyendo ahora, como al pie de los subtítulos de la app.
-      live: [...remoteState.heard.map((h) => h.text), remoteState.partial].filter(Boolean).join(" "),
-    };
-    if (floating) emitTo("captions", "captions", floatingPayload.current).catch(() => {});
-  }, [floating, remoteState, remoteLane.sourceLang, remoteLane.targetLang, remoteLane.showSource, remoteLane.speak]);
-
-  useEffect(() => {
-    const offs = [
-      listen("captions-ready", () => {
-        setFloating(true);
-        if (floatingPayload.current) emitTo("captions", "captions", floatingPayload.current).catch(() => {});
-      }),
-      listen("captions-control", () => toggleRemote.current()),
-      listen("captions-closed", () => setFloating(false)),
-    ];
-    return () => offs.forEach((off) => void off.then((f) => f()));
-  }, []);
-
-  const toggleFloating = async () => {
-    try {
-      if (floating) {
-        await (await Window.getByLabel("captions"))?.close();
-        setFloating(false);
-      } else {
-        await api.openCaptions();
-        setFloating(true);
-      }
-    } catch (e) {
-      console.warn("[lingora] subtítulos flotantes:", e);
-    }
-  };
+  const { floating, toggleFloating } = useFloatingCaptions({ remoteLane, remoteState, start, stop });
 
   const { inputs, outputs } = devices;
   // En modo vídeo solo se traduce lo que se oye.
   const visible = mode !== "call" ? lanes.filter((l) => l.direction === "remote_to_local") : lanes;
   const running = lanes.filter((l) => state[l.direction].running || state[l.direction].starting);
   const anyRunning = running.length > 0;
-  const anyRunningRef = useRef(anyRunning);
   anyRunningRef.current = anyRunning;
   // Tomar notas en una reunión en línea: los dos carriles a la vez.
   const localState = state.local_to_remote;

@@ -26,8 +26,9 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
   - `speedFor`, `MAX_VOICE_LAG_SECS` y `trimSilence` (este, en
     `src/utils/voice.js`: lo comparte con la prueba de voz);
   - el flujo `enqueue` / `texted` / `playback`, `start` y `stop`;
-  - las claves de `localStorage` que ya existen (`lingora.*`): no las
-    renombres, se perderían los ajustes de quien ya usa la app.
+  - las claves de `localStorage` que ya existen (`lingora.*`, casi todas en
+    `src/utils/prefs.js` y `src/utils/notes.js`): no las renombres, se
+    perderían los ajustes de quien ya usa la app (`prefs.test.js` lo vigila).
 - **En `src/utils/notes.js`:** `createSpeakerTracker` y sus constantes
   (`SAME_SPEAKER = 0.5`, `SHORT_SECS`, `NEW_SPEAKER_SECS`, `MIN_SHARE`,
   `MERGE`, el repaso `refine()`). Se afinaron con una entrevista real de
@@ -115,7 +116,7 @@ documentación o su código).
 - **Carpetas:** `src/pages/` (pantallas), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
   `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
-  `lanes`, `voice`, `echo`, `route`), `src/hooks/` (hooks propios de React,
+  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`), `src/hooks/` (hooks propios de React,
   `useAlgo.js`) y `src/App/` (el armazón y Traducir; la cabecera y la
   tarjeta de cada carril están en `components/TopBar` y
   `components/LaneCard`, y los tipos en `App/types.js`).

@@ -1,0 +1,130 @@
+/* People in the note: a pill per person, with their color. */
+.speaker-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.speaker-wrap {
+  position: relative;
+}
+
+.speaker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--n-input);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.speaker-chip:hover:not(:disabled),
+.speaker-chip.is-open {
+  background: var(--n-hover);
+  border-color: var(--n-ring);
+}
+
+.speaker-chip:disabled {
+  opacity: 0.7;
+}
+
+.speaker-chip:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.speaker-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--who, var(--accent));
+  flex: none;
+}
+
+.speaker-count {
+  font-size: 12px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.speaker-menu {
+  min-width: 240px;
+  gap: 6px;
+  padding: 10px;
+}
+
+.speaker-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.speaker-name input {
+  height: var(--control-h);
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--n-input);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.speaker-name input:focus {
+  border-color: var(--n-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* The class twice: the specificity from before (.speaker-menu .note-action.primary). */
+.speaker-menu .speaker-save.speaker-save {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.speaker-menu-title {
+  margin-top: 6px;
+  padding: 6px 2px 2px;
+  border-top: 1px solid var(--n-border);
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.speaker-menu button[role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speaker-chip {
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+
+.speaker-chip:hover:not(:disabled),
+.speaker-chip.is-open {
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.speaker-bar {
+  align-items: center;
+}
+
+.speaker-bar-label {
+  margin-right: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}

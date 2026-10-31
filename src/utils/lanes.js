@@ -52,3 +52,16 @@ export const LANES = [
     maxSpeed: DEFAULT_MAX_SPEED,
   },
 ];
+
+/**
+ * The languages of a lane according to the pair: "Listen" goes from the other
+ * person to you and "Speak", the other way around.
+ * @param {import("../App/types").Direction} direction @param {import("../App/types").LangPair} pair
+ */
+export const langsFor = (direction, pair) =>
+  direction === "remote_to_local"
+    ? { sourceLang: pair.them, targetLang: pair.you }
+    : { sourceLang: pair.you, targetLang: pair.them };
+
+/** A stopped lane with nothing on screen. @type {import("../App/types").LaneState} */
+export const EMPTY_STATE = { running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };
