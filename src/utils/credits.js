@@ -84,7 +84,7 @@ export const CREDITS = [
     id: "llamacpp2",
     kind: "library",
     name: "llama-cpp-2",
-    author: "utilityai",
+    author: "Dial AI (utilityai)",
     license: "MIT OR Apache-2.0",
     licenseFile: "MIT-llama-cpp-2.txt",
     url: "https://crates.io/crates/llama-cpp-2",

@@ -7,3 +7,4 @@ src-tauri/gen/
 src-tauri/sherpa-libs/
 *.log
 .DS_Store
+.codegraph/
