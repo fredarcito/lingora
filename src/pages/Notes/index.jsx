@@ -5,7 +5,7 @@ import NotePage from "../../components/NotePage";
 import { useNotesList } from "../../hooks/useNotesList.js";
 import { activeNoteId, formatDuration } from "../../utils/notes.js";
 import { dateFormats, daysAgo, langPair, monthLabel, timeRange } from "../../utils/noteList.js";
-import { Badge, ChevronIcon, NoteIcon, PageHeader, SearchBox, Select, cx } from "../../components/shared";
+import { Badge, ChevronIcon, NoteIcon, PageHeader, SearchBox, Select, TranslateIcon, cx } from "../../components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -35,10 +35,17 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
   // ⌘K from an open note: goes back to the list and focuses the search box when it renders.
   const focusSearch = useRef(false);
 
-  // Back to the list, where it was left.
+  // Back from a note: the list where it was left. Coming from another screen:
+  // from the top, not where a note was opened some time ago.
   useLayoutEffect(() => {
     if (!openId && scroller.current) scroller.current.scrollTop = scrollTop.current;
-  }, [openId, visible]);
+  }, [openId]);
+  useLayoutEffect(() => {
+    if (!visible) return;
+    scrollTop.current = 0;
+    if (!openId && scroller.current) scroller.current.scrollTop = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   /** @param {string} id */
   const open = (id) => {
@@ -165,7 +172,14 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
                           <span className={styles.noteItemTitle}>
                             <span className={styles.noteItemName}>{n.title}</span>
                             {n.id === live && <span className="note-live">{t("notes.live")}</span>}
-                            {n.kind === "notes" && <Badge>{t("notes.badge.notes")}</Badge>}
+                            {/* The kind at a glance: notes in the accent color, translated conversations in gray. */}
+                            {n.kind === "notes" ? (
+                              <Badge icon={<NoteIcon />}>{t("notes.badge.notes")}</Badge>
+                            ) : (
+                              <Badge icon={<TranslateIcon />} muted>
+                                {t("notes.badge.conversation")}
+                              </Badge>
+                            )}
                             {n.has_summary && <Badge>{t("notes.badge.summary")}</Badge>}
                           </span>
                           <span className={styles.noteItemMeta}>

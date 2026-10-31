@@ -5,7 +5,7 @@
   "mins": "{n} min",
   "gap": "Sin guardar · {time}",
   "notesTitle": "Notas del {date}, {time}",
-  "convTitle": "Conversación del {date}, {time}",
+  "convTitle": "Traducción del {date}, {time}",
   "me": "Yo",
   "person": "Persona {n}",
   "summaryPrompt": "Resume esta conversación en {language}: puntos clave, decisiones y tareas con responsable si se menciona."

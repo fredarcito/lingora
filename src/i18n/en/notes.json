@@ -17,7 +17,7 @@
   "empty.hint": "When you translate or take notes, they will be saved here.",
   "noMatch": "No notes match your search.",
   "live": "Recording",
-  "badge.notes": "Notes",
+  "badge.notes": "Note",
   "badge.summary": "Summary",
   "sentences_one": "{count} sentence",
   "sentences_other": "{count} sentences",
@@ -72,5 +72,6 @@
   "shareHint": "How much each person spoke (% of the conversation)",
   "share": "{pct}%",
   "saved": "Saved session",
-  "goTranscript": "Go to transcript"
+  "goTranscript": "Go to transcript",
+  "badge.conversation": "Translation"
 }

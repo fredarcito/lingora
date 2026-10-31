@@ -5,7 +5,7 @@
   "mins": "{n} min",
   "gap": "Not saved · {time}",
   "notesTitle": "Notes from {date}, {time}",
-  "convTitle": "Conversation from {date}, {time}",
+  "convTitle": "Translation from {date}, {time}",
   "me": "Me",
   "person": "Person {n}",
   "summaryPrompt": "Summarize this conversation in {language}: key points, decisions and action items with an owner if one is mentioned."

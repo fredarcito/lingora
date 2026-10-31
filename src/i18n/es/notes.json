@@ -17,7 +17,7 @@
   "empty.hint": "Cuando traduzcas o tomes notas, se guardará aquí.",
   "noMatch": "Ninguna nota coincide con la búsqueda.",
   "live": "Grabando",
-  "badge.notes": "Notas",
+  "badge.notes": "Nota",
   "badge.summary": "Resumen",
   "sentences_one": "{count} frase",
   "sentences_other": "{count} frases",
@@ -72,5 +72,6 @@
   "shareHint": "Cuánto habló cada persona (% de la conversación)",
   "share": "{pct} %",
   "saved": "Sesión guardada",
-  "goTranscript": "Ir a la transcripción"
+  "goTranscript": "Ir a la transcripción",
+  "badge.conversation": "Traducción"
 }

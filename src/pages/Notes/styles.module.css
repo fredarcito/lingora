@@ -169,3 +169,23 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* Neutral cards with more room: the kind label carries the color. */
+.notes-list .note-item {
+  padding: 20px 22px;
+  border-color: var(--n-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.notes-list .note-item:hover {
+  border-color: var(--n-input);
+  background: var(--n-hover);
+}
+
+.notes-list .note-item-body {
+  gap: 8px;
+}
+
+.notes-list .note-item-preview {
+  font-size: 13.5px;
+}

@@ -198,3 +198,12 @@ export function RefreshIcon() {
     </svg>
   );
 }
+
+/** A letter and a character: a translated conversation. */
+export function TranslateIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M4 6h8M8 4v2M10 6c-.5 3-2.5 6-6 8M6 10c1 2 3 3.5 5 4M13 20l4-9 4 9M14.5 17h5" />
+    </svg>
+  );
+}
