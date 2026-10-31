@@ -6,6 +6,9 @@
 > `utils/` instead of `src/` and `src/ui/` ("Final folders") and the order of
 > the phases ("How it was done"). What didn't fit is in "Pending". The
 > catalog and the rules that remain are in `docs/componentes.md`.
+> `scripts/css-check.mjs` and its reference in `docs/refactor/` were removed
+> on 2026-10-31: the move was finished and the CSS has changed on purpose
+> since. Git history keeps them.
 
 **For whoever implements it:** read `CLAUDE.md` first. This plan is a
 refactor: **the app has to look and behave exactly the same** before and

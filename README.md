@@ -125,9 +125,6 @@ pnpm test                    # JS tests (vitest)
 cd src-tauri && cargo check && cargo test
 ```
 
-If you touch CSS, also run `scripts/css-check.mjs` (see
-[docs/componentes.md](docs/componentes.md)).
-
 ## Configuration
 
 Everything works without configuration. Optional variables, in `.env` at the

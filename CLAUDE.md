@@ -71,8 +71,7 @@ documentación o su código).
   perder calidad, adelante. Los que pierden calidad van detrás de un
   interruptor, con lo preciso por defecto.
 - **Al terminar:** `npx vite build`, `pnpm test` y `cargo check` (en
-  `src-tauri`) sin errores. Si tocaste CSS, también `scripts/css-check.mjs` (cómo, en
-  `docs/componentes.md`). Di qué probaste y qué no.
+  `src-tauri`) sin errores. Di qué probaste y qué no.
 - **Es un repositorio git.** Antes de un cambio grande, comprueba que el
   árbol está limpio (o pide un commit) para poder deshacerlo. Aun así, mira
   bien antes de borrar o sobrescribir.
@@ -135,8 +134,8 @@ documentación o su código).
 - `docs/plan-tomar-notas.md`: el modo "Tomar notas" (en curso).
 - `docs/plan-componentes.md`: componentes reutilizables y CSS Modules (hecho;
   lo que quedó, en su «Pendiente»).
-- `docs/componentes.md`: catálogo de `src/components/shared/`, las reglas
-  del CSS y cómo comprobarlo con `scripts/css-check.mjs`.
+- `docs/componentes.md`: catálogo de `src/components/shared/` y las reglas
+  del CSS.
 - `docs/plan-distribucion.md` y `docs/plan-idiomas.md`: lo que falta para
   distribuir y los idiomas.
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
