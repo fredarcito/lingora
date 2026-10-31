@@ -20,7 +20,7 @@ import { useLanguages } from "@hooks/useLanguages.js";
 import { useVolumes } from "@hooks/useVolumes.js";
 import { useWidth } from "@hooks/useWidth.js";
 import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
-import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor } from "@utils/lanes";
+import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor, notesListenCode } from "@utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
 import { trimSilence } from "@utils/voice";
 import styles from "./styles.module.css";
@@ -273,6 +273,7 @@ export default function App() {
     // translated; "Yo" stays as said. Each sentence reads it, so it can change while recording.
     if (taking && l.direction === "remote_to_local" && floating && notesCaptions !== "original") {
       langs.targetLang = notesCaptions.toUpperCase();
+      langs.sourceLang = notesListenCode(notesListen, langs.targetLang);
     }
     // Local por defecto, pero solo si el modelo está instalado; si no, la nube.
     const source = langInfo(langs.sourceLang);

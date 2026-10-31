@@ -63,5 +63,15 @@ export const langsFor = (direction, pair) =>
     ? { sourceLang: pair.them, targetLang: pair.you }
     : { sourceLang: pair.you, targetLang: pair.them };
 
+/**
+ * Take notes listens with a code that only picks the engine: `"EN"` the
+ * European one (it detects the language by itself) and `"ZH"` the one for
+ * Chinese, Japanese, Korean… With captions in that same language the lane
+ * would look untranslated (source = target), so another code of the same
+ * engine is used.
+ * @param {"EN" | "ZH"} family @param {string} target
+ */
+export const notesListenCode = (family, target) => (target !== family ? family : family === "EN" ? "ES" : "JA");
+
 /** A stopped lane with nothing on screen. @type {import("@app/types").LaneState} */
 export const EMPTY_STATE = { running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };

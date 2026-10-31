@@ -531,6 +531,10 @@ For learning a language: take notes and read captions at the same time.
 - With a language **and the window open**, only the Listen lane gets that
   `targetLang` (in `App/index.jsx`, the computation of `lanes`; `floating`
   lives in App for this). With the window closed nothing is translated.
+  If the captions are in the family's own code (English with "Automatic",
+  Chinese with "Chinese, Japanese, Korean…"), source and target would match
+  and nothing would be translated: the lane listens with another code of
+  the same engine (`notesListenCode` in `utils/lanes.js`: `ES` / `JA`).
   "Me" is never translated and nothing is spoken. The translator doesn't
   need the source language, so it works with the automatic detection. Each
   sentence reads the lane, so it can change while recording (the first

@@ -802,8 +802,9 @@ export function createRecorder({ mode, summaryLang = "es", paused = false }) {
       if (!note) return;
       /** @type {import("./api").NoteSentence} */
       // Tomar notas no fija el idioma: "auto" (escucha europea) o "zh".
+      // With Chinese captions the Chinese family listens as "ja" (see `notesListenCode`).
       if (notes) {
-        const lang = sentence.source_lang === "zh" ? "zh" : "auto";
+        const lang = sentence.source_lang === "zh" || sentence.source_lang === "ja" ? "zh" : "auto";
         sentence = { ...sentence, source_lang: lang, target_lang: lang, translation: null };
       }
       const entry = { ...sentence, t: secsAt(heardAt), speaker: null };
