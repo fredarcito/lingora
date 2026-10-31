@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  Badge,
   Button,
   ChoiceCards,
   ConfirmDialog,
@@ -23,12 +22,16 @@ import {
   loadNotesLang,
   formatClock,
   loadSpeakers,
+  notesTitle,
   paragraphs,
   storeNotesConsent,
 } from "../../utils/notes.js";
 import { echoPossible, prefersMacMic, prefersRoomMic } from "../../utils/route.js";
 import { splitWords, wordDelayMs } from "../../utils/words.js";
 import styles from "./styles.module.css";
+
+/** The icon of each source, as in the options before starting. */
+const SOURCE_ICON = { meeting: <VideoIcon />, system: <MonitorIcon />, mic: <MicIcon /> };
 
 /** Distance from the bottom beyond which the user is considered to have scrolled up to read. */
 const STICK_PX = 48;
@@ -83,6 +86,8 @@ export default function NoteTaking({
   const [askConsent, setAskConsent] = useState(false);
   const [note, setNote] = useState(/** @type {import("../../utils/api").Note | null} */ (null));
   const [elapsed, setElapsed] = useState(0);
+  // Until the first sentence there is no note yet: its title is shown as it will be.
+  const [startedAt, setStartedAt] = useState(() => new Date());
   // The user scrolled up to read: they are not dragged back down and a way back is offered.
   const [away, setAway] = useState(false);
   const stick = useRef(true);
@@ -97,6 +102,7 @@ export default function NoteTaking({
     const startedAt = performance.now();
     setNote(null);
     setElapsed(0);
+    setStartedAt(new Date());
     stick.current = true;
     setAway(false);
     // The recorder keeps the previous note until the first sentence: only one from this session counts.
@@ -148,12 +154,19 @@ export default function NoteTaking({
     return (
       <div className={styles.noteTaking}>
         <div className={styles.takingLive}>
+          <header className={styles.takingHead}>
+            <p className={styles.takingEyebrow}>{t("app.mode.notes")}</p>
+            <h2 className={styles.takingTitle}>{note?.title ?? notesTitle(startedAt)}</h2>
+          </header>
           <div className={styles.takingBar}>
             <span className="note-live">{t("noteTaking.recording")}</span>
             <span className={styles.takingTime}>{elapsedLabel(elapsed)}</span>
             {/* Where it is recorded from, in case the wrong one was chosen. */}
-            <Badge>{t(`noteTaking.${effectiveInput}`)}</Badge>
-            <p className={cx(styles.takingPeople, "muted")}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
+            <span className={styles.takingSource}>
+              {SOURCE_ICON[effectiveInput]}
+              {t(`noteTaking.${effectiveInput}`)}
+            </span>
+            <p className={styles.takingPeople}>{loadSpeakers() ? t("noteTaking.peopleLater") : ""}</p>
             {closing ? (
               <Button busy disabled>
                 {t("noteTaking.finishing")}
@@ -169,7 +182,7 @@ export default function NoteTaking({
           {micError && <p className={styles.takingWarning}>{t("noteTaking.micError", { error: micError })}</p>}
           <div className={styles.takingScroll} ref={scroller} onScroll={onScroll}>
             {anonymous && anonymous.sentences.length > 0 ? (
-              <LiveTranscript note={anonymous} onReveal={follow} />
+              <LiveTranscript note={anonymous} onReveal={follow} writing={!closing} />
             ) : (
               <p className="muted notes-empty">{t("noteTaking.listeningHere")}</p>
             )}
@@ -310,9 +323,10 @@ function RouteHint({ route }) {
  * The live transcript: sentences arrive whole, but the text appears
  * word by word, at the pace of the Translate audio subtitles, so that
  * it does not look jumpy. Each paragraph is a row, as on the note page.
- * @param {{ note: import("../../utils/api").Note, onReveal: () => void }} props
+ * With `writing`, the last paragraph is highlighted as the one in progress.
+ * @param {{ note: import("../../utils/api").Note, onReveal: () => void, writing: boolean }} props
  */
-function LiveTranscript({ note, onReveal }) {
+function LiveTranscript({ note, onReveal, writing }) {
   const t = useT();
   /** @type {Map<import("../../utils/api").NoteSentence, number>} */
   const index = new Map(note.sentences.map((x, i) => [x, i]));
@@ -357,16 +371,20 @@ function LiveTranscript({ note, onReveal }) {
     onReveal();
   });
 
+  const blocks = paragraphs(note.sentences)
+    .map((block) => ({ block, words: block.flatMap((x) => byIndex[/** @type {number} */ (index.get(x))]).filter((w) => shown.current.has(w.key)) }))
+    .filter((b) => b.words.length > 0);
   return (
     <ol className="note-lines">
-      {paragraphs(note.sentences).map((block) => {
-        const words = block.flatMap((x) => byIndex[/** @type {number} */ (index.get(x))]).filter((w) => shown.current.has(w.key));
-        if (words.length === 0) return null;
+      {blocks.map(({ block, words }, i) => {
         const me = block[0].speaker === 0;
+        // The paragraph still being written, highlighted, so it is clear where the transcript is.
+        const current = writing && i === blocks.length - 1;
         return (
-          <li key={words[0].key} className={me ? "note-line has-who" : "note-line"}>
+          <li key={words[0].key} className={cx("note-line", me && "has-who", current && styles.isCurrent)}>
             <span className="note-time">{formatClock(block[0].t)}</span>
             <span className="note-text">
+              {current && <span className={styles.currentLabel}>{t("noteTaking.current")}</span>}
               {me && (
                 <b className="note-who" style={{ "--who": "var(--accent)" }}>
                   {t("notesLib.me")}

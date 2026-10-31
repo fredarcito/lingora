@@ -35,12 +35,82 @@
   gap: 12px;
 }
 
+/* Which note is being written: the mode small, the title large. */
+.taking-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.taking-eyebrow {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.taking-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .taking-bar {
   display: flex;
   align-items: center;
   gap: 12px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--n-border);
+}
+
+.taking-bar > :global(button) {
+  flex: none;
+}
+
+/* The source, with the same icon as its card before starting. */
+.taking-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--n-border);
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.taking-source svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Room on the sides for the highlight; the list clips what overflows. */
+.note-taking :global(.note-line) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* The paragraph still being written: a line of the accent color on the left. */
+.note-taking :global(.note-line).is-current {
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.current-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
 }
 
 .taking-time {
@@ -52,7 +122,12 @@
 .taking-people {
   flex: 1;
   min-width: 0;
-  font-size: 13px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .taking-warning {
@@ -72,12 +147,13 @@
 
 /* What is being heard now, like the subtitles at the bottom. */
 .taking-heard {
+  border-top: 1px solid var(--n-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 22px;
-  padding: 0 4px;
+  padding: 12px 4px 0;
 }
 
 /* Each word of the live transcript fades in, like the subtitles. */

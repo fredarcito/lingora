@@ -242,7 +242,7 @@ const formatSecs = (secs) => (secs < 60 ? t("notesLib.secs", { n: secs }) : t("n
 export const gapLabel = (secs) => t("notesLib.gap", { time: formatSecs(secs) });
 
 /** "Notas del 29 oct, 10:32" @param {Date} d */
-const notesTitle = (d) => t("notesLib.notesTitle", { date: dayMonth(d), time: clock(d) });
+export const notesTitle = (d) => t("notesLib.notesTitle", { date: dayMonth(d), time: clock(d) });
 
 /** "03:25"; los minutos no pasan a horas. @param {number} t */
 export function formatClock(t) {

@@ -1,6 +1,6 @@
 {
   "recording": "Grabando",
-  "peopleLater": "Las personas se identifican al terminar.",
+  "peopleLater": "Al detener se identifican las personas",
   "stop": "Detener",
   "noSignal": "No llega sonido. Revisa que se esté reproduciendo algo o que el micrófono esté activo.",
   "listeningHere": "Escuchando… las notas aparecerán aquí.",
@@ -42,5 +42,6 @@
   "permission.mic": "Si es la primera vez, macOS pedirá permiso para usar el micrófono.",
   "permission.system": "Si es la primera vez, macOS pedirá permiso para grabar el audio del sistema.",
   "permission.meeting": "Si es la primera vez, macOS pedirá permiso para usar el micrófono y grabar el audio del sistema.",
-  "hint.mic": "Se anota lo que oye el micrófono: tu voz y la de quienes estén cerca."
+  "hint.mic": "Se anota lo que oye el micrófono: tu voz y la de quienes estén cerca.",
+  "current": "En curso"
 }
