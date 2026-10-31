@@ -1,5 +1,19 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Badge, Button, ConfirmDialog, LinkButton, Segmented, StopIcon, cx } from "../../components/shared";
+import {
+  Badge,
+  Button,
+  ChoiceCards,
+  ConfirmDialog,
+  LinkButton,
+  MicIcon,
+  MonitorIcon,
+  PlayIcon,
+  Segmented,
+  ShieldIcon,
+  StopIcon,
+  VideoIcon,
+  cx,
+} from "../../components/shared";
 import LiveStatus from "../../components/LiveStatus";
 import { useT } from "../../i18n";
 import {
@@ -177,72 +191,86 @@ export default function NoteTaking({
     <div className={styles.noteTaking}>
       <div className="notes-scroll">
         <div className="notes-column">
-          <section className="prefs-section">
-            <div className="prefs-section-head">
-              <p>{t("noteTaking.intro")}</p>
-            </div>
-            <div className="prefs-card">
-              <div className="prefs-fields">
-                <div className="field">
-                  <span>{t("noteTaking.whatToListen")}</span>
-                  <Segmented
-                    value={effectiveInput}
-                    onChange={(v) => onInput(/** @type {import("../../utils/notes.js").NotesInput} */ (v))}
-                    options={[
-                      {
-                        value: "meeting",
-                        label: t("noteTaking.meeting"),
-                        hint: systemAudio ? t("noteTaking.meeting.hint") : t("noteTaking.system.need"),
-                        disabled: !systemAudio,
-                      },
-                      {
-                        value: "system",
-                        label: t("noteTaking.system"),
-                        hint: systemAudio ? t("noteTaking.system.hint") : t("noteTaking.system.need"),
-                        disabled: !systemAudio,
-                      },
-                      { value: "mic", label: t("noteTaking.mic"), hint: t("noteTaking.mic.hint") },
-                    ]}
-                  />
-                  <small className="field-hint">
-                    {t(`noteTaking.hint.${effectiveInput}`)}
-                    {effectiveInput === "meeting" && route && <RouteHint route={route} />}
-                    {effectiveInput === "mic" && prefersRoomMic(route) && t("noteTaking.route.roomMic")}
-                    {!systemAudio && t("noteTaking.hint.need")}
-                  </small>
-                </div>
-                <div className="field">
-                  <span>{t("noteTaking.meetingLang")}</span>
-                  <Segmented
-                    value={listen}
-                    onChange={(v) => onListen(/** @type {"EN" | "ZH"} */ (v))}
-                    options={[
-                      { value: "EN", label: t("noteTaking.auto"), hint: t("noteTaking.auto.hint") },
-                      { value: "ZH", label: t("noteTaking.zh"), hint: t("noteTaking.zh.hint") },
-                    ]}
-                  />
-                </div>
-                <div className="field">
-                  <span>{t("noteTaking.summaryLang")}</span>
-                  <p className={styles.takingSummaryLang}>
-                    <strong>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</strong>
-                    <LinkButton onClick={onOpenSettings}>{t("noteTaking.changeInSettings")}</LinkButton>
-                  </p>
-                  <small className="field-hint">{t("noteTaking.summaryLangHint")}</small>
-                </div>
+          <div className={styles.setup}>
+            <section className={styles.setupSection}>
+              <h3 className={styles.setupLabel}>{t("noteTaking.whatToListen")}</h3>
+              <ChoiceCards
+                value={effectiveInput}
+                onChange={(v) => onInput(/** @type {import("../../utils/notes.js").NotesInput} */ (v))}
+                options={[
+                  {
+                    value: "meeting",
+                    label: t("noteTaking.meeting"),
+                    hint: systemAudio ? t("noteTaking.meeting.hint") : t("noteTaking.system.need"),
+                    icon: <VideoIcon />,
+                    disabled: !systemAudio,
+                  },
+                  {
+                    value: "system",
+                    label: t("noteTaking.system"),
+                    hint: systemAudio ? t("noteTaking.system.hint") : t("noteTaking.system.need"),
+                    icon: <MonitorIcon />,
+                    disabled: !systemAudio,
+                  },
+                  { value: "mic", label: t("noteTaking.mic"), hint: t("noteTaking.mic.hint"), icon: <MicIcon /> },
+                ]}
+              />
+              {/* Below the cards, what they don't say: what gets noted and what is connected. */}
+              <p className={styles.setupHint}>
+                {t(`noteTaking.hint.${effectiveInput}`)}
+                {effectiveInput === "meeting" && route && <RouteHint route={route} />}
+                {effectiveInput === "mic" && prefersRoomMic(route) && t("noteTaking.route.roomMic")}
+                {!systemAudio && t("noteTaking.hint.need")}
+              </p>
+            </section>
+            <section className={styles.setupSection}>
+              <h3 className={styles.setupLabel}>{t("noteTaking.meetingLang")}</h3>
+              <div className={styles.setupLang}>
+                <Segmented
+                  value={listen}
+                  onChange={(v) => onListen(/** @type {"EN" | "ZH"} */ (v))}
+                  options={[
+                    { value: "EN", label: t("noteTaking.auto"), hint: t("noteTaking.auto.hint") },
+                    { value: "ZH", label: t("noteTaking.zh"), hint: t("noteTaking.zh.hint") },
+                  ]}
+                />
               </div>
-              {error && (
-                <p className="notes-error" role="alert">
-                  {error}
+              {/* The hint of the chosen option, in view instead of only on hover. */}
+              <p className={styles.setupHint}>{t(listen === "ZH" ? "noteTaking.zh.hint" : "noteTaking.auto.hint")}</p>
+            </section>
+            <section className={styles.setupSection}>
+              <h3 className={styles.setupLabel}>{t("noteTaking.summaryLang")}</h3>
+              <div className={styles.setupSummary}>
+                <p className={styles.takingSummaryLang}>
+                  <strong>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</strong>
+                  <LinkButton onClick={onOpenSettings}>{t("noteTaking.changeInSettings")}</LinkButton>
                 </p>
-              )}
-              <div className={styles.takingActions}>
-                <Button variant="primary" className={styles.takingStart} busy={starting} disabled={starting} onClick={begin}>
-                  {starting ? t("noteTaking.preparing") : t("noteTaking.start")}
-                </Button>
+                <p className={styles.setupHint}>{t("noteTaking.summaryLangHint")}</p>
               </div>
+            </section>
+            {error && (
+              <p className="notes-error" role="alert">
+                {error}
+              </p>
+            )}
+            <div className={styles.takingActions}>
+              {/* A last look at what was chosen, before recording. */}
+              <p className={styles.setupRecap}>
+                <strong>{t(`noteTaking.${effectiveInput}`)}</strong>
+                {" · "}
+                {t("noteTaking.recap.lang")} <strong>{t(listen === "ZH" ? "noteTaking.zh" : "noteTaking.auto")}</strong>
+                {" · "}
+                {t("noteTaking.recap.summary")} <strong>{languages.find((l) => l.code === summaryLang)?.name ?? summaryLang}</strong>
+              </p>
+              <Button variant="primary" className={styles.takingStart} busy={starting} disabled={starting} onClick={begin}>
+                {starting ? t("noteTaking.preparing") : <><PlayIcon />{t("noteTaking.start")}</>}
+              </Button>
             </div>
-          </section>
+            <p className={styles.setupPermission}>
+              <ShieldIcon />
+              {t(`noteTaking.permission.${effectiveInput}`)}
+            </p>
+          </div>
         </div>
       </div>
       {askConsent && (

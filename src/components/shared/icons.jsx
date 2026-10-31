@@ -150,3 +150,42 @@ export function VolumeIcon() {
     </svg>
   );
 }
+
+/** A video camera: an online meeting. */
+export function VideoIcon() {
+  return (
+    <svg {...svgProps}>
+      <rect x="3" y="6" width="12" height="12" rx="2" />
+      <path d="M15 10l6-3v10l-6-3" />
+    </svg>
+  );
+}
+
+/** A screen: the computer's audio. */
+export function MonitorIcon() {
+  return (
+    <svg {...svgProps}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M8 20h8M12 16v4" />
+    </svg>
+  );
+}
+
+/** A microphone. */
+export function MicIcon() {
+  return (
+    <svg {...svgProps}>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+    </svg>
+  );
+}
+
+/** A shield: permissions and privacy. */
+export function ShieldIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" />
+    </svg>
+  );
+}
