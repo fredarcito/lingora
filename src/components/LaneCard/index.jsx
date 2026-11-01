@@ -360,7 +360,7 @@ function clock(ms) {
 
 /** "Paulina · mujer, México · Premium" @param {import("@utils/api").VoiceInfo} v */
 const voiceLabel = (v) =>
-  [v.name, [v.gender === "female" ? t("app.voices.gender.female") : v.gender === "male" ? t("app.voices.gender.male") : "", v.detail].filter(Boolean).join(", ")]
+  [v.engine === "supertonic" ? t("app.voices.numbered", { n: v.name }) : v.name, [v.gender === "female" ? t("app.voices.gender.female") : v.gender === "male" ? t("app.voices.gender.male") : "", v.detail].filter(Boolean).join(", ")]
     .filter(Boolean)
     .join(" · ");
 
@@ -396,6 +396,8 @@ function VoiceControls({ lane, volume, onChange }) {
   // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
+  // Automatic uses Lingora's voice whenever the language has one.
+  const lingoraVoice = voiceList.some((v) => v.engine === "supertonic") && !voiceId.startsWith("system:");
   /** @param {string} id "" = automatic. */
   const chooseVoice = (id) => {
     const { [target]: _, ...rest } = lane.voiceIds;
@@ -409,7 +411,7 @@ function VoiceControls({ lane, volume, onChange }) {
     try {
       const text =
         VOICE_SAMPLES[target] ?? (await api.translate(VOICE_SAMPLES.es, "es", target, "", () => {}, false, true)).translation;
-      const speech = await api.speak(text, target, voice, 1, voiceId || null);
+      const speech = await api.speak(text, target, voice, 1, voiceId || null, lane.voiceHq);
       await api.playAudio(trimSilence(speech.audio, speech.sample_rate), speech.sample_rate, lane.outputDevice, volume);
     } catch (e) {
       setPreviewError(errorMessage(e));
@@ -433,7 +435,7 @@ function VoiceControls({ lane, volume, onChange }) {
           >
             <option value="">{t(voice === "female" ? "app.voices.auto.female" : "app.voices.auto.male")}</option>
             {[
-              ["kokoro", t("app.voices.group.kokoro")],
+              ["supertonic", t("app.voices.group.supertonic")],
               ["system", t("app.voices.group.system")],
             ].map(([engine, label]) => {
               const list = voiceList.filter((v) => v.engine === engine);
@@ -473,6 +475,18 @@ function VoiceControls({ lane, volume, onChange }) {
           <strong className={styles.fieldValue}>{t("app.voices.speed.upTo", { speed: lane.maxSpeed.toFixed(2) })}</strong>
         </label>
       </div>
+      {/* Only Lingora's voices have the higher-quality mode; the system ones don't. */}
+      {lingoraVoice && (
+        <div className={cx(styles.settingRow, styles.settingSub)}>
+          <span className={styles.settingLabel} />
+          <Switch
+            checked={lane.voiceHq ?? false}
+            onChange={(on) => onChange({ voiceHq: on })}
+            label={t("app.voices.hq")}
+            title={t("app.voices.hq.hint")}
+          />
+        </div>
+      )}
     </>
   );
 }

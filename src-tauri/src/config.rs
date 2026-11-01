@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 /// HY-MT2 menos el uigur). Lo demás depende del idioma:
 /// - Parakeet (texto en vivo y transcripción Rápida) solo entiende idiomas
 ///   europeos.
-/// - La voz es Kokoro donde tiene; si no, la del sistema (`system_voice.rs`),
+/// - La voz es Supertonic donde tiene; si no, la del sistema (`system_voice.rs`),
 ///   que cambia de un equipo a otro. Sin voz instalada, solo hay subtítulos.
 ///
 /// Ver docs/plan-idiomas.md.
@@ -26,9 +26,11 @@ pub struct LangInfo {
     pub spanish: &'static str,
     /// Lo entiende Parakeet v3.
     pub parakeet: bool,
-    /// Voces de Kokoro (mujer, hombre). Sin voz de hombre se usa la de mujer.
-    pub kokoro: Option<(&'static str, Option<&'static str>)>,
-    /// Locale de espeak-ng para fonemizar (solo con Kokoro).
+    /// Supertonic speaks it (with the same code as `code`); if not, the
+    /// system voice is used.
+    pub supertonic: bool,
+    /// espeak-ng locale. Unused since Kokoro was replaced; see Step 4 of
+    /// docs/plan-voz-supertonic.md.
     pub espeak: &'static str,
     /// Etiquetas BCP-47 de las voces del sistema que valen para este idioma,
     /// por orden de preferencia ("ja-JP", "yue", "zh-HK"…). Una etiqueta vale
@@ -38,37 +40,39 @@ pub struct LangInfo {
 
 macro_rules! lang {
     ($code:literal, $whisper:literal, $en:literal, $zh:literal, $es:literal, parakeet: $p:literal, tags: [$($tag:literal),*]) => {
-        LangInfo { code: $code, whisper: $whisper, english: $en, chinese: $zh, spanish: $es, parakeet: $p, kokoro: None, espeak: "", voice_tags: &[$($tag),*] }
+        LangInfo { code: $code, whisper: $whisper, english: $en, chinese: $zh, spanish: $es, parakeet: $p, supertonic: false, espeak: "", voice_tags: &[$($tag),*] }
+    };
+    ($code:literal, $whisper:literal, $en:literal, $zh:literal, $es:literal, parakeet: $p:literal, supertonic, tags: [$($tag:literal),*]) => {
+        LangInfo { code: $code, whisper: $whisper, english: $en, chinese: $zh, spanish: $es, parakeet: $p, supertonic: true, espeak: "", voice_tags: &[$($tag),*] }
     };
 }
 
-/// Todos los idiomas. Los cinco primeros tienen voz de Kokoro. Las
+/// Todos los idiomas; los marcados `supertonic` tienen voz de Lingora. Las
 /// constantes de `Lang` (`Lang::Es`, `Lang::Ja`…) apuntan por posición: no
 /// cambiar el orden de los nueve primeros.
 pub static LANGS: &[LangInfo] = &[
-    LangInfo { code: "en", whisper: "en", english: "English", chinese: "英语", spanish: "Inglés", parakeet: true, kokoro: Some(("af_heart", Some("am_michael"))), espeak: "en-us", voice_tags: &["en-US", "en"] },
-    LangInfo { code: "es", whisper: "es", english: "Spanish", chinese: "西班牙语", spanish: "Español", parakeet: true, kokoro: Some(("ef_dora", Some("em_alex"))), espeak: "es", voice_tags: &["es-ES", "es"] },
-    LangInfo { code: "fr", whisper: "fr", english: "French", chinese: "法语", spanish: "Francés", parakeet: true, kokoro: Some(("ff_siwis", None)), espeak: "fr-fr", voice_tags: &["fr-FR", "fr"] },
-    LangInfo { code: "it", whisper: "it", english: "Italian", chinese: "意大利语", spanish: "Italiano", parakeet: true, kokoro: Some(("if_sara", Some("im_nicola"))), espeak: "it", voice_tags: &["it"] },
-    // Las voces portuguesas de Kokoro son brasileñas.
-    LangInfo { code: "pt", whisper: "pt", english: "Portuguese", chinese: "葡萄牙语", spanish: "Portugués", parakeet: true, kokoro: Some(("pf_dora", Some("pm_alex"))), espeak: "pt-br", voice_tags: &["pt-BR", "pt"] },
+    LangInfo { code: "en", whisper: "en", english: "English", chinese: "英语", spanish: "Inglés", parakeet: true, supertonic: true, espeak: "en-us", voice_tags: &["en-US", "en"] },
+    LangInfo { code: "es", whisper: "es", english: "Spanish", chinese: "西班牙语", spanish: "Español", parakeet: true, supertonic: true, espeak: "es", voice_tags: &["es-ES", "es"] },
+    LangInfo { code: "fr", whisper: "fr", english: "French", chinese: "法语", spanish: "Francés", parakeet: true, supertonic: true, espeak: "fr-fr", voice_tags: &["fr-FR", "fr"] },
+    LangInfo { code: "it", whisper: "it", english: "Italian", chinese: "意大利语", spanish: "Italiano", parakeet: true, supertonic: true, espeak: "it", voice_tags: &["it"] },
+    LangInfo { code: "pt", whisper: "pt", english: "Portuguese", chinese: "葡萄牙语", spanish: "Portugués", parakeet: true, supertonic: true, espeak: "pt-br", voice_tags: &["pt-BR", "pt"] },
     lang!("zh", "zh", "Chinese", "中文", "Chino", parakeet: false, tags: ["zh-CN", "cmn"]),
     lang!("zh-hant", "zh", "Traditional Chinese", "繁体中文", "Chino tradicional", parakeet: false, tags: ["zh-TW"]),
     // Whisper turbo lo entiende, pero lo escribe en mandarín.
     lang!("yue", "yue", "Cantonese", "粤语", "Cantonés", parakeet: false, tags: ["yue", "zh-HK"]),
-    lang!("ja", "ja", "Japanese", "日语", "Japonés", parakeet: false, tags: ["ja"]),
-    lang!("ko", "ko", "Korean", "韩语", "Coreano", parakeet: false, tags: ["ko"]),
-    lang!("de", "de", "German", "德语", "Alemán", parakeet: true, tags: ["de-DE", "de"]),
-    lang!("nl", "nl", "Dutch", "荷兰语", "Neerlandés", parakeet: true, tags: ["nl-NL", "nl"]),
-    lang!("pl", "pl", "Polish", "波兰语", "Polaco", parakeet: true, tags: ["pl"]),
-    lang!("cs", "cs", "Czech", "捷克语", "Checo", parakeet: true, tags: ["cs"]),
-    lang!("ru", "ru", "Russian", "俄语", "Ruso", parakeet: true, tags: ["ru"]),
-    lang!("uk", "uk", "Ukrainian", "乌克兰语", "Ucraniano", parakeet: true, tags: ["uk"]),
-    lang!("tr", "tr", "Turkish", "土耳其语", "Turco", parakeet: false, tags: ["tr"]),
-    lang!("ar", "ar", "Arabic", "阿拉伯语", "Árabe", parakeet: false, tags: ["ar"]),
+    lang!("ja", "ja", "Japanese", "日语", "Japonés", parakeet: false, supertonic, tags: ["ja"]),
+    lang!("ko", "ko", "Korean", "韩语", "Coreano", parakeet: false, supertonic, tags: ["ko"]),
+    lang!("de", "de", "German", "德语", "Alemán", parakeet: true, supertonic, tags: ["de-DE", "de"]),
+    lang!("nl", "nl", "Dutch", "荷兰语", "Neerlandés", parakeet: true, supertonic, tags: ["nl-NL", "nl"]),
+    lang!("pl", "pl", "Polish", "波兰语", "Polaco", parakeet: true, supertonic, tags: ["pl"]),
+    lang!("cs", "cs", "Czech", "捷克语", "Checo", parakeet: true, supertonic, tags: ["cs"]),
+    lang!("ru", "ru", "Russian", "俄语", "Ruso", parakeet: true, supertonic, tags: ["ru"]),
+    lang!("uk", "uk", "Ukrainian", "乌克兰语", "Ucraniano", parakeet: true, supertonic, tags: ["uk"]),
+    lang!("tr", "tr", "Turkish", "土耳其语", "Turco", parakeet: false, supertonic, tags: ["tr"]),
+    lang!("ar", "ar", "Arabic", "阿拉伯语", "Árabe", parakeet: false, supertonic, tags: ["ar"]),
     lang!("he", "he", "Hebrew", "希伯来语", "Hebreo", parakeet: false, tags: ["he"]),
     lang!("fa", "fa", "Persian", "波斯语", "Persa", parakeet: false, tags: ["fa"]),
-    lang!("hi", "hi", "Hindi", "印地语", "Hindi", parakeet: false, tags: ["hi"]),
+    lang!("hi", "hi", "Hindi", "印地语", "Hindi", parakeet: false, supertonic, tags: ["hi"]),
     lang!("bn", "bn", "Bengali", "孟加拉语", "Bengalí", parakeet: false, tags: ["bn"]),
     lang!("ur", "ur", "Urdu", "乌尔都语", "Urdu", parakeet: false, tags: ["ur"]),
     lang!("gu", "gu", "Gujarati", "古吉拉特语", "Guyaratí", parakeet: false, tags: ["gu"]),
@@ -76,8 +80,8 @@ pub static LANGS: &[LangInfo] = &[
     lang!("ta", "ta", "Tamil", "泰米尔语", "Tamil", parakeet: false, tags: ["ta"]),
     lang!("te", "te", "Telugu", "泰卢固语", "Telugu", parakeet: false, tags: ["te"]),
     lang!("th", "th", "Thai", "泰语", "Tailandés", parakeet: false, tags: ["th"]),
-    lang!("vi", "vi", "Vietnamese", "越南语", "Vietnamita", parakeet: false, tags: ["vi"]),
-    lang!("id", "id", "Indonesian", "印尼语", "Indonesio", parakeet: false, tags: ["id"]),
+    lang!("vi", "vi", "Vietnamese", "越南语", "Vietnamita", parakeet: false, supertonic, tags: ["vi"]),
+    lang!("id", "id", "Indonesian", "印尼语", "Indonesio", parakeet: false, supertonic, tags: ["id"]),
     lang!("ms", "ms", "Malay", "马来语", "Malayo", parakeet: false, tags: ["ms"]),
     lang!("tl", "tl", "Filipino", "菲律宾语", "Filipino", parakeet: false, tags: ["fil", "tl"]),
     lang!("km", "km", "Khmer", "高棉语", "Jemer", parakeet: false, tags: ["km"]),
@@ -161,7 +165,7 @@ pub struct Settings {
     /// Ruta al binario de espeak-ng (para fonemizar español e inglés). Por
     /// defecto, el que va dentro de la app.
     pub espeak_bin: String,
-    /// Carpeta del modelo de voz (Kokoro, ver `tts.rs`).
+    /// Carpeta del modelo de voz (Supertonic, ver `tts.rs`).
     pub tts_model_dir: std::path::PathBuf,
     /// Carpeta del modelo de escucha local (Parakeet, ver `listener.rs`).
     pub listener_model_dir: std::path::PathBuf,

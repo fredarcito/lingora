@@ -11,9 +11,9 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 
 /**
  * @typedef {Object} VoiceInfo
- * @property {string} id "kokoro:em_alex" or "system:<identifier>".
- * @property {string} name
- * @property {"kokoro" | "system"} engine
+ * @property {string} id "supertonic:5" or "system:<identifier>".
+ * @property {string} name The system voice's name, or the number (1–5) of a Lingora voice within its gender.
+ * @property {"supertonic" | "system"} engine
  * @property {"female" | "male" | null} gender
  * @property {string} detail Country and quality ("México · Premium"), or empty.
  */
@@ -188,11 +188,12 @@ export const api = {
    * @param {number} [speed] Voice speed; > 1 when there are sentences queued.
    * @param {string | null} [voiceId] A specific voice (`VoiceInfo.id`); without
    *   it, the best one for the gender.
+   * @param {boolean} [hq] Higher-quality Lingora voice (slightly slower).
    * @returns {Promise<Speech>}
    */
-  speak: (text, lang, voice, speed = 1.0, voiceId = null) => invoke("speak", { text, lang, voice, speed, voiceId }),
+  speak: (text, lang, voice, speed = 1.0, voiceId = null, hq = false) => invoke("speak", { text, lang, voice, speed, voiceId, hq }),
   /**
-   * The voices that can be chosen for a language: Kokoro and the system ones.
+   * The voices that can be chosen for a language: Lingora's and the system ones.
    * @param {Lang} lang
    * @returns {Promise<VoiceInfo[]>}
    */

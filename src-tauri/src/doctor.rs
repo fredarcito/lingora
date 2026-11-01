@@ -52,9 +52,13 @@ pub const LISTENER_CHECK: &str = "listener";
 /// cantonés (SenseVoice); su arreglo también lo atiende `lib.rs`.
 pub const SENSE_VOICE_CHECK: &str = "sense_voice";
 
-/// Id de la comprobación del modelo de voz (Kokoro); su arreglo (descargar)
+/// Id de la comprobación del modelo de voz (Supertonic); su arreglo (descargar)
 /// también lo atiende `lib.rs`.
 pub const VOICE_CHECK: &str = "voice_model";
+
+/// Id of the check for the old voice (Kokoro) left on disk; its fix (delete
+/// it) is handled by `lib.rs`. It is optional: it never blocks anything.
+pub const OLD_VOICE_CHECK: &str = "old_voice";
 
 /// Id de la comprobación de la traducción local; su arreglo (descargar)
 /// también lo atiende `lib.rs`.
@@ -119,11 +123,21 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
             VOICE_CHECK,
             Status::Warning,
             "Falta la voz",
-            "Para oír la traducción en español, inglés, francés, italiano o portugués hay que \
-             descargar la voz (~350 MB). Sin ella solo hay subtítulos.",
+            "Para oír la traducción en español, inglés y otros 16 idiomas hay que descargar la \
+             voz (~145 MB). Sin ella solo hay subtítulos.",
             Some("Descargar"),
         )
     });
+
+    if crate::models::old_voice(settings).is_some() {
+        out.push(Check::problem(
+            OLD_VOICE_CHECK,
+            Status::Warning,
+            "La voz anterior sigue descargada",
+            "Ocupa unos 340 MB y ya no se usa. Puedes borrarla.",
+            Some("Borrar"),
+        ));
+    }
 
     use crate::listener::Engine;
     // Todo se hace en el equipo: sin estos dos modelos no se puede traducir.

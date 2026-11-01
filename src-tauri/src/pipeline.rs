@@ -11,7 +11,7 @@
 
 use crate::config::{Lang, Settings};
 use crate::error::Result;
-use crate::{groq::Groq, phonemizer, translator::LocalTranslator, tts};
+use crate::{groq::Groq, translator::LocalTranslator, tts};
 use serde::Serialize;
 use std::sync::Arc;
 
@@ -105,7 +105,7 @@ impl Pipeline {
     /// real no pague la carga.
     pub async fn warm_up(&self) -> Result<()> {
         self.tts
-            .synthesize("ˈola", tts::voice_for(Lang::Es, tts::Gender::Male).expect("Kokoro tiene español"), 1.0)
+            .synthesize("Hola.", Lang::Es, tts::voice_for(Lang::Es, tts::Gender::Male).expect("Supertonic habla español"), 1.0, tts::STEPS)
             .await
             .map(|_| ())
     }
@@ -211,12 +211,18 @@ impl Pipeline {
 
     /// Sintetiza la voz de un fragmento de texto. `speed` acelera la voz
     /// cuando la UI tiene frases en cola.
-    /// Dice `text` con la voz elegida (`voice`: "kokoro:em_alex" o
+    /// Dice `text` con la voz elegida (`voice`: "supertonic:5" o
     /// "system:<id>"); sin ella o si ya no está, con la mejor del género.
-    pub async fn speak(&self, text: &str, lang: Lang, gender: tts::Gender, voice: Option<&str>, speed: f32) -> Result<Speech> {
+    /// Old "kokoro:*" ids saved before Supertonic fall through to the default.
+    /// `hq` uses more steps: a slightly slower, higher-quality voice.
+    pub async fn speak(&self, text: &str, lang: Lang, gender: tts::Gender, voice: Option<&str>, speed: f32, hq: bool) -> Result<Speech> {
         let speed = speed.clamp(0.8, 1.5);
         match voice.and_then(|v| v.split_once(':')) {
-            Some(("kokoro", name)) => return self.speak_kokoro(text, lang, name, speed).await,
+            Some(("supertonic", sid)) if tts::voice_for(lang, gender).is_some() => {
+                if let Ok(sid) = sid.parse() {
+                    return self.speak_supertonic(text, lang, sid, speed, hq).await;
+                }
+            }
             Some(("system", id)) => match self.speak_system(crate::system_voice::synthesize_with(text, id, speed)).await {
                 Ok(speech) => return Ok(speech),
                 // Una voz que se desinstaló: sigue con la de por defecto.
@@ -225,23 +231,20 @@ impl Pipeline {
             _ => {}
         }
         match tts::voice_for(lang, gender) {
-            Some(name) => self.speak_kokoro(text, lang, name, speed).await,
+            Some(sid) => self.speak_supertonic(text, lang, sid, speed, hq).await,
             None => self.speak_system(crate::system_voice::synthesize(text, lang, gender, speed)).await,
         }
     }
 
-    async fn speak_kokoro(&self, text: &str, lang: Lang, voice: &str, speed: f32) -> Result<Speech> {
+    async fn speak_supertonic(&self, text: &str, lang: Lang, sid: i32, speed: f32, hq: bool) -> Result<Speech> {
         let t0 = std::time::Instant::now();
-        let ipa = phonemizer::phonemize(&self.settings.espeak_bin, text, lang).await?;
-        let phonemize_ms = t0.elapsed().as_millis() as u64;
-
-        let t1 = std::time::Instant::now();
-        let audio = self.tts.synthesize(&ipa, voice, speed).await?;
+        let steps = if hq { tts::STEPS_HQ } else { tts::STEPS };
+        let audio = self.tts.synthesize(text, lang, sid, speed, steps).await?;
         Ok(Speech {
             audio,
             sample_rate: tts::SAMPLE_RATE,
-            phonemize_ms,
-            tts_ms: t1.elapsed().as_millis() as u64,
+            phonemize_ms: 0,
+            tts_ms: t0.elapsed().as_millis() as u64,
         })
     }
 

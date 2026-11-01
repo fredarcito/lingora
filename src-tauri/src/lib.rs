@@ -144,15 +144,18 @@ async fn speak(
     voice: tts::Gender,
     speed: Option<f32>,
     voice_id: Option<String>,
+    hq: Option<bool>,
 ) -> error::Result<Speech> {
-    state.pipeline.speak(&text, lang, voice, voice_id.as_deref(), speed.unwrap_or(1.0)).await
+    state.pipeline.speak(&text, lang, voice, voice_id.as_deref(), speed.unwrap_or(1.0), hq.unwrap_or(false)).await
 }
 
 /// Una voz que se puede elegir para un idioma.
 #[derive(serde::Serialize)]
 struct VoiceInfo {
-    /// "kokoro:em_alex" o "system:<identificador>"; se pasa tal cual a `speak`.
+    /// "supertonic:5" o "system:<identificador>"; se pasa tal cual a `speak`.
     id: String,
+    /// The system voice's name, or the number (1–5) of a Supertonic voice
+    /// within its gender: the UI names it ("Voice 1").
     name: String,
     engine: &'static str,
     gender: Option<tts::Gender>,
@@ -160,18 +163,18 @@ struct VoiceInfo {
     detail: String,
 }
 
-/// Las voces del idioma: las de Kokoro (si está descargado) y las del
+/// Las voces del idioma: las de Supertonic (si está descargado) y las del
 /// sistema, cada grupo de mejor a peor.
 #[tauri::command]
 async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<Vec<VoiceInfo>> {
     let mut out = Vec::new();
     if tts::TtsEngine::is_installed(&state.pipeline.settings().tts_model_dir) {
         out.extend(tts::voices(lang).into_iter().map(|v| VoiceInfo {
-            id: format!("kokoro:{}", v.id),
-            name: v.name,
-            engine: "kokoro",
+            id: format!("supertonic:{}", v.sid),
+            name: v.number.to_string(),
+            engine: "supertonic",
             gender: Some(v.gender),
-            detail: v.region.unwrap_or_default().to_string(),
+            detail: String::new(),
         }));
     }
     let all = tauri::async_runtime::spawn_blocking(system_voice::voices).await.unwrap_or_default();
@@ -219,6 +222,10 @@ async fn run_diagnostics(state: tauri::State<'_, AppState>, full: bool) -> error
 async fn fix_diagnostic(state: tauri::State<'_, AppState>, id: String) -> error::Result<Vec<doctor::Check>> {
     if let Some(model) = models::Model::from_id(&id) {
         models::download(model, state.pipeline.settings(), &|_, _| {}).await?;
+        return Ok(doctor::run(state.pipeline.settings(), true).await);
+    }
+    if id == doctor::OLD_VOICE_CHECK {
+        models::remove_old_voice(state.pipeline.settings())?;
         return Ok(doctor::run(state.pipeline.settings(), true).await);
     }
     doctor::fix(&id)?;
@@ -293,10 +300,8 @@ async fn languages() -> Vec<LanguageInfo> {
     let mut out: Vec<LanguageInfo> = Lang::all()
         .map(|lang| {
             let info = lang.info();
-            let (female_voice, male_voice) = match info.kokoro {
-                Some((_, male)) => (true, male.is_some()),
-                None => system_voice::available(lang, &voices),
-            };
+            let (female_voice, male_voice) =
+                if info.supertonic { (true, true) } else { system_voice::available(lang, &voices) };
             LanguageInfo {
                 code: lang,
                 name: info.spanish,

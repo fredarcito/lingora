@@ -48,7 +48,7 @@ Mac audio ──► Core Audio process tap (Lingora excluded)      Microphone
               Translation (llama.cpp inside the app), streamed sentence by sentence
                                            │
                                            ▼
-              Voice: espeak-ng phonemes → Kokoro (sherpa-onnx), or a system voice
+              Voice: Supertonic 3 (sherpa-onnx), or a system voice
                                            │
                                            ▼
               Played on the chosen output, sped up a little if it falls behind
@@ -62,7 +62,7 @@ from memory after 3 minutes idle.
 | Parakeet v3 int8 (sherpa-onnx) | Listening, European languages | ~490 MB, required |
 | HY-MT2 1.8B Q4_K_M (llama.cpp) | Translation and generated interface languages | ~1.1 GB, required |
 | SenseVoice Small int8 | Listening, Chinese/Cantonese/Japanese/Korean | ~165 MB |
-| Kokoro multi-lang v1.0 | Voice (languages without it use a macOS system voice) | ~350 MB |
+| Supertonic 3 int8 | Voice in 18 languages (the rest use a macOS system voice) | ~145 MB |
 | 3D-Speaker ERes2Net | Telling speakers apart in notes | ~40 MB |
 
 ### Why each decision
@@ -86,10 +86,12 @@ from memory after 3 minutes idle.
   the cloud model it replaced. With colloquial Spanish it is weaker, so it runs
   with a glossary of colloquialisms. TranslateGemma 4B was discarded: twice as
   slow and longer translations.
-- **Kokoro with espeak-ng phonemes**: with plain Spanish text Kokoro sounds
-  English-accented; with phonemes the pronunciation is exact. Runs inside the app
-  with sherpa-onnx (no Node), `fp32` because `int8` is 2.5× slower on Apple
-  Silicon.
+- **Supertonic 3 for the voice** (replaced Kokoro on 2026-11-01): it sounds
+  better in Spanish and covers 18 of the app's languages instead of 5. It reads
+  plain text, with no espeak-ng. It runs at 5 steps (~0.14 s per second of
+  speech), or 8 with the lane's "higher-quality voice" switch (~0.21 s, Kokoro's
+  speed). Its peak memory is ~360 MB, against ~790 MB for Kokoro. See
+  `docs/plan-voz-supertonic.md`.
 - **Speakers**: each sentence's voice print is grouped live, and the whole
   conversation is reviewed when it ends. Tuned on a real 55-minute interview
   (94 % right) and synthetic voices (100 %).
@@ -158,8 +160,8 @@ src-tauri/src/
   audio.rs, route.rs  Devices and what is connected (headphones, Bluetooth)
   listener.rs       Local listening (Parakeet, SenseVoice)
   translator.rs     Local translation (llama.cpp, on its own thread)
-  phonemizer.rs     espeak-ng
-  tts.rs, system_voice.rs  Voice (Kokoro) and macOS system voices
+  phonemizer.rs     espeak-ng (unused since Supertonic; to be removed)
+  tts.rs, system_voice.rs  Voice (Supertonic) and macOS system voices
   speakers.rs       Voice prints to tell people apart
   notes.rs          Notes on disk, export and summary
   groq.rs           Groq client (summaries only)

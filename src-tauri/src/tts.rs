@@ -1,6 +1,7 @@
 use crate::config::Lang;
 use crate::error::{Error, Result};
-use sherpa_onnx::{GenerationConfig, OfflineTts, OfflineTtsConfig, OfflineTtsKokoroModelConfig};
+use sherpa_onnx::{GenerationConfig, OfflineTts, OfflineTtsConfig, OfflineTtsSupertonicModelConfig};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -12,115 +13,62 @@ pub enum Gender {
     Male,
 }
 
-/// Voz de Kokoro por idioma y género, o `None` si Kokoro no tiene voz para
-/// el idioma (se usa la del sistema). Sin voz de hombre (francés) se usa la de
-/// mujer. Todas vienen en `voices.bin` (ver `VOICES`).
-pub fn voice_for(lang: Lang, gender: Gender) -> Option<&'static str> {
-    let (female, male) = lang.info().kokoro?;
-    Some(match gender {
-        Gender::Male => male.unwrap_or(female),
-        Gender::Female => female,
+/// Supertonic 3 model for sherpa-onnx (downloaded by `models.rs`). It replaced
+/// Kokoro: better voice, 18 languages instead of 5, less than half the memory
+/// and no espeak-ng (it reads plain text). See docs/plan-voz-supertonic.md.
+pub const MODEL_NAME: &str = "sherpa-onnx-supertonic-3-tts-int8-2026-05-11";
+/// The files the engine needs from the archive (the rest is README/LICENSE).
+pub const FILES: &[&str] = &[
+    "duration_predictor.int8.onnx",
+    "text_encoder.int8.onnx",
+    "vector_estimator.int8.onnx",
+    "vocoder.int8.onnx",
+    "tts.json",
+    "unicode_indexer.bin",
+    "voice.bin",
+];
+
+/// Sample rate of the audio Supertonic returns.
+pub const SAMPLE_RATE: u32 = 44_100;
+
+/// Denoising steps. 5 sounds as good as 8 by ear and arrives ~35 % sooner; 8
+/// is the lane's "higher-quality voice" switch. 3 sounds bad: never use it.
+pub const STEPS: i32 = 5;
+pub const STEPS_HQ: i32 = 8;
+
+/// Preset voices in `voice.bin`, per gender: by measured pitch, speakers 0–4
+/// are female and 5–9 male.
+const FEMALE: [i32; 5] = [0, 1, 2, 3, 4];
+const MALE: [i32; 5] = [5, 6, 7, 8, 9];
+
+/// Default voice for the language and gender, or `None` if Supertonic does not
+/// speak the language (the system voice is used).
+pub fn voice_for(lang: Lang, gender: Gender) -> Option<i32> {
+    lang.info().supertonic.then_some(match gender {
+        Gender::Female => FEMALE[0],
+        Gender::Male => MALE[0],
     })
 }
 
-/// Modelo de Kokoro para sherpa-onnx (descarga en `download`).
-pub const MODEL_NAME: &str = "kokoro-multi-lang-v1_0";
-const MODEL_FILE: &str = "model.onnx";
-/// Del archivo de sherpa-onnx solo hacen falta estos: los fonemas los da
-/// espeak-ng (`phonemizer.rs`), así que sobran sus diccionarios.
-pub const FILES: &[&str] = &[MODEL_FILE, "voices.bin", "tokens.txt"];
-
-/// Frecuencia del audio que devuelve Kokoro.
-pub const SAMPLE_RATE: u32 = 24_000;
-
-/// Voces de Kokoro y su posición en `voices.bin` (comprobada contra las de
-/// `kokoro-js`). La primera letra es el idioma (a: inglés de EE. UU., b:
-/// británico, e: español, f: francés, i: italiano, p: portugués de Brasil) y
-/// la segunda el género. En cada idioma van de mejor a peor según las notas
-/// del propio Kokoro. Faltan las de Santa (de broma) y las de idiomas cuyos
-/// fonemas no da bien espeak-ng (hindi, japonés, chino).
-const VOICES: &[(&str, i32)] = &[
-    ("af_heart", 3),
-    ("af_bella", 2),
-    ("af_nicole", 6),
-    ("af_aoede", 1),
-    ("af_kore", 5),
-    ("af_sarah", 9),
-    ("af_nova", 7),
-    ("af_alloy", 0),
-    ("af_sky", 10),
-    ("af_jessica", 4),
-    ("af_river", 8),
-    ("am_michael", 16),
-    ("am_fenrir", 14),
-    ("am_puck", 18),
-    ("am_echo", 12),
-    ("am_eric", 13),
-    ("am_liam", 15),
-    ("am_onyx", 17),
-    ("am_adam", 11),
-    ("bf_emma", 21),
-    ("bf_isabella", 22),
-    ("bf_alice", 20),
-    ("bf_lily", 23),
-    ("bm_george", 26),
-    ("bm_fable", 25),
-    ("bm_lewis", 27),
-    ("bm_daniel", 24),
-    ("ef_dora", 28),
-    ("em_alex", 29),
-    ("ff_siwis", 30),
-    ("if_sara", 35),
-    ("im_nicola", 36),
-    ("pf_dora", 42),
-    ("pm_alex", 43),
-];
-
-/// Una voz de Kokoro para la UI.
-pub struct KokoroVoice {
-    pub id: &'static str,
-    /// "Heart", "Dora"…
-    pub name: String,
+/// A Supertonic voice for the UI, which names it ("Voice 1 · female").
+pub struct Voice {
+    pub sid: i32,
+    /// 1–5 within its gender.
+    pub number: usize,
     pub gender: Gender,
-    /// Solo en inglés, donde hay voces de EE. UU. y británicas.
-    pub region: Option<&'static str>,
 }
 
-/// Las voces de Kokoro del idioma, de mejor a peor.
-pub fn voices(lang: Lang) -> Vec<KokoroVoice> {
-    let prefixes: &[char] = match lang.info().code {
-        "en" => &['a', 'b'],
-        "es" => &['e'],
-        "fr" => &['f'],
-        "it" => &['i'],
-        "pt" => &['p'],
-        _ => &[],
-    };
-    VOICES
-        .iter()
-        .filter(|(id, _)| id.starts_with(prefixes))
-        .map(|(id, _)| {
-            let raw = &id[3..];
-            KokoroVoice {
-                id,
-                name: raw[..1].to_uppercase() + &raw[1..],
-                gender: if id.as_bytes()[1] == b'm' { Gender::Male } else { Gender::Female },
-                region: match id.as_bytes()[0] {
-                    b'a' => Some("EE. UU."),
-                    b'b' => Some("Reino Unido"),
-                    _ => None,
-                },
-            }
-        })
-        .collect()
+/// The voices for the language (female first), or none if it is not supported.
+pub fn voices(lang: Lang) -> Vec<Voice> {
+    if !lang.info().supertonic {
+        return Vec::new();
+    }
+    let group = |sids: [i32; 5], gender| sids.into_iter().enumerate().map(move |(i, sid)| Voice { sid, number: i + 1, gender });
+    group(FEMALE, Gender::Female).chain(group(MALE, Gender::Male)).collect()
 }
 
-// Margen respecto al límite de 510 tokens (aprox. un token por carácter IPA).
-const MAX_CHUNK_CHARS: usize = 400;
-const PAUSE_SECS: f32 = 0.15;
-
-/// Kokoro dentro del proceso, con sherpa-onnx (la misma librería que escucha).
-/// El modelo se carga en la primera frase y se libera con `release`.
+/// Supertonic in-process, with sherpa-onnx (the same library that listens).
+/// The model loads on the first sentence and is freed with `release`.
 pub struct TtsEngine {
     model_dir: PathBuf,
     loaded: tokio::sync::Mutex<Option<Arc<OfflineTts>>>,
@@ -149,7 +97,7 @@ impl TtsEngine {
         if !Self::is_installed(&dir) {
             return Err(Error::Audio(format!("falta el modelo de voz en {}", dir.display())));
         }
-        let tts = tauri::async_runtime::spawn_blocking(move || load(&dir, MODEL_FILE))
+        let tts = tauri::async_runtime::spawn_blocking(move || load(&dir))
             .await
             .map_err(|e| Error::Audio(format!("la carga del modelo de voz terminó mal: {e}")))??;
         *loaded = Some(tts.clone());
@@ -161,87 +109,56 @@ impl TtsEngine {
         self.loaded.lock().await.take();
     }
 
-    /// Sintetiza voz a partir de fonemas IPA. Devuelve muestras mono float32 a
-    /// `SAMPLE_RATE`. `speed` > 1 acelera la voz (se usa cuando hay frases en cola).
-    pub async fn synthesize(&self, ipa: &str, voice: &str, speed: f32) -> Result<Vec<f32>> {
-        let sid = speaker(voice)?;
+    /// Synthesizes `text` in `lang` with voice `sid`. Returns mono float32
+    /// samples at `SAMPLE_RATE`. `speed` > 1 speeds the voice up (used when
+    /// sentences are queued); `steps` is `STEPS` or `STEPS_HQ`.
+    pub async fn synthesize(&self, text: &str, lang: Lang, sid: i32, speed: f32, steps: i32) -> Result<Vec<f32>> {
+        if !(0..10).contains(&sid) {
+            return Err(Error::Audio(format!("voz desconocida: {sid}")));
+        }
         let _turn = self.busy.lock().await;
         let tts = self.tts().await?;
-        let ipa = ipa.to_string();
-        tauri::async_runtime::spawn_blocking(move || generate(&tts, &ipa, sid, speed))
+        let text = text.to_string();
+        tauri::async_runtime::spawn_blocking(move || generate(&tts, &text, lang, sid, speed, steps))
             .await
             .map_err(|e| Error::Audio(format!("la voz terminó mal: {e}")))?
     }
 }
 
-fn speaker(voice: &str) -> Result<i32> {
-    VOICES
-        .iter()
-        .find(|(name, _)| *name == voice)
-        .map(|(_, sid)| *sid)
-        .ok_or_else(|| Error::Audio(format!("voz desconocida: {voice}")))
-}
-
-fn load(dir: &Path, model_file: &str) -> Result<Arc<OfflineTts>> {
+fn load(dir: &Path) -> Result<Arc<OfflineTts>> {
     let path = |f: &str| Some(dir.join(f).to_string_lossy().into_owned());
-    // Sin tocar los silencios del modelo (1 = tal cual): con el valor por
-    // defecto sherpa-onnx los recorta y la voz suena atropellada, con las
-    // palabras cortadas al final.
-    let mut config = OfflineTtsConfig { silence_scale: 1.0, max_num_sentences: 1, ..Default::default() };
-    config.model.kokoro =
-        OfflineTtsKokoroModelConfig { model: path(model_file), voices: path("voices.bin"), tokens: path("tokens.txt"), ..Default::default() };
-    // Con 2 hilos tarda el doble (2,6 s frente a 1,5 s para 7 s de voz) y la
-    // voz es lo que más se nota que llega tarde.
+    let mut config = OfflineTtsConfig::default();
+    config.model.supertonic = OfflineTtsSupertonicModelConfig {
+        duration_predictor: path(FILES[0]),
+        text_encoder: path(FILES[1]),
+        vector_estimator: path(FILES[2]),
+        vocoder: path(FILES[3]),
+        tts_json: path(FILES[4]),
+        unicode_indexer: path(FILES[5]),
+        voice_style: path(FILES[6]),
+    };
+    // Same as Kokoro: with 2 threads the voice takes about twice as long, and
+    // the voice is what is most noticeable when it arrives late.
     config.model.num_threads = 4;
     let t0 = std::time::Instant::now();
     let tts = OfflineTts::create(&config)
         .ok_or_else(|| Error::Audio(format!("no se pudo cargar el modelo de voz de {}", dir.display())))?;
+    if tts.sample_rate() != SAMPLE_RATE as i32 {
+        return Err(Error::Audio(format!("el modelo de voz da {} Hz, se esperaban {SAMPLE_RATE}", tts.sample_rate())));
+    }
     tracing::info!("voz local lista en {:?}", t0.elapsed());
     Ok(Arc::new(tts))
 }
 
-/// Kokoro admite unos 510 tokens por llamada y descarta el resto en silencio,
-/// lo que cortaba las traducciones largas a mitad: se sintetiza por trozos
-/// con una pausa breve entre ellos.
-fn generate(tts: &OfflineTts, ipa: &str, sid: i32, speed: f32) -> Result<Vec<f32>> {
-    let config = GenerationConfig { sid, speed, silence_scale: 1.0, ..Default::default() };
-    let pause = vec![0.0; (SAMPLE_RATE as f32 * PAUSE_SECS) as usize];
-    let mut out = Vec::new();
-    for chunk in chunk_clauses(ipa) {
-        let config = GenerationConfig { phoneme_codepoints: Some(vec![chunk.chars().map(|c| c as i32).collect()]), ..config.clone() };
-        let audio = tts
-            .generate_with_config("", &config, None::<fn(&[f32], f32) -> bool>)
-            .ok_or_else(|| Error::Audio("la voz no generó audio".into()))?;
-        out.extend_from_slice(audio.samples());
-        out.extend_from_slice(&pause);
-    }
-    Ok(out)
-}
-
-/// Agrupa cláusulas (una por línea, como las da espeak-ng) en trozos que caben
-/// en una llamada a Kokoro. Una cláusula demasiado larga se parte por palabras.
-fn chunk_clauses(ipa: &str) -> Vec<String> {
-    let mut pieces = Vec::new();
-    for line in ipa.lines().map(str::trim).filter(|l| !l.is_empty()) {
-        if line.chars().count() <= MAX_CHUNK_CHARS {
-            pieces.push(line.to_string());
-            continue;
-        }
-        let mut current = String::new();
-        for word in line.split(' ') {
-            if !current.is_empty() && current.chars().count() + 1 + word.chars().count() > MAX_CHUNK_CHARS {
-                pieces.push(std::mem::take(&mut current));
-            }
-            if !current.is_empty() {
-                current.push(' ');
-            }
-            current.push_str(word);
-        }
-        if !current.is_empty() {
-            pieces.push(current);
-        }
-    }
-    pieces
+/// Supertonic splits long text into sentences itself (a 620-character text
+/// comes out whole), so it is synthesized in one call.
+fn generate(tts: &OfflineTts, text: &str, lang: Lang, sid: i32, speed: f32, steps: i32) -> Result<Vec<f32>> {
+    let extra = HashMap::from([("lang".to_string(), serde_json::json!(lang.info().code))]);
+    let config = GenerationConfig { sid, speed, num_steps: steps, extra: Some(extra), ..Default::default() };
+    let audio = tts
+        .generate_with_config(text, &config, None::<fn(&[f32], f32) -> bool>)
+        .ok_or_else(|| Error::Audio("la voz no generó audio".into()))?;
+    Ok(audio.samples().to_vec())
 }
 
 pub(crate) fn parse_wav(wav: Vec<u8>) -> Result<Vec<f32>> {
@@ -263,59 +180,40 @@ mod tests {
     use super::*;
 
     #[test]
-    fn every_voice_has_a_speaker() {
-        for lang in Lang::all() {
-            if let Some((female, male)) = lang.info().kokoro {
-                assert!(speaker(female).is_ok() && male.map_or(true, |m| speaker(m).is_ok()), "{lang:?}");
-            }
-        }
-    }
-
-    #[test]
     fn lists_voices_by_language() {
         let es = voices(Lang::Es);
-        assert_eq!(es.iter().map(|v| v.id).collect::<Vec<_>>(), ["ef_dora", "em_alex"]);
-        assert_eq!((es[1].name.as_str(), es[1].gender), ("Alex", Gender::Male));
-        assert!(voices(Lang::En).iter().any(|v| v.id == "bm_george" && v.region == Some("Reino Unido")));
+        assert_eq!(es.len(), 10);
+        assert_eq!((es[0].sid, es[0].number, es[0].gender), (0, 1, Gender::Female));
+        assert_eq!((es[5].sid, es[5].number, es[5].gender), (5, 1, Gender::Male));
+        assert_eq!(voices(Lang::Ja).len(), 10);
         assert!(voices(Lang::Zh).is_empty());
+        assert_eq!(voice_for(Lang::Es, Gender::Male), Some(5));
+        assert_eq!(voice_for(Lang::Zh, Gender::Female), None);
     }
 
-    #[test]
-    fn long_clauses_are_split_by_words() {
-        let long = "ab ".repeat(300);
-        let chunks = chunk_clauses(&format!("uno\n{long}"));
-        assert_eq!(chunks[0], "uno");
-        assert!(chunks[1..].iter().all(|c| c.chars().count() <= MAX_CHUNK_CHARS));
-    }
-
-    /// Compara velocidad del modelo normal y del int8 (descargados a mano en
-    /// la carpeta de modelos) y deja los WAV en el temporal para escucharlos.
+    /// Speaks Spanish at both step counts with the downloaded model, leaves the
+    /// WAVs in the temp dir to listen to, and checks Parakeet understands them.
     #[tokio::test]
     #[ignore]
-    async fn speaks_with_kokoro() {
+    async fn speaks_with_supertonic() {
         let models = PathBuf::from(std::env::var("HOME").unwrap()).join("Library/Application Support/lingora/models");
-        let ipa = crate::phonemizer::phonemize(
-            "espeak-ng",
-            "Hola, esto es una prueba de la voz traducida. Debería sonar igual que antes, pero más rápido.",
-            Lang::Es,
-        )
-        .await
-        .unwrap();
-        for (dir, file) in [(MODEL_NAME, "model.onnx")] {
-            let tts = load(&models.join(dir), file).unwrap();
-            generate(&tts, "ˈola", 29, 1.0).unwrap();
+        // LINGORA_TTS_MODEL_DIR can point to a test download.
+        let tts = load(&crate::config::Settings::from_env_fallback().tts_model_dir).unwrap();
+        let text = "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar rápido.";
+        generate(&tts, "Hola.", Lang::Es, 5, 1.0, STEPS).unwrap();
+        for steps in [STEPS, STEPS_HQ] {
             let t0 = std::time::Instant::now();
-            let audio = generate(&tts, &ipa, 29, 1.0).unwrap();
+            let audio = generate(&tts, text, Lang::Es, 5, 1.0, steps).unwrap();
             let secs = audio.len() as f32 / SAMPLE_RATE as f32;
-            eprintln!("{file}: {:?} para {secs:.1} s de voz", t0.elapsed());
-            let out = std::env::temp_dir().join(format!("lingora-{file}.wav"));
+            eprintln!("{steps} pasos: {:?} para {secs:.1} s de voz", t0.elapsed());
+            let out = std::env::temp_dir().join(format!("lingora-supertonic-{steps}.wav"));
             let spec = hound::WavSpec { channels: 1, sample_rate: SAMPLE_RATE, bits_per_sample: 32, sample_format: hound::SampleFormat::Float };
             let mut w = hound::WavWriter::create(&out, spec).unwrap();
             audio.iter().for_each(|s| w.write_sample(*s).unwrap());
             w.finalize().unwrap();
             eprintln!("  {}", out.display());
-            // Se comprueba que se entiende: Parakeet lo transcribe (a 16 kHz).
-            let at16: Vec<f32> = (0..audio.len() * 2 / 3).map(|i| audio[i * 3 / 2]).collect();
+            // Parakeet transcribes at 16 kHz: take every 2.75th sample.
+            let at16: Vec<f32> = (0..audio.len() * 16 / 44).map(|i| audio[i * 44 / 16]).collect();
             let listener = crate::listener::Listener::new(models.join("sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8"), PathBuf::new());
             let words = listener.recognize(at16, Lang::Es).await.unwrap();
             eprintln!("  oído: {}", words.iter().map(|w| w.text.as_str()).collect::<String>());

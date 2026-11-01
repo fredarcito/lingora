@@ -469,7 +469,7 @@ export default function App() {
         const splitter = phraseSplitter((phrase) => {
           // "Mmm", "Ajá": la voz los pronuncia como un resoplido.
           if (!current.speak || FILLER.test(phrase)) return;
-          const speech = api.speak(phrase, t.target_lang, current.voice, speed, current.voiceIds[t.target_lang] ?? null);
+          const speech = api.speak(phrase, t.target_lang, current.voice, speed, current.voiceIds[t.target_lang] ?? null, current.voiceHq);
           // Si falla una frase anterior, esta no se llega a esperar.
           speech.catch(() => {});
           phrases.push(speech);

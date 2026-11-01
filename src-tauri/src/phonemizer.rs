@@ -16,6 +16,9 @@ pub const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 /// espeak-ng deletrea las interjecciones sin vocal: "Hmm" sale "hache eme
 /// eme". Esas palabras se sustituyen por el sonido real (una m larga) y las
 /// que solo tienen haches ("hhh", una respiración transcrita) se omiten.
+// Unused since Supertonic replaced Kokoro (it reads plain text). Kept until
+// espeak-ng leaves the bundle: Step 4 of docs/plan-voz-supertonic.md.
+#[allow(dead_code)]
 pub async fn phonemize(bin: &str, text: &str, lang: Lang) -> Result<String> {
     let mut parts: Vec<String> = Vec::new();
     let mut pending: Vec<&str> = Vec::new();

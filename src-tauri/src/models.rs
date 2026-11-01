@@ -49,7 +49,7 @@ impl Model {
             Model::Listener => 487_000_000,
             Model::SenseVoice => 165_000_000,
             Model::Translator => 1_130_000_000,
-            Model::Voice => 350_000_000,
+            Model::Voice => 145_000_000,
             Model::Speakers => 39_600_000,
         }
     }
@@ -272,6 +272,26 @@ async fn extract(archive: &Path, only: &[String]) -> bool {
     ok
 }
 
+/// Kokoro, the voice before Supertonic: users who downloaded it keep ~340 MB
+/// that nothing uses. It is only deleted when they press the button in
+/// Diagnostics (`doctor::OLD_VOICE_CHECK`).
+const OLD_VOICE: &str = "kokoro-multi-lang-v1_0";
+
+/// The old voice's folder, next to the current one, if it is still there.
+pub fn old_voice(settings: &Settings) -> Option<PathBuf> {
+    let dir = settings.tts_model_dir.parent()?.join(OLD_VOICE);
+    dir.is_dir().then_some(dir)
+}
+
+/// Deletes the old voice's folder, and nothing else.
+pub fn remove_old_voice(settings: &Settings) -> Result<()> {
+    match old_voice(settings) {
+        Some(dir) => std::fs::remove_dir_all(&dir)
+            .map_err(|e| Error::Audio(format!("no se pudo borrar {}: {e}", dir.display()))),
+        None => Ok(()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -293,5 +313,20 @@ mod tests {
         .unwrap();
         assert_eq!(std::fs::read(&dest).unwrap(), full.to_vec());
         assert_eq!(first.lock().unwrap().unwrap(), ((full.len() / 2) as u64, full.len() as u64));
+    }
+
+    /// Downloads the voice (~145 MB) into a temp folder and checks that it
+    /// extracts the files the engine needs.
+    #[tokio::test]
+    #[ignore]
+    async fn downloads_the_voice() {
+        let dir = std::env::temp_dir().join("lingora-voice-test").join(crate::tts::MODEL_NAME);
+        let _ = std::fs::remove_dir_all(dir.parent().unwrap());
+        let mut settings = Settings::from_env_fallback();
+        settings.tts_model_dir = dir.clone();
+        assert!(!Model::Voice.is_installed(&settings));
+        download(Model::Voice, &settings, &|_, _| {}).await.unwrap();
+        assert!(crate::tts::TtsEngine::is_installed(&dir));
+        assert!(old_voice(&settings).is_none());
     }
 }

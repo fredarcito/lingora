@@ -18,11 +18,12 @@ describe("prefs", () => {
     storeNoTranslate(true);
     storePair({ you: "ES", them: "FR" });
     storeVolumes({ remote_to_local: 0.5, local_to_remote: 1 });
-    storeLaneSettings(/** @type {any} */ ([{ direction: "remote_to_local", maxSpeed: 1.3, speak: false, showSource: true, voiceIds: { ES: "x" } }]), {
+    storeLaneSettings(/** @type {any} */ ([{ direction: "remote_to_local", maxSpeed: 1.3, speak: false, showSource: true, voiceIds: { ES: "x" }, voiceHq: true }]), {
       maxSpeed: 1.3,
       speak: false,
       showSource: true,
       voiceIds: {},
+      voiceHq: true,
     });
     expect([...store.keys()].sort()).toEqual([
       "lingora.maxSpeed",
@@ -31,6 +32,7 @@ describe("prefs", () => {
       "lingora.pair",
       "lingora.showSource",
       "lingora.speak",
+      "lingora.voiceHq",
       "lingora.voiceIds",
       "lingora.volume",
     ]);

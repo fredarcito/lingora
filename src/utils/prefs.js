@@ -13,6 +13,7 @@ import { LANES } from "./lanes";
 const MODE_KEY = "lingora.mode";
 const SPEAK_KEY = "lingora.speak";
 const VOICE_IDS_KEY = "lingora.voiceIds";
+const VOICE_HQ_KEY = "lingora.voiceHq";
 const SHOW_SOURCE_KEY = "lingora.showSource";
 const NO_TRANSLATE_KEY = "lingora.noTranslate";
 const PAIR_KEY = "lingora.pair";
@@ -98,18 +99,20 @@ export function loadVolumes() {
 /** @param {Record<Direction, number>} volumes */
 export const storeVolumes = (volumes) => save(VOLUME_KEY, JSON.stringify(volumes));
 
-/** The lanes with what each person chose: speed cap, voice yes or no, original text and voice. */
+/** The lanes with what each person chose: speed cap, voice yes or no, original text, voice and its quality. */
 export function loadLaneSettings() {
   const saved = loadPerLane(MAX_SPEED_KEY);
   const speak = loadPerLane(SPEAK_KEY);
   const showSource = loadPerLane(SHOW_SOURCE_KEY);
   const voiceIds = loadPerLane(VOICE_IDS_KEY);
+  const voiceHq = loadPerLane(VOICE_HQ_KEY);
   return LANES.map((l) => ({
     ...l,
     maxSpeed: saved[l.direction] ?? l.maxSpeed,
     speak: speak[l.direction] ?? l.speak,
     showSource: showSource[l.direction],
     voiceIds: voiceIds[l.direction] ?? {},
+    voiceHq: voiceHq[l.direction] ?? false,
   }));
 }
 
@@ -118,6 +121,7 @@ const LANE_KEYS = /** @type {const} */ ([
   ["maxSpeed", MAX_SPEED_KEY],
   ["showSource", SHOW_SOURCE_KEY],
   ["voiceIds", VOICE_IDS_KEY],
+  ["voiceHq", VOICE_HQ_KEY],
   ["speak", SPEAK_KEY],
 ]);
 

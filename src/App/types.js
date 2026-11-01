@@ -16,6 +16,7 @@
  * @property {Record<string, string>} voiceIds Specific voice chosen per target language
  *   (`VoiceInfo.id`); without it, the best voice of the gender.
  * @property {number} maxSpeed Maximum speed of the voice when there is lag (1 = never speeds up).
+ * @property {boolean} [voiceHq] Higher-quality Lingora voice: slightly slower to arrive. It is read in each chunk.
  * @property {boolean} speak Speak the translation aloud. Without voice there are only
  *   subtitles: the original is heard and no lag builds up (Spanish lasts
  *   longer than English). It is read in each chunk.

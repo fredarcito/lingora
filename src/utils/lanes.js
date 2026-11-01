@@ -40,6 +40,7 @@ export const LANES = [
     voice: "female",
     speak: true,
     maxSpeed: DEFAULT_MAX_SPEED,
+    voiceHq: false,
   },
   {
     direction: "local_to_remote",
@@ -50,6 +51,7 @@ export const LANES = [
     voice: "male",
     speak: true,
     maxSpeed: DEFAULT_MAX_SPEED,
+    voiceHq: false,
   },
 ];
 

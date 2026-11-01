@@ -13,7 +13,9 @@ Status (2026-10-28):
     can only be target languages: on the listening side they show as
     "(soon)". To listen to them, a local Whisper (whisper.cpp,
     ~550–830 MB, slower) or Meta's Omnilingual (sherpa-onnx, CTC) would be needed.
-  - Voice: Kokoro in en, es, fr, it and pt; for the others, the best system voice
+  - Voice (since 2026-11-01, `docs/plan-voz-supertonic.md`): Supertonic 3 in en, es,
+    fr, it, pt, ja, ko, de, nl, pl, cs, ru, uk, tr, ar, hi, vi and id (before that,
+    Kokoro in en, es, fr, it and pt); for the others, the best system voice
     installed (`system_voice.rs`: Premium > Enhanced > normal, and of the
     requested gender or, if there is none, of the other). With no voice installed, the language
     shows as "(no voice)" and there are only captions.
