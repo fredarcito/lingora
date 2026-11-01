@@ -89,3 +89,16 @@ export const notesListenCode = (family, target) => (target !== family ? family :
 
 /** A stopped lane with nothing on screen. @type {import("@app/types").LaneState} */
 export const EMPTY_STATE = { running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };
+
+/**
+ * Whether a lane hears a language that needs the add-on for Chinese, Japanese
+ * and Korean: it can be heard locally, but not by the European listener.
+ * @param {Array<{ sourceLang: string }>} lanes
+ * @param {import("./api").LanguageInfo[]} languages
+ */
+export function needsSenseVoice(lanes, languages) {
+  return lanes.some((l) => {
+    const info = languages.find((x) => x.code === apiLang(l.sourceLang));
+    return Boolean(info?.can_listen && !info.parakeet);
+  });
+}

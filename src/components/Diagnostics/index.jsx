@@ -27,11 +27,12 @@ const GROUPS = [
 const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "capture_volume"]);
 
 /**
- * What is only needed for some languages or for notes: it does not count as a problem.
- * Telling people apart in notes does count while it is turned on.
- * @param {string} id
+ * What is only needed for some languages or for notes: it does not count as a problem,
+ * unless it is in `required` (what the screen needs right now). Telling people apart in
+ * notes does count while it is turned on.
+ * @param {string} id @param {string[]} [required]
  */
-const isOptional = (id) => id === "sense_voice" || (id === "speakers" && !loadSpeakers());
+const isOptional = (id, required = []) => !required.includes(id) && (id === "sense_voice" || (id === "speakers" && !loadSpeakers()));
 
 /**
  * What the user is told when each check fails. The backend's title
@@ -63,20 +64,20 @@ const FIX_LABEL = {
   translator: "diagnostics.fix.translator",
 };
 
-/** @param {import("@utils/api").Check} c */
-const isProblem = (c) => c.status !== "ok" && !isOptional(c.id);
+/** @param {import("@utils/api").Check} c @param {string[]} [required] */
+const isProblem = (c, required) => c.status !== "ok" && !isOptional(c.id, required);
 
 /** @param {import("@utils/api").Check[]} checks */
 function groupStatus(checks) {
   if (checks.some((c) => isProblem(c) && c.status === "error")) return "error";
-  if (checks.some(isProblem)) return "warning";
+  if (checks.some((c) => isProblem(c))) return "warning";
   if (checks.some((c) => c.status !== "ok")) return "optional";
   return "ok";
 }
 
 /** @param {import("@utils/api").Check[]} checks */
 function groupSummary(checks) {
-  const problems = checks.filter(isProblem).length;
+  const problems = checks.filter((c) => isProblem(c)).length;
   if (problems) return t("diagnostics.problems", { count: problems });
   if (checks.some((c) => c.status !== "ok")) return t("diagnostics.readyOptional");
   return t("diagnostics.ready");
@@ -86,15 +87,16 @@ function groupSummary(checks) {
  * Diagnostics panel. Checks dependencies when opened and the audio routing
  * every few seconds. What prevents translating comes first, described by its
  * effect and with its fix; the rest is collapsed by groups.
- * @param {{ mode: "video" | "call", systemAudio?: boolean, onFixed?: () => void, onlyProblems?: boolean, expanded?: boolean,
- *   className?: string }} props
+ * @param {{ mode: "video" | "call", systemAudio?: boolean, onFixed?: () => void, onlyProblems?: boolean, required?: string[],
+ *   expanded?: boolean, className?: string }} props
  *   `systemAudio`: Listen hears the Mac audio, without BlackHole. `onFixed` is
  *   called after a fix, so the app reads devices and settings again.
  *   `onlyProblems`: on the translate screen it only appears if something fails (the
- *   details are in Settings). `expanded`: the groups are visible from the start.
+ *   details are in Settings). `required`: optional checks that count as problems
+ *   here (the add-on for the language being heard). `expanded`: the groups are visible from the start.
  *   `className`: one more class to place it where it goes.
  */
-export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyProblems = false, expanded = false, className }) {
+export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyProblems = false, required = [], expanded = false, className }) {
   const t = useT();
   /** @type {[import("@utils/api").Check[], Function]} */
   const [allChecks, setChecks] = useState([]);
@@ -149,7 +151,7 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
   };
 
   const problems = checks
-    .filter(isProblem)
+    .filter((c) => isProblem(c, required))
     .sort((a, b) => (a.status === "error" ? 0 : 1) - (b.status === "error" ? 0 : 1));
   const groups = GROUPS.map((g) => ({ ...g, checks: checks.filter((c) => g.ids.includes(c.id)) })).filter(
     (g) => g.checks.length > 0,

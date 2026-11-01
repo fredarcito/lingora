@@ -21,7 +21,7 @@ import { useVolumes } from "@hooks/useVolumes.js";
 import { useWidth } from "@hooks/useWidth.js";
 import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
 import { useMultiVoice } from "@hooks/useMultiVoice.js";
-import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor, notesListenCode } from "@utils/lanes";
+import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor, needsSenseVoice, notesListenCode } from "@utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
 import { trimSilence } from "@utils/voice";
 import styles from "./styles.module.css";
@@ -805,7 +805,14 @@ export default function App() {
       />
 
       {/* Aquí solo si algo falla; el detalle está en Ajustes. */}
-      <Diagnostics mode={mode === "call" ? "call" : "video"} systemAudio={tapsMac} onFixed={loadDevices} onlyProblems />
+      <Diagnostics
+        mode={mode === "call" ? "call" : "video"}
+        systemAudio={tapsMac}
+        onFixed={loadDevices}
+        onlyProblems
+        // The add-on for Chinese, Japanese and Korean is optional, but not when a lane hears one of them.
+        required={needsSenseVoice(mode === "notes" ? lanes : visible, shownLanguages) ? ["sense_voice"] : []}
+      />
 
       {/* In Take notes, My notes is as wide as the mode selector above it. */}
       <div key={mode} className={styles.modeBody} style={modeWidth ? { "--mode-w": `${modeWidth}px` } : undefined}>
