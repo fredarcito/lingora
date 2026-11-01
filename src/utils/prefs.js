@@ -19,6 +19,7 @@ const NO_TRANSLATE_KEY = "lingora.noTranslate";
 const PAIR_KEY = "lingora.pair";
 const MAX_SPEED_KEY = "lingora.maxSpeed";
 const VOLUME_KEY = "lingora.volume";
+const SUMMARY_TEMPLATE_KEY = "lingora.summaryTemplate";
 
 /**
  * «Translate call» is still in development (it needs a virtual microphone): it
@@ -98,6 +99,18 @@ export function loadVolumes() {
 
 /** @param {Record<Direction, number>} volumes */
 export const storeVolumes = (volumes) => save(VOLUME_KEY, JSON.stringify(volumes));
+
+/** The summary template used last, or null. Checked against the known ids in `summaryTemplateOf`. */
+export function loadSummaryTemplate() {
+  try {
+    return localStorage.getItem(SUMMARY_TEMPLATE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** @param {string} id */
+export const storeSummaryTemplate = (id) => save(SUMMARY_TEMPLATE_KEY, id);
 
 /** The lanes with what each person chose: speed cap, voice yes or no, original text, voice and its quality. */
 export function loadLaneSettings() {

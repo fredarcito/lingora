@@ -84,7 +84,9 @@ comes out when exporting.
   (`{"1": "Ana"}`). For now always `null` and `{}`. The interface has to
   work in both cases: if all are `null`, no labels are shown;
   if there is a number, `speakers[n] ?? "Persona n"` is shown.
-- `summary`: `null` or `{ "text": "<markdown>", "created_at": "..." }`.
+- `summary`: `null` or `{ "text": "<markdown>", "created_at": "..." }`. Since
+  the summary templates (`docs/plan-plantillas-resumen.md`) it also has `map`
+  and `template`, and the note `summary_template`.
 - `gaps` (optional): the stretches when "Save to notes" was turned off in the middle of
   the conversation, `[{ "at": 12, "secs": 95 }]`: the gap goes before the
   sentence `at` (or at the end if `at` is the number of sentences) and lasted `secs`. The

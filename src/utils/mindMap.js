@@ -15,7 +15,8 @@ export function clockSecs(clock) {
 }
 
 const TIME_AT_START = /^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*/;
-const TIME_AT_END = /\s*\[(\d{1,2}:\d{2}(?::\d{2})?)\]$/;
+/** `point [12:40]`, also `point [12:40].`: the model sometimes closes the sentence after the time. */
+export const TIME_AT_END = /\s*\[(\d{1,2}:\d{2}(?::\d{2})?)\]([.;]?)$/;
 
 /** One list item of the summary (without the "- "). @param {string} raw @returns {MapItem} */
 function item(raw) {
@@ -24,7 +25,7 @@ function item(raw) {
   const start = text.match(TIME_AT_START) ?? text.match(TIME_AT_END);
   if (start) {
     secs = clockSecs(start[1]);
-    text = text.replace(start[0], "").trim();
+    text = text.replace(start[0], start[2] ?? "").trim();
   }
   // "«quote» — context" (My notes) or "task — who" (Tasks).
   const [main, ...rest] = text.split(/\s+—\s+/);

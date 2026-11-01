@@ -1,6 +1,7 @@
 import { api } from "./api";
 import { langName, t } from "@i18n";
 import { splitWords } from "./words.js";
+import { loadSummaryTemplate } from "./prefs.js";
 
 const SAVE_NOTES_KEY = "lingora.saveNotes";
 const SUMMARY_CONSENT_KEY = "lingora.summaryConsent";
@@ -503,6 +504,19 @@ export function marksByPart(note, parts) {
 export function summaryLangOf(note, languages) {
   const known = (/** @type {string | undefined} */ code) => (languages.some((l) => l.code === code) ? code : undefined);
   return known(note.summary_lang) ?? known(note.sentences[0]?.target_lang) ?? "es";
+}
+
+/** Summary templates, in the order of the selector. Same ids as `SUMMARY_TEMPLATES` in `notes.rs`. */
+export const SUMMARY_TEMPLATES = ["general", "team", "one_on_one", "client", "interview", "class", "executive"];
+
+/**
+ * The template for the next summary: the note's, else the one used last, else
+ * General. Unknown ids (from a newer version) count as General, like in `notes.rs`.
+ * @param {import("./api").Note} note
+ */
+export function summaryTemplateOf(note) {
+  const known = (/** @type {string | null | undefined} */ id) => (id && SUMMARY_TEMPLATES.includes(id) ? id : undefined);
+  return known(note.summary_template) ?? known(loadSummaryTemplate()) ?? "general";
 }
 
 /**

@@ -39,6 +39,11 @@ describe("summaryTree", () => {
     expect(tree[3].items[0].secs).toBe(3723);
   });
 
+  it("reads the time at the end even with a period after it", () => {
+    const [branch] = summaryTree("## Contexto\n- Enseña inglés [00:58].");
+    expect(branch.items[0]).toEqual({ text: "Enseña inglés.", sub: "", secs: 58 });
+  });
+
   it("is empty without lists", () => {
     expect(summaryTree("## Resumen\nSolo texto.")).toEqual([]);
   });

@@ -8,16 +8,19 @@ import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
 import { partAt } from "@utils/mindMap.js";
 import { NOTES_REFRESH_MS } from "@utils/noteList.js";
+import { storeSummaryTemplate } from "@utils/prefs.js";
 import {
   discardActive,
   formatSpan,
   loadSummaryConsent,
   noteToText,
   renameActive,
+  SUMMARY_TEMPLATES,
   setActiveSummary,
   storeSummaryConsent,
   summaryLangOf,
   summaryPrompt,
+  summaryTemplateOf,
   transcriptParts,
   userMarks,
 } from "@utils/notes.js";
@@ -192,7 +195,11 @@ export default function NotePage({ id, live, languages, onBack }) {
   const meta = [...span, langs].filter(Boolean);
   const summaryLang = summaryLangOf(note, languages);
   // The summary is no longer in the chosen language: "Summarize again" becomes the primary button.
-  const stale = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
+  const summaryTemplate = summaryTemplateOf(note);
+  // The summary was made with another template than the chosen one.
+  const staleTemplate = !!note.summary && (note.summary.template ?? "general") !== summaryTemplate;
+  const staleLang = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
+  const stale = staleLang || staleTemplate;
   const hasPeople = note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined);
   const marks = userMarks(note);
   const noteCount = marks.filter((m) => m.kind === "note").length;
@@ -335,8 +342,22 @@ export default function NotePage({ id, live, languages, onBack }) {
         {tab === "summary" && (
           <>
             <div className={styles.noteSummaryBar}>
-              <label className={styles.noteSummaryLang}>
-                <span>{t("notes.summaryIn")}</span>
+              {/* "Resumen General ⌄ en Español ⌄": each select has its own aria-label. */}
+              <div className={styles.noteSummaryLang}>
+                <span>{t("notes.tab.summary")}</span>
+                <InlineSelect
+                  value={summaryTemplate}
+                  disabled={live || summarizing}
+                  label={t("notes.summaryTemplate")}
+                  options={SUMMARY_TEMPLATES.map((id) => ({ value: id, label: t(`notes.template.${id}`) }))}
+                  onChange={(value) => {
+                    storeSummaryTemplate(value);
+                    const next = { ...note, summary_template: value };
+                    setNote(next);
+                    run(() => api.noteSave(next));
+                  }}
+                />
+                <span>{t("notes.summaryInLang")}</span>
                 <InlineSelect
                   value={summaryLang}
                   disabled={live || summarizing}
@@ -349,7 +370,7 @@ export default function NotePage({ id, live, languages, onBack }) {
                     run(() => api.noteSave(next));
                   }}
                 />
-              </label>
+              </div>
               {noteCount > 0 && (
                 <Switch
                   className={styles.noteSummaryNotes}
@@ -396,9 +417,14 @@ export default function NotePage({ id, live, languages, onBack }) {
                 </Button>
               </div>
             </div>
-            {stale && !summarizing && (
+            {staleLang && !summarizing && (
               <p className={styles.noteSummaryStale} role="status">
                 {t("notes.summaryStale", { lang: langInSentence(/** @type {string} */ (summaryWasIn), langName(/** @type {string} */ (summaryWasIn)), true) })}
+              </p>
+            )}
+            {staleTemplate && !summarizing && (
+              <p className={styles.noteSummaryStale} role="status">
+                {t("notes.summaryStaleTemplate", { template: t(`notes.template.${note.summary?.template ?? "general"}`) })}
               </p>
             )}
             {summarizing && (

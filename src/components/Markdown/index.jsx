@@ -1,4 +1,5 @@
 import { cx } from "@components/shared";
+import { TIME_AT_END } from "@utils/mindMap.js";
 import styles from "./styles.module.css";
 
 /**
@@ -7,7 +8,7 @@ import styles from "./styles.module.css";
  * with a time (`[07:26] …`, Highlighted moments) shows it apart; with a quote
  * after it (`[01:52] «note» — context`, My notes) the user's words stand out
  * and the context goes below, quieter. A time at the end (`point [12:40]`,
- * where it was said) goes in gray after the text. Everything comes out as React
+ * where it was said) is for the mind map: here it is left out. Everything comes out as React
  * elements, so the text is never interpreted as HTML. `className`, so that
  * the caller can place it.
  * @param {{ text: string, className?: string }} props
@@ -50,7 +51,8 @@ export default function Markdown({ text, className }) {
       }
     } else if (line.trim()) {
       flush();
-      blocks.push(<p key={blocks.length}>{inline(line)}</p>);
+      // The model sometimes puts a time on a paragraph too.
+      blocks.push(<p key={blocks.length}>{endTime(line)}</p>);
     } else {
       flush();
     }
@@ -61,7 +63,8 @@ export default function Markdown({ text, className }) {
 
 /**
  * `[mm:ss] rest`: the time apart, in gray. If the rest is `«quote» — context`,
- * the quote (what the user wrote) and the context on its own line.
+ * the quote (what the user wrote) and the context on its own line. A repeated
+ * time at the end is left out.
  * @param {string} text
  */
 function timed(text) {
@@ -74,25 +77,18 @@ function timed(text) {
       {quote ? (
         <>
           <span className={styles.mdQuote}>«{quote[1]}»</span>
-          {quote[2] && <span className={styles.mdContext}>{inline(quote[2])}</span>}
+          {quote[2] && <span className={styles.mdContext}>{endTime(quote[2])}</span>}
         </>
       ) : (
-        inline(at[2])
+        endTime(at[2])
       )}
     </>
   );
 }
 
-/** `text [12:40]`: the time after the text, in gray. @param {string} text */
+/** `text [12:40]`: the text without the time, which only the mind map uses. @param {string} text */
 function endTime(text) {
-  const at = text.match(/^(.*?)\s*\[(\d{1,2}:\d{2}(?::\d{2})?)\]$/);
-  if (!at) return inline(text);
-  return (
-    <>
-      {inline(at[1])}
-      <span className={styles.mdTimeEnd}>{at[2]}</span>
-    </>
-  );
+  return inline(text.replace(TIME_AT_END, "$2"));
 }
 
 /** Turns `**bold**` into <strong>; the rest stays as text. @param {string} text */

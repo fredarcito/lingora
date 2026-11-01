@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import cases from "../../tests/fixtures/paragraphs.json";
-import { createSpeakerTracker, marksByPart, paragraphs, speakerShares, tidyNote, transcriptParts, userMarks } from "./notes";
+import { createSpeakerTracker, marksByPart, paragraphs, speakerShares, summaryTemplateOf, tidyNote, transcriptParts, userMarks } from "./notes";
 
 describe("paragraphs", () => {
   // Same fixture as `paragraphs_match_shared_fixture` in src-tauri/src/notes.rs:
@@ -144,5 +144,25 @@ describe("tidyNote", () => {
     expect(tidyNote("3 ideas")).toBe("3 ideas");
     expect(tidyNote("Ya Está")).toBe("Ya Está");
     expect(tidyNote("   ")).toBe("");
+  });
+});
+
+describe("summaryTemplateOf", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const note = (/** @type {string | undefined} */ summary_template) => /** @type {any} */ ({ summary_template, sentences: [] });
+  /** @param {string | null} last */
+  const lastUsed = (last) => vi.stubGlobal("localStorage", { getItem: () => last, setItem: () => {} });
+
+  it("uses the note's template, else the last used, else General", () => {
+    lastUsed("client");
+    expect(summaryTemplateOf(note("one_on_one"))).toBe("one_on_one");
+    expect(summaryTemplateOf(note(undefined))).toBe("client");
+    lastUsed(null);
+    expect(summaryTemplateOf(note(undefined))).toBe("general");
+  });
+
+  it("treats unknown ids as missing", () => {
+    lastUsed("nope");
+    expect(summaryTemplateOf(note("future"))).toBe("general");
   });
 });

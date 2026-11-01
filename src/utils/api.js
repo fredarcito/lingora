@@ -114,14 +114,15 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {"video" | "call" | "notes"} mode
  * @property {"notes" | "translation"} [kind] Without it, a translation.
  * @property {string} [summary_lang] Summary language (only in Take notes).
+ * @property {string} [summary_template] Summary template id (`SUMMARY_TEMPLATES`); without it, "general".
  * @property {Record<string, string>} speakers Name of each speaker ("1": "Ana").
  * @property {NoteSentence[]} sentences
  * @property {{ at: number, secs: number }[]} [gaps] Unsaved gaps: before sentence `at`, and how long they lasted.
  * @property {MyNote[]} [my_notes] What the user wrote while recording (Take notes), ordered by `t`.
  * @property {{ t: number }[]} [bookmarks] Moments the user marked while recording, ordered by `t`.
  * @property {boolean} [summary_with_notes] The summary also uses `my_notes` (off by default: they may be private).
- * @property {{ text: string, map?: string, created_at: string } | null} summary `map`: the same lists in short, for the mind map
- *   (summaries made before it have none).
+ * @property {{ text: string, map?: string, template?: string, created_at: string } | null} summary `map`: the same lists in short,
+ *   for the mind map (summaries made before it have none). `template`: the one it was made with; without it, "general".
  *
  * @typedef {Object} MyNote
  * @property {number} t Seconds, on the same clock as `sentences[].t`: when the user started writing it.

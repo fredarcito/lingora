@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CALL_MODE, loadLaneSettings, loadMode, loadPair, loadVolumes, storeLaneSettings, storeMode, storeNoTranslate, storePair, storeVolumes } from "./prefs";
+import { CALL_MODE, loadLaneSettings, loadMode, loadPair, loadSummaryTemplate, loadVolumes, storeLaneSettings, storeMode, storeNoTranslate, storePair, storeSummaryTemplate, storeVolumes } from "./prefs";
 
 /** @type {Map<string, string>} */
 let store;
@@ -18,6 +18,7 @@ describe("prefs", () => {
     storeNoTranslate(true);
     storePair({ you: "ES", them: "FR" });
     storeVolumes({ remote_to_local: 0.5, local_to_remote: 1 });
+    storeSummaryTemplate("client");
     storeLaneSettings(/** @type {any} */ ([{ direction: "remote_to_local", maxSpeed: 1.3, speak: false, showSource: true, voiceIds: { ES: "x" }, voiceHq: true }]), {
       maxSpeed: 1.3,
       speak: false,
@@ -32,6 +33,7 @@ describe("prefs", () => {
       "lingora.pair",
       "lingora.showSource",
       "lingora.speak",
+      "lingora.summaryTemplate",
       "lingora.voiceHq",
       "lingora.voiceIds",
       "lingora.volume",
@@ -48,6 +50,8 @@ describe("prefs", () => {
     expect(loadMode()).toBe("notes");
     expect(loadPair()).toEqual({ you: "ES", them: "FR" });
     expect(loadVolumes().remote_to_local).toBe(0.5);
+    storeSummaryTemplate("client");
+    expect(loadSummaryTemplate()).toBe("client");
     expect(loadLaneSettings().find((l) => l.direction === "remote_to_local")?.maxSpeed).toBe(1.3);
   });
 

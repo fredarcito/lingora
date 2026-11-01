@@ -472,6 +472,8 @@ fn note_ref(line: &str) -> Option<(usize, String)> {
 /// bookmarks only when they go in.
 fn summary_system(note: &Value) -> String {
     let mut system = SUMMARY_SYSTEM.replace("{idioma}", summary_language(note));
+    system.push_str(summary_sections(summary_template(note)));
+    system.push_str(SUMMARY_RULES);
     if summary_with_notes(note) && !user_notes(note).is_empty() {
         system.push_str(SUMMARY_NOTES);
     }
@@ -588,14 +590,94 @@ const KEYCHAIN_ACCOUNT: &str = "groq";
 const SUMMARY_MAX_CHARS: usize = 60_000;
 const SUMMARY_CHUNK_CHARS: usize = 50_000;
 
-/// `{idioma}` es el de la traducción.
+/// `{idioma}` es el de la traducción. The template's sections and
+/// `SUMMARY_RULES` follow.
 const SUMMARY_SYSTEM: &str = "Eres un asistente que resume conversaciones transcritas. Responde en {idioma} con Markdown \
-y solo estas secciones, omitiendo las que no tengan contenido:\n\
-## Resumen (3-6 frases)\n\
+y solo estas secciones, omitiendo las que no tengan contenido. Lo que va entre paréntesis es una instrucción \
+para ti: el título de cada sección es solo el texto antes del paréntesis.\n";
+/// Closes the section list, whatever the template.
+const SUMMARY_RULES: &str = "No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.";
+/// The summary templates: `(id, sections)`. The ids are saved in the notes
+/// (`summary_template`) and match `SUMMARY_TEMPLATES` in `src/utils/notes.js`.
+/// The first one, General, is the summary every note had before templates.
+const SUMMARY_TEMPLATES: &[(&str, &str)] = &[
+    (
+        "general",
+        "## Resumen (3-6 frases)\n\
 ## Puntos clave (lista)\n\
 ## Decisiones (lista)\n\
+## Tareas (lista; \"- [ ] tarea — responsable\" si se menciona)\n",
+    ),
+    (
+        "team",
+        "## Objetivo (1-2 frases)\n\
+## Decisiones (lista)\n\
+## Tareas (lista; \"- [ ] tarea — responsable — fecha\", solo con lo que se mencione)\n\
+## Bloqueos (lista)\n\
+## Para la próxima (lista: temas que quedaron pendientes)\n",
+    ),
+    (
+        "one_on_one",
+        "## Resumen (2-4 frases)\n\
+## Cómo está (lista: solo lo que la persona contó de sí misma; no interpretes su ánimo)\n\
+## Avance del trabajo (lista: proyectos u objetivos que se repasaron y cómo van)\n\
+## Bloqueos (lista)\n\
+## Feedback (lista; di si se dio o se recibió y quién lo dio)\n\
+## Crecimiento y carrera (lista)\n\
+## Acuerdos (lista)\n\
 ## Tareas (lista; \"- [ ] tarea — responsable\" si se menciona)\n\
-No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.";
+## Para la próxima (lista)\n",
+    ),
+    (
+        "client",
+        "## Resumen (3-5 frases)\n\
+## Contexto del cliente (lista: su situación y lo que usa ahora)\n\
+## Necesidades y problemas (lista)\n\
+## Dudas y objeciones (lista)\n\
+## Presupuesto y plazos (lista; solo lo que se dijo)\n\
+## Riesgos (lista: señales de alerta)\n\
+## Compromisos (lista; \"- Nosotros: …\" o \"- Cliente: …\". \"Yo\" es quien usa la app y está del lado \"Nosotros\")\n\
+## Próximos pasos (lista; \"- [ ] paso — responsable — fecha\", solo con lo que se mencione)\n",
+    ),
+    (
+        "interview",
+        "## Perfil o tema (2-4 frases)\n\
+## Preguntas y respuestas (lista: solo las preguntas principales, \"- Pregunta: lo esencial de la respuesta\")\n\
+## Citas destacadas (lista: \"- cita — Persona N\"; escribe cada cita traducida al idioma del resumen, fiel a lo que se dijo, sin resumirla)\n\
+## Por verificar (lista: datos, cifras o afirmaciones que conviene comprobar)\n",
+    ),
+    (
+        "class",
+        "## Resumen (3-5 frases)\n\
+## Estructura (lista: los temas en el orden en que se explicaron)\n\
+## Conceptos principales (lista: cada concepto con una explicación de 1-2 frases)\n\
+## Definiciones (lista; \"- término: definición\")\n\
+## Ejemplos (lista)\n\
+## Lo que se remarcó (lista: lo que se dijo que es importante, que entra en el examen o que se repitió)\n\
+## Recursos mencionados (lista: libros, autores, enlaces, herramientas)\n\
+## Tareas y fechas (lista: lo que se pidió hacer y para cuándo)\n\
+## Dudas abiertas (lista)\n\
+## Para repasar (lista: 3-5 preguntas para comprobar si se entendió, \"- pregunta — respuesta breve\"; la respuesta tiene que estar en la transcripción)\n",
+    ),
+    (
+        "executive",
+        "## Resumen (un párrafo de 6-10 frases: contexto, qué se decidió y por qué importa)\n\
+## Decisiones (lista)\n\
+## Riesgos (lista)\n\
+## Qué se necesita (lista: decisiones, recursos o aprobaciones que se piden a quien lo lee)\n",
+    ),
+];
+
+/// The note's template id (`summary_template`); missing or unknown → General.
+fn summary_template(note: &Value) -> &'static str {
+    let id = note.get("summary_template").and_then(Value::as_str);
+    SUMMARY_TEMPLATES.iter().find(|(t, _)| Some(*t) == id).unwrap_or(&SUMMARY_TEMPLATES[0]).0
+}
+
+/// The sections a template asks for.
+fn summary_sections(id: &str) -> &'static str {
+    SUMMARY_TEMPLATES.iter().find(|(t, _)| *t == id).unwrap_or(&SUMMARY_TEMPLATES[0]).1
+}
 /// Added when the user includes their notes in the summary.
 const SUMMARY_NOTES: &str = "\nEl usuario escribió notas en ciertos momentos (N1, N2…, con su hora). Añade la sección \
 ## Mis notas al final de todo (después de Momentos destacados), con una línea por nota: \"- N1: qué se decía en ese momento\" \
@@ -607,9 +689,9 @@ const SUMMARY_LANGUAGE: &str = "\nIMPORTANTE: escribe todo el resumen, también 
 ({language}), aunque la transcripción y estas instrucciones estén en otro idioma. Write the whole summary in {language}.";
 /// Times on each point, and a short version of the lists for the mind map, which
 /// the app keeps apart from the summary (`split_map`).
-const SUMMARY_MAP: &str = "\nEn Puntos clave, Decisiones y Tareas, termina cada viñeta con la hora de la transcripción \
+const SUMMARY_MAP: &str = "\nEn cada sección que sea una lista, termina cada viñeta con la hora de la transcripción \
 en que se dijo, así: \" [mm:ss]\". Después de todo lo demás (también de Momentos destacados y Mis notas), escribe una \
-línea que diga exactamente <<<MAP>>> y, debajo, esas mismas tres secciones con los mismos títulos, en versión corta \
+línea que diga exactamente <<<MAP>>> y, debajo, esas mismas secciones de lista con los mismos títulos, en versión corta \
 para un mapa mental: cada viñeta de 12 palabras como máximo, con su misma hora.";
 /// Where the short version for the map starts in the model's answer.
 const MAP_MARKER: &str = "<<<MAP>>>";
@@ -780,15 +862,16 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
             Error::Api { status: 401 | 403, .. } => Error::Notes("La clave de Groq no es válida. Cámbiala en Ajustes.".into()),
             other => other,
         })?;
+    let template = summary_template(&note);
     let (text, map) = split_map(&text);
     let text = with_user_notes(&text, &notes);
 
     // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
     let mut note = read_note(&path)?;
     note["summary"] = if map.is_empty() {
-        serde_json::json!({ "text": text, "created_at": now_iso() })
+        serde_json::json!({ "text": text, "template": template, "created_at": now_iso() })
     } else {
-        serde_json::json!({ "text": text, "map": map, "created_at": now_iso() })
+        serde_json::json!({ "text": text, "map": map, "template": template, "created_at": now_iso() })
     };
     write_note(&path, &note)?;
     Ok(text)
@@ -825,6 +908,25 @@ fn now_iso() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn summary_templates_pick_their_sections() {
+        let with = |id: &str| summary_system(&serde_json::json!({ "summary_template": id, "sentences": [] }));
+        let general = "## Resumen (3-6 frases)\n## Puntos clave (lista)\n## Decisiones (lista)\n";
+        // Without a template (notes from before), the summary asks for what it always did.
+        let before = summary_system(&serde_json::json!({ "sentences": [] }));
+        assert!(before.contains(general));
+        assert!(before.contains(SUMMARY_RULES));
+        assert_eq!(with("nope"), before);
+        assert_eq!(with("general"), before);
+        for (id, sections) in SUMMARY_TEMPLATES {
+            let system = with(id);
+            assert!(system.contains(sections), "{id}");
+            assert!(system.contains(MAP_MARKER) && system.contains(SUMMARY_RULES), "{id}");
+            assert_eq!(summary_template(&serde_json::json!({ "summary_template": id })), *id);
+        }
+        assert!(with("one_on_one").contains("## Cómo está") && !with("one_on_one").contains("## Puntos clave"));
+    }
 
     #[test]
     fn summary_language_prefers_summary_lang() {
