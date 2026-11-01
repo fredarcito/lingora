@@ -153,6 +153,10 @@ documentación o su código).
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su
   clave en `src/i18n/es/` y `en/`**; no escribas texto fijo en los componentes.
 - `README.md`: cómo arrancar y las variables de entorno.
+- `marketing/lingora-base-conocimiento.md`: base de conocimiento para
+  marketing (en español; se sube a un proyecto de Claude). Si cambia algo que
+  vea el usuario (funciones, idiomas, modelos, privacidad, requisitos o lo
+  pendiente de los planes), actualízalo también.
 
 **Datos que conviene saber:**
 
