@@ -12,7 +12,8 @@
  * @property {string} inputDeviceId WebView ID for the input (BlackHole or microphone), or
  *   `SYSTEM_AUDIO` for Mac audio without BlackHole.
  * @property {string} outputDevice Core Audio name of the output where the translation is heard.
- * @property {"female" | "male"} voice Voice of the translation.
+ * @property {"female" | "male" | "multi"} voice Voice of the translation; "multi" gives each person
+ *   their own voice (Listen lane, see `useMultiVoice`).
  * @property {Record<string, string>} voiceIds Specific voice chosen per target language
  *   (`VoiceInfo.id`); without it, the best voice of the gender.
  * @property {number} maxSpeed Maximum speed of the voice when there is lag (1 = never speeds up).

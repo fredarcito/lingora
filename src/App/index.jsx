@@ -20,6 +20,7 @@ import { useLanguages } from "@hooks/useLanguages.js";
 import { useVolumes } from "@hooks/useVolumes.js";
 import { useWidth } from "@hooks/useWidth.js";
 import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
+import { useMultiVoice } from "@hooks/useMultiVoice.js";
 import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor, notesListenCode } from "@utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
 import { trimSilence } from "@utils/voice";
@@ -374,6 +375,8 @@ export default function App() {
   });
   const { meters, lastSignal } = useLaneMeters(runtime);
   const { volumes, volumesRef, changeVolume } = useVolumes();
+  // "Several voices" in the Listen lane: one voice per person (docs/plan-varias-voces.md).
+  const multiVoice = useMultiVoice();
   // «Guardar en notas» de la tarjeta: parado es el ajuste de siempre; en marcha
   // pausa y reanuda la nota en curso sin cambiar el ajuste.
   const [saveNotes, setSaveNotes] = useState(loadSaveNotes);
@@ -441,6 +444,17 @@ export default function App() {
     const current = lanesRef.current.find((l) => l.direction === lane.direction) ?? lane;
     const stt = transcribeLocally(current, wav, info);
     stt.catch(() => {});
+    // Several voices: the voice print (~80 ms) runs alongside the transcription,
+    // so who is speaking is known before the translation is ready.
+    const target = apiLang(current.targetLang);
+    const printing =
+      current.speak && current.voice === "multi" && lane.direction === "remote_to_local" && info.samples
+        ? api.voicePrint(info.samples)
+        : null;
+    printing?.catch(() => {});
+    const person = printing
+      ? multiVoice.assign(printing, /** @type {Float32Array} */ (info.samples), info.secs, target, current.voiceIds[target] ?? null)
+      : null;
 
     /** @type {ReturnType<typeof phraseQueue<Promise<import("@utils/api").Speech>>>} */
     const phrases = phraseQueue();
@@ -469,7 +483,12 @@ export default function App() {
         const splitter = phraseSplitter((phrase) => {
           // "Mmm", "Ajá": la voz los pronuncia como un resoplido.
           if (!current.speak || FILLER.test(phrase)) return;
-          const speech = api.speak(phrase, t.target_lang, current.voice, speed, current.voiceIds[t.target_lang] ?? null, current.voiceHq);
+          const voiceId = current.voiceIds[t.target_lang] ?? null;
+          // Rust only knows female and male: with several voices, each person's (or female if unknown).
+          const gender = current.voice === "multi" ? "female" : current.voice;
+          const speech = person
+            ? person.then((p) => api.speak(phrase, t.target_lang, p?.gender ?? gender, speed, p?.voiceId ?? voiceId, current.voiceHq))
+            : api.speak(phrase, t.target_lang, gender, speed, voiceId, current.voiceHq);
           // Si falla una frase anterior, esta no se llega a esperar.
           speech.catch(() => {});
           phrases.push(speech);
@@ -556,7 +575,7 @@ export default function App() {
         // La huella de voz va aparte y no retrasa nada: la nota la espera.
         const voice =
           recorderRef.current?.saving && info.samples && lane.direction === "remote_to_local" && loadSpeakers()
-            ? { print: api.voicePrint(info.samples), secs: info.secs }
+            ? { print: printing ?? api.voicePrint(info.samples), secs: info.secs }
             : null;
         recorderRef.current?.add(
           {
@@ -821,6 +840,7 @@ export default function App() {
                 onSaveNotes={changeSaveNotes}
                 floating={lane.direction === "remote_to_local" ? floating : undefined}
                 onFloating={toggleFloating}
+                multiVoice={lane.direction === "remote_to_local" ? multiVoice : undefined}
               />
             ))}
           </div>

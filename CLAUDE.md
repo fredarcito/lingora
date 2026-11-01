@@ -117,7 +117,7 @@ documentación o su código).
 - **Carpetas:** `src/pages/` (pantallas), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
   `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
-  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`), `src/hooks/` (hooks propios de React,
+  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`), `src/hooks/` (hooks propios de React,
   `useAlgo.js`) y `src/App/` (el armazón y Traducir; la cabecera y la
   tarjeta de cada carril están en `components/TopBar` y
   `components/LaneCard`, y los tipos en `App/types.js`).

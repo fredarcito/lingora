@@ -43,7 +43,7 @@ const VOICE_SAMPLES = {
  * Lane card: header, main control, collapsible settings and the
  * translations as subtitles (the most recent one at the bottom, highlighted).
  */
-export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, saveNotes, onSaveNotes, floating, onFloating, onOpenSettings }) {
+export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, saveNotes, onSaveNotes, floating, onFloating, onOpenSettings, multiVoice }) {
   const t = useT();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [detailsId, setDetailsId] = useState(null);
@@ -64,6 +64,11 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
     window.addEventListener("focus", load);
     return () => window.removeEventListener("focus", load);
   }, [settingsOpen, target]);
+  // The speakers add-on may have been downloaded meanwhile (Diagnostics).
+  const refreshMulti = multiVoice?.refresh;
+  useEffect(() => {
+    if (settingsOpen) refreshMulti?.();
+  }, [settingsOpen, refreshMulti]);
   const latestId = s.history[0]?.id;
   const live = [...s.heard.map((h) => h.text), s.partial].filter(Boolean).join(" ");
 
@@ -91,8 +96,12 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const same = lane.sourceLang === lane.targetLang;
   const speaks = lane.speak && !same;
   // If the chosen gender has no voice in this language, Rust uses the other one.
-  const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
+  const voice =
+    lane.voice === "multi" && multiVoice ? "multi" : lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
+  // Several voices needs Lingora's voices in the language and the speakers add-on.
+  const hasLingoraVoices = voiceList.some((v) => v.engine === "supertonic");
+  const multiOk = hasLingoraVoices && multiVoice?.available === true;
   const showSource = !same && (lane.showSource ?? speaks);
   // A single setting for which text is shown: the translation, the original without
   // translating (only in Translate audio) or both.
@@ -171,9 +180,11 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
                 onChange={(value) => {
                   if (value === "off") return onChange({ speak: false });
                   // A specific voice of another gender no longer applies: it goes back to automatic.
+                  // With several voices it stays: it is Person 1's voice.
                   const chosen = voiceList.find((v) => v.id === voiceId);
                   const { [target]: _, ...rest } = lane.voiceIds;
-                  onChange({ speak: true, voice: value, ...(chosen && chosen.gender !== value ? { voiceIds: rest } : {}) });
+                  const drop = value !== "multi" && chosen && chosen.gender !== value;
+                  onChange({ speak: true, voice: value, ...(drop ? { voiceIds: rest } : {}) });
                 }}
                 options={[
                   { value: "off", label: t("app.lane.voice.off"), hint: t("app.lane.voice.off.hint") },
@@ -190,12 +201,26 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
                     disabled: !lane.voices.male,
                     hint: lane.voices.male ? undefined : t("app.lane.voice.male.missing"),
                   },
+                  ...(multiVoice
+                    ? [
+                        {
+                          value: "multi",
+                          label: t("app.lane.voice.multi"),
+                          disabled: !multiOk,
+                          hint: !hasLingoraVoices
+                            ? t("app.lane.voice.multi.noVoices")
+                            : multiOk
+                              ? t("app.lane.voice.multi.hint")
+                              : t("app.lane.voice.multi.missing"),
+                        },
+                      ]
+                    : []),
                 ]}
               />
             </div>
           )}
           {/* The specific voice and the speed, at hand; the devices, in Settings. */}
-          {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} />}
+          {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} multiVoice={voice === "multi" ? multiVoice : undefined} />}
           {!same && !lane.voices.female && !lane.voices.male && (
             <p className="settings-note">
               {t("app.lane.noVoicesNote")}
@@ -367,10 +392,11 @@ const voiceLabel = (v) =>
 /**
  * The specific voice (with preview) and the maximum speed, on the lane's card:
  * they are changed often and must be at hand.
+ * With several voices (`multiVoice`), one row per person instead of the specific voice.
  * @param {{ lane: import("@app/types").Lane & { voices: { female: boolean, male: boolean } }, volume: number,
- *   onChange: (patch: Partial<import("@app/types").Lane>) => void }} props
+ *   onChange: (patch: Partial<import("@app/types").Lane>) => void, multiVoice?: import("@hooks/useMultiVoice").MultiVoice }} props
  */
-function VoiceControls({ lane, volume, onChange }) {
+function VoiceControls({ lane, volume, onChange, multiVoice }) {
   const t = useT();
   /** @type {[import("@utils/api").VoiceInfo[], Function]} */
   const [voiceList, setVoiceList] = useState([]);
@@ -397,21 +423,25 @@ function VoiceControls({ lane, volume, onChange }) {
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
   // Automatic uses Lingora's voice whenever the language has one.
-  const lingoraVoice = voiceList.some((v) => v.engine === "supertonic") && !voiceId.startsWith("system:");
+  const lingoraVoices = voiceList.filter((v) => v.engine === "supertonic");
+  const lingoraVoice = lingoraVoices.length > 0 && (Boolean(multiVoice) || !voiceId.startsWith("system:"));
   /** @param {string} id "" = automatic. */
   const chooseVoice = (id) => {
     const { [target]: _, ...rest } = lane.voiceIds;
     const chosen = voiceList.find((v) => v.id === id);
     onChange({ voiceIds: id ? { ...rest, [target]: id } : rest, ...(chosen?.gender ? { voice: chosen.gender } : {}) });
   };
-  /** Speaks a sample sentence with the chosen voice, through the lane's output. */
-  const previewVoice = async () => {
+  /**
+   * Speaks a sample sentence with a voice (by default the chosen one), through the lane's output.
+   * @param {string | null} [id] @param {"female" | "male"} [gender]
+   */
+  const previewVoice = async (id = voiceId || null, gender = voice) => {
     setPreviewing(true);
     setPreviewError("");
     try {
       const text =
         VOICE_SAMPLES[target] ?? (await api.translate(VOICE_SAMPLES.es, "es", target, "", () => {}, false, true)).translation;
-      const speech = await api.speak(text, target, voice, 1, voiceId || null, lane.voiceHq);
+      const speech = await api.speak(text, target, gender, 1, id, lane.voiceHq);
       await api.playAudio(trimSilence(speech.audio, speech.sample_rate), speech.sample_rate, lane.outputDevice, volume);
     } catch (e) {
       setPreviewError(errorMessage(e));
@@ -422,9 +452,46 @@ function VoiceControls({ lane, volume, onChange }) {
 
   return (
     <>
+      {multiVoice && (
+        <>
+          {multiVoice.people.length === 0 && <p className="settings-note">{t("app.voices.waiting")}</p>}
+          {multiVoice.people.map((p, i) => (
+            <div key={i} className={cx(styles.settingRow, styles.settingSub)}>
+              <span className={styles.settingLabel}>{t("app.voices.person", { n: i + 1 })}</span>
+              <div className={styles.voicePick}>
+                <select
+                  value={p.voiceId}
+                  onChange={(e) => {
+                    const v = lingoraVoices.find((x) => x.id === e.target.value);
+                    if (v?.gender) multiVoice.setVoice(i, v.id, v.gender);
+                  }}
+                  aria-label={t("app.voices.person", { n: i + 1 })}
+                >
+                  {lingoraVoices.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {voiceLabel(v)}
+                    </option>
+                  ))}
+                </select>
+                <button className={styles.voicePreview} onClick={() => previewVoice(p.voiceId, p.gender)} disabled={previewing} title={t("app.voices.preview.hint")}>
+                  {t("app.voices.preview")}
+                </button>
+              </div>
+            </div>
+          ))}
+          {multiVoice.people.length > 0 && (
+            <div className={cx(styles.settingRow, styles.settingSub)}>
+              <span className={styles.settingLabel} />
+              <LinkButton onClick={multiVoice.reset} title={t("app.voices.restart.hint")}>
+                {t("app.voices.restart")}
+              </LinkButton>
+            </div>
+          )}
+        </>
+      )}
       {/* Always in view, so the card does not jump when the voices arrive:
           disabled while they load or if the language has only one. */}
-      <div className={cx(styles.settingRow, styles.settingSub)}>
+      {!multiVoice && <div className={cx(styles.settingRow, styles.settingSub)}>
         <span className={styles.settingLabel} />
         <div className={styles.voicePick}>
           <select
@@ -452,11 +519,11 @@ function VoiceControls({ lane, volume, onChange }) {
               );
             })}
           </select>
-          <button className={styles.voicePreview} onClick={previewVoice} disabled={previewing} title={t("app.voices.preview.hint")}>
+          <button className={styles.voicePreview} onClick={() => previewVoice()} disabled={previewing} title={t("app.voices.preview.hint")}>
             {previewing ? <Spinner /> : t("app.voices.preview")}
           </button>
         </div>
-      </div>
+      </div>}
       {previewError && <p className="settings-note">{previewError}</p>}
       <div className={cx(styles.settingRow, styles.speedRow)}>
         <span className={styles.settingLabel}>{t("app.voices.speed")}</span>
