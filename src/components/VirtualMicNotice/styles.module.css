@@ -1,0 +1,23 @@
+/* Speak card: the text and its fix on one line. The colors come from the card's notice. */
+.mic-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mic-notice p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.mic-notice > button {
+  flex-shrink: 0;
+}
+
+.mic-error {
+  display: block;
+  margin-top: 4px;
+  color: #fca5a5;
+}

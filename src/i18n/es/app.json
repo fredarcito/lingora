@@ -116,5 +116,20 @@
   "devices.outputRecommended": "Salida por defecto (recomendado)",
   "devices.loop": "{name} (crea un bucle)",
   "devices.outputHint": "Se usa cuando la voz está activada (femenina o masculina).",
-  "devices.stopToChange": "Detén la traducción para cambiar los dispositivos."
+  "devices.stopToChange": "Detén la traducción para cambiar los dispositivos.",
+  "devices.mic.title": "Micrófono para llamadas",
+  "devices.mic.hint": "Instala «Lingora Mic» para que te oigan traducido en Meet, Zoom o Teams. macOS pide tu contraseña una vez y el sonido se corta un segundo.",
+  "devices.mic.active": "Instalado. En la llamada, elige «Lingora Mic» como micrófono.",
+  "devices.mic.pending": "Instalado, pero macOS no lo muestra. Reinstálalo para reiniciar el audio del Mac.",
+  "devices.mic.install": "Instalar",
+  "devices.mic.installing": "Instalando…",
+  "devices.mic.remove": "Quitar",
+  "devices.mic.removing": "Quitando…",
+  "lane.mic.missing": "La otra persona no te oirá: falta instalar el micrófono de Lingora. macOS pedirá tu contraseña una vez.",
+  "lane.mic.elsewhere": "Tu voz traducida sale por {name}, así que la llamada no la oye.",
+  "lane.mic.use": "Usar Lingora Mic",
+  "devices.mic.failed": "No se pudo instalar el micrófono. Inténtalo de nuevo; si sigue fallando, el detalle queda en el registro.",
+  "devices.mic.reinstall": "Reinstalar",
+  "lane.echo.named": "El sonido sale por {name}: tu micrófono oye la llamada y la traducción, y se las devuelve a la otra persona. Usa auriculares.",
+  "lane.echo": "El sonido sale por un altavoz: tu micrófono oye la llamada y la traducción, y se las devuelve a la otra persona. Usa auriculares."
 }

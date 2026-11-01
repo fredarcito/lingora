@@ -1,0 +1,6 @@
+/* Settings → Speak: the virtual microphone row. The row uses the global .prefs-row. */
+.virtual-mic {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -18,6 +18,7 @@ mod system_audio;
 mod system_voice;
 mod translator;
 mod tts;
+mod virtual_mic;
 
 use config::Settings;
 use config::Lang;
@@ -455,6 +456,9 @@ pub fn run() {
             download_model,
             list_audio_devices,
             route::audio_route,
+            virtual_mic::virtual_mic_status,
+            virtual_mic::virtual_mic_install,
+            virtual_mic::virtual_mic_uninstall,
             settings_summary,
             log_ui,
             notes::notes_list,

@@ -120,8 +120,9 @@ con personas y resumen.
 ### 3.3 Modo "Traducir llamada" (en desarrollo, bloqueado en la interfaz)
 
 Traducción en los dos sentidos: lo que oyes y lo que dices (tu voz traducida
-llega a la otra persona). Aparece en la app como "**pronto**". Requiere un
-micrófono virtual que aún no está resuelto. **No prometerlo como disponible.**
+llega a la otra persona). Aparece en la app como "**pronto**". Usa un
+micrófono virtual propio ("Lingora Mic") que ya existe pero aún está en
+pruebas. **No prometerlo como disponible.**
 
 ### 3.4 Notas (biblioteca)
 
@@ -441,7 +442,7 @@ contenidos del tipo "lo que viene".
 | Qué | Valor para el usuario | Estado |
 |---|---|---|
 | **Resumen local** | Cierra el mensaje "100 % en tu Mac": el resumen dejaría de usar la nube y no haría falta ninguna clave. Usaría un modelo de ~2–3 GB que se descarga aparte. | Planeado. Falta elegir el modelo y decidir si Groq desaparece o queda como opción avanzada |
-| **Traducir llamada (en los dos sentidos)** | Tu voz, traducida, le llega a la otra persona en Zoom, Meet, etc. Es la función "estrella" pendiente. | En desarrollo y bloqueada: necesita un micrófono virtual propio (macOS no permite crearlo sin un driver) o una licencia comercial de uno existente |
+| **Traducir llamada (en los dos sentidos)** | Tu voz, traducida, le llega a la otra persona en Zoom, Meet, etc. Es la función "estrella" pendiente. | En desarrollo y bloqueada. Ya existe el micrófono virtual propio ("Lingora Mic", se instala con un botón en Ajustes y la contraseña del Mac); falta probarlo en llamadas reales y firmarlo |
 | **Escuchar 21 idiomas más** | Hoy esos idiomas solo pueden ser de destino (árabe, hindi, turco, tailandés, vietnamita…). Con esto también podrían ser el idioma que se oye. | Pendiente; requiere un modelo de escucha adicional, más lento y pesado |
 | **Paquetes de idioma descargables** | El usuario descarga solo los idiomas que usa ("Descargar japonés, ~350 MB"), así la instalación es más ligera. | Idea planeada; aún no es necesaria |
 | **Traducción bajo cada párrafo de la nota** | Ver el original y la traducción juntos en la nota guardada. | Planeado |
@@ -461,8 +462,8 @@ contenidos del tipo "lo que viene".
 - Pantalla de licencias de terceros: hecha. Falta generar el aviso completo de
   todas las librerías incluidas.
 - Revisar que cada modelo se pueda redistribuir si se alojan copias propias.
-- Si el micrófono virtual se basa en BlackHole (GPL), hace falta una licencia
-  comercial, o bien crear un driver propio.
+- El micrófono virtual es un driver propio (no BlackHole): no hace falta
+  licencia comercial.
 
 ### 16.5 Orden lógico de lanzamiento (sugerido por el estado actual)
 

@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { SYSTEM_AUDIO } from "@utils/audio";
-import { NO_SIGNAL_SECS, apiLang, originalText } from "@utils/lanes";
+import { NO_SIGNAL_SECS, VIRTUAL_MIC, apiLang, originalText } from "@utils/lanes";
 import { trimSilence } from "@utils/voice";
 import { useStickToBottom } from "@hooks/useStickToBottom";
 import { useArrivalTimes } from "@hooks/useArrivalTimes";
+import { useAudioRoute } from "@hooks/useAudioRoute";
+import { echoPossible } from "@utils/route";
 import { t, useT } from "@i18n";
 import Captions from "@components/Captions";
 import LiveStatus from "@components/LiveStatus";
 import PeoplePanel from "@components/PeoplePanel";
+import VirtualMicNotice from "@components/VirtualMicNotice";
 import {
   ArrowIcon,
   FloatIcon,
@@ -123,6 +126,11 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
     ["both", t("app.lane.subtitles.both"), t("app.lane.subtitles.both.hint")],
   ];
   const tapsMac = lane.inputDeviceId === SYSTEM_AUDIO;
+  // Speak with speakers: the microphone hears the call and Lingora's voice,
+  // and translates them back to the other person. Unknown route: no warning.
+  const watchesRoute = lane.direction === "local_to_remote" && speaks && !compact;
+  const route = useAudioRoute(watchesRoute);
+  const echoLoop = watchesRoute && route !== null && echoPossible(route);
   const inputName = tapsMac
     ? t("app.lane.input.mac")
     : (inputs.find((d) => d.webId && d.webId === lane.inputDeviceId)?.name ?? t("app.lane.input.default"));
@@ -308,6 +316,19 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
         )}
       </div>
 
+      {lane.direction === "local_to_remote" && speaks && !compact && (
+        <VirtualMicNotice
+          className={cx(styles.notice, styles.noticeWarn)}
+          outputDevice={lane.outputDevice}
+          running={s.running}
+          onUse={() => onChange({ outputDevice: VIRTUAL_MIC })}
+        />
+      )}
+      {echoLoop && (
+        <p className={cx(styles.notice, styles.noticeWarn)}>
+          {route?.output_name ? t("app.lane.echo.named", { name: route.output_name }) : t("app.lane.echo")}
+        </p>
+      )}
       {noSignal && (
         <p className={cx(styles.notice, styles.noticeWarn)}>
           {lane.direction === "remote_to_local"

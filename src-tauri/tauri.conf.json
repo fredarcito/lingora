@@ -38,7 +38,8 @@
       "binaries/espeak-ng"
     ],
     "resources": {
-      "resources/espeak-ng-data/": "espeak-ng-data/"
+      "resources/espeak-ng-data/": "espeak-ng-data/",
+      "resources/LingoraMic.driver/": "LingoraMic.driver/"
     },
     "macOS": {
       "minimumSystemVersion": "14.0",

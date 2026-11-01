@@ -1,6 +1,13 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 
 /**
+ * @typedef {Object} VirtualMicStatus
+ * @property {boolean} available The app carries the driver (only on the Mac).
+ * @property {boolean} installed It is in the audio plug-ins folder.
+ * @property {boolean} active macOS already shows the device.
+ */
+
+/**
  * @typedef {Object} ModelStatus
  * @property {string} id Same id as its diagnostics check.
  * @property {boolean} required Cannot start without it.
@@ -274,6 +281,15 @@ export const api = {
     ),
   /** @returns {Promise<AudioRoute>} */
   audioRoute: () => invoke("audio_route"),
+  /** Lingora Mic, the virtual microphone for calls. @returns {Promise<VirtualMicStatus>} */
+  virtualMicStatus: () => invoke("virtual_mic_status"),
+  /**
+   * Installs it behind macOS's password window and restarts the Mac's audio.
+   * Closing the window leaves the status as it was. @returns {Promise<VirtualMicStatus>}
+   */
+  virtualMicInstall: () => invoke("virtual_mic_install"),
+  /** @returns {Promise<VirtualMicStatus>} */
+  virtualMicUninstall: () => invoke("virtual_mic_uninstall"),
   /**
    * Whether this Mac can capture its audio without BlackHole (macOS 14.2+).
    * @returns {Promise<boolean>}

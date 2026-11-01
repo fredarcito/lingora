@@ -116,5 +116,20 @@
   "devices.outputRecommended": "Default output (recommended)",
   "devices.loop": "{name} (creates a loop)",
   "devices.outputHint": "Used when the voice is on (Female or Male).",
-  "devices.stopToChange": "Stop translating to change devices."
+  "devices.stopToChange": "Stop translating to change devices.",
+  "devices.mic.title": "Microphone for calls",
+  "devices.mic.hint": "Install “Lingora Mic” so people hear you translated in Meet, Zoom or Teams. macOS asks for your password once and the sound cuts out for a second.",
+  "devices.mic.active": "Installed. In the call, choose “Lingora Mic” as the microphone.",
+  "devices.mic.pending": "Installed, but macOS doesn't show it. Reinstall it to restart the Mac's audio.",
+  "devices.mic.install": "Install",
+  "devices.mic.installing": "Installing…",
+  "devices.mic.remove": "Remove",
+  "devices.mic.removing": "Removing…",
+  "lane.mic.missing": "The other person won't hear you: Lingora's microphone isn't installed. macOS will ask for your password once.",
+  "lane.mic.elsewhere": "Your translated voice plays through {name}, so the call doesn't hear it.",
+  "lane.mic.use": "Use Lingora Mic",
+  "devices.mic.failed": "Couldn't install the microphone. Try again; if it keeps failing, the details are in the log.",
+  "devices.mic.reinstall": "Reinstall",
+  "lane.echo.named": "Sound plays through {name}: your microphone hears the call and the translation, and sends them back to the other person. Use headphones.",
+  "lane.echo": "Sound plays through a speaker: your microphone hears the call and the translation, and sends them back to the other person. Use headphones."
 }

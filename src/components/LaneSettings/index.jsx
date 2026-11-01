@@ -1,6 +1,7 @@
 import { SYSTEM_AUDIO } from "@utils/audio";
-import { feedsCapture } from "@utils/lanes";
+import { VIRTUAL_MIC, feedsCapture } from "@utils/lanes";
 import { useT } from "@i18n";
+import VirtualMic from "@components/VirtualMic";
 
 /**
  * The devices of a lane, on the Settings page: where it listens from and
@@ -41,6 +42,16 @@ export default function LaneSettings({ lane, running, inputs, outputs, systemAud
         </select>
         {!speaks && <span className="field-hint">{t("app.devices.outputHint")}</span>}
       </label>
+      {lane.direction === "local_to_remote" && (
+        <VirtualMic
+          running={running}
+          // Once installed, Speak plays into it; once removed, back to the default output.
+          onChange={(active) => {
+            if (active) onChange({ outputDevice: VIRTUAL_MIC });
+            else if (lane.outputDevice === VIRTUAL_MIC) onChange({ outputDevice: "" });
+          }}
+        />
+      )}
       {running && <p className="settings-note">{t("app.devices.stopToChange")}</p>}
     </div>
   );

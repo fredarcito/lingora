@@ -10,6 +10,12 @@ export const apiLang = (code) => /** @type {import("./api").Lang} */ (code.toLow
  */
 export const feedsCapture = (name) => /blackhole 2ch|^lingora$|salida múltiple|multi-output/i.test(name);
 
+/**
+ * Name of Lingora's virtual microphone (`driver/LingoraMic.c`). Speak plays
+ * into it and the call uses it as its microphone; Listen never picks it.
+ */
+export const VIRTUAL_MIC = "Lingora Mic";
+
 /** Seconds of silence before warning. */
 export const NO_SIGNAL_SECS = 8;
 

@@ -114,6 +114,7 @@ tools (llama.cpp and espeak-ng are built into the app).
 ```bash
 pnpm install                 # frontend and Tauri CLI
 scripts/build-espeak.sh      # builds espeak-ng to bundle it in the app (once)
+scripts/build-mic.sh         # builds the virtual microphone, after changing driver/
 pnpm tauri dev               # start the app
 ```
 

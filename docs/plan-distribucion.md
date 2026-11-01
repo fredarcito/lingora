@@ -77,6 +77,26 @@ was planned then:
 - Remove BlackHole and the multi-output device from the remote lane → local.
 - The local → remote lane still needs a virtual microphone: macOS
   doesn't allow creating one without a driver.
+- **In testing (2026-11-01):** our own driver, "Lingora Mic"
+  (`driver/LingoraMic.c`, an AudioServerPlugIn written from scratch on
+  Apple's public API: no BlackHole, no GPL). One device with an output and an
+  input joined by a ring buffer (48 kHz, stereo); silence when Lingora is not
+  speaking. `scripts/build-mic.sh` builds it into
+  `src-tauri/resources/LingoraMic.driver` (committed, like espeak-ng). Settings
+  → Speak installs it with macOS's password window
+  (`src-tauri/src/virtual_mic.rs`); Speak then plays into it. Pending: test it
+  in real calls (Meet, Zoom, Teams), sign it with the Developer ID, and unlock
+  "Translate call" (`VITE_CALL_MODE`).
+- **Works (2026-11-02):** tested in a real call: the other person hears the
+  translated voice. With speakers there is an echo loop (the microphone hears
+  the call and Lingora's own voice, and Speak sends them back); the Speak card
+  warns to use headphones (`useAudioRoute`).
+- **Pending: echo filter for Speak with speakers.** Like `src/utils/echo.js` in
+  Take notes: drop each Speak sentence that matches what Listen heard at the same
+  time or what Lingora just said. It touches the `enqueue` flow in
+  `App/index.jsx` (protected) and delays your sentence only while the other
+  person is talking (usually under 1 s; cap lower than the 8 s of notes). A
+  fallback, not a replacement for headphones.
 
 ## 4. First launch and installer
 
@@ -87,9 +107,8 @@ was planned then:
   fails you enter the app; whatever is missing is downloaded from diagnostics.
 - Installer signed locally (`signingIdentity: "-"`). For other Macs, Apple's
   signature (Developer ID) and notarization are missing.
-- The installer includes the virtual microphone, which is installed with one click. If
-  it is BlackHole, a commercial license is needed, because it is GPL. Another option is a
-  driver of our own.
+- The app includes the virtual microphone, which is installed with one click
+  (Settings → Speak). It is our own driver, so BlackHole's GPL license does not apply.
 - The cloud (qwen or Whisper), if offered, goes through our own server. The key
   never goes inside the app.
 
