@@ -611,6 +611,8 @@ const SUMMARY_TEMPLATES: &[(&str, &str)] = &[
     (
         "team",
         "## Objetivo (1-2 frases)\n\
+## Temas tratados (lista: cada tema con lo esencial de lo que se dijo)\n\
+## Avances (lista: lo que contó cada persona de su trabajo)\n\
 ## Decisiones (lista)\n\
 ## Tareas (lista; \"- [ ] tarea — responsable — fecha\", solo con lo que se mencione)\n\
 ## Bloqueos (lista)\n\
@@ -632,8 +634,10 @@ const SUMMARY_TEMPLATES: &[(&str, &str)] = &[
         "client",
         "## Resumen (3-5 frases)\n\
 ## Contexto del cliente (lista: su situación y lo que usa ahora)\n\
+## Quién decide (lista: personas y roles del lado del cliente)\n\
 ## Necesidades y problemas (lista)\n\
 ## Dudas y objeciones (lista)\n\
+## Alternativas (lista: otras opciones o competidores que mencionó)\n\
 ## Presupuesto y plazos (lista; solo lo que se dijo)\n\
 ## Riesgos (lista: señales de alerta)\n\
 ## Compromisos (lista; \"- Nosotros: …\" o \"- Cliente: …\". \"Yo\" es quien usa la app y está del lado \"Nosotros\")\n\
@@ -644,7 +648,8 @@ const SUMMARY_TEMPLATES: &[(&str, &str)] = &[
         "## Perfil o tema (2-4 frases)\n\
 ## Preguntas y respuestas (lista: solo las preguntas principales, \"- Pregunta: lo esencial de la respuesta\")\n\
 ## Citas destacadas (lista: \"- cita — Persona N\"; escribe cada cita traducida al idioma del resumen, fiel a lo que se dijo, sin resumirla)\n\
-## Por verificar (lista: datos, cifras o afirmaciones que conviene comprobar)\n",
+## Por verificar (lista: datos, cifras o afirmaciones que conviene comprobar)\n\
+## Próximos pasos (lista)\n",
     ),
     (
         "class",
@@ -664,7 +669,9 @@ const SUMMARY_TEMPLATES: &[(&str, &str)] = &[
         "## Resumen (un párrafo de 6-10 frases: contexto, qué se decidió y por qué importa)\n\
 ## Decisiones (lista)\n\
 ## Riesgos (lista)\n\
-## Qué se necesita (lista: decisiones, recursos o aprobaciones que se piden a quien lo lee)\n",
+## Cifras clave (lista: importes, fechas y números que se mencionaron)\n\
+## Qué se necesita (lista: decisiones, recursos o aprobaciones que se piden a quien lo lee)\n\
+## Próximos pasos (lista: qué pasa ahora, quién y cuándo)\n",
     ),
 ];
 

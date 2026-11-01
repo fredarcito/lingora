@@ -38,12 +38,12 @@ headings in the chosen language).
 | id | Name (es / en) | Sections |
 |---|---|---|
 | `general` | General / General | the current ones, unchanged |
-| `team` | Reunión de equipo / Team meeting | Objetivo · Decisiones · Tareas · Bloqueos · Para la próxima |
+| `team` | Reunión de equipo / Team meeting | Objetivo · Temas tratados · Avances · Decisiones · Tareas · Bloqueos · Para la próxima |
 | `one_on_one` | 1:1 / 1:1 | Resumen · Cómo está · Avance del trabajo · Bloqueos · Feedback · Crecimiento y carrera · Acuerdos · Tareas · Para la próxima |
-| `client` | Llamada con cliente / Client call | Resumen · Contexto del cliente · Necesidades y problemas · Dudas y objeciones · Presupuesto y plazos · Riesgos · Compromisos · Próximos pasos |
-| `interview` | Entrevista / Interview | Perfil o tema · Preguntas y respuestas · Citas destacadas · Por verificar |
+| `client` | Llamada con cliente / Client call | Resumen · Contexto del cliente · Quién decide · Necesidades y problemas · Dudas y objeciones · Alternativas · Presupuesto y plazos · Riesgos · Compromisos · Próximos pasos |
+| `interview` | Entrevista / Interview | Perfil o tema · Preguntas y respuestas · Citas destacadas · Por verificar · Próximos pasos |
 | `class` | Clase o conferencia / Class or lecture | Resumen · Estructura · Conceptos principales · Definiciones · Ejemplos · Lo que se remarcó · Recursos mencionados · Tareas y fechas · Dudas abiertas · Para repasar |
-| `executive` | Ejecutivo / Executive | Resumen · Decisiones · Riesgos · Qué se necesita |
+| `executive` | Ejecutivo / Executive | Resumen · Decisiones · Riesgos · Cifras clave · Qué se necesita · Próximos pasos |
 
 Section text for the prompt (each one replaces the section list of
 `SUMMARY_SYSTEM`; the opening line and the closing "No inventes nada…"
@@ -52,6 +52,8 @@ sentence stay shared):
 ```text
 team:
 ## Objetivo (1-2 frases)
+## Temas tratados (lista: cada tema con lo esencial de lo que se dijo)
+## Avances (lista: lo que contó cada persona de su trabajo)
 ## Decisiones (lista)
 ## Tareas (lista; "- [ ] tarea — responsable — fecha", solo con lo que se mencione)
 ## Bloqueos (lista)
@@ -71,8 +73,10 @@ one_on_one:
 client:
 ## Resumen (3-5 frases)
 ## Contexto del cliente (lista: su situación y lo que usa ahora)
+## Quién decide (lista: personas y roles del lado del cliente)
 ## Necesidades y problemas (lista)
 ## Dudas y objeciones (lista)
+## Alternativas (lista: otras opciones o competidores que mencionó)
 ## Presupuesto y plazos (lista; solo lo que se dijo)
 ## Riesgos (lista: señales de alerta)
 ## Compromisos (lista; "- Nosotros: …" o "- Cliente: …". "Yo" es quien usa la app y está del lado "Nosotros")
@@ -83,6 +87,7 @@ interview:
 ## Preguntas y respuestas (lista: solo las preguntas principales, "- Pregunta: lo esencial de la respuesta")
 ## Citas destacadas (lista: "- "cita" — Persona N"; escribe cada cita traducida al idioma del resumen, fiel a lo que se dijo, sin resumirla)
 ## Por verificar (lista: datos, cifras o afirmaciones que conviene comprobar)
+## Próximos pasos (lista)
 
 class:
 ## Resumen (3-5 frases)
@@ -100,7 +105,9 @@ executive:
 ## Resumen (un párrafo de 6-10 frases: contexto, qué se decidió y por qué importa)
 ## Decisiones (lista)
 ## Riesgos (lista)
+## Cifras clave (lista: importes, fechas y números que se mencionaron)
 ## Qué se necesita (lista: decisiones, recursos o aprobaciones que se piden a quien lo lee)
+## Próximos pasos (lista: qué pasa ahora, quién y cuándo)
 ```
 
 ---
