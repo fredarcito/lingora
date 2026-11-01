@@ -818,6 +818,26 @@ fn chunks(transcript: &str) -> Vec<String> {
 
 /// The model's answer split into the summary and the short version for the
 /// map ("" if it did not write one).
+/// `- - point` → `- point`. The model sometimes copies the "- " of the format
+/// asked for after its own bullet; then `note_ref` and the times at the start
+/// would not find the line.
+fn tidy_bullets(text: &str) -> String {
+    text.lines()
+        .map(|line| {
+            let body = line.trim_start();
+            let indent = &line[..line.len() - body.len()];
+            let mut rest = body;
+            let mut bullets = 0;
+            while let Some(r) = rest.strip_prefix("- ").or_else(|| rest.strip_prefix("* ")) {
+                rest = r.trim_start();
+                bullets += 1;
+            }
+            if bullets > 1 { format!("{indent}- {rest}") } else { line.to_string() }
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn split_map(text: &str) -> (String, String) {
     match text.find(MAP_MARKER) {
         // With a long transcript, the parts can bring their own marker: only the first counts.
@@ -886,7 +906,7 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
             other => other,
         })?;
     let template = summary_template(&note);
-    let (text, map) = split_map(&text);
+    let (text, map) = split_map(&tidy_bullets(&text));
     let text = with_user_notes(&text, &notes);
 
     // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
@@ -931,6 +951,13 @@ fn now_iso() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tidy_bullets_joins_repeated_ones() {
+        let text = "## Mis notas\n- - N1: algo\n  * - [08:04] fin\n- [ ] tarea\n- bien";
+        assert_eq!(tidy_bullets(text), "## Mis notas\n- N1: algo\n  - [08:04] fin\n- [ ] tarea\n- bien");
+        assert_eq!(note_ref(&tidy_bullets("- - N2: contexto")), Some((1, "contexto".to_string())));
+    }
 
     #[test]
     fn speaker_names_skip_me_and_empty_ones() {
