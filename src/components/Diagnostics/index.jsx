@@ -16,7 +16,7 @@ const GROUPS = [
   { key: "call", title: "diagnostics.group.call", ids: ["blackhole", "routing", "sample_rate", "capture_volume"] },
   { key: "mic", title: "diagnostics.group.mic", ids: ["microphone"] },
   { key: "translate", title: "diagnostics.group.translate", ids: ["listener", "sense_voice", "translator"] },
-  { key: "voice", title: "diagnostics.group.voice", ids: ["espeak", "voice_model", "old_voice"] },
+  { key: "voice", title: "diagnostics.group.voice", ids: ["espeak", "voice_model"] },
   { key: "notes", title: "diagnostics.group.notes", ids: ["speakers"] },
 ];
 
@@ -27,11 +27,11 @@ const GROUPS = [
 const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "capture_volume"]);
 
 /**
- * What is only needed for some languages or for notes, or only frees disk space: it does not count as a problem.
+ * What is only needed for some languages or for notes: it does not count as a problem.
  * Telling people apart in notes does count while it is turned on.
  * @param {string} id
  */
-const isOptional = (id) => id === "sense_voice" || id === "old_voice" || (id === "speakers" && !loadSpeakers());
+const isOptional = (id) => id === "sense_voice" || (id === "speakers" && !loadSpeakers());
 
 /**
  * What the user is told when each check fails. The backend's title
@@ -45,7 +45,6 @@ const EFFECT = {
   microphone: "diagnostics.effect.microphone",
   espeak: "diagnostics.effect.espeak",
   voice_model: "diagnostics.effect.voice_model",
-  old_voice: "diagnostics.effect.old_voice",
   listener: "diagnostics.effect.listener",
   sense_voice: "diagnostics.effect.sense_voice",
   speakers: "diagnostics.effect.speakers",
@@ -60,7 +59,6 @@ const FIX_LABEL = {
   listener: "diagnostics.fix.listener",
   sense_voice: "diagnostics.fix.sense_voice",
   voice_model: "diagnostics.fix.voice_model",
-  old_voice: "diagnostics.fix.old_voice",
   speakers: "diagnostics.fix.speakers",
   translator: "diagnostics.fix.translator",
 };

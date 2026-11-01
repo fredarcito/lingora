@@ -272,24 +272,133 @@ async fn extract(archive: &Path, only: &[String]) -> bool {
     ok
 }
 
-/// Kokoro, the voice before Supertonic: users who downloaded it keep ~340 MB
-/// that nothing uses. It is only deleted when they press the button in
-/// Diagnostics (`doctor::OLD_VOICE_CHECK`).
-const OLD_VOICE: &str = "kokoro-multi-lang-v1_0";
-
-/// The old voice's folder, next to the current one, if it is still there.
-pub fn old_voice(settings: &Settings) -> Option<PathBuf> {
-    let dir = settings.tts_model_dir.parent()?.join(OLD_VOICE);
-    dir.is_dir().then_some(dir)
+/// Something downloaded that is on disk, for Settings → Disk space: a current
+/// model, or what an older version left behind (a replaced model).
+#[derive(Debug, serde::Serialize)]
+pub struct OnDisk {
+    /// The model's id (`Model::id`) or, for a leftover, its file or folder name.
+    pub id: String,
+    /// A leftover that nothing uses any more.
+    pub obsolete: bool,
+    /// What a leftover was, when known (`"translator"`, `"voice"`); empty if not.
+    pub was: &'static str,
+    /// Without it Lingora can't listen or translate.
+    pub required: bool,
+    /// Only a download left halfway (current models).
+    pub partial: bool,
+    pub bytes: u64,
 }
 
-/// Deletes the old voice's folder, and nothing else.
-pub fn remove_old_voice(settings: &Settings) -> Result<()> {
-    match old_voice(settings) {
-        Some(dir) => std::fs::remove_dir_all(&dir)
-            .map_err(|e| Error::Audio(format!("no se pudo borrar {}: {e}", dir.display()))),
-        None => Ok(()),
+impl Model {
+    /// Everything of this model that can be on disk: the installed model, the
+    /// archive and a download left halfway.
+    fn paths(self, settings: &Settings) -> Vec<PathBuf> {
+        let dest = self.dest(settings);
+        let download = self.download_path(settings);
+        let mut out = vec![partial(&download), dest];
+        if !self.single_file() {
+            out.push(download);
+        }
+        out
     }
+}
+
+/// What is downloaded: the current models (installed or halfway) and the
+/// leftovers in the models folder.
+pub fn on_disk(settings: &Settings) -> Vec<OnDisk> {
+    let mut out: Vec<OnDisk> = Model::ALL
+        .into_iter()
+        .filter_map(|m| {
+            let bytes: u64 = m.paths(settings).iter().map(|p| size(p)).sum();
+            (bytes > 0).then(|| OnDisk {
+                id: m.id().to_string(),
+                obsolete: false,
+                was: "",
+                required: m.required(),
+                partial: !m.is_installed(settings),
+                bytes,
+            })
+        })
+        .collect();
+    out.extend(leftovers(&crate::config::models_dir(), settings).into_iter().map(|(name, path)| OnDisk {
+        was: previous(&name),
+        id: name,
+        obsolete: true,
+        required: false,
+        partial: false,
+        bytes: size(&path),
+    }));
+    out
+}
+
+/// Deletes a current model (with its archive and any half download) or a
+/// leftover, by the id `on_disk` gave. Nothing outside the models folder: a
+/// leftover must be one `on_disk` lists.
+pub fn remove(id: &str, settings: &Settings) -> Result<()> {
+    remove_in(&crate::config::models_dir(), id, settings)
+}
+
+fn remove_in(dir: &Path, id: &str, settings: &Settings) -> Result<()> {
+    let paths = match Model::from_id(id) {
+        Some(m) => m.paths(settings),
+        None => leftovers(dir, settings)
+            .into_iter()
+            .filter(|(name, _)| name == id)
+            .map(|(_, path)| path)
+            .collect(),
+    };
+    if paths.is_empty() {
+        return Err(Error::Download(format!("no hay nada descargado con el nombre {id}")));
+    }
+    for path in paths {
+        let gone = if path.is_dir() { std::fs::remove_dir_all(&path) } else { std::fs::remove_file(&path) };
+        match gone {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                return Err(Error::Download(format!("no se pudo borrar {}: {e}", path.display())));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+/// What is in `dir` that no current model uses: a model an update replaced,
+/// with no list to keep up to date. Hidden files (`.DS_Store`) don't count.
+fn leftovers(dir: &Path, settings: &Settings) -> Vec<(String, PathBuf)> {
+    let current: Vec<PathBuf> = Model::ALL.into_iter().flat_map(|m| m.paths(settings)).collect();
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return Vec::new();
+    };
+    let mut out: Vec<(String, PathBuf)> = entries
+        .filter_map(|e| e.ok())
+        .filter_map(|e| Some((e.file_name().into_string().ok()?, e.path())))
+        .filter(|(name, path)| !name.starts_with('.') && !current.contains(path))
+        .collect();
+    out.sort();
+    out
+}
+
+/// What a leftover was, by the names past versions used. Unknown ones are
+/// still listed, as "from an older version".
+fn previous(name: &str) -> &'static str {
+    if name.starts_with("Hy-MT2") {
+        "translator"
+    } else if name.starts_with("kokoro") {
+        "voice"
+    } else {
+        ""
+    }
+}
+
+/// Bytes of a file, or of a folder with everything inside; 0 if it isn't there.
+fn size(path: &Path) -> u64 {
+    let Ok(meta) = std::fs::symlink_metadata(path) else {
+        return 0;
+    };
+    if !meta.is_dir() {
+        return meta.len();
+    }
+    std::fs::read_dir(path).map_or(0, |entries| entries.filter_map(|e| e.ok()).map(|e| size(&e.path())).sum())
 }
 
 #[cfg(test)]
@@ -327,6 +436,53 @@ mod tests {
         assert!(!Model::Voice.is_installed(&settings));
         download(Model::Voice, &settings, &|_, _| {}).await.unwrap();
         assert!(crate::tts::TtsEngine::is_installed(&dir));
-        assert!(old_voice(&settings).is_none());
+    }
+
+    /// Lists (without deleting anything) what is in the real models folder:
+    /// `cargo test --lib models::tests::lists_the_real_folder -- --ignored --nocapture`.
+    #[test]
+    #[ignore]
+    fn lists_the_real_folder() {
+        for item in on_disk(&Settings::from_env_fallback()) {
+            eprintln!("{item:?}");
+        }
+    }
+
+    /// In a temp models folder: the current models and their downloads are
+    /// not leftovers; a replaced model and an unknown file are; hidden files
+    /// are ignored. Deleting a model takes its half download too.
+    #[test]
+    fn finds_leftovers_and_removes_a_model() {
+        let dir = std::env::temp_dir().join(format!("lingora-leftovers-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("kokoro-multi-lang-v1_0")).unwrap();
+        let mut settings = Settings::from_env_fallback();
+        settings.translator_model = dir.join(crate::translator::MODEL_FILE);
+        settings.tts_model_dir = dir.join(crate::tts::MODEL_NAME);
+        std::fs::write(&settings.translator_model, b"model").unwrap();
+        std::fs::write(partial(&Model::Voice.download_path(&settings)), b"half").unwrap();
+        std::fs::write(dir.join("Hy-MT2-1.8B-Q4_K_M.gguf"), b"old").unwrap();
+        std::fs::write(dir.join("kokoro-multi-lang-v1_0/model.onnx"), b"older").unwrap();
+        std::fs::write(dir.join("something-else.bin"), b"?").unwrap();
+        std::fs::write(dir.join(".DS_Store"), b"").unwrap();
+
+        let names: Vec<String> = leftovers(&dir, &settings).into_iter().map(|(n, _)| n).collect();
+        assert_eq!(names, ["Hy-MT2-1.8B-Q4_K_M.gguf", "kokoro-multi-lang-v1_0", "something-else.bin"]);
+        assert_eq!(previous("Hy-MT2-1.8B-Q4_K_M.gguf"), "translator");
+        assert_eq!(previous("kokoro-multi-lang-v1_0"), "voice");
+        assert_eq!(previous("something-else.bin"), "");
+        assert_eq!(size(&dir.join("kokoro-multi-lang-v1_0")), 5);
+        assert_eq!(Model::Voice.paths(&settings).iter().map(|p| size(p)).sum::<u64>(), 4);
+
+        remove_in(&dir, Model::Voice.id(), &settings).unwrap();
+        assert!(!partial(&Model::Voice.download_path(&settings)).exists());
+        assert!(settings.translator_model.exists());
+        remove_in(&dir, "kokoro-multi-lang-v1_0", &settings).unwrap();
+        assert!(!dir.join("kokoro-multi-lang-v1_0").exists());
+        // Only what is listed: nothing outside the folder, nor a current model by name.
+        assert!(remove_in(&dir, "../etc", &settings).is_err());
+        assert!(remove_in(&dir, crate::translator::MODEL_FILE, &settings).is_err());
+        assert!(settings.translator_model.exists());
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }

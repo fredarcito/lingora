@@ -225,7 +225,7 @@ fn bundled_espeak() -> String {
 }
 
 /// Modelos descargados: no van en el bundle, se bajan la primera vez.
-fn models_dir() -> std::path::PathBuf {
+pub(crate) fn models_dir() -> std::path::PathBuf {
     // Windows no tiene HOME: la carpeta va en %LOCALAPPDATA%.
     #[cfg(windows)]
     {

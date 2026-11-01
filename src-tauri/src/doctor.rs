@@ -56,10 +56,6 @@ pub const SENSE_VOICE_CHECK: &str = "sense_voice";
 /// también lo atiende `lib.rs`.
 pub const VOICE_CHECK: &str = "voice_model";
 
-/// Id of the check for the old voice (Kokoro) left on disk; its fix (delete
-/// it) is handled by `lib.rs`. It is optional: it never blocks anything.
-pub const OLD_VOICE_CHECK: &str = "old_voice";
-
 /// Id de la comprobación de la traducción local; su arreglo (descargar)
 /// también lo atiende `lib.rs`.
 pub const TRANSLATOR_CHECK: &str = "translator";
@@ -128,16 +124,6 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
             Some("Descargar"),
         )
     });
-
-    if crate::models::old_voice(settings).is_some() {
-        out.push(Check::problem(
-            OLD_VOICE_CHECK,
-            Status::Warning,
-            "La voz anterior sigue descargada",
-            "Ocupa unos 340 MB y ya no se usa. Puedes borrarla.",
-            Some("Borrar"),
-        ));
-    }
 
     use crate::listener::Engine;
     // Todo se hace en el equipo: sin estos dos modelos no se puede traducir.

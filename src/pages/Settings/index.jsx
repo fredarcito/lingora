@@ -7,6 +7,7 @@ import { api, errorMessage } from "@utils/api";
 import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notes.js";
 import { KeyField, notifyKeyChanged, useSummaryKey } from "@components/SummaryKey";
 import LanguagePicker from "@components/LanguagePicker";
+import Storage from "@components/Storage";
 import { useT } from "@i18n";
 import { Button, LinkButton, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
 import styles from "./styles.module.css";
@@ -32,6 +33,8 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   const [version, setVersion] = useState("");
   const { status, hasKey } = useSummaryKey();
   const [keyError, setKeyError] = useState("");
+  // Bumped after deleting something, so the diagnostics check again and offer to download it.
+  const [removals, setRemovals] = useState(0);
 
   useEffect(() => {
     getVersion()
@@ -187,6 +190,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
               <p>{t("settings.diagnosticsHint")}</p>
             </div>
             <Diagnostics
+              key={removals}
               className={styles.prefsDiagnostics}
               mode={mode}
               systemAudio={systemAudio}
@@ -195,6 +199,21 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
                 checkSpeakers();
               }}
               expanded
+            />
+          </section>
+
+          <section className="prefs-section">
+            <div className="prefs-section-head">
+              <h2>{t("storage.title")}</h2>
+              <p>{t("storage.hint")}</p>
+            </div>
+            <Storage
+              recording={recording}
+              onRemoved={() => {
+                setRemovals((n) => n + 1);
+                checkSpeakers();
+                onFixed();
+              }}
             />
           </section>
 

@@ -31,6 +31,10 @@ Also:
   Mac with the translation model. See [docs/i18n.md](docs/i18n.md).
 - **First launch:** a welcome screen downloads the models. Afterwards,
   *Settings → Diagnostics and downloads* checks the setup and fixes what it can.
+- **Disk space:** *Settings → Disk space* lists everything downloaded with its
+  size and deletes it after a warning of what stops working. Anything in the
+  models folder that no current model uses (a model an update replaced) shows
+  up as "no longer used", with no list to maintain (`models::on_disk`).
 
 ## How it works
 

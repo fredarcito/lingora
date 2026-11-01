@@ -224,12 +224,27 @@ async fn fix_diagnostic(state: tauri::State<'_, AppState>, id: String) -> error:
         models::download(model, state.pipeline.settings(), &|_, _| {}).await?;
         return Ok(doctor::run(state.pipeline.settings(), true).await);
     }
-    if id == doctor::OLD_VOICE_CHECK {
-        models::remove_old_voice(state.pipeline.settings())?;
-        return Ok(doctor::run(state.pipeline.settings(), true).await);
-    }
     doctor::fix(&id)?;
     Ok(doctor::run(state.pipeline.settings(), false).await)
+}
+
+/// Lo descargado que hay en disco (Ajustes → Espacio en disco): los modelos
+/// y lo que dejaron versiones anteriores.
+#[tauri::command]
+fn storage_status(state: tauri::State<'_, AppState>) -> Vec<models::OnDisk> {
+    models::on_disk(state.pipeline.settings())
+}
+
+/// Borra algo descargado y devuelve la lista al día. Antes suelta los modelos
+/// de memoria, como `release_models`: la UI no deja borrar mientras se traduce.
+#[tauri::command]
+async fn remove_download(state: tauri::State<'_, AppState>, id: String) -> error::Result<Vec<models::OnDisk>> {
+    state.listener.release().await;
+    state.pipeline.tts().release().await;
+    state.speakers.release().await;
+    state.pipeline.local_translator().shutdown();
+    models::remove(&id, state.pipeline.settings())?;
+    Ok(models::on_disk(state.pipeline.settings()))
 }
 
 /// Un modelo para la bienvenida: qué es, cuánto pesa y si ya está.
@@ -435,6 +450,8 @@ pub fn run() {
             run_diagnostics,
             fix_diagnostic,
             setup_status,
+            storage_status,
+            remove_download,
             download_model,
             list_audio_devices,
             route::audio_route,

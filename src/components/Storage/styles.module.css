@@ -1,0 +1,16 @@
+/* Settings → Disk space. The rows use the global .prefs-row. */
+.storage {
+  gap: 14px;
+}
+
+.storage-total {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* Size and labels on one line under the name. */
+.storage-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

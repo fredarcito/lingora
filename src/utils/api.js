@@ -10,6 +10,16 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  */
 
 /**
+ * @typedef {Object} OnDisk Something downloaded, for Settings → Disk space.
+ * @property {string} id The model's id (as its diagnostics check) or, for a leftover, its file name.
+ * @property {boolean} obsolete Left by an older version; nothing uses it.
+ * @property {"" | "translator" | "voice"} was What a leftover was, when known.
+ * @property {boolean} required Cannot listen or translate without it.
+ * @property {boolean} partial Only a download left halfway.
+ * @property {number} bytes
+ */
+
+/**
  * @typedef {Object} VoiceInfo
  * @property {string} id "supertonic:5" or "system:<identifier>".
  * @property {string} name The system voice's name, or the number (1–5) of a Lingora voice within its gender.
@@ -293,6 +303,16 @@ export const api = {
    * @returns {Promise<ModelStatus[]>}
    */
   setupStatus: () => invoke("setup_status"),
+  /**
+   * What is downloaded on this computer: the models and what older versions left.
+   * @returns {Promise<OnDisk[]>}
+   */
+  storageStatus: () => invoke("storage_status"),
+  /**
+   * Deletes something downloaded (by its `OnDisk.id`) and returns the updated list.
+   * @param {string} id @returns {Promise<OnDisk[]>}
+   */
+  removeDownload: (id) => invoke("remove_download", { id }),
   /**
    * Downloads a model; resumes where it left off if interrupted.
    * @param {string} id @param {(p: { downloaded: number, total: number }) => void} onProgress
