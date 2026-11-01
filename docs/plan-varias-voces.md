@@ -112,3 +112,26 @@ goes back to exactly what happens today.
 - The Speak lane (your microphone).
 - Changing `createSpeakerTracker`'s thresholds. If live labelling turns out
   too unstable for voices, propose a change separately, with measurements.
+
+## After the first real test (2026-11-01)
+
+A video with 2 women came out as 7 people. Live, without `refine()`, the
+tracker splits one person into several (another tone, music, a laugh). The
+gender was right: all 7 were female. Mitigations, all in `useMultiVoice` and
+the card (the tracker is untouched):
+
+- **People: Auto / 2 / 3 / 4.** With a number, no one beyond it: whoever
+  else shows up gets the most similar person's voice for good.
+- **Provisional people.** Someone gets their own voice only after speaking
+  `MIN_PERSON_SECS` (8 s) in total. Until then they borrow the most similar
+  person's voice. Person 1 gets a voice at once. Trade-off: a real second
+  person speaks their first ~8 s with Person 1's voice.
+- **Speaking now.** A dot next to whoever spoke last, for 6 s.
+- **"Same as…"** on each person merges them by hand: from then on they
+  speak with the other one's voice and leave the list.
+- **Design (same day):** everything for this mode lives in its own box,
+  `components/PeoplePanel`. It holds the people count in its header, and one
+  compact row per person: a dot with their color from the notes
+  (`speakerColor`), lit while they speak; the voice; ▶ to test it; and ⋯ with
+  "Same person as…", as in the notes' `SpeakerBar`. "Reset people" goes at
+  the bottom.

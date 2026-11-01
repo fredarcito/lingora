@@ -8,6 +8,7 @@ import { useArrivalTimes } from "@hooks/useArrivalTimes";
 import { t, useT } from "@i18n";
 import Captions from "@components/Captions";
 import LiveStatus from "@components/LiveStatus";
+import PeoplePanel from "@components/PeoplePanel";
 import {
   ArrowIcon,
   FloatIcon,
@@ -453,41 +454,16 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
   return (
     <>
       {multiVoice && (
-        <>
-          {multiVoice.people.length === 0 && <p className="settings-note">{t("app.voices.waiting")}</p>}
-          {multiVoice.people.map((p, i) => (
-            <div key={i} className={cx(styles.settingRow, styles.settingSub)}>
-              <span className={styles.settingLabel}>{t("app.voices.person", { n: i + 1 })}</span>
-              <div className={styles.voicePick}>
-                <select
-                  value={p.voiceId}
-                  onChange={(e) => {
-                    const v = lingoraVoices.find((x) => x.id === e.target.value);
-                    if (v?.gender) multiVoice.setVoice(i, v.id, v.gender);
-                  }}
-                  aria-label={t("app.voices.person", { n: i + 1 })}
-                >
-                  {lingoraVoices.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {voiceLabel(v)}
-                    </option>
-                  ))}
-                </select>
-                <button className={styles.voicePreview} onClick={() => previewVoice(p.voiceId, p.gender)} disabled={previewing} title={t("app.voices.preview.hint")}>
-                  {t("app.voices.preview")}
-                </button>
-              </div>
-            </div>
-          ))}
-          {multiVoice.people.length > 0 && (
-            <div className={cx(styles.settingRow, styles.settingSub)}>
-              <span className={styles.settingLabel} />
-              <LinkButton onClick={multiVoice.reset} title={t("app.voices.restart.hint")}>
-                {t("app.voices.restart")}
-              </LinkButton>
-            </div>
-          )}
-        </>
+        <div className={cx(styles.settingRow, styles.settingSub)}>
+          <span className={styles.settingLabel} />
+          <PeoplePanel
+            multiVoice={multiVoice}
+            voices={lingoraVoices}
+            voiceLabel={voiceLabel}
+            previewing={previewing}
+            onPreview={(id, gender) => previewVoice(id, gender)}
+          />
+        </div>
       )}
       {/* Always in view, so the card does not jump when the voices arrive:
           disabled while they load or if the language has only one. */}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { estimatePitch, genderFromPitch, nextVoice } from "./multiVoice.js";
+import { addToMean, closest, cosine, estimatePitch, genderFromPitch, nextVoice } from "./multiVoice.js";
 
 /** A voiced-like tone: a fundamental plus two harmonics. @param {number} hz */
 const tone = (hz, secs = 1, sampleRate = 16000) =>
@@ -30,5 +30,13 @@ describe("multiVoice", () => {
     expect(nextVoice(VOICES, ["supertonic:5", "supertonic:6"], "male")).toBe("supertonic:5");
     expect(nextVoice(VOICES, ["supertonic:5"], "female")).toBe("supertonic:0");
     expect(nextVoice([{ ...VOICES[0], engine: "system" }], [], "female")).toBeNull();
+  });
+
+  it("finds the most similar person", () => {
+    expect(cosine([1, 0], [1, 0])).toBeCloseTo(1);
+    expect(cosine([1, 0], [0, 1])).toBeCloseTo(0);
+    expect(closest([0.9, 0.1], [[0, 1], null, [1, 0]])).toBe(2);
+    expect(closest([1, 0], [null])).toBe(-1);
+    expect(addToMean([1, 1], 1, [3, 3])).toEqual([2, 2]);
   });
 });

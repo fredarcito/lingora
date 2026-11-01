@@ -57,3 +57,34 @@ export function nextVoice(voices, used, gender) {
   const free = own.find((id) => !used.includes(id));
   return free ?? own[used.filter((id) => own.includes(id)).length % own.length];
 }
+
+/** Cosine similarity of two voice prints. @param {number[]} a @param {number[]} b */
+export function cosine(a, b) {
+  let dot = 0;
+  let na = 0;
+  let nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(na * nb) || 1);
+}
+
+/**
+ * The index of the most similar print in `means` (skipping nulls), or -1.
+ * @param {number[]} print @param {Array<number[] | null>} means
+ */
+export function closest(print, means) {
+  let best = -1;
+  let score = -Infinity;
+  means.forEach((m, i) => {
+    if (!m) return;
+    const s = cosine(print, m);
+    if (s > score) [best, score] = [i, s];
+  });
+  return best;
+}
+
+/** Running mean: `mean` already averages `n` prints; adds `print`. @param {number[]} mean @param {number} n @param {number[]} print */
+export const addToMean = (mean, n, print) => mean.map((x, i) => (x * n + print[i]) / (n + 1));
