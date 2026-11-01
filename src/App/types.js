@@ -23,6 +23,8 @@
  *   longer than English). It is read in each chunk.
  * @property {boolean} [canListen] The language being heard can be listened to locally (Parakeet or SenseVoice).
  * @property {{ female: boolean, male: boolean }} [voices] Which voices exist on this device for the translation language.
+ * @property {boolean} [captionsOriginal] "Original" captions with the voice on: it translates for the voice,
+ *   but the captions show what was said (see `originalText`).
  * @property {boolean} [notes] It is the Take notes lane: no translation, no voice and no voice preloading.
  * @property {boolean} [showSource] Show the original text above each
  *   translation. If not chosen, it is shown only with voice: with subtitles only

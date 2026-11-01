@@ -34,14 +34,15 @@ export function useFloatingCaptions({ floating, setFloating, remoteLane, remoteS
         draft: remoteState.draft,
         history: remoteState.history
           .slice(0, CAPTION_SENTENCES)
-          .map((h) => ({ id: h.id, captionKey: h.captionKey, translation: h.translation, transcript: h.transcript })),
+          // "Original" with the voice on: what was said, in place of the translation.
+          .map((h) => ({ id: h.id, captionKey: h.captionKey, translation: remoteLane.captionsOriginal ? h.transcript : h.translation, transcript: h.transcript })),
       },
-      showSource: !same && (remoteLane.showSource ?? (remoteLane.speak && !same)),
+      showSource: !same && !remoteLane.captionsOriginal && (remoteLane.showSource ?? (remoteLane.speak && !same)),
       // What is being heard right now, like at the foot of the app's captions.
       live: [...remoteState.heard.map((h) => h.text), remoteState.partial].filter(Boolean).join(" "),
     };
     if (floating) emitTo("captions", "captions", floatingPayload.current).catch(() => {});
-  }, [floating, remoteState, remoteLane.sourceLang, remoteLane.targetLang, remoteLane.showSource, remoteLane.speak]);
+  }, [floating, remoteState, remoteLane.sourceLang, remoteLane.targetLang, remoteLane.showSource, remoteLane.speak, remoteLane.captionsOriginal]);
 
   useEffect(() => {
     const offs = [

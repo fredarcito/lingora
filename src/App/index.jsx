@@ -264,8 +264,6 @@ export default function App() {
   const meeting = mode === "notes" && notesInput === "meeting" && systemAudio;
   const lanes = laneSettings.map((l) => {
     const langs = langsFor(l.direction, pair);
-    // Sin traducir: el destino es el mismo idioma que se oye.
-    if (mode === "video" && noTranslate) langs.targetLang = langs.sourceLang;
     // Tomar notas: Escuchar sin traducir ni hablar, con la entrada que se eligió
     // allí. En una reunión en línea, Hablar también: es tu micrófono ("Yo").
     const taking = mode === "notes" && (l.direction === "remote_to_local" || meeting);
@@ -280,6 +278,13 @@ export default function App() {
     const source = langInfo(langs.sourceLang);
     const target = langInfo(langs.targetLang);
     const voices = { female: target?.female_voice ?? true, male: target?.male_voice ?? true };
+    // Sin voz del sistema para el idioma, solo hay subtítulos.
+    const speak = !taking && l.speak && (voices.female || voices.male);
+    // "Original" captions (Translate audio): what is said, as said. Without voice
+    // nothing is translated (the target is the same language, no lag); with it,
+    // it still translates for the voice and only the captions show the original.
+    const original = mode === "video" && noTranslate;
+    if (original && !speak) langs.targetLang = langs.sourceLang;
     return {
       ...l,
       title: t(`lanes.${l.direction}.title`),
@@ -292,8 +297,8 @@ export default function App() {
       }),
       canListen: source?.can_listen ?? true,
       voices,
-      // Sin voz del sistema para el idioma, solo hay subtítulos.
-      speak: !taking && l.speak && (voices.female || voices.male),
+      speak,
+      captionsOriginal: original && speak,
     };
   });
   // El modo rápido se lee en cada trozo: se puede comparar sin detener el carril.

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { emitTo, listen } from "@tauri-apps/api/event";
-import { PhysicalPosition, PhysicalSize, Window, getCurrentWindow } from "@tauri-apps/api/window";
+import { PhysicalPosition, PhysicalSize, Window, availableMonitors, getCurrentWindow } from "@tauri-apps/api/window";
 import Captions from "@components/Captions";
 import { useT } from "@i18n";
+import { isOnScreen } from "@utils/screen";
 import styles from "./styles.module.css";
 
 const PREFS_KEY = "lingora.floating";
@@ -57,7 +58,18 @@ export default function FloatingCaptions() {
   // Goes back to where the user left it and remembers where they leave it.
   useEffect(() => {
     const saved = loadPrefs();
-    if (saved.x !== undefined && saved.y !== undefined) win.setPosition(new PhysicalPosition(saved.x, saved.y));
+    if (saved.x !== undefined && saved.y !== undefined) {
+      const { x, y } = saved;
+      // Not on a monitor that is no longer connected: there it can't be seen or
+      // dragged back. Then it stays where Rust opens it (bottom, centered).
+      win
+        .innerSize()
+        .then(async (size) => {
+          const rect = { x, y, width: saved.width ?? size.width, height: saved.height ?? size.height };
+          if (isOnScreen(rect, await availableMonitors())) await win.setPosition(new PhysicalPosition(x, y));
+        })
+        .catch(() => {});
+    }
     if (saved.width && saved.height) win.setSize(new PhysicalSize(saved.width, saved.height));
     const offs = [
       win.onMoved(({ payload }) => savePrefs({ x: payload.x, y: payload.y })),

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { SYSTEM_AUDIO } from "@utils/audio";
-import { NO_SIGNAL_SECS, apiLang } from "@utils/lanes";
+import { NO_SIGNAL_SECS, apiLang, originalText } from "@utils/lanes";
 import { trimSilence } from "@utils/voice";
 import { useStickToBottom } from "@hooks/useStickToBottom";
 import { useArrivalTimes } from "@hooks/useArrivalTimes";
@@ -103,10 +103,10 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   // Several voices needs Lingora's voices in the language and the speakers add-on.
   const hasLingoraVoices = voiceList.some((v) => v.engine === "supertonic");
   const multiOk = hasLingoraVoices && multiVoice?.available === true;
-  const showSource = !same && (lane.showSource ?? speaks);
+  const showSource = !same && !lane.captionsOriginal && (lane.showSource ?? speaks);
   // A single setting for which text is shown: the translation, the original without
   // translating (only in Translate audio) or both.
-  const subtitles = same ? "original" : showSource ? "both" : "translated";
+  const subtitles = same || lane.captionsOriginal ? "original" : showSource ? "both" : "translated";
   const subtitleOptions = [
     ["translated", t("app.lane.subtitles.translated"), t("app.lane.subtitles.translated.hint")],
     ...(original !== undefined ? [["original", t("app.lane.subtitles.original"), t("app.lane.subtitles.original.hint")]] : []),
@@ -173,7 +173,8 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
               options={subtitleOptions.map(([value, label, hint]) => ({ value, label, hint }))}
             />
           </div>
-          {!same && (
+          {/* In "Original" it stays, so the voice can be turned back on without leaving it. */}
+          {(!same || original === true) && (
             <div className={styles.settingRow}>
               <span className={styles.settingLabel}>{t("app.lane.voice")}</span>
               <Segmented
@@ -309,7 +310,13 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       {s.error && <p className={cx(styles.notice, styles.noticeError)}>{s.error}</p>}
 
       {!compact && !showHistory && (
-        <Captions className={styles.captions} state={s} live={live} showSource={showSource} onHistory={() => setShowHistory(true)} />
+        <Captions
+          className={styles.captions}
+          state={lane.captionsOriginal ? originalText(s) : s}
+          live={live}
+          showSource={showSource}
+          onHistory={() => setShowHistory(true)}
+        />
       )}
       {/* Outside the list: the list scrolls down by itself to the last sentence, and the button would stay hidden at the top. */}
       {!compact && showHistory && (

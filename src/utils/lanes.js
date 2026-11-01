@@ -56,6 +56,18 @@ export const LANES = [
 ];
 
 /**
+ * The lane's state with what was said in place of the translation, for
+ * "Original" captions while the voice still translates. The captions keep their
+ * timing: each sentence shows up when its translation starts to sound.
+ * @param {import("@app/types").LaneState} state
+ * @returns {import("@app/types").LaneState}
+ */
+export const originalText = (state) => ({
+  ...state,
+  history: state.history.map((h) => ({ ...h, translation: h.transcript })),
+});
+
+/**
  * The languages of a lane according to the pair: "Listen" goes from the other
  * person to you and "Speak", the other way around.
  * @param {import("@app/types").Direction} direction @param {import("@app/types").LangPair} pair
