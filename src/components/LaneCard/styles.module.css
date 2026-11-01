@@ -631,13 +631,3 @@ input[type="range"].wide {
   padding-right: 14px;
   border-right: 1px solid var(--hairline);
 }
-
-/* On the card's dark background, the lane switched off was barely visible. */
-.lane-save.lane-save input:not(:checked) {
-  background: color-mix(in srgb, var(--text) 22%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent);
-}
-
-.lane-save.lane-save input:not(:checked)::after {
-  background: var(--text-2);
-}
