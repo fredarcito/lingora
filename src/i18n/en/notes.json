@@ -72,6 +72,7 @@
   "speakerEdit": "Rename or merge with another person",
   "name": "Name",
   "saveName": "Save name",
+  "usedNames": "Used in other notes",
   "sameAs": "Same person as…",
   "delTitle": "Delete this note?",
   "delBody": "“{title}” will be deleted from this computer and can't be recovered.",

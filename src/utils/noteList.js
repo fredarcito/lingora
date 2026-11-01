@@ -142,3 +142,33 @@ export function groupByLabel(notes, labelOf) {
   }
   return groups;
 }
+
+/**
+ * Names given to people in other notes, to offer them when renaming one:
+ * the most used first and, on a tie, the most recent (`notes` come newest
+ * first). Only names that start with what was typed (any word, without
+ * accents or case), and not those in `exclude` (the people already in the note).
+ * @param {import("./api").NoteSummary[]} notes @param {string} typed @param {string[]} exclude
+ * @param {number} [max]
+ */
+export function nameSuggestions(notes, typed, exclude, max = 5) {
+  const skip = new Set(exclude.map((n) => fold(n.trim())));
+  const query = fold(typed.trim());
+  /** @type {Map<string, { name: string, uses: number, first: number }>} */
+  const seen = new Map();
+  notes.forEach((n, i) => {
+    for (const raw of n.speaker_names ?? []) {
+      const name = raw.trim();
+      const key = fold(name);
+      if (!name || skip.has(key)) continue;
+      const entry = seen.get(key);
+      if (entry) entry.uses += 1;
+      else seen.set(key, { name, uses: 1, first: i });
+    }
+  });
+  return [...seen.entries()]
+    .filter(([key]) => !query || key.split(/\s+/).some((word) => word.startsWith(query)))
+    .sort(([, a], [, b]) => b.uses - a.uses || a.first - b.first)
+    .slice(0, max)
+    .map(([, v]) => v.name);
+}

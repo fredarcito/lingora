@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysAgo, dateFormats, fold, groupByLabel, groupLabel, inPeriod, langPair, monthKey, monthLabel, olderMonths } from "./noteList";
+import { daysAgo, dateFormats, fold, groupByLabel, groupLabel, inPeriod, langPair, monthKey, monthLabel, nameSuggestions, olderMonths } from "./noteList";
 
 const now = new Date(2026, 9, 29, 15, 0); // Thursday, 29 Oct 2026
 const at = (y, m, d, h = 10) => new Date(y, m - 1, d, h).toISOString();
@@ -58,5 +58,29 @@ describe("list helpers", () => {
       ["b", 1],
       ["a", 1],
     ]);
+  });
+});
+
+describe("nameSuggestions", () => {
+  const notes = /** @type {any[]} */ ([
+    { speaker_names: ["Marta", "Juan"] },
+    { speaker_names: ["Álvaro Pérez"] },
+    { speaker_names: ["marta ", "Juan"] },
+    { speaker_names: ["Juan"] },
+    {},
+  ]);
+
+  it("puts the most used first and, on a tie, the most recent", () => {
+    expect(nameSuggestions(notes, "", [])).toEqual(["Juan", "Marta", "Álvaro Pérez"]);
+  });
+
+  it("filters by the start of any word, without accents or case", () => {
+    expect(nameSuggestions(notes, "alv", [])).toEqual(["Álvaro Pérez"]);
+    expect(nameSuggestions(notes, "per", [])).toEqual(["Álvaro Pérez"]);
+    expect(nameSuggestions(notes, "ta", [])).toEqual([]);
+  });
+
+  it("leaves out the people already in the note", () => {
+    expect(nameSuggestions(notes, "", ["juan", "Marta"])).toEqual(["Álvaro Pérez"]);
   });
 });

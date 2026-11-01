@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useT } from "@i18n";
 import { speakerLabel, speakerName, speakerShares } from "@utils/notes.js";
+import { nameSuggestions } from "@utils/noteList.js";
+import { useKnownNames } from "@hooks/useKnownNames";
 import { Button, Menu, MenuItem, cx, useDismiss } from "@components/shared";
 import { speakerColor } from "@components/Transcript";
 import styles from "./styles.module.css";
@@ -10,7 +12,7 @@ import styles from "./styles.module.css";
  * to correct what was detected: changing their
  * name ("Persona 2" → "Ana") or merging two that are the same person (the same voice
  * can sound different for a while). It cannot be edited while recording: the recorder
- * would rewrite the note.
+ * would rewrite the note. When renaming, it offers the names used in other notes.
  * `aside` goes on the right of the title row (the note page puts the summary hint there).
  * @param {{ note: import("@utils/api").Note, live: boolean, onChange: (note: import("@utils/api").Note) => void,
  *   aside?: import("react").ReactNode }} props
@@ -20,18 +22,30 @@ export default function SpeakerBar({ note, live, onChange, aside }) {
   const [editing, setEditing] = useState(/** @type {number | null} */ (null));
   const [name, setName] = useState("");
   const shares = speakerShares(note);
+  const known = useKnownNames();
   const people = [...shares.keys()].sort((a, b) => a - b);
   /** @param {number} n */
   const label = (n) => speakerLabel(note, /** @type {any} */ ({ speaker: n }));
   /** What is edited: your name without "(Yo)"; for the others, "Persona n" if they do not have one yet. @param {number} n */
   const editable = (n) => speakerName(note, n) || (n === 0 ? "" : label(n));
 
+  // Names from other notes for the person being renamed. Until something is
+  // typed the field shows the current name: then, all of them.
+  const suggestions =
+    editing === null
+      ? []
+      : nameSuggestions(
+          known,
+          name === editable(editing) ? "" : name,
+          people.map((m) => speakerName(note, m)).filter(Boolean),
+        );
+
   // Closes when clicking outside or with Esc.
   useDismiss(editing !== null, () => setEditing(null));
 
-  /** @param {number} n */
-  const rename = (n) => {
-    const value = name.trim();
+  /** @param {number} n @param {string} [chosen] a suggested name, instead of what was typed */
+  const rename = (n, chosen) => {
+    const value = (chosen ?? name).trim();
     setEditing(null);
     if (!value || value === editable(n)) return;
     onChange({ ...note, speakers: { ...note.speakers, [n]: value } });
@@ -84,6 +98,16 @@ export default function SpeakerBar({ note, live, onChange, aside }) {
               <Button variant="primary" className={styles.speakerSave} onClick={() => rename(n)}>
                 {t("notes.saveName")}
               </Button>
+              {suggestions.length > 0 && (
+                <>
+                  <p className={styles.speakerMenuTitle}>{t("notes.usedNames")}</p>
+                  {suggestions.map((suggested) => (
+                    <MenuItem key={suggested} onClick={() => rename(n, suggested)}>
+                      {suggested}
+                    </MenuItem>
+                  ))}
+                </>
+              )}
               {people.length > 1 && (
                 <>
                   <p className={styles.speakerMenuTitle}>{t("notes.sameAs")}</p>

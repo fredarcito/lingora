@@ -72,6 +72,7 @@
   "speakerEdit": "Cambiar el nombre o unir con otra persona",
   "name": "Nombre",
   "saveName": "Guardar nombre",
+  "usedNames": "Usados en otras notas",
   "sameAs": "Es la misma persona que…",
   "delTitle": "¿Borrar esta nota?",
   "delBody": "«{title}» se borrará del equipo y no se puede recuperar.",

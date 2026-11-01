@@ -320,6 +320,14 @@ export default function App() {
     removeBookmark: (index) => recorderRef.current?.removeBookmark(index),
   }));
   const [view, setView] = useState(/** @type {import("@components/Sidebar").View} */ ("translate"));
+  // Each pick in the side menu: the screen opens on its main page (the list of
+  // notes, not the note that was open; Settings, not its licenses).
+  const [home, setHome] = useState(0);
+  /** @param {import("@components/Sidebar").View} next */
+  const goTo = (next) => {
+    setView(next);
+    setHome((n) => n + 1);
+  };
   // Al terminar Tomar notas se abre la nota; `stopping` es la parada en curso.
   const [openRequest, setOpenRequest] = useState(/** @type {{ id: string, nonce: number } | null} */ (null));
   const stopping = useRef(/** @type {Promise<void> | null} */ (null));
@@ -855,9 +863,10 @@ export default function App() {
         )}
       </div>
     </main>
-    <Notes visible={view === "notes"} recording={anyRunning} languages={shownLanguages} onMenu={() => setMenuOpen(true)} openRequest={openRequest} />
+    <Notes visible={view === "notes"} recording={anyRunning} languages={shownLanguages} onMenu={() => setMenuOpen(true)} openRequest={openRequest} home={home} />
     {view === "settings" && (
       <Settings
+        key={home}
         mode={mode === "call" ? "call" : "video"}
         systemAudio={tapsMac}
         recording={anyRunning}
@@ -886,7 +895,7 @@ export default function App() {
         }))}
       />
     )}
-    <Sidebar open={menuOpen} view={view} recording={anyRunning} onSelect={setView} onClose={closeMenu} />
+    <Sidebar open={menuOpen} view={view} recording={anyRunning} onSelect={goTo} onClose={closeMenu} />
     </>
   );
 }

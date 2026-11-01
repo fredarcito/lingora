@@ -100,6 +100,9 @@ con personas y resumen.
   (idiomas europeos). Modo aparte para chino, japonés, coreano y cantonés.
 - **Distingue a las personas** ("Persona 1", "Persona 2"…), procesado en el
   propio Mac. Se pueden renombrar y unir dos que en realidad son la misma.
+  Al renombrar, sugiere los nombres usados en otras notas (un clic en
+  reuniones recurrentes). No reconoce voces entre reuniones: no guarda
+  huellas de voz.
 - **Mis notas y marcadores:** mientras grabas puedes escribir ideas y marcar
   momentos con ⌘B para encontrarlos luego en la transcripción. Estas notas
   pueden ir al final del resumen. *(Implementado recientemente; en pruebas.)*

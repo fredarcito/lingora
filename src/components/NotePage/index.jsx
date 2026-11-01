@@ -8,7 +8,6 @@ import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
 import { partAt } from "@utils/mindMap.js";
 import { NOTES_REFRESH_MS } from "@utils/noteList.js";
-import { storeSummaryTemplate } from "@utils/prefs.js";
 import {
   discardActive,
   formatSpan,
@@ -351,7 +350,6 @@ export default function NotePage({ id, live, languages, onBack }) {
                   label={t("notes.summaryTemplate")}
                   options={SUMMARY_TEMPLATES.map((id) => ({ value: id, label: t(`notes.template.${id}`) }))}
                   onChange={(value) => {
-                    storeSummaryTemplate(value);
                     const next = { ...note, summary_template: value };
                     setNote(next);
                     run(() => api.noteSave(next));

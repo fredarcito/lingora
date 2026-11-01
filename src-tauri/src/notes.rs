@@ -29,6 +29,9 @@ pub struct NoteSummary {
     target_lang: Option<String>,
     /// La primera frase del resumen, si hay: dice más que el principio de la transcripción.
     summary_line: Option<String>,
+    /// The names given to the people (not "Yo", `"0"`), to suggest them when
+    /// renaming someone in another note.
+    speaker_names: Vec<String>,
 }
 
 /// Carpeta de notas, junto a la de modelos.
@@ -106,7 +109,20 @@ fn summarize(id: &str, note: &Value) -> NoteSummary {
         source_lang: sentences.first().and_then(|s| s.get("source_lang")).and_then(Value::as_str).map(str::to_string),
         target_lang: sentences.first().and_then(|s| s.get("target_lang")).and_then(Value::as_str).map(str::to_string),
         summary_line: note.pointer("/summary/text").and_then(Value::as_str).and_then(first_summary_line),
+        speaker_names: speaker_names(note),
     }
+}
+
+/// The names in `speakers`, without the user's own (`"0"`) or empty ones.
+fn speaker_names(note: &Value) -> Vec<String> {
+    let Some(speakers) = note.get("speakers").and_then(Value::as_object) else {
+        return Vec::new();
+    };
+    speakers
+        .iter()
+        .filter(|(k, _)| k.as_str() != "0")
+        .filter_map(|(_, v)| v.as_str().map(str::trim).filter(|n| !n.is_empty()).map(str::to_string))
+        .collect()
 }
 
 /// Las notas, de la más nueva a la más vieja. Lo que no se pueda leer se ignora.
@@ -915,6 +931,13 @@ fn now_iso() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn speaker_names_skip_me_and_empty_ones() {
+        let note = serde_json::json!({ "speakers": { "0": "Freddy", "1": " Marta ", "2": "", "3": null } });
+        assert_eq!(speaker_names(&note), vec!["Marta".to_string()]);
+        assert!(speaker_names(&serde_json::json!({})).is_empty());
+    }
 
     #[test]
     fn summary_templates_pick_their_sections() {

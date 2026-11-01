@@ -151,8 +151,8 @@ language select (`live || summarizing`).
 
 - Choosing a template saves `summary_template` in the note with
   `api.noteSave`, like `summary_lang`.
-- The chosen value: `note.summary_template`, else the last template used
-  (pref), else `"general"`.
+- The chosen value: `note.summary_template`, else `"general"` (every note
+  starts on General; the choice is only remembered in that note).
 - **Stale summary:** if `note.summary.template` (missing = `"general"`)
   differs from the chosen one, "Summarize again" becomes the primary button
   and a line like the language one says which template the summary was made
@@ -162,11 +162,10 @@ language select (`live || summarizing`).
 **Pure functions in `src/utils/notes.js`** (with tests in `notes.test.js`):
 
 - `SUMMARY_TEMPLATES`: the ids, in the order of section 1.
-- `summaryTemplateOf(note)`: the chosen id, as described above.
+- `summaryTemplateOf(note)`: the note's id, else `"general"`.
 
-**Last template used:** a new key `lingora.summaryTemplate` in
-`src/utils/prefs.js` (load/store with try/catch like the others), updated
-when the user picks one. Add it to `prefs.test.js` with the other keys.
+**No "last template used":** the selector always starts on General, so no
+new `localStorage` key.
 
 **i18n** (`src/i18n/es/notes.json` and `en/notes.json`):
 

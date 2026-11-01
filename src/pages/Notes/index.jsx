@@ -13,11 +13,12 @@ import styles from "./styles.module.css";
  * full-width page. It stays mounted even when Translate is shown (the search box
  * is kept), but it only reads from disk while it is visible.
  * `openRequest` opens a specific note (when Take notes finishes): the `nonce`
- * tells apart two consecutive requests for the same note.
+ * tells apart two consecutive requests for the same note. `home` changes each
+ * time Notes is picked in the side menu: back to the list, from the top.
  * @param {{ visible: boolean, recording: boolean, languages: import("@utils/api").LanguageInfo[], onMenu: () => void,
- *   openRequest?: { id: string, nonce: number } | null }} props
+ *   openRequest?: { id: string, nonce: number } | null, home?: number }} props
  */
-export default function Notes({ visible, recording, languages, onMenu, openRequest = null }) {
+export default function Notes({ visible, recording, languages, onMenu, openRequest = null, home = 0 }) {
   const t = useT();
   const { lang } = useLang();
   const formats = useMemo(() => dateFormats(lang), [lang]);
@@ -52,6 +53,12 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     scrollTop.current = scroller.current?.scrollTop ?? 0;
     setOpenId(id);
   };
+
+  useLayoutEffect(() => {
+    if (!home) return;
+    scrollTop.current = 0;
+    setOpenId(null);
+  }, [home]);
 
   // Before painting: otherwise the list shows for a frame on the way from Take notes to the note.
   useLayoutEffect(() => {

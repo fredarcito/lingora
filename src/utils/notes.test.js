@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import cases from "../../tests/fixtures/paragraphs.json";
 import { createSpeakerTracker, marksByPart, paragraphs, speakerShares, summaryTemplateOf, tidyNote, transcriptParts, userMarks } from "./notes";
 
@@ -148,21 +148,11 @@ describe("tidyNote", () => {
 });
 
 describe("summaryTemplateOf", () => {
-  afterEach(() => vi.unstubAllGlobals());
   const note = (/** @type {string | undefined} */ summary_template) => /** @type {any} */ ({ summary_template, sentences: [] });
-  /** @param {string | null} last */
-  const lastUsed = (last) => vi.stubGlobal("localStorage", { getItem: () => last, setItem: () => {} });
 
-  it("uses the note's template, else the last used, else General", () => {
-    lastUsed("client");
+  it("uses the note's template, else General", () => {
     expect(summaryTemplateOf(note("one_on_one"))).toBe("one_on_one");
-    expect(summaryTemplateOf(note(undefined))).toBe("client");
-    lastUsed(null);
     expect(summaryTemplateOf(note(undefined))).toBe("general");
-  });
-
-  it("treats unknown ids as missing", () => {
-    lastUsed("nope");
     expect(summaryTemplateOf(note("future"))).toBe("general");
   });
 });

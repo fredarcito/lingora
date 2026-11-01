@@ -140,6 +140,7 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {string | null} [source_lang] Languages of the first sentence.
  * @property {string | null} [target_lang]
  * @property {string | null} [summary_line] The first sentence of the summary, if any.
+ * @property {string[]} [speaker_names] Names given to the people (not "Yo"), to suggest them in other notes.
  *
  * @typedef {"keychain" | "env" | "none"} SummaryKeyStatus Where the key for
  *   Groq summaries is stored: in the keychain, in the development environment
