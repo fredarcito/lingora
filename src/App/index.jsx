@@ -557,6 +557,8 @@ export default function App() {
             }
           }
           const audio = trimSilence(speech.audio, speech.sample_rate);
+          // Several voices: the dot lights up with the voice that is heard.
+          if (person) multiVoice.showSpeaking((await person)?.index ?? null);
           await api.playAudio(audio, speech.sample_rate, lane.outputDevice, volumesRef.current[lane.direction]);
         }
         const result = await texted;
@@ -598,6 +600,7 @@ export default function App() {
         patchState(lane.direction, { error: errorMessage(e) });
       } finally {
         dropHeard();
+        if (person) multiVoice.showSpeaking(null);
         // Solo si sigue siendo el de este trozo: el siguiente puede estar escribiéndose ya.
         setState((prev) =>
           prev[lane.direction].draft?.key === heardKey

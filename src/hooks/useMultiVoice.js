@@ -6,8 +6,9 @@ import { addToMean, closest, estimatePitch, genderFromPitch, nextVoice } from "@
 /** Seconds someone must have spoken before getting their own voice: a single
  * odd sentence (music, a shout, another tone) must not become a new person. */
 const MIN_PERSON_SECS = 8;
-/** How long the "speaking now" dot stays on after their last chunk. */
-const SPEAKING_MS = 6000;
+/** How long the "speaking now" dot waits before going off when a voice ends:
+ * the next sentence of the same person follows right after, without a flicker. */
+const SPEAKING_OFF_MS = 600;
 
 /**
  * @typedef {Object} Person
@@ -19,15 +20,17 @@ const SPEAKING_MS = 6000;
  *
  * @typedef {Object} MultiVoice
  * @property {ShownPerson[]} people In order of appearance (Person 1 first).
- * @property {number | null} speaking `index` of whoever spoke last, for a few seconds.
+ * @property {number | null} speaking `index` of the person whose voice is playing.
  * @property {number | null} max At most this many people (null: as many as it finds).
  * @property {(max: number | null) => void} setMax
  * @property {boolean | null} available The speakers add-on is downloaded (null until known).
- * @property {(print: Promise<number[]>, samples: Float32Array, secs: number, lang: string, preferred: string | null) => Promise<Person | null>} assign
+ * @property {(print: Promise<number[]>, samples: Float32Array, secs: number, lang: string, preferred: string | null) => Promise<ShownPerson | null>} assign
  *   Who is speaking in a chunk and with which voice. Calls must come in chunk
  *   order (as `enqueue` does). null if it can't tell: the lane's voice is used.
  * @property {(index: number, voiceId: string, gender: "female" | "male") => void} setVoice
  * @property {(from: number, into: number) => void} merge "They are the same person": `from` speaks with `into`'s voice from now on.
+ * @property {(index: number | null) => void} showSpeaking Lights the dot of `index`
+ *   while their voice plays; null when it ends (after a short wait).
  * @property {() => void} reset Forgets everyone (a new video).
  * @property {() => void} refresh Checks again whether the add-on is downloaded.
  */
@@ -141,10 +144,7 @@ export function useMultiVoice() {
           person.mean = addToMean(person.mean, person.n, vector);
           person.n += 1;
         }
-        setSpeaking(index);
-        window.clearTimeout(speakingTimer.current);
-        speakingTimer.current = window.setTimeout(() => setSpeaking(null), SPEAKING_MS);
-        return { voiceId: person.voiceId, gender: person.gender };
+        return { voiceId: person.voiceId, gender: person.gender, index };
       });
       queue.current = run.catch(() => {});
       return run.catch(() => null);
@@ -175,6 +175,14 @@ export function useMultiVoice() {
     [],
   );
 
+  // The dot follows the voice that plays, not the chunk being analyzed: that
+  // one runs seconds ahead of what is heard.
+  const showSpeaking = useCallback((/** @type {number | null} */ index) => {
+    window.clearTimeout(speakingTimer.current);
+    if (index === null) speakingTimer.current = window.setTimeout(() => setSpeaking(null), SPEAKING_OFF_MS);
+    else setSpeaking(resolve(index));
+  }, []);
+
   const setMax = useCallback((/** @type {number | null} */ value) => {
     maxRef.current = value;
     setMaxState(value);
@@ -185,8 +193,9 @@ export function useMultiVoice() {
     found.current = new Map();
     people.current = [];
     publish();
+    window.clearTimeout(speakingTimer.current);
     setSpeaking(null);
   }, []);
 
-  return { people: shown, speaking, max, setMax, available, assign, setVoice, merge, reset, refresh };
+  return { people: shown, speaking, max, setMax, available, assign, setVoice, merge, showSpeaking, reset, refresh };
 }
