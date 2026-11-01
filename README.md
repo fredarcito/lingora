@@ -60,7 +60,7 @@ from memory after 3 minutes idle.
 | Model | Used for | Download |
 |---|---|---|
 | Parakeet v3 int8 (sherpa-onnx) | Listening, European languages | ~490 MB, required |
-| HY-MT2 1.8B Q4_K_M (llama.cpp) | Translation and generated interface languages | ~1.1 GB, required |
+| Index-Translate-2B Q4_K_M (llama.cpp) | Translation and generated interface languages | ~1.3 GB, required |
 | SenseVoice Small int8 | Listening, Chinese/Cantonese/Japanese/Korean | ~165 MB |
 | Supertonic 3 int8 | Voice in 18 languages (the rest use a macOS system voice) | ~145 MB |
 | 3D-Speaker ERes2Net | Telling speakers apart in notes | ~40 MB |
@@ -82,10 +82,13 @@ from memory after 3 minutes idle.
 - **SenseVoice for Chinese, Cantonese, Japanese and Korean**: Parakeet doesn't
   understand them. The 2024-07-17 version adds punctuation; the 2025-09-09 one
   doesn't and fails on Japanese.
-- **HY-MT2 1.8B for translation**: ~0.3 s per sentence on an M1 Pro, faster than
-  the cloud model it replaced. With colloquial Spanish it is weaker, so it runs
-  with a glossary of colloquialisms. TranslateGemma 4B was discarded: twice as
-  slow and longer translations.
+- **Index-Translate-2B for translation** (replaced HY-MT2 1.8B on 2026-11-01):
+  ~0.24 s per sentence on an M1 Pro, same speed and memory as HY-MT2 but more
+  natural and faithful, and it follows the glossary of colloquialisms more
+  strictly. Weaker than HY-MT2 in the Indic languages, Khmer and Burmese (not
+  a target market for now). Discarded: TranslateGemma 4B (twice as slow, adds
+  things), Gemma 4 E2B/E4B (slower and heavier), Qwen3-1.7B (answers or
+  explains instead of translating).
 - **Supertonic 3 for the voice** (replaced Kokoro on 2026-11-01): it sounds
   better in Spanish and covers 18 of the app's languages instead of 5. It reads
   plain text, with no espeak-ng. It runs at 5 steps (~0.14 s per second of

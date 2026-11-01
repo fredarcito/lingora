@@ -48,7 +48,7 @@ impl Model {
         match self {
             Model::Listener => 487_000_000,
             Model::SenseVoice => 165_000_000,
-            Model::Translator => 1_130_000_000,
+            Model::Translator => 1_312_000_000,
             Model::Voice => 145_000_000,
             Model::Speakers => 39_600_000,
         }

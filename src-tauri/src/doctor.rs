@@ -172,7 +172,7 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
             TRANSLATOR_CHECK,
             Status::Error,
             "Falta lo necesario para traducir",
-            "Lingora traduce en tu equipo (~1,1 GB), sin internet ni cuotas.",
+            "Lingora traduce en tu equipo (~1,3 GB), sin internet ni cuotas.",
             Some("Descargar"),
         )
     } else {

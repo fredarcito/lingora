@@ -4,8 +4,8 @@
 //! - `remote_to_local`: audio del sistema (BlackHole) → Whisper → traducción → TTS
 //! - `local_to_remote`: micrófono → Whisper → traducción → TTS
 //!
-//! La traducción va por qwen en Groq o, si el carril lo pide, por HY-MT2 en
-//! local (`translator.rs`).
+//! La traducción va por qwen en Groq o, si el carril lo pide, por
+//! Index-Translate en local (`translator.rs`).
 //!
 //! Cada etapa se mide por separado para que la UI muestre dónde se va el tiempo.
 
@@ -183,7 +183,7 @@ impl Pipeline {
 
     /// Traduce texto ya transcrito. `context` es el texto anterior del carril;
     /// `concise` pide una traducción condensada (modo rápido); `local` usa
-    /// HY-MT2 en vez de Groq, sin contexto ni condensar (ver `translator.rs`);
+    /// el modelo local en vez de Groq, sin contexto ni condensar (ver `translator.rs`);
     /// `on_delta` recibe la traducción a trozos según llega.
     pub async fn translate(
         &self,

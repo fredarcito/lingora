@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 /// Un idioma de la app: índice en `LANGS`. Viaja a la UI como su código
 /// (`"es"`, `"zh-hant"`…).
 ///
-/// Son los que traduce HY-MT2 en local y transcribe Whisper (todos los de
-/// HY-MT2 menos el uigur). Lo demás depende del idioma:
+/// Son los que traducía HY-MT2 en local (todos menos el uigur) y transcribe
+/// Whisper; Index-Translate, el traductor actual, los cubre todos. Lo demás
+/// depende del idioma:
 /// - Parakeet (texto en vivo y transcripción Rápida) solo entiende idiomas
 ///   europeos.
 /// - La voz es Supertonic donde tiene; si no, la del sistema (`system_voice.rs`),
@@ -95,8 +96,9 @@ pub static LANGS: &[LangInfo] = &[
 impl Lang {
     pub const En: Lang = Lang(0);
     pub const Es: Lang = Lang(1);
+    #[cfg(test)]
     pub const Zh: Lang = Lang(5);
-    pub const ZhHant: Lang = Lang(6);
+    #[cfg(test)]
     pub const Yue: Lang = Lang(7);
     #[cfg(test)]
     pub const Ja: Lang = Lang(8);
@@ -128,15 +130,9 @@ impl Lang {
         self.info().english
     }
 
-    /// Nombre en chino: HY-MT2 se entrenó con instrucciones en chino cuando
-    /// el chino está en uno de los dos lados.
+    /// Nombre en chino: las instrucciones de Index-Translate van siempre en chino.
     pub fn chinese_name(self) -> &'static str {
         self.info().chinese
-    }
-
-    /// Si se escribe en chino (también tradicional y cantonés).
-    pub fn is_chinese(self) -> bool {
-        matches!(self, Lang::Zh | Lang::ZhHant | Lang::Yue)
     }
 }
 
@@ -171,7 +167,7 @@ pub struct Settings {
     pub listener_model_dir: std::path::PathBuf,
     /// Carpeta del modelo de escucha local para chino, japonés, coreano y cantonés (SenseVoice).
     pub sense_voice_model_dir: std::path::PathBuf,
-    /// Modelo de traducción local (HY-MT2, GGUF).
+    /// Modelo de traducción local (Index-Translate, GGUF).
     pub translator_model: std::path::PathBuf,
     /// Modelo de huella de voz para distinguir personas en las notas (ver `speakers.rs`).
     pub speaker_model: std::path::PathBuf,

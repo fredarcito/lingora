@@ -8,7 +8,7 @@
   "loadError": "The license text could not be loaded.",
   "purpose.parakeet": "Listening (European languages)",
   "purpose.sensevoice": "Listening (Chinese, Cantonese, Japanese, Korean)",
-  "purpose.hymt": "Translation and generated interface languages",
+  "purpose.indextranslate": "Translation and generated interface languages",
   "purpose.supertonic": "Voice",
   "purpose.eres2net": "Telling speakers apart",
   "purpose.sherpa": "Runs listening, voice and speakers",

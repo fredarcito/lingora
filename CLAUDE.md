@@ -93,7 +93,7 @@ documentación o su código).
   de ella (ni Node, ni Homebrew, ni programas externos). Lo que falte se
   integra en la app o se descarga desde ella.
 - **Nada de nombres de modelos en la interfaz** ("Parakeet", "Kokoro",
-  "HY-MT2", "qwen", "ERes2Net"…). Usa textos genéricos: "la escucha", "la
+  "HY-MT2", "Index-Translate", "qwen", "ERes2Net"…). Usa textos genéricos: "la escucha", "la
   voz", "el resumen", "un modelo pequeño", salvo en Ajustes → Acerca de →
   Licencias de terceros, donde las licencias obligan a citarlos.
 - **Interfaz en español neutro.** Los textos de la interfaz van en

@@ -27,13 +27,13 @@ export const CREDITS = [
     url: "https://huggingface.co/FunAudioLLM/SenseVoiceSmall",
   },
   {
-    id: "hymt",
+    id: "indextranslate",
     kind: "model",
-    name: "Hy-MT2 1.8B",
-    author: "Tencent",
+    name: "Index-Translate-2B",
+    author: "Bilibili (IndexTeam)",
     license: "Apache-2.0",
-    licenseFile: "Apache-2.0-Hy-MT2.txt",
-    url: "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF",
+    licenseFile: "Apache-2.0.txt",
+    url: "https://huggingface.co/IndexTeam/Index-Translate-2B-GGUF",
   },
   {
     id: "supertonic",

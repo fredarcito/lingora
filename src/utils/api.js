@@ -168,7 +168,7 @@ export const api = {
    * @param {(delta: string) => void} [onDelta]
    * @param {boolean} [concise] Condensed translation (no filler words), so that
    *   the voice does not fall behind.
-   * @param {boolean} [local] Translates locally (HY-MT2) instead of Groq; without
+   * @param {boolean} [local] Translates locally (Index-Translate) instead of Groq; without
    *   context or condensing.
    * @returns {Promise<Translation>}
    */

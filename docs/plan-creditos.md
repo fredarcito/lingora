@@ -62,7 +62,7 @@ not match, stop and tell the user.
 |---|---|---|---|---|---|---|
 | `parakeet` | model | Parakeet TDT 0.6B v3 | NVIDIA | CC-BY-4.0 | listening (European languages) | huggingface.co/nvidia/parakeet-tdt-0.6b-v3 |
 | `sensevoice` | model | SenseVoice Small | Alibaba (FunAudioLLM) | FunASR Model License v1.1 | listening (zh, yue, ja, ko) | huggingface.co/FunAudioLLM/SenseVoiceSmall and github.com/modelscope/FunASR/blob/main/MODEL_LICENSE |
-| `hymt` | model | Hy-MT2 1.8B | Tencent | Apache-2.0 | translation and generated interface languages | `LICENSE.txt` in huggingface.co/tencent/Hy-MT2-1.8B-GGUF (the exact file in `translator.rs` `MODEL_URL`) |
+| `indextranslate` | model | Index-Translate-2B | Bilibili (IndexTeam) | Apache-2.0 (`Apache-2.0.txt`) | translation and generated interface languages (replaced Hy-MT2 on 2026-11-01) | `LICENSE` in github.com/bilibili/Index-Translate; card license in huggingface.co/IndexTeam/Index-Translate-2B-GGUF (the exact file in `translator.rs` `MODEL_URL`) |
 | `supertonic` | model | Supertonic 3 | Supertone Inc. | OpenRAIL-M (`OpenRAIL-M-Supertonic.txt`) | voice (replaced Kokoro on 2026-11-01) | huggingface.co/Supertone/supertonic-3 |
 | `eres2net` | model | ERes2Net (3D-Speaker) | Alibaba (3D-Speaker) | Apache-2.0 | telling speakers apart | github.com/modelscope/3D-Speaker (model in `speakers.rs` `MODEL_URL`) |
 | `sherpa` | library | sherpa-onnx | k2-fsa / Next-gen Kaldi | Apache-2.0 | runs listening, voice and speakers | github.com/k2-fsa/sherpa-onnx |

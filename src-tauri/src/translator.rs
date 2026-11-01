@@ -1,24 +1,29 @@
-//! Traducción local con HY-MT2 1.8B (Tencent) sobre `llama-server`.
+//! Local translation with Index-Translate-2B (Bilibili, Apache-2.0).
 //!
-//! Alternativa a qwen en Groq para no depender de su cuota (1.000 peticiones
-//! al día y 8.000 tokens por minuto en el plan gratuito). Medido en un M1 Pro:
-//! Q4_K_M pesa 1,1 GB, ocupa ~1,4 GB de RAM y tarda ~0,3 s por frase. Q8 dio
-//! la misma calidad, más lento y el doble de grande.
+//! Alternative to qwen on Groq so we don't depend on its quota (1,000 requests
+//! a day and 8,000 tokens a minute on the free plan). Measured on an M1 Pro:
+//! Q4_K_M weighs 1.3 GB, uses ~1.45 GB of RAM and takes ~0.24 s per sentence.
 //!
-//! Inglés → español sale bien. Con español coloquial y trozos cortados es más
-//! flojo ("Dale" queda sin traducir, "o sea" se pierde), así que:
-//! - se le pasan frases completas (la UI espera al punto en modo local),
-//! - un glosario de coloquialismos va en el prompt solo si la frase los usa,
-//! - lo que el glosario no arregla se sustituye antes de traducir.
+//! It replaced HY-MT2 1.8B (2026-11-01): same speed and memory, more natural
+//! and faithful, better outside English and Spanish (Swedish, tú/usted), and
+//! it follows the glossary more strictly. Compared on 40 call sentences
+//! against HY-MT2, TranslateGemma 4B, Gemma 4 E2B/E4B and Qwen3-1.7B. It can't
+//! summarize (it loops), so the summary needs another model.
 //!
-//! Pasarle el contexto empeora: a veces traduce también el contexto y la voz lo
-//! repite. Por eso no se usa. Tampoco sigue la instrucción de condensar.
+//! Colloquial Spanish and cut-off fragments are still the weak spot, so:
+//! - it gets whole sentences (the UI waits for the full stop in local mode),
+//! - a glossary of colloquialisms goes in the prompt only if the sentence uses
+//!   them, as Index's own hard term constraint (it obeys it literally),
+//! - what the glossary doesn't fix is replaced before translating.
 //!
-//! llama.cpp va **dentro** de la app (crate `llama-cpp-2`, con Metal): nada
-//! que instalar. Un hilo propio tiene el modelo y su contexto; las
-//! traducciones van en cola, una tras otra (llama.cpp no permite crear
-//! contextos a la vez sobre el mismo modelo). El muestreo es el que usaba
-//! `llama-server` por defecto, para traducir igual que antes.
+//! Passing context made HY-MT2 worse (it translated the context too and the
+//! voice repeated it), so none is passed. Not retried with this model.
+//!
+//! llama.cpp goes **inside** the app (crate `llama-cpp-2`, with Metal): nothing
+//! to install. A thread of its own holds the model and its context; the
+//! translations are queued, one after another (llama.cpp can't create
+//! contexts at the same time on the same model). Decoding is greedy, as the
+//! model card recommends.
 
 use crate::config::Lang;
 use crate::error::{Error, Result};
@@ -34,19 +39,14 @@ use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Mutex, OnceLock};
 
 /// Archivo del modelo dentro de `models/`; es el nombre publicado.
-pub const MODEL_FILE: &str = "Hy-MT2-1.8B-Q4_K_M.gguf";
-pub const MODEL_URL: &str = "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF/resolve/main/Hy-MT2-1.8B-Q4_K_M.gguf";
+pub const MODEL_FILE: &str = "Index-Translate-2B.Q4_K_M.gguf";
+pub const MODEL_URL: &str =
+    "https://huggingface.co/IndexTeam/Index-Translate-2B-GGUF/resolve/main/Index-Translate-2B.Q4_K_M.gguf";
 
 /// Contexto en tokens, como con `llama-server -c 4096`.
 const CONTEXT_TOKENS: u32 = 4096;
 /// Todas las capas en la GPU, como con `llama-server -ngl 99`.
 const GPU_LAYERS: u32 = 99;
-/// La temperatura oficial (0,7) inventa más; baja es más fiel.
-const TEMPERATURE: f32 = 0.3;
-/// El resto del muestreo, los valores por defecto de `llama-server`.
-const TOP_K: i32 = 40;
-const TOP_P: f32 = 0.95;
-const MIN_P: f32 = 0.05;
 
 /// Un término coloquial y cómo traducirlo. `find` son las formas en
 /// minúsculas que lo activan.
@@ -56,8 +56,9 @@ struct Term {
     target: &'static str,
 }
 
-/// Coloquialismos que HY-MT2 tradujo mal en las pruebas. Ampliar con lo que
-/// se oiga mal en llamadas reales.
+/// Colloquialisms the model got wrong in tests (HY-MT2 first). Extend with
+/// what sounds wrong in real calls. Index applies them literally: a term with
+/// two meanings ("o sea" is also "so") can force the wrong one.
 const GLOSSARY_ES: &[Term] = &[
     Term { find: &["o sea"], source: "o sea", target: "I mean" },
     Term {
@@ -112,8 +113,6 @@ struct Worker {
 struct Job {
     prompt: String,
     max_tokens: usize,
-    /// Sin azar, para comparar con `llama-server` en las pruebas.
-    greedy: bool,
     events: tokio::sync::mpsc::UnboundedSender<Event>,
 }
 
@@ -183,13 +182,13 @@ impl LocalTranslator {
         let text = substitute(text, from);
         // Proporcional al texto: si el modelo se embala, no habla de más.
         let max_tokens = (text.chars().count() / 2 + 32).min(512);
-        self.generate(chat_prompt(&prompt(&text, from, to)), max_tokens, false, on_delta).await
+        self.generate(chat_prompt(&prompt(&text, from, to)), max_tokens, on_delta).await
     }
 
-    async fn generate(&self, prompt: String, max_tokens: usize, greedy: bool, mut on_delta: impl FnMut(&str)) -> Result<String> {
+    async fn generate(&self, prompt: String, max_tokens: usize, mut on_delta: impl FnMut(&str)) -> Result<String> {
         let jobs = self.jobs().await?;
         let (events, mut inbox) = tokio::sync::mpsc::unbounded_channel();
-        if jobs.send(Job { prompt, max_tokens, greedy, events }).is_err() {
+        if jobs.send(Job { prompt, max_tokens, events }).is_err() {
             // El hilo se cayó: la próxima vez se vuelve a cargar.
             self.worker.lock().unwrap().take();
             return Err(Error::Audio("la traducción local se cerró; vuelve a intentarlo".into()));
@@ -265,17 +264,9 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
     }
     ctx.decode(&mut batch).map_err(|e| fail(&e))?;
 
-    let mut sampler = if job.greedy {
-        LlamaSampler::greedy()
-    } else {
-        LlamaSampler::chain_simple([
-            LlamaSampler::top_k(TOP_K),
-            LlamaSampler::top_p(TOP_P, 1),
-            LlamaSampler::min_p(MIN_P, 1),
-            LlamaSampler::temp(TEMPERATURE),
-            LlamaSampler::dist(seed()),
-        ])
-    };
+    // Greedy (temperature 0), as Index-Translate recommends: the same sentence
+    // always gives the same translation.
+    let mut sampler = LlamaSampler::greedy();
     let mut out = String::new();
     // Una letra puede venir partida entre dos tokens: se espera a tenerla entera.
     let mut bytes: Vec<u8> = Vec::new();
@@ -312,18 +303,16 @@ fn take_utf8(bytes: &mut Vec<u8>) -> String {
     text
 }
 
-/// Semilla distinta en cada traducción, como `llama-server` sin `seed`.
-fn seed() -> u32 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.subsec_nanos())
-}
-
-/// La plantilla de chat de HY-MT2, tal como la aplica `llama-server`.
+/// Index-Translate's chat template (Qwen3.5) with thinking off, as it renders
+/// with `enable_thinking: false`.
 fn chat_prompt(user: &str) -> String {
-    format!("<｜hy_begin▁of▁sentence｜><｜hy_User｜>{user}<｜hy_Assistant｜>")
+    format!("<|im_start|>user\n{user}<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n")
 }
 
-/// Prompt oficial de HY-MT2; con el formato de terminología si la frase usa
-/// algún término del glosario.
+/// Index-Translate's own prompts, as its client builds them
+/// (`inference/llm/translate.py` in bilibili/Index-Translate): always in
+/// Chinese; with glossary terms, the constrained format with a hard term
+/// constraint.
 fn prompt(text: &str, from: Lang, to: Lang) -> String {
     let lower = text.to_lowercase();
     let glossary = match from {
@@ -331,26 +320,19 @@ fn prompt(text: &str, from: Lang, to: Lang) -> String {
         Lang::En => GLOSSARY_EN,
         _ => &[],
     };
-    let hits: Vec<String> = glossary
+    let terms: Vec<String> = glossary
         .iter()
         .filter(|t| t.find.iter().any(|f| lower.contains(f)))
-        .map(|t| format!("{} translates to {}", t.source, t.target))
+        .map(|t| format!("{}→{}", t.source, t.target))
         .collect();
-    // Con chino en algún lado, la instrucción oficial de HY-MT2 va en chino.
-    let chinese = from.is_chinese() || to.is_chinese();
-    let instruction = if chinese {
-        format!("将以下文本翻译为{}，注意只需要输出翻译后的结果，不要额外解释：\n\n{text}", to.chinese_name())
-    } else {
-        format!(
-            "Translate the following text into {}. Note that you should only output the translated result without any additional explanation:\n\n{text}",
-            to.english_name()
-        )
-    };
-    if hits.is_empty() {
-        instruction
-    } else {
-        format!("Reference the following translations:\n{}\n\n{instruction}", hits.join("\n"))
+    let (source, target) = (from.chinese_name(), to.chinese_name());
+    if terms.is_empty() {
+        return format!("请将以下{source}文本翻译为{target}，直接输出翻译结果，不要进行任何解释。\n\n{text}");
     }
+    format!(
+        "请将以下{source}文本翻译成{target}，并且严格遵循所有约束要求。\n\n【源文】\n{text}\n\n【约束要求】\n1. 【硬性要求】专名/术语对照: {}\n\n只输出译文，不要有任何额外说明。",
+        terms.join("、")
+    )
 }
 
 /// Cambios previos para lo que el glosario no arregla: con "Dale" en el
@@ -400,7 +382,7 @@ mod tests {
     fn chat_prompt_matches_llama_server() {
         assert_eq!(
             chat_prompt("Hola"),
-            "<｜hy_begin▁of▁sentence｜><｜hy_User｜>Hola<｜hy_Assistant｜>"
+            "<|im_start|>user\nHola<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
         );
     }
 
@@ -464,7 +446,7 @@ mod tests {
                 let user = prompt(&text, from, to);
                 let max_tokens = (text.chars().count() / 2 + 32).min(512);
                 let t0 = std::time::Instant::now();
-                let ours = t.generate(chat_prompt(&user), max_tokens, true, |_| {}).await.unwrap();
+                let ours = t.generate(chat_prompt(&user), max_tokens, |_| {}).await.unwrap();
                 let ms = t0.elapsed().as_millis();
                 let body = serde_json::json!({
                     "temperature": 0.0, "max_tokens": max_tokens,
@@ -485,9 +467,14 @@ mod tests {
     #[test]
     fn glossary_only_when_used() {
         let p = prompt("o sea que no", Lang::Es, Lang::En);
-        assert!(p.starts_with("Reference the following translations:\no sea translates to I mean\n\n"), "{p}");
-        assert!(p.ends_with("into English. Note that you should only output the translated result without any additional explanation:\n\no sea que no"));
-        assert!(prompt("Hola, ¿qué tal?", Lang::Es, Lang::En).starts_with("Translate"));
+        assert_eq!(
+            p,
+            "请将以下西班牙语文本翻译成英语，并且严格遵循所有约束要求。\n\n【源文】\no sea que no\n\n【约束要求】\n1. 【硬性要求】专名/术语对照: o sea→I mean\n\n只输出译文，不要有任何额外说明。"
+        );
+        assert_eq!(
+            prompt("Hola, ¿qué tal?", Lang::Es, Lang::En),
+            "请将以下西班牙语文本翻译为英语，直接输出翻译结果，不要进行任何解释。\n\nHola, ¿qué tal?"
+        );
     }
 
     /// Con el modelo descargado: `cargo test --lib translator -- --ignored`.
@@ -530,12 +517,12 @@ mod tests {
     fn translates_more_languages() {
         let s = crate::config::Settings::from_env_fallback();
         let t = LocalTranslator::new(s.translator_model);
-        let lang = |c| Lang::from_code(c).unwrap();
         tauri::async_runtime::block_on(async {
-            for code in ["de", "ko", "ar", "th", "ru", "hi", "zh-hant", "fa"] {
-                let out = t.translate("Mañana tenemos una reunión a las tres de la tarde.", Lang::Es, lang(code), |_| {}).await.unwrap();
-                let back = t.translate(&out, lang(code), Lang::Es, |_| {}).await.unwrap();
-                eprintln!("{code}: {out} → {back}");
+            // Every app language, there and back.
+            for lang in Lang::all().filter(|&l| l != Lang::Es) {
+                let out = t.translate("Mañana tenemos una reunión a las tres de la tarde.", Lang::Es, lang, |_| {}).await.unwrap();
+                let back = t.translate(&out, lang, Lang::Es, |_| {}).await.unwrap();
+                eprintln!("{}: {out} → {back}", lang.info().code);
             }
             t.shutdown();
         });

@@ -2,8 +2,16 @@
 
 Status (2026-10-28):
 
-- **Done: 37 languages**, all the ones HY-MT2 translates locally and Whisper
-  transcribes (all except Uyghur, which Whisper doesn't have). The list lives in
+- **Done: 37 languages**, all the ones HY-MT2 translated locally and Whisper
+  transcribes (all except Uyghur, which Whisper doesn't have).
+- **Translator: Index-Translate-2B since 2026-11-01** (replaced HY-MT2). Better
+  in European languages, Chinese (also Traditional and Cantonese), Japanese,
+  Korean, Kazakh and Mongolian. **Worse** in Hindi, Bengali, Urdu, Gujarati,
+  Marathi, Tamil, Telugu, Khmer, Burmese and somewhat in Vietnamese and
+  Persian (it writes them wrongly; round-trip Spanish → language → Spanish).
+  Not a target market for now. If they become one: keep Index by default and
+  route those languages to HY-MT2, downloaded only when someone picks one
+  (two models, ~2.4 GB together, and the routing in `translator.rs`). The list lives in
   a single place, `LANGS` in `src-tauri/src/config.rs`, and the UI requests it with
   the `languages` command, which also says which voices are on the machine.
 - **All local (since 2026-10-28), no Groq.**
