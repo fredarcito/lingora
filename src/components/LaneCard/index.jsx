@@ -41,6 +41,13 @@ const VOICE_SAMPLES = {
 };
 
 /**
+ * The voices of each language already asked for in this session: reopening the
+ * card shows them at once, without the controls moving when they arrive.
+ * @type {Map<string, import("@utils/api").VoiceInfo[]>}
+ */
+const voiceCache = new Map();
+
+/**
  * Lane card: header, main control, collapsible settings and the
  * translations as subtitles (the most recent one at the bottom, highlighted).
  */
@@ -59,7 +66,10 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
     const load = () =>
       api
         .voices(target)
-        .then(setVoiceList)
+        .then((/** @type {import("@utils/api").VoiceInfo[]} */ list) => {
+          voiceCache.set(target, list);
+          setVoiceList(list);
+        })
         .catch(() => setVoiceList([]));
     load();
     window.addEventListener("focus", load);
@@ -407,19 +417,22 @@ const voiceLabel = (v) =>
 function VoiceControls({ lane, volume, onChange, multiVoice }) {
   const t = useT();
   /** @type {[import("@utils/api").VoiceInfo[], Function]} */
-  const [voiceList, setVoiceList] = useState([]);
+  const target = apiLang(lane.targetLang);
+  const [voiceList, setVoiceList] = useState(() => voiceCache.get(target) ?? []);
   /** The voice list for the language has arrived; until then the selector is disabled. */
-  const [voicesLoaded, setVoicesLoaded] = useState(false);
+  const [voicesLoaded, setVoicesLoaded] = useState(() => voiceCache.has(target));
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
-  const target = apiLang(lane.targetLang);
 
   // The voices of the language; they are checked again when returning to the app in case one was downloaded.
   useEffect(() => {
     const load = () =>
       api
         .voices(target)
-        .then(setVoiceList)
+        .then((/** @type {import("@utils/api").VoiceInfo[]} */ list) => {
+          voiceCache.set(target, list);
+          setVoiceList(list);
+        })
         .catch(() => setVoiceList([]))
         .finally(() => setVoicesLoaded(true));
     load();
@@ -525,9 +538,10 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
           <strong className={styles.fieldValue}>{t("app.voices.speed.upTo", { speed: lane.maxSpeed.toFixed(2) })}</strong>
         </label>
       </div>
-      {/* Only Lingora's voices have the higher-quality mode; the system ones don't. */}
-      {lingoraVoice && (
-        <div className={cx(styles.settingRow, styles.settingSub)}>
+      {/* Only Lingora's voices have the higher-quality mode; the system ones don't.
+          Until the list arrives the row keeps its place, hidden, so nothing jumps. */}
+      {(lingoraVoice || !voicesLoaded) && (
+        <div className={cx(styles.settingRow, styles.settingSub, !voicesLoaded && styles.isPending)} aria-hidden={!voicesLoaded || undefined}>
           <span className={styles.settingLabel} />
           <Switch
             checked={lane.voiceHq ?? false}

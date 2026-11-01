@@ -147,6 +147,11 @@
   margin-bottom: 6px;
 }
 
+/* The higher-quality switch while the voices load: its place, not its look. */
+.setting-sub.is-pending {
+  visibility: hidden;
+}
+
 /* The slider is thin: its row is as tall as the others, so the gaps match. */
 .speed-row {
   min-height: var(--control-h);
