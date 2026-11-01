@@ -234,3 +234,48 @@ export function PlusIcon() {
     </svg>
   );
 }
+
+/** A minus: zoom out. */
+export function MinusIcon() {
+  return (
+    <svg {...svgProps} width={16} height={16}>
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+/** Four corners: fit everything in view. */
+export function FitIcon() {
+  return (
+    <svg {...svgProps} width={16} height={16}>
+      <path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" />
+    </svg>
+  );
+}
+
+/** Arrows apart: unfold everything. */
+export function ExpandIcon() {
+  return (
+    <svg {...svgProps} width={16} height={16}>
+      <path d="M7 15l5 5 5-5M7 9l5-5 5 5" />
+    </svg>
+  );
+}
+
+/** Arrows together: fold everything. */
+export function CollapseIcon() {
+  return (
+    <svg {...svgProps} width={16} height={16}>
+      <path d="M7 20l5-5 5 5M7 4l5 5 5-5" />
+    </svg>
+  );
+}
+
+/** An arrow into a tray: save a file. */
+export function DownloadIcon() {
+  return (
+    <svg {...svgProps} width={16} height={16}>
+      <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+    </svg>
+  );
+}

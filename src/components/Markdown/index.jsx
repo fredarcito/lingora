@@ -6,7 +6,8 @@ import styles from "./styles.module.css";
  * `- [ ]` (visual only), `**bold**` and paragraphs. A list item that starts
  * with a time (`[07:26] …`, Highlighted moments) shows it apart; with a quote
  * after it (`[01:52] «note» — context`, My notes) the user's words stand out
- * and the context goes below, quieter. Everything comes out as React
+ * and the context goes below, quieter. A time at the end (`point [12:40]`,
+ * where it was said) goes in gray after the text. Everything comes out as React
  * elements, so the text is never interpreted as HTML. `className`, so that
  * the caller can place it.
  * @param {{ text: string, className?: string }} props
@@ -36,7 +37,7 @@ export default function Markdown({ text, className }) {
         list.push(
           <li key={list.length} className={styles.mdTask} data-task>
             <span className={cx(styles.mdCheck, done && styles.isDone)} aria-hidden />
-            <span>{inline(task[2])}</span>
+            <span>{endTime(task[2])}</span>
           </li>,
         );
       } else {
@@ -65,7 +66,7 @@ export default function Markdown({ text, className }) {
  */
 function timed(text) {
   const at = text.match(/^\[(\d{1,2}:\d{2}(?::\d{2})?)\]\s*(.*)$/);
-  if (!at) return inline(text);
+  if (!at) return endTime(text);
   const quote = at[2].match(/^«([^»]*)»\s*(?:—\s*(.*))?$/);
   return (
     <>
@@ -78,6 +79,18 @@ function timed(text) {
       ) : (
         inline(at[2])
       )}
+    </>
+  );
+}
+
+/** `text [12:40]`: the time after the text, in gray. @param {string} text */
+function endTime(text) {
+  const at = text.match(/^(.*?)\s*\[(\d{1,2}:\d{2}(?::\d{2})?)\]$/);
+  if (!at) return inline(text);
+  return (
+    <>
+      {inline(at[1])}
+      <span className={styles.mdTimeEnd}>{at[2]}</span>
     </>
   );
 }

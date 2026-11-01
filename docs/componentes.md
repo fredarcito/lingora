@@ -56,7 +56,8 @@ Icons: `WaveIcon`, `NoteIcon`, `MenuIcon`, `CloseIcon`, `SettingsIcon`,
 `LockIcon`, `SearchIcon`, `MoreIcon`, `CopyIcon`, `ChevronIcon`, `SwapIcon`,
 `ArrowIcon`, `FloatIcon`, `SlidersIcon`, `PlayIcon`, `StopIcon`,
 `VolumeIcon`, `BookmarkIcon` (a marked moment), `PenIcon` (a note of the
-user), `PlusIcon`. The diagnostics status marks (✓, ✕, !) are specific to
+user), `PlusIcon`, `MinusIcon` and `FitIcon` (zoom), `ExpandIcon` and
+`CollapseIcon` (unfold or fold everything), `DownloadIcon`. The diagnostics status marks (✓, ✕, !) are specific to
 `Diagnostics`.
 
 ## CSS

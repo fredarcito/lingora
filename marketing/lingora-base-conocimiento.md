@@ -128,6 +128,11 @@ micrófono virtual que aún no está resuelto. **No prometerlo como disponible.*
 - Transcripción con quién habló y **cuánto habló cada persona (%)**.
 - **Resumen con IA:** puntos clave, decisiones y tareas con responsable, en el
   idioma que elijas (puede ser distinto al de la reunión).
+- **Mapa mental del resumen:** los puntos clave, decisiones, tareas y momentos
+  marcados como un esquema visual que se pliega por secciones. Las ideas con
+  hora llevan a ese momento de la transcripción. Se exporta como imagen (PNG).
+  Sale del mismo resumen, que trae una versión corta de cada punto para el
+  mapa (no hace otra petición). Recién hecho, sin probar aún con usuarios.
 - **Exportar** a Markdown (.md) o texto (.txt).
 - **"Copiar para tu chat de IA":** copia la nota con instrucciones para pegarla
   en ChatGPT, Claude, etc. y resumirla allí.

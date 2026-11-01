@@ -51,6 +51,15 @@
   color: var(--text-3);
 }
 
+/* Where a point was said, after it. */
+.md-time-end {
+  margin-left: 8px;
+  font-size: 0.86em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
 /* My notes: the user's words stand out; the context of the moment goes below, quieter. */
 .md-quote {
   color: var(--text);

@@ -192,19 +192,39 @@ pub fn note_export(id: String, format: String) -> Result<String> {
         other => return Err(Error::Notes(format!("formato desconocido: {other}"))),
     };
     let note = read_note(&note_path(&id)?)?;
-    let name = file_name(str_field(&note, "title"));
+    let path = download_path(str_field(&note, "title"), &format)?;
+    std::fs::write(&path, export_text(&note, markdown))?;
+    reveal(&path)?;
+    Ok(path.display().to_string())
+}
+
+/// Writes the note's mind map, drawn by the app as a PNG, to Downloads and
+/// shows it in Finder.
+#[tauri::command]
+pub fn note_export_image(id: String, png: Vec<u8>) -> Result<String> {
+    if !png.starts_with(b"\x89PNG") {
+        return Err(Error::Notes("la imagen no es un PNG".into()));
+    }
+    let note = read_note(&note_path(&id)?)?;
+    let path = download_path(str_field(&note, "title"), "png")?;
+    std::fs::write(&path, png)?;
+    reveal(&path)?;
+    Ok(path.display().to_string())
+}
+
+/// A free name in Downloads for the note: "Title.ext", or "Title (2).ext" if
+/// that one exists.
+fn download_path(title: &str, ext: &str) -> Result<PathBuf> {
+    let name = file_name(title);
     let downloads = Path::new(&std::env::var("HOME").unwrap_or_default()).join("Downloads");
     std::fs::create_dir_all(&downloads)?;
-    let ext = &format;
     let mut path = downloads.join(format!("{name}.{ext}"));
     let mut n = 2;
     while path.exists() {
         path = downloads.join(format!("{name} ({n}).{ext}"));
         n += 1;
     }
-    std::fs::write(&path, export_text(&note, markdown))?;
-    reveal(&path)?;
-    Ok(path.display().to_string())
+    Ok(path)
 }
 
 /// El título como nombre de archivo: sin separadores ni caracteres que
@@ -458,6 +478,7 @@ fn summary_system(note: &Value) -> String {
     if !marks_text(note, false, true).is_empty() {
         system.push_str(SUMMARY_BOOKMARKS);
     }
+    system.push_str(SUMMARY_MAP);
     // Last, so it wins over the Spanish headings and a transcript in another language.
     let english = summary_lang_info(note).map_or("Spanish", |l| l.english);
     system.push_str(&SUMMARY_LANGUAGE.replace("{idioma}", summary_language(note)).replace("{language}", english));
@@ -584,6 +605,14 @@ const SUMMARY_NOTES: &str = "\nEl usuario escribió notas en ciertos momentos (N
 /// and the transcript and ignores the chosen language.
 const SUMMARY_LANGUAGE: &str = "\nIMPORTANTE: escribe todo el resumen, también los títulos de las secciones, en {idioma} \
 ({language}), aunque la transcripción y estas instrucciones estén en otro idioma. Write the whole summary in {language}.";
+/// Times on each point, and a short version of the lists for the mind map, which
+/// the app keeps apart from the summary (`split_map`).
+const SUMMARY_MAP: &str = "\nEn Puntos clave, Decisiones y Tareas, termina cada viñeta con la hora de la transcripción \
+en que se dijo, así: \" [mm:ss]\". Después de todo lo demás (también de Momentos destacados y Mis notas), escribe una \
+línea que diga exactamente <<<MAP>>> y, debajo, esas mismas tres secciones con los mismos títulos, en versión corta \
+para un mapa mental: cada viñeta de 12 palabras como máximo, con su misma hora.";
+/// Where the short version for the map starts in the model's answer.
+const MAP_MARKER: &str = "<<<MAP>>>";
 const SUMMARY_BOOKMARKS: &str = "\nHay momentos marcados por el usuario: añade al final la sección ## Momentos destacados, \
 con una línea por momento: \"- [mm:ss] qué se dijo en ese momento\" (una frase, según la transcripción).";
 
@@ -682,6 +711,16 @@ fn chunks(transcript: &str) -> Vec<String> {
     out
 }
 
+/// The model's answer split into the summary and the short version for the
+/// map ("" if it did not write one).
+fn split_map(text: &str) -> (String, String) {
+    match text.find(MAP_MARKER) {
+        // With a long transcript, the parts can bring their own marker: only the first counts.
+        Some(at) => (text[..at].trim_end().to_string(), text[at + MAP_MARKER.len()..].replace(MAP_MARKER, "").trim().to_string()),
+        None => (text.trim_end().to_string(), String::new()),
+    }
+}
+
 /// Resume la transcripción; si es muy larga, por trozos y luego el conjunto.
 async fn summarize_text(groq: &Groq, model: &str, system: &str, transcript: &str) -> Result<String> {
     if transcript.chars().count() <= SUMMARY_MAX_CHARS {
@@ -741,11 +780,16 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
             Error::Api { status: 401 | 403, .. } => Error::Notes("La clave de Groq no es válida. Cámbiala en Ajustes.".into()),
             other => other,
         })?;
+    let (text, map) = split_map(&text);
     let text = with_user_notes(&text, &notes);
 
     // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
     let mut note = read_note(&path)?;
-    note["summary"] = serde_json::json!({ "text": text, "created_at": now_iso() });
+    note["summary"] = if map.is_empty() {
+        serde_json::json!({ "text": text, "created_at": now_iso() })
+    } else {
+        serde_json::json!({ "text": text, "map": map, "created_at": now_iso() })
+    };
     write_note(&path, &note)?;
     Ok(text)
 }
@@ -799,6 +843,15 @@ mod tests {
         let system = summary_system(&zh);
         assert!(system.ends_with(&format!("Write the whole summary in {}.", info.english)));
         assert!(system.contains(info.spanish));
+    }
+
+    #[test]
+    fn map_version_goes_apart() {
+        let (text, map) = split_map("## Puntos clave\n- Algo largo [01:00]\n\n<<<MAP>>>\n## Puntos clave\n- Algo [01:00]\n");
+        assert_eq!(text, "## Puntos clave\n- Algo largo [01:00]");
+        assert_eq!(map, "## Puntos clave\n- Algo [01:00]");
+        assert_eq!(split_map("## Resumen\nSin mapa.\n"), ("## Resumen\nSin mapa.".to_string(), String::new()));
+        assert!(summary_system(&serde_json::json!({ "sentences": [] })).contains(MAP_MARKER));
     }
 
     #[test]

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import Markdown from "@components/Markdown";
+import MindMap from "@components/MindMap";
 import { langName as langInSentence, useT } from "@i18n";
 import { KeyPanel, useSummaryKey } from "@components/SummaryKey";
 import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
+import { partAt } from "@utils/mindMap.js";
 import { NOTES_REFRESH_MS } from "@utils/noteList.js";
 import {
   discardActive,
@@ -16,6 +18,7 @@ import {
   storeSummaryConsent,
   summaryLangOf,
   summaryPrompt,
+  transcriptParts,
   userMarks,
 } from "@utils/notes.js";
 import {
@@ -48,7 +51,7 @@ export default function NotePage({ id, live, languages, onBack }) {
   const t = useT();
   const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [error, setError] = useState("");
-  const [tab, setTab] = useState(/** @type {"summary" | "transcript" | null} */ (null));
+  const [tab, setTab] = useState(/** @type {"summary" | "map" | "transcript" | null} */ (null));
   const [showSource, setShowSource] = useState(false);
   // Transcript tab: all of it, or only the paragraphs with your notes or bookmarks.
   const [markFilter, setMarkFilter] = useState(/** @type {"all" | "note" | "bookmark"} */ ("all"));
@@ -93,6 +96,11 @@ export default function NotePage({ id, live, languages, onBack }) {
 
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
 
+  // A jump to a paragraph happens once: back in the transcript later, it opens where it opens.
+  useEffect(() => {
+    if (tab !== "transcript") setFocus(null);
+  }, [tab]);
+
   // The ⋯ menu closes when clicking anywhere else or with Escape.
   useDismiss(menuOpen, () => setMenuOpen(false));
 
@@ -127,7 +135,8 @@ export default function NotePage({ id, live, languages, onBack }) {
     setAskConsent(false);
     setSummaryError("");
     setSummarizing(true);
-    setTab("summary");
+    // From the Map tab the map appears there; from anywhere else, the summary.
+    setTab((current) => (current === "map" ? current : "summary"));
     try {
       await api.noteSummarize(id);
       const n = await api.noteRead(id);
@@ -142,7 +151,7 @@ export default function NotePage({ id, live, languages, onBack }) {
   };
 
   const askSummary = () => {
-    setTab("summary");
+    setTab((current) => (current === "map" && hasKey ? current : "summary"));
     if (!hasKey) setAskKey(true);
     else if (!loadSummaryConsent()) setAskConsent(true);
     else summarize();
@@ -287,6 +296,7 @@ export default function NotePage({ id, live, languages, onBack }) {
           <div className={styles.noteTabsGroup} role="tablist">
             {[
               ["summary", t("notes.tab.summary")],
+              ["map", t("notes.tab.map")],
               ["transcript", t("notes.tab.transcript")],
             ].map(([value, label]) => (
               <button key={value} role="tab" aria-selected={tab === value} className={tab === value ? styles.isSelected : ""} onClick={() => setTab(/** @type {any} */ (value))}>
@@ -424,6 +434,45 @@ export default function NotePage({ id, live, languages, onBack }) {
             {keyStatus !== null && !hasKey && (!note.summary || askKey) && <KeyPanel onSaved={() => setAskKey(false)} />}
           </>
         )}
+
+        {tab === "map" &&
+          (note.summary ? (
+            <MindMap
+              key={note.summary.created_at}
+              title={note.title}
+              summary={note.summary.text}
+              short={note.summary.map}
+              onJump={(secs) => {
+                const part = partAt(transcriptParts(note), secs);
+                if (part === null) return;
+                setTab("transcript");
+                setMarkFilter("all");
+                setFocus({ part, nonce: Date.now() });
+              }}
+              onExport={(png) => run(() => api.noteExportImage(id, png), t("notes.savedDownloads"))}
+            />
+          ) : summarizing ? (
+            <p className={styles.noteWorking} role="status">
+              <Spinner small /> {t("notes.working")}
+            </p>
+          ) : (
+            <div className={styles.noteSummaryEmpty}>
+              <span className={styles.noteSummaryEmptyIcon} aria-hidden>
+                <NoteIcon />
+              </span>
+              <p>{t(live ? "notes.waitFinish" : "notes.map.empty")}</p>
+              {summaryError && (
+                <p className="notes-error" role="alert">
+                  {summaryError}
+                </p>
+              )}
+              {!live && summarizable && (
+                <Button variant="primary" onClick={askSummary}>
+                  {t("notes.summarize")}
+                </Button>
+              )}
+            </div>
+          ))}
 
         {/* With people, the hint goes on the right of their row; without them, on its own. */}
         {tab === "transcript" && !hasPeople && summaryHint}

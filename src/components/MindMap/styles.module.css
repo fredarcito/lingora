@@ -1,0 +1,220 @@
+/* The note's mind map (NotePage → Map tab). The SVG takes its colors from
+   these classes; the PNG export copies them inline. */
+
+.mind-map {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* Tool controls, quiet: icons only, the name on hover. */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tools button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.zoom-value {
+  min-width: 46px;
+  height: 30px;
+  padding: 0 4px;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.zoom-value:hover {
+  color: var(--text);
+  background: var(--n-hover);
+}
+
+.divider {
+  width: 1px;
+  height: 18px;
+  margin: 0 6px;
+  background: var(--n-border);
+}
+
+.canvas {
+  overflow: auto;
+  max-height: 70vh;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--n-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.canvas svg {
+  display: block;
+}
+
+.canvas text {
+  font-family: inherit;
+  font-size: 13px;
+  fill: var(--text);
+}
+
+.canvas rect {
+  fill: var(--bg);
+  stroke: var(--n-input);
+  stroke-width: 1;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--n-input);
+  stroke-width: 1.25;
+}
+
+.edge.is-active {
+  stroke: var(--accent);
+}
+
+.root rect {
+  fill: var(--surface-3);
+}
+
+.root text {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Each section has its tint: in its box and, fainter, in the border of its ideas. */
+.tone0 {
+  --tone: #5eead4;
+}
+
+.tone1 {
+  --tone: #a78bfa;
+}
+
+.tone2 {
+  --tone: #fbbf24;
+}
+
+.tone3 {
+  --tone: #fb923c;
+}
+
+.tone4 {
+  --tone: #60a5fa;
+}
+
+.branch {
+  cursor: pointer;
+}
+
+.canvas .branch rect {
+  fill: color-mix(in srgb, var(--tone) 10%, var(--bg));
+  stroke: color-mix(in srgb, var(--tone) 40%, transparent);
+}
+
+.canvas .branch:hover rect {
+  stroke: color-mix(in srgb, var(--tone) 75%, transparent);
+}
+
+.branch-title {
+  font-weight: 600;
+}
+
+.chevron,
+.time {
+  font-size: 11px;
+}
+
+.canvas .chevron,
+.canvas .time,
+.canvas .sub {
+  fill: var(--text-3);
+}
+
+.canvas .sub {
+  font-size: 12px;
+}
+
+/* An idea: almost neutral, its section's color only in the border. */
+.canvas .leaf rect {
+  fill: color-mix(in srgb, var(--tone) 3%, var(--bg));
+  stroke: color-mix(in srgb, var(--tone) 22%, transparent);
+}
+
+.canvas .leaf.is-active rect {
+  stroke: color-mix(in srgb, var(--tone) 45%, transparent);
+}
+
+.can-jump,
+.more {
+  cursor: pointer;
+}
+
+.canvas .can-jump:hover rect {
+  stroke: color-mix(in srgb, var(--tone) 75%, transparent);
+}
+
+.canvas .can-jump:hover .time {
+  fill: var(--tone);
+}
+
+.canvas .more rect {
+  fill: transparent;
+  stroke: color-mix(in srgb, var(--tone) 30%, transparent);
+  stroke-dasharray: 3 3;
+}
+
+.canvas .more:hover rect {
+  stroke: color-mix(in srgb, var(--tone) 70%, transparent);
+}
+
+.canvas .more text {
+  font-size: 12px;
+  fill: var(--text-2);
+}
+
+.branch:focus-visible,
+.leaf:focus-visible,
+.more:focus-visible {
+  outline: none;
+}
+
+.canvas .branch:focus-visible rect,
+.canvas .leaf:focus-visible rect,
+.canvas .more:focus-visible rect {
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.empty {
+  padding: 40px 0;
+  text-align: center;
+}

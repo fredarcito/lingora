@@ -120,7 +120,8 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {MyNote[]} [my_notes] What the user wrote while recording (Take notes), ordered by `t`.
  * @property {{ t: number }[]} [bookmarks] Moments the user marked while recording, ordered by `t`.
  * @property {boolean} [summary_with_notes] The summary also uses `my_notes` (off by default: they may be private).
- * @property {{ text: string, created_at: string } | null} summary
+ * @property {{ text: string, map?: string, created_at: string } | null} summary `map`: the same lists in short, for the mind map
+ *   (summaries made before it have none).
  *
  * @typedef {Object} MyNote
  * @property {number} t Seconds, on the same clock as `sentences[].t`: when the user started writing it.
@@ -343,6 +344,12 @@ export const api = {
    * @returns {Promise<string>} The file path.
    */
   noteExport: (id, format) => invoke("note_export", { id, format }),
+  /**
+   * Writes the note's mind map (PNG) to Downloads and shows it in Finder.
+   * @param {string} id @param {Uint8Array} png
+   * @returns {Promise<string>} The file path.
+   */
+  noteExportImage: (id, png) => invoke("note_export_image", { id, png: Array.from(png) }),
   /** @returns {Promise<SummaryKeyStatus>} */
   summaryKeyStatus: () => invoke("summary_key_status"),
   /**

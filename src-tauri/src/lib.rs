@@ -463,6 +463,7 @@ pub fn run() {
             notes::note_delete,
             notes::note_reveal,
             notes::note_export,
+            notes::note_export_image,
             notes::summary_key_status,
             notes::summary_key_set,
             notes::summary_key_clear,
