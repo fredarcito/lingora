@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import Markdown from "@components/Markdown";
 import MindMap from "@components/MindMap";
@@ -47,6 +47,11 @@ import {
 } from "@components/shared";
 import styles from "./styles.module.css";
 
+/** Each block of a fresh summary starts this much after the previous one… */
+const CONDENSE_STEP_MS = 60;
+/** …up to this many steps, so a long summary is done in under 2 s. */
+const CONDENSE_STEPS = 30;
+
 /** The phrases while summarizing: what it is doing, in plain words. */
 const WORKING_PHRASES = Array.from({ length: 9 }, (_, i) => `notes.working${i + 1}`);
 
@@ -83,6 +88,9 @@ export default function NotePage({ id, live, languages, onBack }) {
   // Known not to be usable yet (not just still being checked).
   const notReady = cloudOn ? summarySource.hasKey === false : model.installed === false;
   const noticeTimer = useRef(0);
+  // A summary just made appears condensing into place, once (not each time the note opens).
+  const [freshSummary, setFreshSummary] = useState(false);
+  const summaryRef = useRef(/** @type {HTMLDivElement | null} */ (null));
   // What the wait for a summary shows, in turn (it can take a minute on the computer).
   const working = WORKING_PHRASES.map((key) => t(key));
   // The latest value of the `live` prop: the polling reads it without restarting.
@@ -110,6 +118,17 @@ export default function NotePage({ id, live, languages, onBack }) {
   }, [id, editing]);
 
   useEffect(() => () => window.clearTimeout(noticeTimer.current), []);
+
+  // Each block's place in the cascade (headings, paragraphs and each point of a
+  // list), set before painting so none shows early; the mark goes once all ended.
+  useLayoutEffect(() => {
+    const md = summaryRef.current?.firstElementChild;
+    if (!freshSummary || !md) return;
+    const blocks = [...md.children].flatMap((el) => (el.tagName === "UL" ? [...el.children] : [el]));
+    blocks.forEach((el, i) => /** @type {HTMLElement} */ (el).style.setProperty("--i", String(Math.min(i, CONDENSE_STEPS))));
+    const timer = window.setTimeout(() => setFreshSummary(false), CONDENSE_STEPS * CONDENSE_STEP_MS + 1000);
+    return () => window.clearTimeout(timer);
+  }, [freshSummary, note?.summary?.created_at, tab]);
 
   // A jump to a paragraph happens once: back in the transcript later, it opens where it opens.
   useEffect(() => {
@@ -158,6 +177,7 @@ export default function NotePage({ id, live, languages, onBack }) {
       const n = await api.noteRead(id);
       setNote((prev) => (prev ? { ...prev, summary: n.summary } : n));
       setActiveSummary(id, n.summary);
+      setFreshSummary(true);
       setSummaryWasIn(null);
     } catch (e) {
       setSummaryError(errorMessage(e));
@@ -489,7 +509,7 @@ export default function NotePage({ id, live, languages, onBack }) {
               />
             )}
             {note.summary && (
-              <div className={cx(styles.noteSummary, styles.noteSummaryCard)}>
+              <div ref={summaryRef} className={cx(styles.noteSummary, styles.noteSummaryCard, freshSummary && styles.summaryFresh, summarizing && styles.summaryWorking)}>
                 <Markdown className={styles.summaryMd} text={note.summary.text} />
                 <div className={styles.noteSummaryFoot}>
                   <span>

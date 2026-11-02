@@ -599,3 +599,63 @@
 .note-summary-actions .note-summarize {
   height: 32px;
 }
+
+/* A summary just made condenses into place: each block (heading, paragraph,
+   each point) comes from blurred and faint to sharp, top to bottom. Only
+   opacity, blur and a small rise: the text never moves sideways or rewraps.
+   `--i` (the block's place) is set in NotePage. */
+.summary-fresh .summary-md > :not(ul),
+.summary-fresh .summary-md li {
+  animation: summary-condense 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+@keyframes summary-condense {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-fresh .summary-md > :not(ul),
+  .summary-fresh .summary-md li {
+    animation: none;
+  }
+}
+
+/* The old summary while the new one is being written: faded, slightly blurred
+   and crossed by a soft band of light that goes down and back up, easing at
+   each end (a loop that jumps back to the top reads as a jolt). Still readable. */
+.summary-working .summary-md {
+  opacity: 0.45;
+  filter: blur(1px);
+  transition:
+    opacity 0.4s ease,
+    filter 0.4s ease;
+  -webkit-mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.6) 0%, rgb(0 0 0 / 0.6) 30%, #000 50%, rgb(0 0 0 / 0.6) 70%, rgb(0 0 0 / 0.6) 100%);
+  mask-image: linear-gradient(180deg, rgb(0 0 0 / 0.6) 0%, rgb(0 0 0 / 0.6) 30%, #000 50%, rgb(0 0 0 / 0.6) 70%, rgb(0 0 0 / 0.6) 100%);
+  -webkit-mask-size: 100% 300%;
+  mask-size: 100% 300%;
+  animation: summary-rework 3.2s ease-in-out infinite alternate;
+}
+
+@keyframes summary-rework {
+  from {
+    -webkit-mask-position: 0 100%;
+    mask-position: 0 100%;
+  }
+  to {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-working .summary-md {
+    animation: none;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
