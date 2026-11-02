@@ -632,11 +632,3 @@ input[type="range"].wide {
 .setting-summary {
   min-height: var(--control-h);
 }
-
-/* Next to the bars, separated like the volume. The class twice: the
-   specificity from before (.notes-switch.lane-save). */
-.lane-save.lane-save {
-  flex: none;
-  padding-right: 14px;
-  border-right: 1px solid var(--hairline);
-}

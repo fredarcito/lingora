@@ -4,6 +4,7 @@ import { logEvent } from "@utils/log";
 import { createSpeechQueue } from "@utils/speechQueue";
 import Diagnostics from "@components/Diagnostics";
 import LaneCard from "@components/LaneCard";
+import SaveNotesBar from "@components/SaveNotesBar";
 import LaneSettings from "@components/LaneSettings";
 import TopBar from "@components/TopBar";
 import NoteTaking from "@pages/NoteTaking";
@@ -893,30 +894,31 @@ export default function App() {
             notesActions={notesActions}
           />
         ) : (
-          <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>
-            {visible.map((lane) => (
-              <LaneCard
-                key={lane.direction}
-                lane={lane}
-                compact={Boolean(focused) && focused !== lane.direction}
-                original={mode === "video" && lane.direction === "remote_to_local" ? noTranslate : undefined}
-                onOriginal={changeNoTranslate}
-                state={state[lane.direction]}
-                meter={meters[lane.direction]}
-                volume={volumes[lane.direction]}
-                inputs={inputs}
-                onOpenSettings={() => setView("settings")}
-                onToggle={() => (state[lane.direction].running ? stop(lane) : start(lane))}
-                onChange={(patch) => updateLane(lane.direction, patch)}
-                onVolume={(v) => changeVolume(lane.direction, v)}
-                saveNotes={lane.direction === "remote_to_local" ? saveNotes : undefined}
-                onSaveNotes={changeSaveNotes}
-                floating={lane.direction === "remote_to_local" ? floating : undefined}
-                onFloating={toggleFloating}
-                multiVoice={lane.direction === "remote_to_local" ? multiVoice : undefined}
-              />
-            ))}
-          </div>
+          <>
+            <SaveNotesBar checked={saveNotes} onChange={changeSaveNotes} />
+            <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>
+              {visible.map((lane) => (
+                <LaneCard
+                  key={lane.direction}
+                  lane={lane}
+                  compact={Boolean(focused) && focused !== lane.direction}
+                  original={mode === "video" && lane.direction === "remote_to_local" ? noTranslate : undefined}
+                  onOriginal={changeNoTranslate}
+                  state={state[lane.direction]}
+                  meter={meters[lane.direction]}
+                  volume={volumes[lane.direction]}
+                  inputs={inputs}
+                  onOpenSettings={() => setView("settings")}
+                  onToggle={() => (state[lane.direction].running ? stop(lane) : start(lane))}
+                  onChange={(patch) => updateLane(lane.direction, patch)}
+                  onVolume={(v) => changeVolume(lane.direction, v)}
+                  floating={lane.direction === "remote_to_local" ? floating : undefined}
+                  onFloating={toggleFloating}
+                  multiVoice={lane.direction === "remote_to_local" ? multiVoice : undefined}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </main>

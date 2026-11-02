@@ -14,7 +14,7 @@ src/
   pages/                    Notes, NoteTaking, Settings, Welcome, FloatingCaptions
   components/               Captions, Diagnostics, LaneCard (con VoiceControls),
                             LaneSettings, LangOffer, LanguagePicker, LiveStatus,
-                            Markdown, PairBar, Sidebar, SummaryKey, TopBar
+                            Markdown, PairBar, SaveNotesBar, Sidebar, SummaryKey, TopBar
   components/shared/        las piezas básicas (esta tabla) e icons.jsx
   utils/                    api, audio, notes, words, lanes, voice: lo que no
                             es interfaz

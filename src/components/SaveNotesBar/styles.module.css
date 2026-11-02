@@ -1,0 +1,22 @@
+/* A thin strip above the lanes: the switch and, beside it, what it does. */
+.save-notes-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  margin-bottom: 12px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+}
+
+/* One line: on a narrow window it is cut, the full text stays in the tooltip. */
+.save-notes-hint {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
