@@ -62,9 +62,8 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {number} translate_ms
  *
  * @typedef {Object} Speech
- * @property {number[]} audio Mono float32 samples.
+ * @property {Float32Array} audio Mono samples.
  * @property {number} sample_rate
- * @property {number} phonemize_ms
  * @property {number} tts_ms
  *
  * @typedef {Object} Word Word recognized locally, with its position in seconds.
@@ -209,9 +208,17 @@ export const api = {
    * @param {string | null} [voiceId] A specific voice (`VoiceInfo.id`); without
    *   it, the best one for the gender.
    * @param {boolean} [hq] Higher-quality Lingora voice (slightly slower).
+   * It comes raw, not as JSON (`Speech::to_bytes` in Rust): sample rate and
+   * synthesis ms (u32 LE), then the samples (f32 LE).
    * @returns {Promise<Speech>}
    */
-  speak: (text, lang, voice, speed = 1.0, voiceId = null, hq = false) => invoke("speak", { text, lang, voice, speed, voiceId, hq }),
+  speak: async (text, lang, voice, speed = 1.0, voiceId = null, hq = false) => {
+    /** @type {ArrayBuffer | number[]} */
+    const data = await invoke("speak", { text, lang, voice, speed, voiceId, hq });
+    const buffer = data instanceof ArrayBuffer ? data : Uint8Array.from(data).buffer;
+    const head = new DataView(buffer, 0, 8);
+    return { sample_rate: head.getUint32(0, true), tts_ms: head.getUint32(4, true), audio: new Float32Array(buffer, 8) };
+  },
   /**
    * The voices that can be chosen for a language: Lingora's and the system ones.
    * @param {Lang} lang
@@ -220,13 +227,24 @@ export const api = {
   voices: (lang) => invoke("voices", { lang }),
   /**
    * Plays the voice on an output (by name; "" = system output) and
-   * resolves when it finishes playing.
-   * @param {number[]} samples @param {number} sampleRate @param {string} deviceName
+   * resolves when it finishes playing. Raw, like `listen`: sample rate (u32
+   * LE), volume (f32 LE), sample count (u32 LE), the samples (f32 LE) and the
+   * device name (UTF-8, to the end; not a header, which only takes ASCII).
+   * @param {Float32Array | number[]} samples @param {number} sampleRate @param {string} deviceName
    * @param {number} [volume] Gain: 1 = original, up to 2.
    * @returns {Promise<void>}
    */
-  playAudio: (samples, sampleRate, deviceName, volume = 1) =>
-    invoke("play_audio", { samples, sampleRate, deviceName, volume }),
+  playAudio: (samples, sampleRate, deviceName, volume = 1) => {
+    const name = new TextEncoder().encode(deviceName);
+    const body = new Uint8Array(12 + samples.length * 4 + name.length);
+    const head = new DataView(body.buffer);
+    head.setUint32(0, sampleRate, true);
+    head.setFloat32(4, volume, true);
+    head.setUint32(8, samples.length, true);
+    new Float32Array(body.buffer, 12, samples.length).set(samples);
+    body.set(name, 12 + samples.length * 4);
+    return invoke("play_audio", body);
+  },
   /**
    * @param {boolean} full Includes dependencies (slow); without it, audio only.
    * @returns {Promise<Check[]>}

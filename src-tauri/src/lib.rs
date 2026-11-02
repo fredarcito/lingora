@@ -23,7 +23,7 @@ mod virtual_mic;
 
 use config::Settings;
 use config::Lang;
-use pipeline::{Direction, Pipeline, Speech, Transcription, Translation};
+use pipeline::{Direction, Pipeline, Transcription, Translation};
 use std::sync::Arc;
 use tauri::Manager;
 
@@ -137,7 +137,8 @@ async fn translate_warm_up(state: tauri::State<'_, AppState>) -> error::Result<b
 }
 
 /// Sintetiza la voz de un fragmento; la UI la pide frase a frase para que la
-/// primera suene mientras se generan las siguientes.
+/// primera suene mientras se generan las siguientes. Returns it raw
+/// (`Speech::to_bytes`), not as JSON.
 #[tauri::command]
 async fn speak(
     state: tauri::State<'_, AppState>,
@@ -147,8 +148,9 @@ async fn speak(
     speed: Option<f32>,
     voice_id: Option<String>,
     hq: Option<bool>,
-) -> error::Result<Speech> {
-    state.pipeline.speak(&text, lang, voice, voice_id.as_deref(), speed.unwrap_or(1.0), hq.unwrap_or(false)).await
+) -> error::Result<tauri::ipc::Response> {
+    let speech = state.pipeline.speak(&text, lang, voice, voice_id.as_deref(), speed.unwrap_or(1.0), hq.unwrap_or(false)).await?;
+    Ok(tauri::ipc::Response::new(speech.to_bytes()))
 }
 
 /// Una voz que se puede elegir para un idioma.
@@ -205,13 +207,36 @@ async fn warm_up(state: tauri::State<'_, AppState>) -> error::Result<()> {
 }
 
 /// Reproduce la voz traducida en una salida concreta (por nombre; vacío =
-/// salida del sistema) y vuelve cuando termina de sonar.
+/// salida del sistema) y vuelve cuando termina de sonar. Raw, like `listen`
+/// (layout in `parse_playback`).
 #[tauri::command]
-async fn play_audio(samples: Vec<f32>, sample_rate: u32, device_name: String, volume: Option<f32>) -> error::Result<()> {
-    let volume = volume.unwrap_or(1.0);
+async fn play_audio(request: tauri::ipc::Request<'_>) -> error::Result<()> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(error::Error::Audio("se esperaba audio en crudo".into()));
+    };
+    let (samples, sample_rate, volume, device_name) =
+        parse_playback(bytes).ok_or_else(|| error::Error::Audio("audio para reproducir inválido".into()))?;
     tauri::async_runtime::spawn_blocking(move || audio::play_blocking(&samples, sample_rate, &device_name, volume))
         .await
         .map_err(|e| error::Error::Audio(format!("la reproducción terminó mal: {e}")))?
+}
+
+/// Reads what `playAudio` (api.js) sends: sample rate (u32 LE), volume (f32 LE)
+/// and sample count (u32 LE), then the samples (f32 LE) and the output device
+/// name (UTF-8, to the end).
+fn parse_playback(bytes: &[u8]) -> Option<(Vec<f32>, u32, f32, String)> {
+    let word = |i: usize| bytes.get(i..i + 4).map(|b| [b[0], b[1], b[2], b[3]]);
+    let sample_rate = u32::from_le_bytes(word(0)?);
+    let volume = f32::from_le_bytes(word(4)?);
+    let count = u32::from_le_bytes(word(8)?) as usize;
+    let end = count.checked_mul(4)?.checked_add(12)?;
+    let samples = bytes
+        .get(12..end)?
+        .chunks_exact(4)
+        .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
+        .collect();
+    let device_name = String::from_utf8(bytes.get(end..)?.to_vec()).ok()?;
+    Some((samples, sample_rate, volume, device_name))
 }
 
 #[tauri::command]
@@ -493,4 +518,25 @@ pub fn run() {
                 app.state::<AppState>().pipeline.local_translator().shutdown();
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The same layout `playAudio` builds in api.js.
+    #[test]
+    fn reads_raw_playback() {
+        let mut bytes = Vec::new();
+        bytes.extend_from_slice(&44_100u32.to_le_bytes());
+        bytes.extend_from_slice(&1.5f32.to_le_bytes());
+        bytes.extend_from_slice(&2u32.to_le_bytes());
+        bytes.extend_from_slice(&0.25f32.to_le_bytes());
+        bytes.extend_from_slice(&(-0.5f32).to_le_bytes());
+        bytes.extend_from_slice("Altavoces (Realtek®)".as_bytes());
+        let (samples, rate, volume, name) = parse_playback(&bytes).unwrap();
+        assert_eq!((samples, rate, volume, name.as_str()), (vec![0.25, -0.5], 44_100, 1.5, "Altavoces (Realtek®)"));
+        // Fewer samples than announced.
+        assert!(parse_playback(&bytes[..16]).is_none());
+    }
 }

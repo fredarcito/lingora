@@ -55,6 +55,19 @@ pub struct Speech {
     pub tts_ms: u64,
 }
 
+impl Speech {
+    /// Raw for the UI (`speak` in api.js): sample rate and synthesis time in ms
+    /// (u32 LE), then the samples (f32 LE). As JSON, 8 s of voice at 44.1 kHz
+    /// were ~7 MB of text to write and parse.
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut out = Vec::with_capacity(8 + self.audio.len() * 4);
+        out.extend_from_slice(&self.sample_rate.to_le_bytes());
+        out.extend_from_slice(&(self.tts_ms.min(u32::MAX as u64) as u32).to_le_bytes());
+        out.extend(self.audio.iter().flat_map(|v| v.to_le_bytes()));
+        out
+    }
+}
+
 /// Codifica en base64 estándar (sin dependencias extra).
 fn base64_encode(data: &[u8]) -> String {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

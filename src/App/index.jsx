@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { logEvent } from "@utils/log";
+import { createSpeechQueue } from "@utils/speechQueue";
 import Diagnostics from "@components/Diagnostics";
 import LaneCard from "@components/LaneCard";
 import LaneSettings from "@components/LaneSettings";
@@ -59,6 +60,9 @@ function speedFor(pending, lag, max) {
  * y solo se muestra el texto, para alcanzar al original.
  */
 const MAX_VOICE_LAG_SECS = 10;
+
+/** The voice of both lanes, in order: a sentence already too late is not made. */
+const speechQueue = createSpeechQueue();
 
 /**
  * Fin de frase. Además de la puntuación latina: la china y japonesa (sin
@@ -470,8 +474,11 @@ export default function App() {
       ? multiVoice.assign(printing, /** @type {Float32Array} */ (info.samples), info.secs, target, current.voiceIds[target] ?? null)
       : null;
 
-    /** @type {ReturnType<typeof phraseQueue<Promise<import("@utils/api").Speech>>>} */
+    /** @type {ReturnType<typeof phraseQueue<Promise<import("@utils/api").Speech | null>>>} */
     const phrases = phraseQueue();
+    /** Set when this chunk's voice is skipped: its sentences not made yet are not made. */
+    const chunkVoice = { skipped: false };
+    let firstPhrase = true;
     /** Lo que la reproducción necesita para mostrar la frase antes de que acabe la traducción. */
     const draft = { transcription: null, transcript: "", translation: "" };
 
@@ -500,9 +507,18 @@ export default function App() {
           const voiceId = current.voiceIds[t.target_lang] ?? null;
           // Rust only knows female and male: with several voices, each person's (or female if unknown).
           const gender = current.voice === "multi" ? "female" : current.voice;
-          const speech = person
-            ? person.then((p) => api.speak(phrase, t.target_lang, p?.gender ?? gender, speed, p?.voiceId ?? voiceId, current.voiceHq))
-            : api.speak(phrase, t.target_lang, gender, speed, voiceId, current.voiceHq);
+          // Playback skips the whole chunk if its first sentence sounds too late,
+          // and the lag only grows: if it is already late when its turn comes,
+          // it is not made (null), nor the rest of the chunk.
+          const first = firstPhrase;
+          firstPhrase = false;
+          const late = () => {
+            if (first && (performance.now() - info.endedAt) / 1000 > MAX_VOICE_LAG_SECS) chunkVoice.skipped = true;
+            return chunkVoice.skipped;
+          };
+          /** @param {"female" | "male"} g @param {string | null} id */
+          const say = (g, id) => speechQueue.run(() => api.speak(phrase, t.target_lang, g, speed, id, current.voiceHq), late);
+          const speech = person ? person.then((p) => say(p?.gender ?? gender, p?.voiceId ?? voiceId)) : say(gender, voiceId);
           // Si falla una frase anterior, esta no se llega a esperar.
           speech.catch(() => {});
           phrases.push(speech);
@@ -558,7 +574,8 @@ export default function App() {
             patchEntry(lane.direction, id, { lagSecs: lag });
             logEvent(
               `${lane.direction}: voz con ${lag.toFixed(1)} s de retraso ` +
-                `(${info.secs?.toFixed(1) ?? "?"} s de audio, ${rt.pending} en cola, generada en ${(speech.tts_ms / 1000).toFixed(1)} s)`,
+                `(${info.secs?.toFixed(1) ?? "?"} s de audio, ${rt.pending} en cola, ` +
+                (speech ? `generada en ${(speech.tts_ms / 1000).toFixed(1)} s)` : "no generada: ya iba tarde)"),
             );
             // Se omite el trozo entero o nada: cortarlo a medias suena a
             // palabras sueltas.
@@ -567,9 +584,12 @@ export default function App() {
               logEvent(`${lane.direction}: frase omitida (más de ${MAX_VOICE_LAG_SECS} s de retraso)`);
               // Lo siguiente en la cola ya no arrastra este retraso.
               rt.lag = 0;
+              chunkVoice.skipped = true;
               break;
             }
           }
+          // Only a skipped chunk gets null, and that one stopped above.
+          if (!speech) break;
           const audio = trimSilence(speech.audio, speech.sample_rate);
           // Several voices: the dot lights up with the voice that is heard.
           if (person) multiVoice.showSpeaking((await person)?.index ?? null);
