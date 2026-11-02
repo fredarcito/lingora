@@ -112,7 +112,10 @@ struct Worker {
 /// Una traducción para el hilo del modelo.
 struct Job {
     prompt: String,
+    /// The cap by characters; `output_cap` raises it by the tokens of `source`.
     max_tokens: usize,
+    /// The text being translated.
+    source: String,
     events: tokio::sync::mpsc::UnboundedSender<Event>,
 }
 
@@ -182,13 +185,13 @@ impl LocalTranslator {
         let text = substitute(text, from);
         // Proporcional al texto: si el modelo se embala, no habla de más.
         let max_tokens = (text.chars().count() / 2 + 32).min(512);
-        self.generate(chat_prompt(&prompt(&text, from, to)), max_tokens, on_delta).await
+        self.generate(chat_prompt(&prompt(&text, from, to)), &text, max_tokens, on_delta).await
     }
 
-    async fn generate(&self, prompt: String, max_tokens: usize, mut on_delta: impl FnMut(&str)) -> Result<String> {
+    async fn generate(&self, prompt: String, source: &str, max_tokens: usize, mut on_delta: impl FnMut(&str)) -> Result<String> {
         let jobs = self.jobs().await?;
         let (events, mut inbox) = tokio::sync::mpsc::unbounded_channel();
-        if jobs.send(Job { prompt, max_tokens, events }).is_err() {
+        if jobs.send(Job { prompt, max_tokens, source: source.to_string(), events }).is_err() {
             // El hilo se cayó: la próxima vez se vuelve a cargar.
             self.worker.lock().unwrap().take();
             return Err(Error::Audio("la traducción local se cerró; vuelve a intentarlo".into()));
@@ -269,7 +272,8 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
     let vocab = model.vocab();
     // El prompt ya trae el inicio de frase como texto: sin añadir otro.
     let tokens = vocab.tokenize(job.prompt.as_bytes(), false, true);
-    if tokens.is_empty() || tokens.len() + job.max_tokens > ctx.n_ctx() as usize {
+    let max_tokens = output_cap(job.max_tokens, vocab.tokenize(job.source.as_bytes(), false, false).len());
+    if tokens.is_empty() || tokens.len() + max_tokens > ctx.n_ctx() as usize {
         return Err(Error::Audio("el texto es demasiado largo para traducirlo de una vez".into()));
     }
     let mut batch = LlamaBatch::new(tokens.len(), 1);
@@ -288,7 +292,7 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
     // Una letra puede venir partida entre dos tokens: se espera a tenerla entera.
     let mut bytes: Vec<u8> = Vec::new();
     let mut pos = tokens.len() as i32;
-    for _ in 0..job.max_tokens {
+    for _ in 0..max_tokens {
         let token = sampler.sample(ctx, batch.n_tokens() - 1);
         if vocab.is_eog(token) {
             break;
@@ -313,6 +317,15 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
         written as f32 / gen.max(0.001),
     );
     Ok(out)
+}
+
+/// Output cap: at least the one by characters, and twice the source's tokens
+/// plus 32. By characters alone, Chinese, Japanese and Korean (a character is
+/// a word or more) got too little: a ~16 s Chinese sentence came out cut
+/// (`bench_output_cap`). It never goes below the old cap, so whatever wasn't
+/// cut comes out the same.
+fn output_cap(by_chars: usize, source_tokens: usize) -> usize {
+    by_chars.max(source_tokens * 2 + 32).min(512)
 }
 
 /// Lo que ya forma texto UTF-8 completo; el resto se queda esperando.
@@ -471,7 +484,8 @@ mod tests {
                 let user = prompt(&text, from, to);
                 let max_tokens = (text.chars().count() / 2 + 32).min(512);
                 let t0 = std::time::Instant::now();
-                let ours = t.generate(chat_prompt(&user), max_tokens, |_| {}).await.unwrap();
+                // No source: the cap by characters, the same one sent to the server.
+                let ours = t.generate(chat_prompt(&user), "", max_tokens, |_| {}).await.unwrap();
                 let ms = t0.elapsed().as_millis();
                 let body = serde_json::json!({
                     "temperature": 0.0, "max_tokens": max_tokens,
@@ -487,6 +501,70 @@ mod tests {
             eprintln!("iguales: {same}/{}", cases.len());
             t.shutdown();
         });
+    }
+
+    /// Bench for the output cap: the longest text listening delivers (~8 s of
+    /// speech, ~16 s when a sentence without a stop is carried over once).
+    /// Translates each case as the app does and again with the cap at 512:
+    /// greedy decoding makes the capped one a prefix of the other, so if they
+    /// differ, the cap cut it. Prints both translations, time and tokens/s.
+    /// `cargo test --release --lib translator::tests::bench_output_cap -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn bench_output_cap() {
+        let s = crate::config::Settings::from_env_fallback();
+        let t = LocalTranslator::new(s.translator_model);
+        let lang = |c| Lang::from_code(c).unwrap();
+        let cases = [
+            // ~8 s.
+            ("zh", "en", "我们下周一要和客户开会，讨论新版本的价格和交付时间，你能不能先把上个季度的数据整理好发给我？"),
+            ("zh", "es", "这个项目的预算已经超出了百分之二十，我们得想办法在不影响质量的情况下把成本降下来。"),
+            ("ja", "en", "来週の月曜日にお客様との打ち合わせがあるので、それまでに新しい見積もりと納期の資料をまとめておいてもらえますか。"),
+            ("ja", "es", "先月のアップデートからアプリが時々落ちるという問い合わせが増えているので、原因を早めに調べたほうがいいと思います。"),
+            ("ko", "en", "다음 주 월요일에 고객사와 회의가 있어서 그 전에 새 버전의 가격이랑 일정 자료를 정리해서 보내 주실 수 있을까요?"),
+            ("ko", "es", "지난달 업데이트 이후로 앱이 가끔 꺼진다는 문의가 많이 늘었으니까 원인을 빨리 확인해 보는 게 좋을 것 같아요."),
+            ("yue", "en", "我哋下個禮拜一要同客開會，傾吓新版本嘅價錢同埋交貨時間，你可唔可以先整理好上個季度嘅數據俾我？"),
+            // ~16 s: carried once.
+            ("zh", "en", "我觉得我们现在最大的问题不是技术，而是沟通，每次需求一变，开发那边总是最后一个知道，结果大家都在加班赶进度，质量也跟着下降，所以我建议以后每周一早上大家花十五分钟一起过一遍需求的变化，这样至少所有人都知道接下来要做什么"),
+            ("ja", "en", "正直に言うと今一番の問題は技術ではなくてコミュニケーションだと思っていて、要件が変わるたびに開発チームが最後に知ることになり、結局みんな残業して進捗を追いかけて品質も下がってしまうので、毎週月曜の朝に十五分だけ全員で要件の変更を確認する時間を作りたいです"),
+            ("ko", "en", "솔직히 지금 가장 큰 문제는 기술이 아니라 소통이라고 생각하는데요 요구사항이 바뀔 때마다 개발팀이 제일 마지막에 알게 되고 결국 다들 야근하면서 일정을 맞추느라 품질도 떨어지니까 매주 월요일 아침에 십오 분 정도 다 같이 변경 사항을 확인하는 시간을 가졌으면 좋겠어요"),
+            // The other direction: must not change.
+            ("es", "zh", "El lunes que viene tenemos una reunión con el cliente para hablar del precio de la versión nueva y de los plazos de entrega, ¿me podés mandar antes los números del último trimestre?"),
+            ("es", "ja", "Desde la actualización del mes pasado aumentaron mucho las consultas de que la aplicación se cierra a veces, así que convendría revisar la causa cuanto antes."),
+            ("en", "zh", "Honestly, I think our biggest problem right now isn't the technology, it's communication, because every time the requirements change the developers are the last ones to find out."),
+            ("en", "ja", "Could you put together the new quote and the delivery schedule before our meeting with the client next Monday, so we can go through them together?"),
+            ("es", "ko", "Creo que deberíamos dedicar quince minutos cada lunes por la mañana a repasar entre todos los cambios en los requisitos, así nadie se entera tarde."),
+        ];
+        tauri::async_runtime::block_on(async {
+            t.warm_up().await;
+            let mut cut = 0;
+            for (from, to, text) in cases {
+                let (from, to) = (lang(from), lang(to));
+                let t0 = std::time::Instant::now();
+                let ours = t.translate(text, from, to, |_| {}).await.unwrap();
+                let ms = t0.elapsed().as_millis();
+                let user = prompt(&substitute(text, from), from, to);
+                let full = t.generate(chat_prompt(&user), "", 512, |_| {}).await.unwrap().trim().to_string();
+                let hit = ours != full;
+                cut += hit as usize;
+                eprintln!(
+                    "{} {from:?}→{to:?} · {} caracteres · tope por caracteres {} · {ms} ms\n  original: {text}\n  app:      {ours}{}\n",
+                    if hit { "✗ CORTADA" } else { "✓" },
+                    text.chars().count(),
+                    (text.chars().count() / 2 + 32).min(512),
+                    if hit { format!("\n  sin tope: {full}") } else { String::new() },
+                );
+            }
+            eprintln!("cortadas por el tope: {cut}/{}", cases.len());
+            t.shutdown();
+        });
+    }
+
+    #[test]
+    fn output_cap_never_lowers_the_old_one() {
+        assert_eq!(output_cap(86, 80), 192);
+        assert_eq!(output_cap(122, 40), 122);
+        assert_eq!(output_cap(400, 300), 512);
     }
 
     #[test]

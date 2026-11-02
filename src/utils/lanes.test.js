@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { needsSenseVoice, notesListenCode, originalText } from "./lanes.js";
+import { HISTORY_AUDIO, HISTORY_SIZE, addToHistory, needsSenseVoice, notesListenCode, originalText } from "./lanes.js";
+
+describe("addToHistory", () => {
+  it("keeps the latest first, caps the size and keeps audio only on the newest", () => {
+    const wav = new Uint8Array(4);
+    /** @type {any[]} */
+    let history = [];
+    for (let id = 1; id <= HISTORY_SIZE + 3; id++) history = addToHistory(history, { id, source_wav: wav });
+    expect(history).toHaveLength(HISTORY_SIZE);
+    expect(history[0].id).toBe(HISTORY_SIZE + 3);
+    expect(history.filter((h) => h.source_wav).map((h) => h.id)).toEqual(
+      Array.from({ length: HISTORY_AUDIO }, (_, i) => HISTORY_SIZE + 3 - i),
+    );
+  });
+});
 
 describe("notesListenCode", () => {
   it("keeps the family when the captions are in another language", () => {

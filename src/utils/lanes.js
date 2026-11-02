@@ -94,7 +94,25 @@ export const langsFor = (direction, pair) =>
 export const notesListenCode = (family, target) => (target !== family ? family : family === "EN" ? "ES" : "JA");
 
 /** A stopped lane with nothing on screen. @type {import("@app/types").LaneState} */
-export const EMPTY_STATE = { running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };
+/** Entries kept in a lane's history. */
+export const HISTORY_SIZE = 30;
+/** How many of the latest entries keep their audio (~160 KB each): only Details plays it. */
+export const HISTORY_AUDIO = 5;
+
+/**
+ * Puts the newest entry first in a lane's history; older ones beyond
+ * `HISTORY_AUDIO` drop their audio.
+ * @param {import("@app/types").Entry[]} history Most recent first.
+ * @param {import("@app/types").Entry} entry
+ * @returns {import("@app/types").Entry[]}
+ */
+export function addToHistory(history, entry) {
+  return [entry, ...history.slice(0, HISTORY_SIZE - 1)].map((h, i) =>
+    i < HISTORY_AUDIO || !h.source_wav ? h : { ...h, source_wav: undefined },
+  );
+}
+
+export const EMPTY_STATE ={ running: false, starting: false, error: null, pending: 0, history: [], heard: [], partial: "", draft: null };
 
 /**
  * Whether a lane hears a language that needs the add-on for Chinese, Japanese

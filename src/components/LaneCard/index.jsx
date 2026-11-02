@@ -5,6 +5,7 @@ import { NO_SIGNAL_SECS, VIRTUAL_MIC, apiLang, originalText } from "@utils/lanes
 import { trimSilence } from "@utils/voice";
 import { useStickToBottom } from "@hooks/useStickToBottom";
 import { useArrivalTimes } from "@hooks/useArrivalTimes";
+import { useObjectUrl } from "@hooks/useObjectUrl";
 import { useAudioRoute } from "@hooks/useAudioRoute";
 import { echoPossible } from "@utils/route";
 import { t, useT } from "@i18n";
@@ -84,6 +85,8 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
     if (settingsOpen) refreshMulti?.();
   }, [settingsOpen, refreshMulti]);
   const latestId = s.history[0]?.id;
+  // Older entries no longer keep their audio (`addToHistory`): Details shows only the times.
+  const detailsAudio = useObjectUrl(s.history.find((h) => h.id === detailsId)?.source_wav, "audio/wav");
   const live = [...s.heard.map((h) => h.text), s.partial].filter(Boolean).join(" ");
 
   // Follows the latest translation and what is being heard, unless the user scrolled up to reread.
@@ -391,7 +394,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
                     <p>
                       {t("app.lane.details", { dur: h.source_duration_secs.toFixed(1), stt: h.stt_ms, tr: h.translate_ms })}
                     </p>
-                    <audio controls src={`data:audio/wav;base64,${h.source_wav_base64}`} preload="none" />
+                    {detailsAudio && <audio controls src={detailsAudio} preload="none" />}
                   </div>
                 )}
               </article>

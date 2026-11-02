@@ -54,7 +54,8 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {Lang} target_lang
  * @property {string} transcript
  * @property {number} stt_ms
- * @property {string} source_wav_base64 Exact audio sent to Whisper (WAV 16 kHz, base64).
+ * @property {Uint8Array} [source_wav] The chunk's audio (WAV 16 kHz) for Details;
+ *   only the latest entries keep it (`addToHistory`).
  * @property {number} source_duration_secs Duration of that audio in seconds.
  *
  * @typedef {Object} Translation

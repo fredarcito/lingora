@@ -23,7 +23,7 @@ import { useVolumes } from "@hooks/useVolumes.js";
 import { useWidth } from "@hooks/useWidth.js";
 import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
 import { useMultiVoice } from "@hooks/useMultiVoice.js";
-import { EMPTY_STATE, NO_SIGNAL_SECS, apiLang, langsFor, needsSenseVoice, notesListenCode } from "@utils/lanes";
+import { EMPTY_STATE, NO_SIGNAL_SECS, addToHistory, apiLang, langsFor, needsSenseVoice, notesListenCode } from "@utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
 import { trimSilence } from "@utils/voice";
 import styles from "./styles.module.css";
@@ -60,6 +60,9 @@ function speedFor(pending, lag, max) {
  * y solo se muestra el texto, para alcanzar al original.
  */
 const MAX_VOICE_LAG_SECS = 10;
+
+/** Without voice, how often the subtitle being written is repainted at most. */
+const DRAFT_EVERY_MS = 33;
 
 /** The voice of both lanes, in order: a sentence already too late is not made. */
 const speechQueue = createSpeechQueue();
@@ -199,13 +202,6 @@ function splitAtSentenceEnd(text, alreadyCarried) {
   return { head: body.slice(0, at).trim(), tail: body.slice(at).trim() };
 }
 
-/** @param {Uint8Array} bytes */
-function toBase64(bytes) {
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(binary);
-}
-
 /**
  * Transcripción en local (Parakeet o SenseVoice, según el idioma) sobre el
  * trozo entero, ~0,1–0,3 s; sin coste si la escucha en vivo ya lo oyó entero.
@@ -224,7 +220,7 @@ async function transcribeLocally(lane, wav, info) {
     target_lang: apiLang(lane.targetLang),
     transcript,
     stt_ms: Math.round(performance.now() - t0),
-    source_wav_base64: toBase64(wav),
+    source_wav: wav,
     source_duration_secs: info.secs,
   };
 }
@@ -523,6 +519,16 @@ export default function App() {
           speech.catch(() => {});
           phrases.push(speech);
         });
+        // Each update repaints the whole app, and on the Mac a token can come
+        // every ~10 ms: at most one every DRAFT_EVERY_MS, and the rest at the
+        // end. No timer: it must also work with the window hidden (floating captions).
+        let draftedAt = 0;
+        let undrafted = false;
+        const showDraft = () => {
+          draftedAt = performance.now();
+          undrafted = false;
+          patchState(lane.direction, { draft: { key: heardKey, text: draft.translation, source: head } });
+        };
         const tr = await api.translate(
           head,
           t.source_lang,
@@ -531,11 +537,14 @@ export default function App() {
           (delta) => {
             draft.translation += delta;
             splitter.add(delta);
-            if (!current.speak) patchState(lane.direction, { draft: { key: heardKey, text: draft.translation, source: head } });
+            if (current.speak) return;
+            if (performance.now() - draftedAt >= DRAFT_EVERY_MS) showDraft();
+            else undrafted = true;
           },
           false,
           true,
         );
+        if (undrafted) showDraft();
         splitter.flush();
         rt.context = head;
         return { ...t, transcript: head, ...tr };
@@ -558,7 +567,7 @@ export default function App() {
             [lane.direction]: {
               ...prev[lane.direction],
               error: null,
-              history: [entry, ...prev[lane.direction].history].slice(0, 30),
+              history: addToHistory(prev[lane.direction].history, entry),
               heard: prev[lane.direction].heard.filter((h) => h.key !== heardKey),
             },
           }));
