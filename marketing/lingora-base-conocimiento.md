@@ -78,8 +78,16 @@ solo escuchas.
   - **"Varias voces":** si en el vídeo hablan varias personas, cada una recibe
     su propia voz traducida, para que distingas quién habla.
   - Opción "Voz de más calidad" (algo más natural, unas décimas más lenta).
-  - La voz se acelera un poco solo cuando va atrasada, para no perder el hilo;
-    si se atrasa demasiado, se salta frases para alcanzar al original.
+  - **Velocidad de la voz a elegir, por carril** (Escuchar y Hablar guardan
+    cada uno la suya), con tres atajos sobre un deslizador:
+    - **Natural** (por defecto): va a su ritmo y solo acelera un poco si se
+      atrasa.
+    - **Equilibrado**: va a su ritmo mientras va al día y acelera más cuando
+      se atrasa. Con alguien que habla rápido en inglés, el retraso se queda
+      en ~6,5 s en vez de crecer hasta ~10 s.
+    - **Ágil**: siempre algo más rápida; se atrasa menos, a cambio de algo de
+      entonación al final de las frases.
+  - Si se atrasa demasiado, se salta frases para alcanzar al original.
   - Opción "Solo subtítulos": sin voz, sin retraso acumulado.
 - **Historial** de lo traducido en la sesión y opción de guardar la
   conversación como nota.
@@ -550,8 +558,9 @@ Detalles que marcan diferencia:
   glosario por idioma para expresiones que los modelos suelen traducir mal
   (por ejemplo, "Dale" en español rioplatense).
 - **La voz no se queda atrás.** Si la voz traducida acumula retraso, se
-  acelera un poco; si el retraso es demasiado, se salta frases para alcanzar
-  al original. Los subtítulos nunca se saltan.
+  acelera; cuánto lo decide quien la usa (Natural, Equilibrado o Ágil). Si el
+  retraso es demasiado, se salta frases para alcanzar al original. Los
+  subtítulos nunca se saltan.
 - **Memoria bajo control.** Los modelos se cargan cuando se necesitan y **se
   liberan de la memoria tras 3 minutos sin uso**. Con todo cargado, Lingora
   usa ~2–2,5 GB de RAM.

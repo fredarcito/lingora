@@ -17,7 +17,11 @@
 //! - what the glossary doesn't fix is replaced before translating.
 //!
 //! Passing context made HY-MT2 worse (it translated the context too and the
-//! voice repeated it), so none is passed. Not retried with this model.
+//! voice repeated it), so none is passed. Retried with this model (2026-11-02,
+//! previous chunk as a "reference only, don't translate it" constraint): same
+//! failure. It repeated the previous sentence, carried details over from it and
+//! flipped the meaning ("Necesariamente" → "Not necessarily"). See
+//! `docs/experimentos/2026-11-cortes/`.
 //!
 //! llama.cpp goes **inside** the app (crate `llama-cpp-2`, with Metal): nothing
 //! to install. A thread of its own holds the model and its context; the

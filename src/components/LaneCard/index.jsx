@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { SYSTEM_AUDIO } from "@utils/audio";
 import { NO_SIGNAL_SECS, VIRTUAL_MIC, apiLang, originalText } from "@utils/lanes";
-import { trimSilence } from "@utils/voice";
+import { SPEED_MAX, SPEED_MIN, SPEED_MODES, SPEED_STEP, speedMode, speedRange, trimSilence } from "@utils/voice";
 import { useStickToBottom } from "@hooks/useStickToBottom";
 import { useArrivalTimes } from "@hooks/useArrivalTimes";
 import { useObjectUrl } from "@hooks/useObjectUrl";
@@ -466,7 +466,8 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
 
   // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
-  const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
+  const speed = speedRange(lane.maxSpeed);
+  const voiceId =voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
   // Automatic uses Lingora's voice whenever the language has one.
   const lingoraVoices = voiceList.filter((v) => v.engine === "supertonic");
   const lingoraVoice = lingoraVoices.length > 0 && (Boolean(multiVoice) || !voiceId.startsWith("system:"));
@@ -486,7 +487,8 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
     try {
       const text =
         VOICE_SAMPLES[target] ?? (await api.translate(VOICE_SAMPLES.es, "es", target, "", () => {}, false, true)).translation;
-      const speech = await api.speak(text, target, gender, 1, id, lane.voiceHq);
+      // At the lane's lowest speed: in Agile that is already faster than 1.
+      const speech = await api.speak(text, target, gender, speedRange(lane.maxSpeed).base, id, lane.voiceHq);
       await api.playAudio(trimSilence(speech.audio, speech.sample_rate), speech.sample_rate, lane.outputDevice, volume);
     } catch (e) {
       setPreviewError(errorMessage(e));
@@ -547,20 +549,34 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
       {previewError && <p className="settings-note">{previewError}</p>}
       <div className={cx(styles.settingRow, styles.speedRow)}>
         <span className={styles.settingLabel}>{t("app.voices.speed")}</span>
-        <label className={styles.speedPick} title={t("app.voices.speed.hint")}>
-          <input
-            type="range"
-            className={styles.wide}
-            min="1"
-            max="1.4"
-            step="0.05"
-            value={lane.maxSpeed}
-            onChange={(e) => onChange({ maxSpeed: Number(e.target.value) })}
-            style={{ "--fill": `${((lane.maxSpeed - 1) / 0.4) * 100}%` }}
-            aria-label={t("app.voices.speed.aria")}
+        {/* The modes are shortcuts to stretches of the slider: picking one moves it
+            to the mode's recommended value, moving it selects the mode it lands in. */}
+        <div className={styles.speedControl}>
+          <Segmented
+            small
+            value={speedMode(lane.maxSpeed)}
+            onChange={(id) => onChange({ maxSpeed: SPEED_MODES.find((m) => m.id === id)?.value ?? lane.maxSpeed })}
+            options={SPEED_MODES.map((m) => ({ value: m.id, label: t(`app.voices.speed.mode.${m.id}`), hint: t(`app.voices.speed.mode.${m.id}.hint`) }))}
           />
-          <strong className={styles.fieldValue}>{t("app.voices.speed.upTo", { speed: lane.maxSpeed.toFixed(2) })}</strong>
-        </label>
+          <label className={styles.speedPick} title={t("app.voices.speed.hint")}>
+            <input
+              type="range"
+              className={styles.wide}
+              min={SPEED_MIN}
+              max={SPEED_MAX}
+              step={SPEED_STEP}
+              value={lane.maxSpeed}
+              onChange={(e) => onChange({ maxSpeed: Number(e.target.value) })}
+              style={{ "--fill": `${((lane.maxSpeed - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)) * 100}%` }}
+              aria-label={t("app.voices.speed.aria")}
+            />
+            <strong className={styles.fieldValue}>
+              {speed.base > 1
+                ? t("app.voices.speed.between", { base: speed.base.toFixed(2), max: speed.max.toFixed(2) })
+                : t("app.voices.speed.upTo", { speed: speed.max.toFixed(2) })}
+            </strong>
+          </label>
+        </div>
       </div>
       {/* Only Lingora's voices have the higher-quality mode; the system ones don't.
           Until the list arrives the row keeps its place, hidden, so nothing jumps. */}

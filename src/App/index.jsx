@@ -25,7 +25,7 @@ import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
 import { useMultiVoice } from "@hooks/useMultiVoice.js";
 import { EMPTY_STATE, NO_SIGNAL_SECS, addToHistory, apiLang, langsFor, needsSenseVoice, notesListenCode } from "@utils/lanes";
 import { CALL_MODE, loadLaneSettings, loadMode, loadNoTranslate, loadPair, storeLaneSettings, storeMode, storeNoTranslate, storePair } from "@utils/prefs.js";
-import { trimSilence } from "@utils/voice";
+import { speedRange, trimSilence } from "@utils/voice";
 import styles from "./styles.module.css";
 
 /**
@@ -496,7 +496,9 @@ export default function App() {
           return { ...t, transcript: head, translation: head, translate_ms: 0 };
         }
 
-        const speed = speedFor(rt.pending, rt.lag, current.maxSpeed);
+        // The lane's speed setting: a cap to climb to when behind and, in Agile, a floor.
+        const { base, max } = speedRange(current.maxSpeed);
+        const speed = Math.max(base, speedFor(rt.pending, rt.lag, max));
         const splitter = phraseSplitter((phrase) => {
           // "Mmm", "Ajá": la voz los pronuncia como un resoplido.
           if (!current.speak || FILLER.test(phrase)) return;

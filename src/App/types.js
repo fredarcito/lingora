@@ -16,7 +16,9 @@
  *   their own voice (Listen lane, see `useMultiVoice`).
  * @property {Record<string, string>} voiceIds Specific voice chosen per target language
  *   (`VoiceInfo.id`); without it, the best voice of the gender.
- * @property {number} maxSpeed Maximum speed of the voice when there is lag (1 = never speeds up).
+ * @property {number} maxSpeed The lane card's speed slider (1–1.6; saved per lane as `lingora.maxSpeed`).
+ *   Up to 1.4, the cap the voice climbs to when it falls behind; above, Agile also raises
+ *   its lowest speed. `speedRange` turns it into both (`@utils/voice`).
  * @property {boolean} [voiceHq] Higher-quality Lingora voice: slightly slower to arrive. It is read in each chunk.
  * @property {boolean} speak Speak the translation aloud. Without voice there are only
  *   subtitles: the original is heard and no lag builds up (Spanish lasts
