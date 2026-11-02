@@ -222,6 +222,17 @@ fn backend() -> &'static LlamaBackend {
 /// hasta que se suelta el canal.
 fn run(path: &Path, inbox: mpsc::Receiver<Job>, ready: tokio::sync::oneshot::Sender<Result<()>>) {
     let t0 = std::time::Instant::now();
+    tracing::info!("traducción: GPU disponible = {}", backend().supports_gpu_offload());
+    for d in llama_cpp_2::list_llama_ggml_backend_devices() {
+        tracing::info!(
+            "traducción: dispositivo {} ({}): {} · {} MB libres de {} MB",
+            d.name,
+            d.backend,
+            d.description,
+            d.memory_free / 1_000_000,
+            d.memory_total / 1_000_000,
+        );
+    }
     let params = LlamaModelParams::default().with_n_gpu_layers(GPU_LAYERS);
     let model = match LlamaModel::load_from_file(backend(), path, &params) {
         Ok(model) => model,
@@ -238,7 +249,11 @@ fn run(path: &Path, inbox: mpsc::Receiver<Job>, ready: tokio::sync::oneshot::Sen
             return;
         }
     };
-    tracing::info!("traducción local lista en {:?}", t0.elapsed());
+    tracing::info!(
+        "traducción local lista en {:?} ({} hilos)",
+        t0.elapsed(),
+        LlamaContextParams::default().n_threads()
+    );
     let _ = ready.send(Ok(()));
     for job in inbox {
         let out = complete(&model, &mut ctx, &job);
@@ -262,7 +277,9 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
     for (i, &token) in tokens.iter().enumerate() {
         batch.add(token, i as i32, &[0], i == last).map_err(|e| fail(&e))?;
     }
+    let t0 = std::time::Instant::now();
     ctx.decode(&mut batch).map_err(|e| fail(&e))?;
+    let read = t0.elapsed();
 
     // Greedy (temperature 0), as Index-Translate recommends: the same sentence
     // always gives the same translation.
@@ -287,6 +304,14 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
         pos += 1;
         ctx.decode(&mut batch).map_err(|e| fail(&e))?;
     }
+    let written = pos as usize - tokens.len();
+    let gen = (t0.elapsed() - read).as_secs_f32();
+    tracing::info!(
+        "traducción: {} tokens leídos en {:.2} s, {written} escritos en {gen:.2} s ({:.1} tokens/s)",
+        tokens.len(),
+        read.as_secs_f32(),
+        written as f32 / gen.max(0.001),
+    );
     Ok(out)
 }
 

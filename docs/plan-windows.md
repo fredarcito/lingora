@@ -9,7 +9,12 @@ devices, the interface uses the ones from the WebView (`listAudioDevices` in
 `api.js`). On Windows the app writes its log to the desktop
 (`Lingora-registro.txt`, `log_file.rs`), with the interface errors
 (`utils/log.js`) and the Rust failures: that is what must be requested from whoever
-tests. It follows `plan-autonomia.md`: since translation and voice already run
+tests. Since 2026-11-02 it also records performance (`perf.rs`): the processor,
+its threads and AVX2/VNNI, RAM and whether the build has Vulkan at startup; the
+GPU llama.cpp finds and how many layers it offloads; time per translation
+(tokens/s), per voice sentence (real-time factor, queue, load) and to
+prepare a lane; voice and caption lag and skipped sentences; and every 10 s
+Lingora's and the whole computer's CPU and how busy listening was. It follows `plan-autonomia.md`: since translation and voice already run
 inside the app, almost everything left is what touches the system (audio, voices, windows).
 
 Goal: an installer (Tauri `.exe` with NSIS) that opens on Windows 10/11 and
@@ -247,6 +252,16 @@ system. The user decides.
   /dependents`), that espeak-ng pronounces, and that no paths from the building
   machine appear.
 - **Clean test:** a Windows without development tools.
+- **Trim the performance logs (added 2026-11-02 to debug the slow voice).**
+  Once Windows translates and speaks in time, keep only what helps support:
+  the startup summary (processor, threads, AVX2/VNNI, RAM, Vulkan build), the
+  GPU llama.cpp finds and the model load times. Remove the per-sentence lines
+  (translation tokens/s, voice real-time factor in `tts.rs`, lag and skipped
+  sentences and "preparado en" in `App/index.jsx`, `log_ui_event` /
+  `logEvent` if nothing else uses them) and the 10 s CPU monitor and listening
+  counters in `perf.rs`, or turn them into `debug` lines. Put `llama-cpp-2`
+  back to `warn` in `log_file.rs`: at `info` it dumps the model's metadata on
+  every load.
 
 ### How it is distributed
 

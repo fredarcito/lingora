@@ -111,7 +111,9 @@ export function t(key, vars) {
   let name = key;
   if (vars && typeof vars.count === "number") {
     const form = new Intl.PluralRules(current).select(vars.count);
-    name = tables.some((tb) => tb?.[`${key}_${form}`] !== undefined) ? `${key}_${form}` : `${key}_other`;
+    const has = (/** @type {string} */ k) => tables.some((tb) => tb?.[k] !== undefined);
+    // A key without plural forms ("{count} queued") is used as it is.
+    name = has(`${key}_${form}`) ? `${key}_${form}` : has(`${key}_other`) ? `${key}_other` : key;
   }
   let text = key;
   for (const tb of tables) {

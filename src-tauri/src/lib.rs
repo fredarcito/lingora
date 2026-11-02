@@ -8,6 +8,7 @@ mod listener;
 mod log_file;
 mod models;
 mod notes;
+mod perf;
 #[cfg(target_os = "macos")]
 mod objc;
 mod phonemizer;
@@ -384,6 +385,13 @@ fn log_ui(message: String) {
     tracing::warn!("interfaz: {message}");
 }
 
+/// Deja en el registro una medida de la interfaz (retraso de la voz, frases
+/// omitidas, tiempo de preparación). No es un error.
+#[tauri::command]
+fn log_ui_event(message: String) {
+    tracing::info!("interfaz: {message}");
+}
+
 #[tauri::command]
 fn settings_summary(state: tauri::State<'_, AppState>) -> serde_json::Value {
     let s = state.pipeline.settings();
@@ -403,6 +411,8 @@ pub fn run() {
     // producción. Nunca se empaqueta la clave en el bundle.
     let _ = dotenvy::dotenv();
     log_file::init();
+    perf::log_system();
+    perf::start_monitor();
 
     let settings = Arc::new(Settings::from_env().unwrap_or_else(|e| {
         tracing::warn!("configuración incompleta: {e}");
@@ -461,6 +471,7 @@ pub fn run() {
             virtual_mic::virtual_mic_uninstall,
             settings_summary,
             log_ui,
+            log_ui_event,
             notes::notes_list,
             notes::note_read,
             notes::note_save,

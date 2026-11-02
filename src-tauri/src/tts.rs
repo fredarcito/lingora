@@ -116,12 +116,27 @@ impl TtsEngine {
         if !(0..10).contains(&sid) {
             return Err(Error::Audio(format!("voz desconocida: {sid}")));
         }
+        let t0 = std::time::Instant::now();
         let _turn = self.busy.lock().await;
+        let queued = t0.elapsed();
         let tts = self.tts().await?;
+        let loaded = t0.elapsed() - queued;
         let text = text.to_string();
-        tauri::async_runtime::spawn_blocking(move || generate(&tts, &text, lang, sid, speed, steps))
+        let chars = text.chars().count();
+        let t1 = std::time::Instant::now();
+        let audio = tauri::async_runtime::spawn_blocking(move || generate(&tts, &text, lang, sid, speed, steps))
             .await
-            .map_err(|e| Error::Audio(format!("la voz terminó mal: {e}")))?
+            .map_err(|e| Error::Audio(format!("la voz terminó mal: {e}")))??;
+        // Real-time factor: below 1 the voice is made faster than it plays.
+        let took = t1.elapsed().as_secs_f32();
+        let audio_secs = audio.len() as f32 / SAMPLE_RATE as f32;
+        tracing::info!(
+            "voz: {chars} caracteres → {audio_secs:.1} s de audio en {took:.2} s ({:.2}× tiempo real) · cola {:.2} s · carga {:.2} s · {steps} pasos · velocidad {speed:.2}",
+            took / audio_secs.max(0.01),
+            queued.as_secs_f32(),
+            loaded.as_secs_f32(),
+        );
+        Ok(audio)
     }
 }
 
@@ -146,7 +161,7 @@ fn load(dir: &Path) -> Result<Arc<OfflineTts>> {
     if tts.sample_rate() != SAMPLE_RATE as i32 {
         return Err(Error::Audio(format!("el modelo de voz da {} Hz, se esperaban {SAMPLE_RATE}", tts.sample_rate())));
     }
-    tracing::info!("voz local lista en {:?}", t0.elapsed());
+    tracing::info!("voz local lista en {:?} ({} hilos)", t0.elapsed(), config.model.num_threads);
     Ok(Arc::new(tts))
 }
 

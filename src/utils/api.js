@@ -315,6 +315,12 @@ export const api = {
    * @returns {Promise<void>}
    */
   logUi: (message) => invoke("log_ui", { message }),
+  /**
+   * Logs a UI measurement (voice lag, skipped sentences, start time). Not an error.
+   * @param {string} message
+   * @returns {Promise<void>}
+   */
+  logUiEvent: (message) => invoke("log_ui_event", { message }),
   /** App languages and which voices this machine has. @returns {Promise<LanguageInfo[]>} */
   languages: () => invoke("languages"),
   /**

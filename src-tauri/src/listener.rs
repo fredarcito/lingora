@@ -144,12 +144,15 @@ impl Listener {
         })?;
         let recognizer = self.recognizer(engine).await?;
         tauri::async_runtime::spawn_blocking(move || {
+            let t0 = std::time::Instant::now();
+            let audio_secs = samples.len() as f32 / 16_000.0;
             let stream = recognizer.create_stream();
             stream.accept_waveform(16_000, &samples);
             recognizer.decode(&stream);
             let result = stream
                 .get_result()
                 .ok_or_else(|| Error::Audio("el reconocedor no devolvió resultado".into()))?;
+            crate::perf::listened(audio_secs, t0.elapsed());
             let starts = result.timestamps.unwrap_or_default();
             Ok(words(&result.tokens, &starts, result.durations.as_deref()))
         })
@@ -184,7 +187,7 @@ fn load(engine: Engine, dir: &Path) -> Result<Arc<OfflineRecognizer>> {
     let t0 = std::time::Instant::now();
     let recognizer = OfflineRecognizer::create(&config)
         .ok_or_else(|| Error::Audio(format!("no se pudo cargar el modelo de {}", dir.display())))?;
-    tracing::info!("escucha local ({engine:?}) lista en {:?}", t0.elapsed());
+    tracing::info!("escucha local ({engine:?}) lista en {:?} ({} hilos)", t0.elapsed(), config.model_config.num_threads);
     Ok(Arc::new(recognizer))
 }
 

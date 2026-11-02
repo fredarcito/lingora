@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, errorMessage } from "@utils/api";
+import { logEvent } from "@utils/log";
 import Diagnostics from "@components/Diagnostics";
 import LaneCard from "@components/LaneCard";
 import LaneSettings from "@components/LaneSettings";
@@ -555,10 +556,15 @@ export default function App() {
             const lag = (performance.now() - info.endedAt) / 1000;
             rt.lag = lag;
             patchEntry(lane.direction, id, { lagSecs: lag });
+            logEvent(
+              `${lane.direction}: voz con ${lag.toFixed(1)} s de retraso ` +
+                `(${info.secs?.toFixed(1) ?? "?"} s de audio, ${rt.pending} en cola, generada en ${(speech.tts_ms / 1000).toFixed(1)} s)`,
+            );
             // Se omite el trozo entero o nada: cortarlo a medias suena a
             // palabras sueltas.
             if (lag > MAX_VOICE_LAG_SECS) {
               patchEntry(lane.direction, id, { skipped: true });
+              logEvent(`${lane.direction}: frase omitida (más de ${MAX_VOICE_LAG_SECS} s de retraso)`);
               // Lo siguiente en la cola ya no arrastra este retraso.
               rt.lag = 0;
               break;
@@ -576,8 +582,13 @@ export default function App() {
         showEntry();
         // Sin voz, el retraso es hasta que aparece el subtítulo.
         if (silent) {
+          const lag = (performance.now() - info.endedAt) / 1000;
+          logEvent(
+            `${lane.direction}: subtítulo con ${lag.toFixed(1)} s de retraso ` +
+              `(${info.secs?.toFixed(1) ?? "?"} s de audio, traducido en ${((result.translate_ms ?? 0) / 1000).toFixed(1)} s, ${rt.pending} en cola)`,
+          );
           patchEntry(lane.direction, id, {
-            lagSecs: (performance.now() - info.endedAt) / 1000,
+            lagSecs: lag,
             silent: true,
             captionKey: heardKey,
           });
@@ -625,6 +636,7 @@ export default function App() {
     /** @param {Lane} lane */
     async (lane) => {
       patchState(lane.direction, { error: null, starting: true });
+      const preparing = performance.now();
       try {
         // Todo es local: sin el modelo que escucha el idioma o sin el que
         // traduce no se puede empezar.
@@ -663,6 +675,10 @@ export default function App() {
         });
         lastSignal.current[lane.direction] = 0;
         patchState(lane.direction, { running: true });
+        logEvent(
+          `${lane.direction}: preparado en ${((performance.now() - preparing) / 1000).toFixed(1)} s ` +
+            `(${current.sourceLang} → ${current.targetLang}, voz ${current.speak ? "sí" : "no"}, notas ${current.notes ? "sí" : "no"})`,
+        );
       } catch (e) {
         patchState(lane.direction, {
           error: t("app.error.startFailed", { error: errorMessage(e) }),
@@ -786,7 +802,10 @@ export default function App() {
   const focused = mode === "call" && running.length === 1 ? running[0].direction : null;
   // Antes de empezar, lo que hay conectado, para la pista de Reunión en línea.
   const shownRoute = useAudioRoute(mode === "notes" && !anyRunning && view === "translate");
-  const tapsMac = laneSettings.find((l) => l.direction === "remote_to_local")?.inputDeviceId === SYSTEM_AUDIO;
+  // Las comprobaciones de BlackHole solo valen si Escuchar lo usa: con el audio
+  // del Mac o con un micrófono no hace falta.
+  const listenFrom = laneSettings.find((l) => l.direction === "remote_to_local")?.inputDeviceId;
+  const noBlackHole = !/blackhole 2ch/i.test(inputs.find((d) => d.webId === listenFrom)?.name ?? "");
 
   return (
     <>
@@ -807,7 +826,7 @@ export default function App() {
       {/* Aquí solo si algo falla; el detalle está en Ajustes. */}
       <Diagnostics
         mode={mode === "call" ? "call" : "video"}
-        systemAudio={tapsMac}
+        systemAudio={noBlackHole}
         onFixed={loadDevices}
         onlyProblems
         // The add-on for Chinese, Japanese and Korean is optional, but not when a lane hears one of them.
@@ -875,7 +894,7 @@ export default function App() {
       <Settings
         key={home}
         mode={mode === "call" ? "call" : "video"}
-        systemAudio={tapsMac}
+        systemAudio={noBlackHole}
         recording={anyRunning}
         languages={shownLanguages}
         onFixed={loadDevices}

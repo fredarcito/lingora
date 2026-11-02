@@ -6,7 +6,11 @@
 /// (`panic = "abort"`), así que en Windows también quedan escritos.
 pub fn init() {
     let filter = || {
-        tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "lingora_lib=info".into())
+        // llama.cpp's own lines say which GPU it found and how many layers it
+        // offloaded: the only way to tell from a tester's log whether
+        // translation runs on the GPU or fell back to the CPU.
+        tracing_subscriber::EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| "lingora_lib=info,llama-cpp-2=info".into())
     };
     #[cfg(windows)]
     if let Some(file) = open() {

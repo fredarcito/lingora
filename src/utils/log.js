@@ -16,6 +16,15 @@ export function describe(value) {
 }
 
 /**
+ * Writes a measurement to the app's log (on Windows, the .txt on the desktop),
+ * so a tester's log shows how late the voice and captions arrive. Never throws.
+ * @param {string} message
+ */
+export function logEvent(message) {
+  api.logUiEvent(message).catch(() => {});
+}
+
+/**
  * Sends the interface errors to the app's log: those written with
  * `console.error`, the ones nobody catches and the promises rejected without `catch`.
  * That way, on someone else's computer, the .txt on the desktop also records what happened here.

@@ -89,7 +89,8 @@ function groupSummary(checks) {
  * effect and with its fix; the rest is collapsed by groups.
  * @param {{ mode: "video" | "call", systemAudio?: boolean, onFixed?: () => void, onlyProblems?: boolean, required?: string[],
  *   expanded?: boolean, className?: string }} props
- *   `systemAudio`: Listen hears the Mac audio, without BlackHole. `onFixed` is
+ *   `systemAudio`: Listen does not use BlackHole (the Mac audio or a microphone),
+ *   so its checks are hidden. `onFixed` is
  *   called after a fix, so the app reads devices and settings again.
  *   `onlyProblems`: on the translate screen it only appears if something fails (the
  *   details are in Settings). `required`: optional checks that count as problems
