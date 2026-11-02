@@ -35,5 +35,12 @@
   "showDetails": "Ver detalles",
   "cause": "Causa: {title}",
   "optional": "Opcional",
-  "recheck": "Comprobar de nuevo"
+  "recheck": "Comprobar de nuevo",
+  "summary.title": "Resumen de las notas",
+  "summary.local": "En tu equipo: la conversación no sale de él.",
+  "summary.withKey": "Con tu clave de {name}.",
+  "summary.missing": "Sin configurar. Descarga el resumen ({size}) o pon tu clave de IA en Ajustes → Notas.",
+  "summary.missingLow": "Sin configurar. Este equipo tiene poca memoria: te recomendamos poner tu clave de IA en Ajustes → Notas.",
+  "summary.downloading": "Descargando el resumen…",
+  "fix.summary": "Descargar (2,7 GB)"
 }

@@ -16,6 +16,8 @@ mod phonemizer;
 mod pipeline;
 mod route;
 mod speakers;
+mod summarizer;
+mod summary_cloud;
 mod system_audio;
 mod system_voice;
 mod translator;
@@ -536,18 +538,22 @@ pub fn run() {
             notes::note_reveal,
             notes::note_export,
             notes::note_export_image,
-            notes::summary_key_status,
-            notes::summary_key_set,
-            notes::summary_key_clear,
-            notes::summary_key_help,
-            notes::note_summarize
+            notes::note_summarize,
+            summary_cloud::summary_key_status,
+            summary_cloud::summary_key_set,
+            summary_cloud::summary_models,
+            summary_cloud::summary_key_hint,
+            summary_cloud::summary_key_clear,
+            summary_cloud::summary_key_help,
+            summary_cloud::system_memory
         ])
         .build(tauri::generate_context!())
         .expect("error al arrancar Lingora")
         .run(|app, event| {
-            // El modelo de traducción usa la GPU: si sigue cargado al salir, Metal aborta.
+            // Los modelos de traducción y de resumen usan la GPU: si siguen cargados al salir, Metal aborta.
             if let tauri::RunEvent::Exit = event {
                 app.state::<AppState>().pipeline.local_translator().shutdown();
+                summarizer::shutdown();
             }
         });
 }

@@ -149,10 +149,6 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {string | null} [summary_line] The first sentence of the summary, if any.
  * @property {string[]} [speaker_names] Names given to the people (not "Yo"), to suggest them in other notes.
  *
- * @typedef {"keychain" | "env" | "none"} SummaryKeyStatus Where the key for
- *   Groq summaries is stored: in the keychain, in the development environment
- *   (`GROQ_API_KEY`) or nowhere.
- *
  * @typedef {Object} AppError
  * @property {string} kind
  * @property {string} message
@@ -409,20 +405,39 @@ export const api = {
    * @returns {Promise<string>} The file path.
    */
   noteExportImage: (id, png) => invoke("note_export_image", { id, png: Array.from(png) }),
-  /** @returns {Promise<SummaryKeyStatus>} */
-  summaryKeyStatus: () => invoke("summary_key_status"),
   /**
-   * Checks the Groq key and saves it in the Mac keychain.
-   * @param {string} key @returns {Promise<void>}
+   * Summarizes the note and saves the summary in it: on the computer (the
+   * summary model must be downloaded) or, with `cloud`, with the user's key.
+   * @param {string} id @param {import("@utils/summarySource.js").CloudRequest | null} [cloud]
+   * @returns {Promise<string>} The summary in Markdown.
    */
-  summaryKeySet: (key) => invoke("summary_key_set", { key }),
-  /** Deletes the key from the keychain. @returns {Promise<void>} */
-  summaryKeyClear: () => invoke("summary_key_clear"),
-  /** Opens in the browser the page where the Groq key is created. @returns {Promise<void>} */
-  summaryKeyHelp: () => invoke("summary_key_help"),
+  noteSummarize: (id, cloud = null) => invoke("note_summarize", { id, cloud }),
   /**
-   * Summarizes the note with AI and saves the summary in it.
-   * @param {string} id @returns {Promise<string>} The summary in Markdown.
+   * Where a service's key is: in the keychain, in the development environment or nowhere.
+   * @param {string} provider @returns {Promise<"keychain" | "env" | "none">}
    */
-  noteSummarize: (id) => invoke("note_summarize", { id }),
+  summaryKeyStatus: (provider) => invoke("summary_key_status", { provider }),
+  /**
+   * Checks the key with the service and saves it in the keychain (a custom
+   * server is checked at `baseUrl`; without a key nothing is saved).
+   * @param {string} provider @param {string} key @param {string} [baseUrl]
+   * @returns {Promise<string[]>} The account's models that write text (empty if a custom server has no list).
+   */
+  summaryKeySet: (provider, key, baseUrl) => invoke("summary_key_set", { provider, key, baseUrl: baseUrl || null }),
+  /**
+   * The models of a service whose key is already saved (or of the custom server).
+   * @param {string} provider @param {string} [baseUrl] @returns {Promise<string[]>}
+   */
+  summaryModels: (provider, baseUrl) => invoke("summary_models", { provider, baseUrl: baseUrl || null }),
+  /**
+   * The end of the saved key ("…a1B2"), to show which one it is; null without one.
+   * @param {string} provider @returns {Promise<string | null>}
+   */
+  summaryKeyHint: (provider) => invoke("summary_key_hint", { provider }),
+  /** Deletes a service's key from the keychain. @param {string} provider @returns {Promise<void>} */
+  summaryKeyClear: (provider) => invoke("summary_key_clear", { provider }),
+  /** Opens in the browser the page where the service's key is created. @param {string} provider @returns {Promise<void>} */
+  summaryKeyHelp: (provider) => invoke("summary_key_help", { provider }),
+  /** The computer's RAM in GB, or null if unknown. @returns {Promise<number | null>} */
+  systemMemory: () => invoke("system_memory"),
 };

@@ -3,13 +3,15 @@ import { getVersion } from "@tauri-apps/api/app";
 import Credits from "@components/Credits";
 import Diagnostics from "@components/Diagnostics";
 import { MenuButton } from "@components/Sidebar";
-import { api, errorMessage } from "@utils/api";
+import { api } from "@utils/api";
 import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notes.js";
-import { KeyField, notifyKeyChanged, useSummaryKey } from "@components/SummaryKey";
 import LanguagePicker from "@components/LanguagePicker";
 import Storage from "@components/Storage";
+import SummarySource from "@components/SummarySource";
+import { useSummarySource } from "@hooks/useSummarySource";
+import { providerOf } from "@utils/summarySource.js";
 import { useT } from "@i18n";
-import { Button, LinkButton, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
+import { LinkButton, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -31,8 +33,8 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   // Whether the files that tell speakers apart are downloaded; null while checking.
   const [speakersReady, setSpeakersReady] = useState(/** @type {boolean | null} */ (null));
   const [version, setVersion] = useState("");
-  const { status, hasKey } = useSummaryKey();
-  const [keyError, setKeyError] = useState("");
+  const { source } = useSummarySource();
+  const service = providerOf(source);
   // Bumped after deleting something, so the diagnostics check again and offer to download it.
   const [removals, setRemovals] = useState(0);
 
@@ -51,16 +53,6 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
   useEffect(() => {
     checkSpeakers();
   }, []);
-
-  const clearKey = async () => {
-    setKeyError("");
-    try {
-      await api.summaryKeyClear();
-      notifyKeyChanged();
-    } catch (e) {
-      setKeyError(errorMessage(e));
-    }
-  };
 
   /** @param {boolean} on */
   const changeSave = (on) => {
@@ -162,25 +154,7 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
                 </span>
                 <Select value={summaryLang} onChange={changeSummaryLang} options={languages.map((l) => ({ value: l.code, label: l.name }))} />
               </label>
-              <div className={styles.prefsKey}>
-                <div className="prefs-row prefs-row-static">
-                  <span>
-                    <strong>{t("settings.aiTitle")}</strong>
-                    <small>
-                      {status === "keychain"
-                        ? t("settings.keyKeychain")
-                        : status === "env"
-                          ? t("settings.keyEnv")
-                          : t("settings.keyNone")}
-                    </small>
-                  </span>
-                  {status === "keychain" && (
-                    <Button onClick={clearKey}>{t("settings.keyRemove")}</Button>
-                  )}
-                </div>
-                <KeyField placeholder={hasKey ? t("settings.keyNew") : t("settings.keyGroq")} />
-                {keyError && <p className="notes-error">{keyError}</p>}
-              </div>
+              <SummarySource />
             </div>
           </section>
 
@@ -227,8 +201,8 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
                 {version && <span> · {t("settings.version", { version })}</span>}
               </p>
               <p className="muted">
-                {hasKey
-                  ? t("settings.aboutWithKey")
+                {service
+                  ? t("settings.aboutWithKey", { name: service.custom ? t("summarySource.custom") : service.name })
                   : t("settings.aboutPrivate")}
               </p>
               <LinkButton className={styles.prefsCredits} aria-expanded={showCredits} onClick={() => setShowCredits((v) => !v)}>

@@ -1,0 +1,13 @@
+{
+  "title": "On your computer",
+  "text": "The conversation never leaves it. It downloads only once.",
+  "download": "Download the summary ({size})",
+  "resume": "Resume the download",
+  "progress": "{done} of {total}",
+  "progressLabel": "Summary download",
+  "lessThanMinute": "less than a minute left",
+  "minutes_one": "~{count} minute left",
+  "minutes_other": "~{count} minutes left",
+  "afterDownload": "When it finishes, this note is summarized. Meanwhile you can keep using Lingora.",
+  "useLocal": "Summarize on your computer"
+}

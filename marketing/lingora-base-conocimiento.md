@@ -230,13 +230,17 @@ europeos y asiáticos orientales. **[POR DECIDIR: mercado/país de lanzamiento]*
 
 - **Lo que se procesa en el Mac:** escuchar, transcribir, traducir, la voz y
   distinguir personas. Las notas se guardan en el equipo.
-- **Lo único que puede salir:** el **resumen con IA** de una nota. Hoy usa
-  **Groq** (un servicio de IA en la nube) **con la clave propia del usuario**,
-  que se guarda en el llavero del Mac. La app **pide permiso** antes de enviar
-  la transcripción ("La transcripción se enviará a Groq. ¿Continuar?").
-  Alternativa sin nube: "Copiar para tu chat de IA".
-- **Plan:** sustituirlo por un **resumen local** (un modelo que corre en el
-  Mac), para que nada salga del equipo. En curso; **[POR VERIFICAR fecha]**.
+- **El resumen con IA también se hace en el Mac** (desde el 2 de noviembre de
+  2026): nada sale del equipo, no hace falta ninguna clave ni cuenta y la app
+  ya no pide permiso para enviar nada. Antes usaba Groq (nube) con la clave
+  del usuario. El modelo del resumen se descarga aparte (~2,7 GB, una vez) la
+  primera vez que se pide un resumen; al terminar, resume solo.
+- **Opcional: resumir con tu propia clave de IA** (OpenAI, Claude, Gemini,
+  Groq, OpenRouter o un servidor propio como LM Studio u Ollama). Solo si el
+  usuario lo activa; la app pide permiso la primera vez con cada servicio y
+  solo envía la transcripción de la nota que se resume. Se recomienda en
+  equipos con menos de 8 GB de RAM, donde el resumen local iría lento. La
+  clave se guarda en el llavero del equipo.
 - Lingora no tiene cuenta de usuario ni servidores propios. **[POR VERIFICAR:
   si habrá analítica o telemetría en la versión pública; hoy no hay.]**
 
@@ -377,7 +381,7 @@ sin cuotas ni configuración**.
 ## 13. Preguntas frecuentes (respuestas verificadas)
 
 - **¿Necesito internet?** Solo para la descarga inicial. Luego funciona sin
-  conexión (salvo el resumen con Groq, que es opcional).
+  conexión, también para resumir (el modelo del resumen se descarga una vez).
 - **¿Mi audio se sube a algún sitio?** No. Se procesa en tu Mac.
 - **¿Tengo que instalar algo más?** No. Ni drivers de audio, ni otros
   programas. La app descarga sus componentes la primera vez.
@@ -449,7 +453,7 @@ contenidos del tipo "lo que viene".
 
 | Qué | Valor para el usuario | Estado |
 |---|---|---|
-| **Resumen local** | Cierra el mensaje "100 % en tu Mac": el resumen dejaría de usar la nube y no haría falta ninguna clave. Usaría un modelo de ~2–3 GB que se descarga aparte. | Planeado. Falta elegir el modelo y decidir si Groq desaparece o queda como opción avanzada |
+| **Resumen local** | Cierra el mensaje "100 % en tu Mac": el resumen ya no usa la nube ni pide ninguna clave. El modelo (~2,7 GB) se descarga aparte la primera vez. | **Hecho** (2 nov 2026). Groq se quitó del todo |
 | **Traducir llamada (en los dos sentidos)** | Tu voz, traducida, le llega a la otra persona en Zoom, Meet, etc. Es la función "estrella" pendiente. | En desarrollo y bloqueada. Ya existe el micrófono virtual propio ("Lingora Mic", se instala con un botón en Ajustes y la contraseña del Mac); falta probarlo en llamadas reales y firmarlo |
 | **Escuchar 21 idiomas más** | Hoy esos idiomas solo pueden ser de destino (árabe, hindi, turco, tailandés, vietnamita…). Con esto también podrían ser el idioma que se oye. | Pendiente; requiere un modelo de escucha adicional, más lento y pesado |
 | **Paquetes de idioma descargables** | El usuario descarga solo los idiomas que usa ("Descargar japonés, ~350 MB"), así la instalación es más ligera. | Idea planeada; aún no es necesaria |
@@ -589,7 +593,7 @@ Detalles que marcan diferencia:
 | Voz | **Supertonic 3**, int8 | Supertone Inc. | ~145 MB | OpenRAIL-M | 18 idiomas, 10 voces (5 femeninas y 5 masculinas); ~0,14 s para generar 1 s de habla |
 | Voz (resto de idiomas) | Voces del sistema de macOS | Apple | Ya vienen con el Mac | — | Elige la mejor instalada: Premium > Mejorada > normal |
 | Distinguir personas | **ERes2Net** (3D-Speaker) | Alibaba | ~40 MB | Apache-2.0 | 94 % de acierto en una entrevista real de 55 min |
-| Resumen (temporal, opcional) | Modelo en Groq (nube) | — | — | — | Con la clave del usuario; se sustituirá por uno local |
+| Resumir notas | **Qwen3.5-4B**, Q4_K_M | Alibaba (Qwen) | ~2,7 GB (opcional, se descarga al primer resumen) | Apache-2.0 | ~35 s una nota corta y ~1,5 min una de 1 h, en un M1 Pro; ~3,5 GB de RAM solo mientras resume |
 
 **Motores (librerías) que ejecutan los modelos dentro de la app:**
 

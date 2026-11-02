@@ -1,0 +1,69 @@
+.summary-key-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-key-form p {
+  margin: 0;
+}
+
+.summary-key-row {
+  display: flex;
+  gap: 8px;
+}
+
+.summary-key-input {
+  flex: 1;
+  min-width: 0;
+  height: var(--control-h);
+  padding: 0 10px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--n-input);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+
+.summary-key-input:focus-visible {
+  outline: none;
+  border-color: var(--n-focus-border);
+}
+
+.summary-key-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.summary-key-model {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* A saved key: shown as saved, not as an empty field. */
+.summary-key-saved {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--control-h);
+  padding: 0 10px;
+  border-radius: var(--n-radius);
+  border: 1px solid var(--n-border);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.summary-key-saved span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

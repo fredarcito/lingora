@@ -11,20 +11,13 @@
   "speakersHint": "Labels who is speaking in the notes: Person 1, Person 2… Processed on your computer.",
   "summaryLangTitle": "Preferred language for summaries",
   "summaryLangHint": "Note-taking summaries are written in this language. You can change it on each note.",
-  "aiTitle": "Summarize with AI",
-  "keyKeychain": "Key stored securely on your computer.",
-  "keyEnv": "Using the development environment key.",
-  "keyNone": "No key. To summarize, Lingora sends the transcript to Groq with your own key; it is stored securely on your computer.",
-  "keyRemove": "Remove key",
-  "keyNew": "Enter a new key",
-  "keyGroq": "Groq key",
   "diagnostics": "Diagnostics and downloads",
-  "diagnosticsHint": "What Lingora needs to listen, translate and speak.",
+  "diagnosticsHint": "What Lingora needs to listen, translate, speak and summarize.",
   "about": "About",
   "version": "version {version}",
-  "aboutWithKey": "Everything runs on your computer, except the summaries you ask for: that transcript is sent to Groq.",
   "aboutPrivate": "Everything runs on your computer: audio and text never leave it.",
   "myNameTitle": "Your name",
   "myNameHint": "In notes, what you say into your microphone shows as \"{label}\".",
-  "myNamePlaceholder": "Your name"
+  "myNamePlaceholder": "Your name",
+  "aboutWithKey": "Everything runs on your computer, except the summaries you ask for: that transcript is sent to {name}."
 }

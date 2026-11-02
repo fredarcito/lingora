@@ -83,12 +83,16 @@ documentación o su código).
 
 ## 3. Decisiones del usuario
 
-- **Todo local.** No añadas llamadas a servicios en la nube. La única
-  excepción es el **resumen de notas**: es opcional, usa la clave de Groq
-  del propio usuario y pide su permiso la primera vez.
+- **Todo local.** No añadas llamadas a servicios en la nube. El resumen de
+  notas es local por defecto (`summarizer.rs`, Qwen3.5-4B). La única
+  excepción: resumir con la **clave de IA del propio usuario**
+  (`summary_cloud.rs`), que él activa, recomendada en equipos con menos de
+  8 GB, y que pide permiso la primera vez con cada servicio.
   - La clave **nunca** va dentro de la app ni en el código. Vive solo en el
-    llavero del Mac (`keyring`). `GROQ_API_KEY` es solo un respaldo para
-    desarrollo.
+    llavero (`keyring`), una por servicio. `LINGORA_SUMMARY_KEY` es solo un
+    respaldo para desarrollo.
+  - Los servicios se nombran en la interfaz (OpenAI, Claude…); los modelos,
+    no (salvo el campo opcional «modelo»).
 - **Sin instalar programas.** Quien usa la app no debe instalar nada aparte
   de ella (ni Node, ni Homebrew, ni programas externos). Lo que falte se
   integra en la app o se descarga desde ella.
@@ -117,7 +121,7 @@ documentación o su código).
 - **Carpetas:** `src/pages/` (pantallas), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
   `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
-  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`), `src/hooks/` (hooks propios de React,
+  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`, `summarySource`), `src/hooks/` (hooks propios de React,
   `useAlgo.js`) y `src/App/` (el armazón y Traducir; la cabecera y la
   tarjeta de cada carril están en `components/TopBar` y
   `components/LaneCard`, y los tipos en `App/types.js`).
@@ -149,10 +153,12 @@ documentación o su código).
 - `docs/plan-distribucion.md` y `docs/plan-idiomas.md`: lo que falta para
   distribuir y los idiomas.
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
-  nube (llama.cpp y espeak-ng dentro de la app, resumen local, firma).
+  nube (llama.cpp y espeak-ng dentro de la app, resumen local hecho, firma).
 - `docs/plan-windows.md`: lo que falta para Windows (solo plan).
 - `docs/plan-plantillas-resumen.md`: plantillas de resumen (fase 1 hecha;
   las plantillas propias, en su fase 2).
+- `docs/plan-resumen-nube.md`: resumir con la clave de IA del propio usuario
+  (opcional; recomendado en equipos con poca RAM). Hecho; falta probar cada servicio.
 - `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su

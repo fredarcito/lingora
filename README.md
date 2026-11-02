@@ -7,9 +7,10 @@ the microphone, transcribes it, translates it and shows it as captions or speaks
 it with a synthetic voice. It can also take notes of a class or a meeting in the
 language being spoken, tell the speakers apart and save everything in Notes.
 
-Listening, translation, voice and speaker detection all run locally. The only
-thing that ever leaves the machine is the optional **summary** of a note, sent
-to Groq with the user's own key and only after asking.
+Listening, translation, voice, speaker detection and note summaries all run
+locally: nothing leaves the machine. The one exception is optional: summaries
+with the user's own AI key (OpenAI, Claude, Gemini, Groq, OpenRouter or their
+own server), recommended on computers with less than 8 GB of RAM.
 
 ## What it does
 
@@ -86,7 +87,7 @@ Models live in `~/Library/Application Support/lingora/models/` (macOS) or
   Windows 10 2004+), with no permission prompt. Translating a call in the other direction still needs
   a virtual microphone, because macOS doesn't allow creating one without a
   driver.
-- **All local** (Groq is used only for summaries): free, no quotas, works
+- **All local**: free, no quotas, works
   offline, and the audio never leaves the machine. It costs about 2–2.5 GB of
   RAM with the models loaded.
 - **Parakeet listening every half second**: ~0.25 s per pass on an M1 Pro, so the
@@ -147,13 +148,10 @@ root (it is in `.gitignore`) or in the environment:
 
 | Variable | What for |
 |---|---|
-| `GROQ_API_KEY` | Development only: summary key used when there is none in the Keychain (Credential Manager on Windows). Release builds only read the Keychain. |
+| `GROQ_API_KEY` | Development only: the old cloud listening and translation in `pipeline.rs`. |
+| `LINGORA_SUMMARY_KEY` | Development only: the AI key for summaries when the Keychain has none for the chosen service. Release builds only read the Keychain. |
 | `VITE_CALL_MODE` | `true` unlocks "Translate call". Read when the interface is built. |
-| `LINGORA_SUMMARY_MODEL` | Groq model for summaries (default `qwen/qwen3.8-27b`). |
 | `LINGORA_LISTENER_MODEL_DIR`, `LINGORA_SENSE_VOICE_MODEL_DIR`, `LINGORA_TRANSLATOR_MODEL`, `LINGORA_TTS_MODEL_DIR`, `LINGORA_SPEAKER_MODEL` | Use a model from another path instead of the downloaded one. |
-
-In development macOS may ask for Keychain access on every Rust rebuild (the
-unsigned binary changes); choose "Always Allow".
 
 ## Windows
 
@@ -198,7 +196,9 @@ src-tauri/src/
   tts.rs, system_voice.rs  Voice (Supertonic) and macOS system voices
   speakers.rs       Voice prints to tell people apart
   notes.rs          Notes on disk, export, summary templates and mind map
-  groq.rs           Groq client (summaries only)
+  summarizer.rs     Local note summaries (llama.cpp, loaded per summary)
+  summary_cloud.rs  Summaries with the user's own AI key (optional)
+  groq.rs           Groq client (old cloud paths, development only)
   models.rs, doctor.rs  Model downloads and diagnostics
   captions_window.rs  Floating captions window
   config.rs         Languages (LANGS) and settings
@@ -211,8 +211,7 @@ src-tauri/src/
   meetings), Notes with speakers, summary templates and mind map, floating
   captions, 37 languages, everything inside the app with no Homebrew.
 - **In progress:** Translate call (needs a virtual microphone), notes of your
-  own and bookmarks in Take notes, custom summary templates, a local summary
-  ([docs/plan-autonomia.md](docs/plan-autonomia.md)), removing espeak-ng now
+  own and bookmarks in Take notes, custom summary templates, removing espeak-ng now
   that the voice doesn't use it (Step 4 of
   [docs/plan-voz-supertonic.md](docs/plan-voz-supertonic.md)).
 - **Test version:** Windows (see [Windows](#windows)).

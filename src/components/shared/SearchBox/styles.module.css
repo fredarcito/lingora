@@ -13,8 +13,7 @@
 }
 
 .notes-searchbox:focus-within {
-  border-color: var(--n-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--n-focus-border);
 }
 
 .notes-searchbox input {

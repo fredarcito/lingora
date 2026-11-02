@@ -1,0 +1,31 @@
+.rotating-text {
+  display: inline-block;
+}
+
+/* Fades in, stays, and fades out as the next one arrives. */
+.rotating-text-phrase {
+  display: inline-block;
+  animation: rotating-text-fade ease-in-out both;
+}
+
+@keyframes rotating-text-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotating-text-phrase {
+    animation: none;
+  }
+}

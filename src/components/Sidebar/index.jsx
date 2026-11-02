@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { useSummaryKey } from "@components/SummaryKey";
 import { useT } from "@i18n";
 import { CloseIcon, IconButton, LockIcon, MenuIcon, NoteIcon, SettingsIcon, WaveIcon, cx } from "@components/shared";
+import { useSummarySource } from "@hooks/useSummarySource";
+import { providerOf } from "@utils/summarySource.js";
 import styles from "./styles.module.css";
 
 /**
@@ -56,7 +57,8 @@ export default function Sidebar({ open, view, recording, onSelect, onClose }) {
     };
   }, [open, onClose]);
 
-  const { hasKey } = useSummaryKey();
+  // Hooks before the early return.
+  const service = providerOf(useSummarySource().source);
 
   if (!open) return null;
   let index = 0;
@@ -103,7 +105,9 @@ export default function Sidebar({ open, view, recording, onSelect, onClose }) {
         ))}
         <p className={styles.drawerFoot}>
           <LockIcon />
-          {hasKey ? t("sidebar.privacyWithKey") : t("sidebar.privacy")}
+          {service
+            ? t("sidebar.privacyWithKey", { name: service.custom ? t("summarySource.custom") : service.name })
+            : t("sidebar.privacy")}
         </p>
       </nav>
     </div>

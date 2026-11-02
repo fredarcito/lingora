@@ -4,7 +4,6 @@
 //! se guarda tal cual, se borra y se exporta.
 
 use crate::error::{Error, Result};
-use crate::groq::Groq;
 use serde::Serialize;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
@@ -597,22 +596,15 @@ fn paragraphs(sentences: &[Value]) -> Vec<Vec<&Value>> {
 
 // ---------- Resumen con IA ----------
 
-/// Dónde se guarda la clave de Groq en el llavero del Mac.
-const KEYCHAIN_SERVICE: &str = "com.lingora.app";
-const KEYCHAIN_ACCOUNT: &str = "groq";
-
-/// Por encima de esto la transcripción se resume por trozos y luego se
-/// resume el conjunto de los resúmenes.
-const SUMMARY_MAX_CHARS: usize = 60_000;
-const SUMMARY_CHUNK_CHARS: usize = 50_000;
-
 /// `{idioma}` es el de la traducción. The template's sections and
 /// `SUMMARY_RULES` follow.
 const SUMMARY_SYSTEM: &str = "Eres un asistente que resume conversaciones transcritas. Responde en {idioma} con Markdown \
 y solo estas secciones, omitiendo las que no tengan contenido. Lo que va entre paréntesis es una instrucción \
 para ti: el título de cada sección es solo el texto antes del paréntesis.\n";
 /// Closes the section list, whatever the template.
-const SUMMARY_RULES: &str = "No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual.";
+const SUMMARY_RULES: &str = "No inventes nada que no esté en la transcripción. Si aparecen etiquetas \"Persona N\", úsalas tal cual. \
+Una tarea es algo que alguien de la conversación se compromete a hacer: no conviertas consejos ni recomendaciones generales en tareas; \
+si nadie se compromete a nada, omite esa sección.";
 /// The summary templates: `(id, sections)`. The ids are saved in the notes
 /// (`summary_template`) and match `SUMMARY_TEMPLATES` in `src/utils/notes.js`.
 /// The first one, General, is the summary every note had before templates.
@@ -721,92 +713,13 @@ const MAP_MARKER: &str = "<<<MAP>>>";
 const SUMMARY_BOOKMARKS: &str = "\nHay momentos marcados por el usuario: añade al final la sección ## Momentos destacados, \
 con una línea por momento: \"- [mm:ss] qué se dijo en ese momento\" (una frase, según la transcripción).";
 
-fn keychain_entry() -> Result<keyring::Entry> {
-    keyring::Entry::new(KEYCHAIN_SERVICE, KEYCHAIN_ACCOUNT).map_err(|e| Error::Notes(format!("no se pudo abrir el llavero: {e}")))
-}
-
-/// La clave guardada en el llavero, si hay.
-fn stored_key() -> Option<String> {
-    keychain_entry().ok()?.get_password().ok().filter(|k| !k.trim().is_empty())
-}
-
-/// Solo en desarrollo, la `GROQ_API_KEY` del entorno sirve si no hay clave en
-/// el llavero. En producción nunca se mira.
-fn env_key(from_env: &str) -> Option<String> {
-    (cfg!(debug_assertions) && !from_env.trim().is_empty()).then(|| from_env.to_string())
-}
-
-/// Dónde está la clave: `"keychain"`, `"env"` (solo desarrollo) o `"none"`.
-#[tauri::command]
-pub async fn summary_key_status(state: tauri::State<'_, crate::AppState>) -> Result<&'static str> {
-    let from_env = state.pipeline.settings().groq_api_key.clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        if stored_key().is_some() {
-            "keychain"
-        } else if env_key(&from_env).is_some() {
-            "env"
-        } else {
-            "none"
-        }
-    })
-    .await
-    .map_err(|e| Error::Notes(format!("no se pudo consultar el llavero: {e}")))
-}
-
-/// Comprueba la clave con Groq y, si vale, la guarda en el llavero.
-#[tauri::command]
-pub async fn summary_key_set(key: String) -> Result<()> {
-    let key = key.trim().to_string();
-    if key.is_empty() {
-        return Err(Error::Notes("La clave no es válida".into()));
-    }
-    // Groq rechaza peticiones sin User-Agent con un 403.
-    let http = reqwest::Client::builder()
-        .user_agent(concat!("lingora/", env!("CARGO_PKG_VERSION")))
-        .timeout(std::time::Duration::from_secs(20))
-        .build()
-        .map_err(Error::Network)?;
-    let resp = http.get("https://api.groq.com/openai/v1/models").bearer_auth(&key).send().await?;
-    match resp.status().as_u16() {
-        401 | 403 => return Err(Error::Notes("La clave no es válida".into())),
-        s if !resp.status().is_success() => return Err(Error::Api { status: s, body: String::new() }),
-        _ => {}
-    }
-    tauri::async_runtime::spawn_blocking(move || {
-        keychain_entry()?.set_password(&key).map_err(|e| Error::Notes(format!("no se pudo guardar en el llavero: {e}")))
-    })
-    .await
-    .map_err(|e| Error::Notes(format!("no se pudo guardar en el llavero: {e}")))?
-}
-
-/// Borra la clave del llavero (si no había, no pasa nada).
-#[tauri::command]
-pub async fn summary_key_clear() -> Result<()> {
-    tauri::async_runtime::spawn_blocking(|| match keychain_entry()?.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-        Err(e) => Err(Error::Notes(format!("no se pudo borrar la clave: {e}"))),
-    })
-    .await
-    .map_err(|e| Error::Notes(format!("no se pudo borrar la clave: {e}")))?
-}
-
-/// Abre en el navegador la página donde se crea la clave. La URL está fija
-/// aquí: la interfaz no puede pedir que se abra otra.
-#[tauri::command]
-pub fn summary_key_help() -> Result<()> {
-    // En Windows el Explorador abre la URL en el navegador por defecto, sin consola.
-    let opener = if cfg!(windows) { "explorer" } else { "open" };
-    std::process::Command::new(opener).arg("https://console.groq.com/keys").status()?;
-    Ok(())
-}
-
-/// Parte la transcripción en trozos de ~`SUMMARY_CHUNK_CHARS` sin cortar líneas.
-fn chunks(transcript: &str) -> Vec<String> {
+/// Parte la transcripción en trozos de ~`max_chars` sin cortar líneas.
+fn chunks(transcript: &str, max_chars: usize) -> Vec<String> {
     let mut out = vec![String::new()];
     let mut len = 0;
     for line in transcript.lines() {
         let n = line.chars().count() + 1;
-        if len > 0 && len + n > SUMMARY_CHUNK_CHARS {
+        if len > 0 && len + n > max_chars {
             out.push(String::new());
             len = 0;
         }
@@ -838,6 +751,74 @@ fn tidy_bullets(text: &str) -> String {
         .join("\n")
 }
 
+/// The model's answer cleaned up: one bullet each (`tidy_bullets`), headings
+/// without the instruction in parentheses that the model sometimes copies
+/// ("## Objetivo (1-2 frases)") and one time per point instead of a range
+/// ("[00:20-01:42]" → "[00:20]"), as the map and the jumps expect.
+fn tidy_answer(text: &str) -> String {
+    let lines: Vec<String> = tidy_bullets(text)
+        .lines()
+        .map(|line| {
+            if !line.trim_start().starts_with('#') {
+                return single_times(line);
+            }
+            match line.trim_end().strip_suffix(')').and_then(|l| l.rfind(" (").map(|at| &l[..at])) {
+                Some(heading) => heading.to_string(),
+                None => line.to_string(),
+            }
+        })
+        .collect();
+    lines.join("\n")
+}
+
+/// The map up to where it starts over: the local model sometimes writes it
+/// twice, until it runs out of tokens.
+fn without_repeat(map: &str) -> String {
+    let Some(first) = map.lines().map(str::trim).find(|l| !l.is_empty()) else {
+        return String::new();
+    };
+    let mut seen = false;
+    let mut out = Vec::new();
+    for line in map.lines() {
+        if line.trim() == first {
+            if seen {
+                break;
+            }
+            seen = true;
+        }
+        out.push(line);
+    }
+    out.join("\n").trim_end().to_string()
+}
+
+/// `[mm:ss-mm:ss]` (also with "–" or spaces) → `[mm:ss]`, the first time.
+fn single_times(line: &str) -> String {
+    let mut out = String::with_capacity(line.len());
+    let mut rest = line;
+    while let Some(open) = rest.find('[') {
+        out.push_str(&rest[..open]);
+        let after = &rest[open..];
+        let Some(close) = after.find(']') else {
+            out.push_str(after);
+            return out;
+        };
+        let inside = &after[1..close];
+        let first = inside.split(['-', '–']).next().unwrap_or("").trim();
+        let is_time = |t: &str| {
+            let t = t.trim();
+            t.len() >= 4 && t.contains(':') && t.chars().all(|c| c.is_ascii_digit() || c == ':')
+        };
+        if inside.split(['-', '–']).count() == 2 && inside.split(['-', '–']).all(is_time) {
+            out.push_str(&format!("[{first}]"));
+        } else {
+            out.push_str(&after[..=close]);
+        }
+        rest = &after[close + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
 fn split_map(text: &str) -> (String, String) {
     match text.find(MAP_MARKER) {
         // With a long transcript, the parts can bring their own marker: only the first counts.
@@ -846,20 +827,24 @@ fn split_map(text: &str) -> (String, String) {
     }
 }
 
-/// Resume la transcripción; si es muy larga, por trozos y luego el conjunto.
-async fn summarize_text(groq: &Groq, model: &str, system: &str, transcript: &str) -> Result<String> {
-    if transcript.chars().count() <= SUMMARY_MAX_CHARS {
-        return groq.complete(system, transcript, model).await;
+/// Resume la transcripción; si no cabe de una vez, por trozos y luego el conjunto.
+fn summarize_text(session: &mut crate::summarizer::Session, system: &str, transcript: &str) -> Result<String> {
+    if session.fits(system, transcript) {
+        return session.complete(system, transcript);
     }
+    // Trozos por caracteres, a la medida de lo que cabe en tokens: el texto
+    // en chino o japonés lleva muchos más tokens por carácter.
+    let per_token = transcript.chars().count() as f64 / session.count(transcript).max(1) as f64;
+    let max_chars = (session.room(system) as f64 * per_token * 0.9) as usize;
     let mut parts = Vec::new();
-    for chunk in chunks(transcript) {
-        parts.push(groq.complete(system, &chunk, model).await?);
+    for chunk in chunks(transcript, max_chars.max(1_000)) {
+        parts.push(session.complete(system, &chunk)?);
     }
     let joined = format!(
         "Estos son los resúmenes de las partes consecutivas de una misma conversación. Haz un único resumen de toda ella:\n\n{}",
         parts.join("\n\n---\n\n")
     );
-    groq.complete(system, &joined, model).await
+    session.complete(system, &joined)
 }
 
 /// El idioma del resumen: `summary_lang` si la nota lo trae (Tomar notas); si
@@ -877,18 +862,38 @@ fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
         .map(|l| l.info())
 }
 
-/// Resume la nota con Groq, guarda el resumen en ella y lo devuelve.
+/// Above this, a transcript goes to a service by parts: their contexts are
+/// large (an hour is ~60K characters), but not all of them equally.
+const CLOUD_MAX_CHARS: usize = 300_000;
+
+/// Resume la transcripción con el servicio del usuario; si es enorme, por
+/// trozos y luego el conjunto, como `summarize_text`.
+async fn summarize_cloud(cloud: &crate::summary_cloud::Cloud, key: &str, system: &str, transcript: &str) -> Result<String> {
+    use crate::summary_cloud::complete;
+    if transcript.chars().count() <= CLOUD_MAX_CHARS {
+        return complete(cloud, key, system, transcript).await;
+    }
+    let mut parts = Vec::new();
+    for chunk in chunks(transcript, CLOUD_MAX_CHARS) {
+        parts.push(complete(cloud, key, system, &chunk).await?);
+    }
+    let joined = format!(
+        "Estos son los resúmenes de las partes consecutivas de una misma conversación. Haz un único resumen de toda ella:\n\n{}",
+        parts.join("\n\n---\n\n")
+    );
+    complete(cloud, key, system, &joined).await
+}
+
+/// Resume la nota (en el equipo o, con `cloud`, con la clave del usuario),
+/// guarda el resumen en ella y lo devuelve.
 #[tauri::command]
-pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String) -> Result<String> {
+pub async fn note_summarize(
+    state: tauri::State<'_, crate::AppState>,
+    id: String,
+    cloud: Option<crate::summary_cloud::Cloud>,
+) -> Result<String> {
     let path = note_path(&id)?;
     let note = read_note(&path)?;
-    let settings = state.pipeline.settings();
-    let from_env = settings.groq_api_key.clone();
-    let model = settings.summary_model.clone();
-    let key = tauri::async_runtime::spawn_blocking(move || stored_key().or_else(|| env_key(&from_env)))
-        .await
-        .map_err(|e| Error::Notes(format!("no se pudo consultar el llavero: {e}")))?
-        .ok_or_else(|| Error::Notes("Falta la clave de Groq. Ponla en la pestaña Resumen o en Ajustes.".into()))?;
 
     // Bookmarks alone are not enough: they point at what was said.
     let notes = if summary_with_notes(&note) { user_notes(&note) } else { Vec::new() };
@@ -899,22 +904,31 @@ pub async fn note_summarize(state: tauri::State<'_, crate::AppState>, id: String
     let transcript = summary_input(&note);
     let system = summary_system(&note);
 
-    let text = summarize_text(&Groq::new(key), &model, &system, &transcript)
-        .await
-        .map_err(|e| match e {
-            Error::Api { status: 401 | 403, .. } => Error::Notes("La clave de Groq no es válida. Cámbiala en Ajustes.".into()),
-            other => other,
-        })?;
+    let (text, source) = match cloud {
+        Some(cloud) => {
+            let key = crate::summary_cloud::key_for(&cloud.provider).await?;
+            (summarize_cloud(&cloud, &key, &system, &transcript).await?, cloud.provider)
+        }
+        None => {
+            // The translator and the summary don't fit in memory together on every
+            // computer; the translator loads again by itself (~1–2 s) when needed.
+            state.pipeline.local_translator().shutdown();
+            let text = crate::summarizer::with_model(move |session| summarize_text(session, &system, &transcript)).await?;
+            (text, "local".to_string())
+        }
+    };
     let template = summary_template(&note);
-    let (text, map) = split_map(&tidy_bullets(&text));
+    let (text, map) = split_map(&tidy_answer(&text));
+    let map = without_repeat(&map);
     let text = with_user_notes(&text, &notes);
 
     // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
     let mut note = read_note(&path)?;
+    // `source`: where it was made, "local" or the service's id.
     note["summary"] = if map.is_empty() {
-        serde_json::json!({ "text": text, "template": template, "created_at": now_iso() })
+        serde_json::json!({ "text": text, "template": template, "source": source, "created_at": now_iso() })
     } else {
-        serde_json::json!({ "text": text, "map": map, "template": template, "created_at": now_iso() })
+        serde_json::json!({ "text": text, "map": map, "template": template, "source": source, "created_at": now_iso() })
     };
     write_note(&path, &note)?;
     Ok(text)
@@ -951,6 +965,51 @@ fn now_iso() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Summarizes a real note with the local model and prints the result:
+    /// `LINGORA_TEST_SUMMARY_MODEL=<gguf> LINGORA_TEST_NOTE=<note.json>
+    /// cargo test --release summarize_real_note -- --ignored --nocapture`.
+    #[tokio::test]
+    #[ignore]
+    async fn summarize_real_note() {
+        let model = PathBuf::from(std::env::var("LINGORA_TEST_SUMMARY_MODEL").expect("LINGORA_TEST_SUMMARY_MODEL"));
+        let note = read_note(Path::new(&std::env::var("LINGORA_TEST_NOTE").expect("LINGORA_TEST_NOTE"))).unwrap();
+        let (system, transcript) = (summary_system(&note), summary_input(&note));
+        let t0 = std::time::Instant::now();
+        let text = crate::summarizer::with_model_at(model, move |s| summarize_text(s, &system, &transcript)).await.unwrap();
+        let (text, map) = split_map(&tidy_answer(&text));
+        let map = without_repeat(&map);
+        println!("{text}\n\n--- map ---\n{map}\n\n({:.1} s)", t0.elapsed().as_secs_f32());
+        assert!(text.contains("## "), "sin secciones");
+    }
+
+    #[test]
+    fn tidy_answer_drops_copied_instructions_and_ranges() {
+        let text = "## Objetivo (1-2 frases)\nRevisar la semana.\n## Tareas (lista; \"- [ ] tarea — responsable\")\n\
+- [ ] Lanzar — Persona 1 [02:48]\n- Tema largo [00:20-01:42] y otro [03:28 – 05:10]\n- [ ] Casilla sin hora\n## Momentos (destacados)";
+        assert_eq!(
+            tidy_answer(text),
+            "## Objetivo\nRevisar la semana.\n## Tareas\n- [ ] Lanzar — Persona 1 [02:48]\n\
+- Tema largo [00:20] y otro [03:28]\n- [ ] Casilla sin hora\n## Momentos"
+        );
+        // Only ranges of times: other brackets stay.
+        assert_eq!(single_times("- [ ] a [x-y] [1-2] [12:00]"), "- [ ] a [x-y] [1-2] [12:00]");
+    }
+
+    #[test]
+    fn map_stops_where_it_starts_over() {
+        let map = "## Resumen\n- a [00:01]\n## Tareas\n- b\n\n\n## Resumen\n- a [00:01]\n## Tareas\n- b";
+        assert_eq!(without_repeat(map), "## Resumen\n- a [00:01]\n## Tareas\n- b");
+        assert_eq!(without_repeat("- a\n- b"), "- a\n- b");
+        assert_eq!(without_repeat(""), "");
+    }
+
+    #[test]
+    fn chunks_keep_whole_lines() {
+        let text = "aaaa\nbbbb\ncccc\n";
+        assert_eq!(chunks(text, 10), vec!["aaaa\nbbbb\n".to_string(), "cccc\n".to_string()]);
+        assert_eq!(chunks(text, 3), vec!["aaaa\n".to_string(), "bbbb\n".to_string(), "cccc\n".to_string()]);
+    }
 
     #[test]
     fn tidy_bullets_joins_repeated_ones() {

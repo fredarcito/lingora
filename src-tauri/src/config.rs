@@ -156,8 +156,6 @@ pub struct Settings {
     pub groq_api_key: String,
     pub stt_model: String,
     pub translation_model: String,
-    /// Modelo de Groq que resume las notas.
-    pub summary_model: String,
     /// Ruta al binario de espeak-ng (para fonemizar español e inglés). Por
     /// defecto, el que va dentro de la app.
     pub espeak_bin: String,
@@ -192,7 +190,6 @@ impl Settings {
             // qwen3.8-27b: 344 ms de media y la latencia más estable de los
             // modelos disponibles en la cuenta (ver notas de la fase 0).
             translation_model: env_or("LINGORA_TRANSLATION_MODEL", "qwen/qwen3.8-27b"),
-            summary_model: env_or("LINGORA_SUMMARY_MODEL", "qwen/qwen3.8-27b"),
             espeak_bin: std::env::var("LINGORA_ESPEAK_BIN").unwrap_or_else(|_| bundled_espeak()),
             tts_model_dir: std::env::var("LINGORA_TTS_MODEL_DIR")
                 .map(Into::into)

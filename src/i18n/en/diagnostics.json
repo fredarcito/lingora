@@ -35,5 +35,12 @@
   "showDetails": "Show details",
   "cause": "Cause: {title}",
   "optional": "Optional",
-  "recheck": "Check again"
+  "recheck": "Check again",
+  "summary.title": "Note summaries",
+  "summary.local": "On your computer: the conversation never leaves it.",
+  "summary.withKey": "With your {name} key.",
+  "summary.missing": "Not set up. Download the summary ({size}) or enter your AI key in Settings → Notes.",
+  "summary.missingLow": "Not set up. This computer has little memory: we recommend entering your AI key in Settings → Notes.",
+  "summary.downloading": "Downloading the summary…",
+  "fix.summary": "Download (2.7 GB)"
 }

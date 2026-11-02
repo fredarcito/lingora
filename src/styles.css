@@ -233,9 +233,15 @@ select option {
   color: var(--text);
 }
 
+/* Fields in focus: no colored ring, only a lighter border (sober, like the
+   rest). Buttons keep the ring, which only shows with the keyboard. */
 select:focus,
-button:focus-visible,
 input:focus-visible {
+  outline: none;
+  border-color: var(--n-focus-border);
+}
+
+button:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
   outline-offset: 1px;
 }
@@ -422,6 +428,8 @@ html.view-captions body {
   --n-popover: #111317;
   --n-radius: 8px;
   --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+  /* Border of a field in focus. */
+  --n-focus-border: color-mix(in srgb, var(--text) 38%, transparent);
 }
 
 /* ---- Animations of the ☰ menu, the menus and the dialogs ---- */

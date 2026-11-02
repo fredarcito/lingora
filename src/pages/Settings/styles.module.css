@@ -1,12 +1,3 @@
-/* Key row inside the Notes card in Settings. */
-.prefs-key {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-top: 16px;
-  border-top: 1px solid var(--n-border);
-}
-
 .prefs-about {
   gap: 4px;
   font-size: 14px;

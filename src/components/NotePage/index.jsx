@@ -3,7 +3,10 @@ import { api, errorMessage } from "@utils/api";
 import Markdown from "@components/Markdown";
 import MindMap from "@components/MindMap";
 import { langName as langInSentence, useT } from "@i18n";
-import { KeyPanel, useSummaryKey } from "@components/SummaryKey";
+import SummaryOptions from "@components/SummaryOptions";
+import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";
+import { notifySummarySource, useSummarySource } from "@hooks/useSummarySource";
+import { cloudRequest, hasConsent, providerOf, storeConsent, storeSummarySource } from "@utils/summarySource.js";
 import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
 import { partAt } from "@utils/mindMap.js";
@@ -11,12 +14,10 @@ import { NOTES_REFRESH_MS } from "@utils/noteList.js";
 import {
   discardActive,
   formatSpan,
-  loadSummaryConsent,
   noteToText,
   renameActive,
   SUMMARY_TEMPLATES,
   setActiveSummary,
-  storeSummaryConsent,
   summaryLangOf,
   summaryPrompt,
   summaryTemplateOf,
@@ -38,12 +39,16 @@ import {
   NoteIcon,
   PenIcon,
   RefreshIcon,
+  RotatingText,
   Spinner,
   Switch,
   cx,
   useDismiss,
 } from "@components/shared";
 import styles from "./styles.module.css";
+
+/** The phrases while summarizing: what it is doing, in plain words. */
+const WORKING_PHRASES = Array.from({ length: 9 }, (_, i) => `notes.working${i + 1}`);
 
 /**
  * A note's page: editable title, actions and tabs.
@@ -67,11 +72,19 @@ export default function NotePage({ id, live, languages, onBack }) {
   const [notice, setNotice] = useState("");
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState("");
-  const [askConsent, setAskConsent] = useState(false);
-  // Summarizing without a key leads to the panel in the Summary tab, even if there is already a summary.
-  const [askKey, setAskKey] = useState(false);
-  const { status: keyStatus, hasKey } = useSummaryKey();
+  // Summarizing without the model leads to its download in the Summary tab, even if there is already a summary.
+  const [askDownload, setAskDownload] = useState(false);
+  // The service waiting for the first-time permission to send it the transcript.
+  const [askConsent, setAskConsent] = useState(/** @type {string | null} */ (null));
+  const model = useSummaryModel();
+  const summarySource = useSummarySource();
+  const cloudOn = summarySource.source !== "local";
+  const ready = cloudOn ? summarySource.hasKey === true : model.installed === true;
+  // Known not to be usable yet (not just still being checked).
+  const notReady = cloudOn ? summarySource.hasKey === false : model.installed === false;
   const noticeTimer = useRef(0);
+  // What the wait for a summary shows, in turn (it can take a minute on the computer).
+  const working = WORKING_PHRASES.map((key) => t(key));
   // The latest value of the `live` prop: the polling reads it without restarting.
   const liveRef = useRef(live);
   liveRef.current = live;
@@ -133,14 +146,15 @@ export default function NotePage({ id, live, languages, onBack }) {
     run(() => api.noteSave(next));
   };
 
-  const summarize = async () => {
-    setAskConsent(false);
+  /** @param {import("@utils/summarySource.js").CloudRequest | null} [cloud] */
+  const summarize = async (cloud = null) => {
+    setAskConsent(null);
     setSummaryError("");
     setSummarizing(true);
     // From the Map tab the map appears there; from anywhere else, the summary.
     setTab((current) => (current === "map" ? current : "summary"));
     try {
-      await api.noteSummarize(id);
+      await api.noteSummarize(id, cloud);
       const n = await api.noteRead(id);
       setNote((prev) => (prev ? { ...prev, summary: n.summary } : n));
       setActiveSummary(id, n.summary);
@@ -152,12 +166,40 @@ export default function NotePage({ id, live, languages, onBack }) {
     }
   };
 
-  const askSummary = () => {
-    setTab((current) => (current === "map" && hasKey ? current : "summary"));
-    if (!hasKey) setAskKey(true);
-    else if (!loadSummaryConsent()) setAskConsent(true);
-    else summarize();
+  /** With a service, asks first the first time. @param {string} source "local" or a service's id */
+  const summarizeWith = (source) => {
+    if (source === "local") summarize();
+    else if (!hasConsent(source)) setAskConsent(source);
+    else summarize(cloudRequest(source));
   };
+
+  const askSummary = () => {
+    setTab((current) => (current === "map" && ready ? current : "summary"));
+    if (!ready) setAskDownload(true);
+    else summarizeWith(summarySource.source);
+  };
+
+  /** Summarizing on the computer from the options: it becomes the way summaries are made. */
+  const summarizeHere = () => {
+    storeSummarySource("local");
+    notifySummarySource();
+    setAskDownload(false);
+    summarize();
+  };
+
+  // Once downloaded, it summarizes what was asked for.
+  const getModel = async () => {
+    if (await downloadSummaryModel()) summarizeHere();
+  };
+
+  /** @param {string} provider */
+  const keySaved = (provider) => {
+    setAskDownload(false);
+    summarizeWith(provider);
+  };
+
+  /** A service's name as the interface shows it. @param {string} id */
+  const serviceName = (id) => (providerOf(id)?.custom ? t("summarySource.custom") : providerOf(id)?.name ?? id);
 
   const remove = () =>
     run(async () => {
@@ -426,8 +468,8 @@ export default function NotePage({ id, live, languages, onBack }) {
               </p>
             )}
             {summarizing && (
-              <p className={styles.noteWorking} role="status">
-                <Spinner small /> {t("notes.working")}
+              <p className={styles.noteWorking}>
+                <Spinner small /> <RotatingText phrases={working} label={t("notes.working")} />
               </p>
             )}
             {summaryError && (
@@ -435,11 +477,26 @@ export default function NotePage({ id, live, languages, onBack }) {
                 {summaryError}
               </p>
             )}
+            {/* Above the summary: with a long one, below it would be off screen. */}
+            {((notReady && (!note.summary || askDownload)) || model.downloading) && (
+              <SummaryOptions
+                model={model}
+                memoryGb={summarySource.memoryGb}
+                source={summarySource.source}
+                onDownload={getModel}
+                onLocal={summarizeHere}
+                onKeySaved={keySaved}
+              />
+            )}
             {note.summary && (
               <div className={cx(styles.noteSummary, styles.noteSummaryCard)}>
                 <Markdown className={styles.summaryMd} text={note.summary.text} />
                 <div className={styles.noteSummaryFoot}>
-                  <span>{t("notes.summaryFoot")}</span>
+                  <span>
+                    {note.summary.source && note.summary.source !== "local"
+                      ? t("notes.summaryFootWith", { name: serviceName(note.summary.source) })
+                      : t("notes.summaryFoot")}
+                  </span>
                   <LinkButton className={styles.noteToTranscript} onClick={() => setTab("transcript")}>
                     <ArrowIcon />
                     {t("notes.goTranscript")}
@@ -447,7 +504,7 @@ export default function NotePage({ id, live, languages, onBack }) {
                 </div>
               </div>
             )}
-            {!note.summary && !summarizing && hasKey && (
+            {!note.summary && !summarizing && ready && (
               <div className={styles.noteSummaryEmpty}>
                 <span className={styles.noteSummaryEmptyIcon} aria-hidden>
                   <NoteIcon />
@@ -455,7 +512,6 @@ export default function NotePage({ id, live, languages, onBack }) {
                 <p>{t("notes.noSummary")}</p>
               </div>
             )}
-            {keyStatus !== null && !hasKey && (!note.summary || askKey) && <KeyPanel onSaved={() => setAskKey(false)} />}
           </>
         )}
 
@@ -476,8 +532,8 @@ export default function NotePage({ id, live, languages, onBack }) {
               onExport={(png) => run(() => api.noteExportImage(id, png), t("notes.savedDownloads"))}
             />
           ) : summarizing ? (
-            <p className={styles.noteWorking} role="status">
-              <Spinner small /> {t("notes.working")}
+            <p className={styles.noteWorking}>
+              <Spinner small /> <RotatingText phrases={working} label={t("notes.working")} />
             </p>
           ) : (
             <div className={styles.noteSummaryEmpty}>
@@ -538,13 +594,13 @@ export default function NotePage({ id, live, languages, onBack }) {
       {askConsent && (
         <ConfirmDialog
           title={t("notes.sendTitle")}
-          body={t("notes.sendBody")}
+          body={t("notes.sendBody", { name: serviceName(askConsent) })}
           cancelLabel={t("notes.cancel")}
           confirmLabel={t("notes.continue")}
-          onCancel={() => setAskConsent(false)}
+          onCancel={() => setAskConsent(null)}
           onConfirm={() => {
-            storeSummaryConsent();
-            summarize();
+            storeConsent(askConsent);
+            summarize(cloudRequest(askConsent));
           }}
         />
       )}

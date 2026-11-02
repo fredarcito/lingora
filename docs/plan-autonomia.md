@@ -98,10 +98,38 @@ the app: it is enough to include its license and offer its source code.
 own or with a permissive license. There is no good one in Rust for all the
 Kokoro languages, so it isn't worth it now.
 
-## Phase 3: the summary, locally
+## Phase 3: the summary, locally (done, 2026-11-02)
 
-**Today:** Groq with the user's key. It is the only exception to "all
+**Before:** Groq with the user's key. It was the only exception to "all
 local", and the project memory says it was only for testing.
+
+**Done:** `summarizer.rs` runs **Qwen3.5-4B Q4_K_M** (Apache-2.0, 2.74 GB)
+on the same llama.cpp as the translator. It is downloaded from the note the
+first time a summary is asked for (and summarizes when it finishes); it shows
+in Settings → Disk space. Groq, the key, the keychain (`keyring`) and the
+"the transcript will be sent" prompt are gone. The model is loaded per
+summary and freed right after; the translator is released first.
+
+Chosen on an M1 Pro with 3 real notes (8, 13 and 61 min, the last one 4
+notes joined; there is no saved note of 55 min) and the app's own prompt:
+
+| Model | Download | RAM (61 min) | 8 / 13 / 61 min | Quality |
+|---|---|---|---|---|
+| **Qwen3.5-4B Q4_K_M** | 2.74 GB | 3.5 GB | 33 / 41 / 84 s | Closest to Groq, facts right, good times |
+| Qwen3.5-4B IQ4_XS | 2.48 GB | 3.0 GB | 29 / 54 / 89 s | Guessed names instead of "Persona N", wrong attributions |
+| Gemma 4 E4B Q4_K_M | 4.98 GB | 4.4 GB | 32 / 53 / 128 s | Follows the rules best, less detail, slower |
+| Qwen3.5-2B Q4_K_M | 1.28 GB | ~1.3 GB | 12 / 16 / 30 s | Gives everything to Persona 1, no times |
+
+The hour fits in one go (~16K tokens of a 24K context); longer notes go by
+parts sized in tokens. What the model does wrong is fixed when tidying the
+answer (`tidy_answer`, `without_repeat` in `notes.rs`): it copied the
+"(1-2 frases)" instructions into headings, wrote time ranges and once wrote
+the map twice. Known weak spot: in talks or videos full of advice it still
+turns advice into tasks for "Usuario", despite the rule against it.
+
+Llama 3.2 3B was considered and not tested: older (2024), 8 official
+languages, its own licence, and no saving in memory for an hour (full
+attention). Meta's newer open models are 30B and up.
 
 **Change:** the summary with a local model, on the **same llama.cpp** from
 phase 1 (no new engine).
@@ -118,7 +146,7 @@ phase 1 (no new engine).
 - Groq, the key and the keychain leave the interface. If it is to be kept as an
   advanced option, it goes behind a switch and is off by default.
 
-**User decision:** remove Groq entirely or keep it as an option?
+**User decision (2026-11-02):** remove Groq from the summary entirely.
 
 ## Phase 4: models, from their own place
 

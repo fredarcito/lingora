@@ -14,7 +14,8 @@ src/
   pages/                    Notes, NoteTaking, Settings, Welcome, FloatingCaptions
   components/               Captions, Diagnostics, LaneCard (con VoiceControls),
                             LaneSettings, LangOffer, LanguagePicker, LiveStatus,
-                            Markdown, PairBar, SaveNotesBar, Sidebar, SummaryKey, TopBar
+                            Markdown, PairBar, SaveNotesBar, Sidebar, SummaryDownload,
+                            SummaryKeyForm, SummaryOptions, SummarySource, TopBar
   components/shared/        las piezas básicas (esta tabla) e icons.jsx
   utils/                    api, audio, notes, words, lanes, voice: lo que no
                             es interfaz
@@ -46,6 +47,7 @@ Texts arrive as props, already translated with `t()`.
 | `ErrorBoundary` | Catches a render error and shows a notice with a reload button instead of a blank window; the error goes to the log | `title`, `body`, `reloadLabel`, `children` | `<ErrorBoundary title={t("errorBoundary.title")} body={t("errorBoundary.body")} reloadLabel={t("errorBoundary.reload")}>…</ErrorBoundary>` |
 | `Badge` | Small label next to a title | `children`, `icon` (in front of the text), `muted` (gray instead of the accent, to tell kinds apart) | `<Badge icon={<NoteIcon />}>{t("notes.badge.notes")}</Badge>` |
 | `Spinner` | Wait indicator | `small` | `<Spinner small />` |
+| `RotatingText` | A line for long waits that changes every few seconds with a fade ("Summarizing…"); screen readers hear only `label`, once; no fade with reduced motion | `phrases` (translated), `label`, `everyMs` (default 3500), `className` | `<RotatingText phrases={working} label={t("notes.working")} />` |
 | `SearchBox` | Search field with a magnifying glass | `value`, `onChange(value)`, `placeholder` (also `aria-label`), `shortcut`, `inputRef`, `className`. Escape clears it | `<SearchBox value={q} onChange={setQ} placeholder={t("notes.search")} shortcut="⌘K" />` |
 | `ChoiceCards` | Single choice as cards (icon, title, description in view), for a decision that needs explaining (what to record in Take notes) | `value`, `onChange(value)`, `options: {value, label, hint?, icon?, disabled?}[]` | `<ChoiceCards value={input} onChange={setInput} options={inputs} />` |
 | `Segmented` | Single-choice buttons | `value`, `onChange(value)`, `options: {value, label, hint?, disabled?}[]`, `small`, `check` (the ✓ of the selected one; `false` for a filter, not a setting) | `<Segmented value={mode} onChange={setMode} options={modes} />` |

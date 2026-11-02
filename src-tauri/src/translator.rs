@@ -217,7 +217,8 @@ impl LocalTranslator {
 }
 
 /// llama.cpp se inicia una vez por proceso; sus mensajes van al registro.
-fn backend() -> &'static LlamaBackend {
+/// The summary (`summarizer.rs`) uses it too.
+pub(crate) fn backend() -> &'static LlamaBackend {
     static BACKEND: OnceLock<LlamaBackend> = OnceLock::new();
     BACKEND.get_or_init(|| {
         llama_cpp_2::send_logs_to_tracing(llama_cpp_2::LogOptions::default());

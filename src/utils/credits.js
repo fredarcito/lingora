@@ -36,6 +36,15 @@ export const CREDITS = [
     url: "https://huggingface.co/IndexTeam/Index-Translate-2B-GGUF",
   },
   {
+    id: "qwen",
+    kind: "model",
+    name: "Qwen3.5-4B",
+    author: "Alibaba (Qwen)",
+    license: "Apache-2.0",
+    licenseFile: "Apache-2.0.txt",
+    url: "https://huggingface.co/Qwen/Qwen3.5-4B",
+  },
+  {
     id: "supertonic",
     kind: "model",
     name: "Supertonic 3",

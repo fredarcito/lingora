@@ -180,8 +180,7 @@
 .mark-edit:focus,
 .compose-input:focus {
   outline: none;
-  border-color: var(--n-ring);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: var(--n-focus-border);
 }
 
 /* Writing a note: fixed at the bottom of the panel. */

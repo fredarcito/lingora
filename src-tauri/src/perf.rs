@@ -76,15 +76,23 @@ fn cpu_features() -> String {
 }
 
 #[cfg(windows)]
-fn ram_gb() -> Option<f64> {
+pub(crate) fn ram_gb() -> Option<f64> {
     use windows::Win32::System::SystemInformation::{GlobalMemoryStatusEx, MEMORYSTATUSEX};
     let mut status = MEMORYSTATUSEX { dwLength: std::mem::size_of::<MEMORYSTATUSEX>() as u32, ..Default::default() };
     unsafe { GlobalMemoryStatusEx(&mut status) }.ok()?;
     Some(status.ullTotalPhys as f64 / 1e9)
 }
 
-#[cfg(not(windows))]
-fn ram_gb() -> Option<f64> {
+/// `sysctl` comes with macOS.
+#[cfg(target_os = "macos")]
+pub(crate) fn ram_gb() -> Option<f64> {
+    let out = std::process::Command::new("sysctl").args(["-n", "hw.memsize"]).output().ok()?;
+    let bytes: f64 = String::from_utf8_lossy(&out.stdout).trim().parse().ok()?;
+    Some(bytes / 1e9)
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
+pub(crate) fn ram_gb() -> Option<f64> {
     None
 }
 

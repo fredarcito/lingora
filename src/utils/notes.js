@@ -3,7 +3,6 @@ import { langName, t } from "@i18n";
 import { splitWords } from "./words.js";
 
 const SAVE_NOTES_KEY = "lingora.saveNotes";
-const SUMMARY_CONSENT_KEY = "lingora.summaryConsent";
 const SPEAKERS_KEY = "lingora.speakers";
 const NOTES_INPUT_KEY = "lingora.notesInput";
 const NOTES_LISTEN_KEY = "lingora.notesListen";
@@ -103,23 +102,6 @@ export function ensureSpeakers() {
     .catch((e) => console.warn("[lingora] could not download the speakers add-on:", e))
     .finally(() => (speakersDownload = null));
   return speakersDownload;
-}
-
-/** Si ya se aceptó que el resumen envíe la transcripción a Groq. */
-export function loadSummaryConsent() {
-  try {
-    return localStorage.getItem(SUMMARY_CONSENT_KEY) === "true";
-  } catch {
-    return false;
-  }
-}
-
-export function storeSummaryConsent() {
-  try {
-    localStorage.setItem(SUMMARY_CONSENT_KEY, "true");
-  } catch {
-    // Sin almacenamiento se vuelve a preguntar la próxima vez.
-  }
 }
 
 /**

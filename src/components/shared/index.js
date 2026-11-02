@@ -11,6 +11,7 @@ export { default as InlineSelect } from "./InlineSelect";
 export { default as LinkButton } from "./LinkButton";
 export { default as Menu, MenuItem, MenuSeparator, useDismiss } from "./Menu";
 export { default as PageHeader } from "./PageHeader";
+export { default as RotatingText } from "./RotatingText";
 export { default as SearchBox } from "./SearchBox";
 export { default as Segmented } from "./Segmented";
 export { default as Select } from "./Select";

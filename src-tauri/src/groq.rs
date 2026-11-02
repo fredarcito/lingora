@@ -65,23 +65,6 @@ struct ChunkDelta {
     content: Option<String>,
 }
 
-/// Respuesta de chat sin streaming.
-#[derive(serde::Deserialize)]
-struct CompletionResponse {
-    choices: Vec<CompletionChoice>,
-}
-
-#[derive(serde::Deserialize)]
-struct CompletionChoice {
-    message: CompletionMessage,
-}
-
-#[derive(serde::Deserialize)]
-struct CompletionMessage {
-    #[serde(default)]
-    content: Option<String>,
-}
-
 impl Groq {
     pub fn new(api_key: String) -> Self {
         // Groq rechaza peticiones sin User-Agent con un 403 (comprobado en la
@@ -253,40 +236,6 @@ impl Groq {
             ));
         }
         Ok(out)
-    }
-
-    /// Una respuesta de chat completa, sin streaming. La usan los resúmenes de
-    /// las notas: tardan más que una frase, así que la petición lleva su propio
-    /// tiempo de espera (en reqwest sustituye al del cliente, que sigue en 30 s
-    /// para la traducción).
-    pub async fn complete(&self, system: &str, user: &str, model: &str) -> Result<String> {
-        let payload = serde_json::json!({
-            "model": model,
-            "temperature": 0.3,
-            "max_tokens": 2000,
-            "stream": false,
-            "messages": [
-                { "role": "system", "content": system },
-                { "role": "user", "content": user }
-            ]
-        });
-        let resp = self
-            .http
-            .post("https://api.groq.com/openai/v1/chat/completions")
-            .bearer_auth(&self.api_key)
-            .timeout(std::time::Duration::from_secs(120))
-            .json(&payload)
-            .send()
-            .await?;
-        let body = self.check(resp).await?;
-        let parsed: CompletionResponse = serde_json::from_str(&body).map_err(|e| Error::BadResponse(e.to_string()))?;
-        let content = parsed.choices.into_iter().next().and_then(|c| c.message.content).unwrap_or_default();
-        // Los modelos que razonan pueden devolver su pensamiento entre <think>.
-        let text = content.rsplit("</think>").next().unwrap_or_default().trim().to_string();
-        if text.is_empty() {
-            return Err(Error::BadResponse("el resumen llegó vacío; revisa el modelo configurado".into()));
-        }
-        Ok(text)
     }
 
     /// Convierte una respuesta no-2xx en un error tipado y devuelve el cuerpo

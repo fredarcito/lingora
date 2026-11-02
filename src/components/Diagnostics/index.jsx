@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { ensureSpeakers, loadSpeakers } from "@utils/notes";
-import { t, useT } from "@i18n";
+import { t, useLang, useT } from "@i18n";
 import { LinkButton, Spinner, cx } from "@components/shared";
+import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";
+import { useSummarySource } from "@hooks/useSummarySource";
+import { formatSize } from "@utils/storage";
+import { isLowMemory, providerOf } from "@utils/summarySource.js";
 import styles from "./styles.module.css";
 
 /** How often the audio is checked: detects headphones connected in the middle of use. */
@@ -17,7 +21,7 @@ const GROUPS = [
   { key: "mic", title: "diagnostics.group.mic", ids: ["microphone"] },
   { key: "translate", title: "diagnostics.group.translate", ids: ["listener", "sense_voice", "translator"] },
   { key: "voice", title: "diagnostics.group.voice", ids: ["espeak", "voice_model"] },
-  { key: "notes", title: "diagnostics.group.notes", ids: ["speakers"] },
+  { key: "notes", title: "diagnostics.group.notes", ids: ["speakers", "summary"] },
 ];
 
 /**
@@ -32,7 +36,8 @@ const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "captu
  * notes does count while it is turned on.
  * @param {string} id @param {string[]} [required]
  */
-const isOptional = (id, required = []) => !required.includes(id) && (id === "sense_voice" || (id === "speakers" && !loadSpeakers()));
+const isOptional = (id, required = []) =>
+  !required.includes(id) && (id === "sense_voice" || id === "summary" || (id === "speakers" && !loadSpeakers()));
 
 /**
  * What the user is told when each check fails. The backend's title
@@ -62,6 +67,7 @@ const FIX_LABEL = {
   voice_model: "diagnostics.fix.voice_model",
   speakers: "diagnostics.fix.speakers",
   translator: "diagnostics.fix.translator",
+  summary: "diagnostics.fix.summary",
 };
 
 /** @param {import("@utils/api").Check} c @param {string[]} [required] */
@@ -101,10 +107,14 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
   const t = useT();
   /** @type {[import("@utils/api").Check[], Function]} */
   const [allChecks, setChecks] = useState([]);
+  const { lang } = useLang();
+  const summary = summaryCheck(useSummaryModel(), useSummarySource(), lang);
   // In video mode the microphone is not used: it is not a problem and does not need to be shown.
-  const checks = allChecks.filter(
-    (c) => !(mode === "video" && c.id === "microphone") && !(systemAudio && BLACKHOLE_CAPTURE.has(c.id)),
-  );
+  const checks = [
+    ...allChecks.filter((c) => !(mode === "video" && c.id === "microphone") && !(systemAudio && BLACKHOLE_CAPTURE.has(c.id))),
+    // Only next to the backend's checks, so the panel doesn't show it alone while those load.
+    ...(summary && allChecks.length ? [summary] : []),
+  ];
   const [fixing, setFixing] = useState(null);
   const [error, setError] = useState(null);
   const [showDetails, setShowDetails] = useState(expanded);
@@ -142,6 +152,8 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
     try {
       // The speakers add-on joins the background download instead of starting a second one.
       if (id === "speakers") await ensureSpeakers().then(() => refresh(true));
+      // The summary is not a backend check: its download is shared with the note's.
+      else if (id === "summary") await downloadSummaryModel();
       else merge(await api.fixDiagnostic(id));
       onFixed?.();
     } catch (e) {
@@ -250,6 +262,33 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
       )}
     </section>
   );
+}
+
+/**
+ * The summary, as one more check of the Notes group. It is not one of the
+ * backend's (`doctor.rs`): whether it is ready also depends on the choice made
+ * in Settings (on the computer or with the user's key). Optional: without it,
+ * everything else works. Null while it is being checked.
+ * @param {import("@hooks/useSummaryModel").SummaryModelState} model
+ * @param {ReturnType<typeof useSummarySource>} source @param {string} lang
+ * @returns {import("@utils/api").Check | null}
+ */
+function summaryCheck(model, source, lang) {
+  const service = providerOf(source.source);
+  const title = t("diagnostics.summary.title");
+  if (service && source.hasKey === null) return null;
+  if (service && source.hasKey) {
+    const name = service.custom ? t("summarySource.custom") : service.name;
+    return { id: "summary", status: "ok", title, detail: t("diagnostics.summary.withKey", { name }) };
+  }
+  if (model.installed === null) return null;
+  if (model.installed) return { id: "summary", status: "ok", title, detail: t("diagnostics.summary.local") };
+  const detail = model.downloading
+    ? t("diagnostics.summary.downloading")
+    : isLowMemory(source.memoryGb)
+      ? t("diagnostics.summary.missingLow")
+      : t("diagnostics.summary.missing", { size: formatSize(model.total, lang) });
+  return { id: "summary", status: "warning", title, detail, fix: "Descargar" };
 }
 
 const icon = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" };

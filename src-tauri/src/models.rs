@@ -19,10 +19,12 @@ pub enum Model {
     Translator,
     Voice,
     Speakers,
+    /// Optional: downloaded from a note the first time a summary is asked for.
+    Summary,
 }
 
 impl Model {
-    pub const ALL: [Model; 5] = [Model::Listener, Model::Translator, Model::Voice, Model::SenseVoice, Model::Speakers];
+    pub const ALL: [Model; 6] = [Model::Listener, Model::Translator, Model::Voice, Model::SenseVoice, Model::Speakers, Model::Summary];
 
     pub fn id(self) -> &'static str {
         match self {
@@ -31,6 +33,8 @@ impl Model {
             Model::Translator => crate::doctor::TRANSLATOR_CHECK,
             Model::Voice => crate::doctor::VOICE_CHECK,
             Model::Speakers => crate::doctor::SPEAKERS_CHECK,
+            // Not in the diagnostics: it is optional and asked for from the note.
+            Model::Summary => "summary",
         }
     }
 
@@ -51,10 +55,11 @@ impl Model {
             Model::Translator => 1_312_000_000,
             Model::Voice => 145_000_000,
             Model::Speakers => 39_600_000,
+            Model::Summary => crate::summarizer::MODEL_BYTES,
         }
     }
 
-    /// Carpeta (o archivo, en la traducción y las personas) donde queda instalado.
+    /// Carpeta (o archivo, en la traducción, las personas y el resumen) donde queda instalado.
     fn dest(self, settings: &Settings) -> PathBuf {
         match self {
             Model::Listener => settings.listener_model_dir.clone(),
@@ -62,6 +67,7 @@ impl Model {
             Model::Translator => settings.translator_model.clone(),
             Model::Voice => settings.tts_model_dir.clone(),
             Model::Speakers => settings.speaker_model.clone(),
+            Model::Summary => crate::summarizer::model_path(),
         }
     }
 
@@ -73,6 +79,7 @@ impl Model {
             Model::Translator => crate::translator::LocalTranslator::is_installed(&dest),
             Model::Voice => crate::tts::TtsEngine::is_installed(&dest),
             Model::Speakers => crate::speakers::Speakers::is_installed(&dest),
+            Model::Summary => crate::summarizer::is_installed(&dest),
         }
     }
 
@@ -87,6 +94,7 @@ impl Model {
             Model::SenseVoice => asr_url(Engine::SenseVoice.model_name()),
             Model::Translator => crate::translator::MODEL_URL.to_string(),
             Model::Speakers => crate::speakers::MODEL_URL.to_string(),
+            Model::Summary => crate::summarizer::MODEL_URL.to_string(),
             Model::Voice => {
                 format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", crate::tts::MODEL_NAME)
             }
@@ -106,7 +114,7 @@ impl Model {
 
     /// Se publica como un solo archivo, sin comprimir.
     fn single_file(self) -> bool {
-        matches!(self, Model::Translator | Model::Speakers)
+        matches!(self, Model::Translator | Model::Speakers | Model::Summary)
     }
 
     /// Carpeta que trae el archivo comprimido (su nombre en la publicación).
@@ -115,7 +123,7 @@ impl Model {
             Model::Listener => Engine::Parakeet.model_name(),
             Model::SenseVoice => Engine::SenseVoice.model_name(),
             Model::Voice => crate::tts::MODEL_NAME,
-            Model::Translator | Model::Speakers => "",
+            Model::Translator | Model::Speakers | Model::Summary => "",
         }
     }
 

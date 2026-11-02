@@ -1,0 +1,39 @@
+.summary-options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  max-width: 560px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--n-border);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.summary-options p {
+  margin: 0;
+}
+
+.summary-options-low {
+  color: var(--text);
+}
+
+/* The second option, set apart from the first by a line. */
+.summary-options > div + div {
+  padding-top: 16px;
+  border-top: 1px solid var(--n-border);
+}
+
+.summary-options-key {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.summary-options-key strong {
+  color: var(--text);
+}

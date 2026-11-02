@@ -1,0 +1,13 @@
+{
+  "title": "En tu equipo",
+  "text": "La conversación no sale de él. Se descarga una sola vez.",
+  "download": "Descargar el resumen ({size})",
+  "resume": "Seguir con la descarga",
+  "progress": "{done} de {total}",
+  "progressLabel": "Descarga del resumen",
+  "lessThanMinute": "queda menos de un minuto",
+  "minutes_one": "queda ~{count} minuto",
+  "minutes_other": "quedan ~{count} minutos",
+  "afterDownload": "Al terminar se resume esta nota. Mientras tanto puedes seguir usando Lingora.",
+  "useLocal": "Resumir en tu equipo"
+}

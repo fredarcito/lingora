@@ -1,0 +1,9 @@
+.summary-source {
+  display: contents;
+}
+
+.summary-source-form {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
