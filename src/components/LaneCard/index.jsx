@@ -7,12 +7,17 @@ import { useStickToBottom } from "@hooks/useStickToBottom";
 import { useArrivalTimes } from "@hooks/useArrivalTimes";
 import { useObjectUrl } from "@hooks/useObjectUrl";
 import { useAudioRoute } from "@hooks/useAudioRoute";
+import { useLightDevice } from "@hooks/useLightDevice";
 import { echoPossible } from "@utils/route";
 import { t, useT } from "@i18n";
 import Captions from "@components/Captions";
 import LiveStatus from "@components/LiveStatus";
 import PeoplePanel from "@components/PeoplePanel";
 import VirtualMicNotice from "@components/VirtualMicNotice";
+import VoiceOffer from "@components/VoiceOffer";
+import MoreVoices from "@components/MoreVoices";
+import VoiceStruggleNotice from "@components/VoiceStruggleNotice";
+import { VOICES_CHANGED } from "@utils/voiceDownloads";
 import {
   ArrowIcon,
   Dialog,
@@ -79,7 +84,11 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
         .catch(() => setVoiceList([]));
     load();
     window.addEventListener("focus", load);
-    return () => window.removeEventListener("focus", load);
+    window.addEventListener(VOICES_CHANGED, load);
+    return () => {
+      window.removeEventListener("focus", load);
+      window.removeEventListener(VOICES_CHANGED, load);
+    };
   }, [settingsOpen, target]);
   // The speakers add-on may have been downloaded meanwhile (Diagnostics).
   const refreshMulti = multiVoice?.refresh;
@@ -252,10 +261,9 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             )}
             {/* The specific voice and the speed, at hand; the devices, in Settings. */}
             {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} multiVoice={voice === "multi" ? multiVoice : undefined} />}
+            {/* No voice yet: one button downloads the one this computer should use. */}
             {!same && !lane.voices.female && !lane.voices.male && (
-              <p className="settings-note">
-                {t("app.lane.noVoicesNote")}
-              </p>
+              <VoiceOffer lang={target} gender={lane.voice === "male" ? "male" : "female"} />
             )}
 
             {/* Devices: the app chooses them by itself; they are changed in Settings. */}
@@ -340,6 +348,15 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
           outputDevice={lane.outputDevice}
           running={s.running}
           onUse={() => onChange({ outputDevice: VIRTUAL_MIC })}
+        />
+      )}
+      {speaks && voice !== "multi" && !compact && (
+        <VoiceStruggleNotice
+          lang={target}
+          gender={voice === "male" ? "male" : "female"}
+          active={s.running}
+          className={cx(styles.notice, styles.noticeWarn)}
+          onUse={(id) => onChange({ voiceIds: { ...lane.voiceIds, [target]: id } })}
         />
       )}
       {echoLoop && (
@@ -462,6 +479,8 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
   const [voicesLoaded, setVoicesLoaded] = useState(() => voiceCache.has(target));
   const [previewing, setPreviewing] = useState(false);
   const [previewError, setPreviewError] = useState("");
+  const [moreOpen, setMoreOpen] = useState(false);
+  const lightDevice = useLightDevice();
 
   // The voices of the language; they are checked again when returning to the app in case one was downloaded.
   useEffect(() => {
@@ -476,16 +495,23 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
         .finally(() => setVoicesLoaded(true));
     load();
     window.addEventListener("focus", load);
-    return () => window.removeEventListener("focus", load);
+    window.addEventListener(VOICES_CHANGED, load);
+    return () => {
+      window.removeEventListener("focus", load);
+      window.removeEventListener(VOICES_CHANGED, load);
+    };
   }, [target]);
 
   // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const speed = speedRange(lane.maxSpeed);
   const voiceId =voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
-  // Automatic uses Lingora's voice whenever the language has one.
+  // Automatic uses the natural voice whenever the language has one, except on a
+  // low-end computer with a light voice downloaded (`Pipeline::speak`).
   const lingoraVoices = voiceList.filter((v) => v.engine === "supertonic");
-  const lingoraVoice = lingoraVoices.length > 0 && (Boolean(multiVoice) || !voiceId.startsWith("system:"));
+  const lightAuto = lightDevice && voiceList.some((v) => v.engine === "piper");
+  const lingoraVoice =
+    lingoraVoices.length > 0 && (Boolean(multiVoice) || voiceId.startsWith("supertonic:") || (!voiceId && !lightAuto));
   /** @param {string} id "" = automatic. */
   const chooseVoice = (id) => {
     const { [target]: _, ...rest } = lane.voiceIds;
@@ -540,6 +566,7 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
             <option value="">{t(voice === "female" ? "app.voices.auto.female" : "app.voices.auto.male")}</option>
             {[
               ["supertonic", t("app.voices.group.supertonic")],
+              ["piper", t("app.voices.group.light")],
               ["system", t("app.voices.group.system")],
             ].map(([engine, label]) => {
               const list = voiceList.filter((v) => v.engine === engine);
@@ -561,6 +588,23 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
           </button>
         </div>
       </div>}
+      {!multiVoice && (
+        <div className={cx(styles.settingRow, styles.settingSub)}>
+          <span className={styles.settingLabel} />
+          <div className={styles.moreVoices}>
+            <LinkButton onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}>
+              {t(moreOpen ? "app.voices.more.hide" : "app.voices.more.show")}
+            </LinkButton>
+            {/* An accordion: always mounted, so its list is ready when it opens and
+                it can fold back with the same animation. */}
+            <div className={cx(styles.accordion, moreOpen && styles.isOpen)} inert={!moreOpen || undefined}>
+              <div>
+                <MoreVoices lang={target} gender={voice} onPick={chooseVoice} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {previewError && <p className="settings-note">{previewError}</p>}
       <div className={cx(styles.settingRow, styles.speedRow)}>
         <span className={styles.settingLabel}>{t("app.voices.speed")}</span>

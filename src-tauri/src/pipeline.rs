@@ -11,7 +11,7 @@
 
 use crate::config::{Lang, Settings};
 use crate::error::Result;
-use crate::{groq::Groq, translator::LocalTranslator, tts};
+use crate::{groq::Groq, piper, translator::LocalTranslator, tts};
 use serde::Serialize;
 use std::sync::Arc;
 
@@ -103,6 +103,10 @@ pub struct Pipeline {
     settings: Arc<Settings>,
     groq: Groq,
     tts: tts::TtsEngine,
+    /// The light voice (Piper), for low-end computers: docs/plan-voz-ligera.md.
+    piper: piper::PiperEngine,
+    /// The last sentence was said with the natural voice (Supertonic).
+    natural_last: std::sync::atomic::AtomicBool,
     local: LocalTranslator,
 }
 
@@ -111,12 +115,18 @@ impl Pipeline {
         let groq = Groq::new(settings.groq_api_key.clone());
         let tts = tts::TtsEngine::new(settings.tts_model_dir.clone());
         let local = LocalTranslator::new(settings.translator_model.clone());
-        Self { settings, groq, tts, local }
+        let piper = piper::PiperEngine::new(settings.espeak_bin.clone());
+        Self { settings, groq, tts, piper, natural_last: Default::default(), local }
     }
 
     /// Carga el modelo de voz con una frase mínima, para que la primera frase
     /// real no pague la carga.
     pub async fn warm_up(&self) -> Result<()> {
+        // A low-end computer uses the light voice, which loads in well under a
+        // second: loading the natural one would only take memory and CPU.
+        if crate::perf::light_device() {
+            return Ok(());
+        }
         self.tts
             .synthesize("Hola.", Lang::Es, tts::voice_for(Lang::Es, tts::Gender::Male).expect("Supertonic habla español"), 1.0, tts::STEPS)
             .await
@@ -127,8 +137,16 @@ impl Pipeline {
         &self.settings
     }
 
-    pub fn tts(&self) -> &tts::TtsEngine {
-        &self.tts
+    /// The natural voice is in use and can't keep up on this computer: the UI
+    /// suggests the light one.
+    pub fn voice_struggling(&self) -> bool {
+        self.natural_last.load(std::sync::atomic::Ordering::Relaxed) && self.tts.struggling()
+    }
+
+    /// Frees both voice models; they load again on the next sentence.
+    pub async fn release_voices(&self) {
+        self.tts.release().await;
+        self.piper.release().await;
     }
 
     pub fn local_translator(&self) -> &LocalTranslator {
@@ -224,8 +242,9 @@ impl Pipeline {
 
     /// Sintetiza la voz de un fragmento de texto. `speed` acelera la voz
     /// cuando la UI tiene frases en cola.
-    /// Dice `text` con la voz elegida (`voice`: "supertonic:5" o
-    /// "system:<id>"); sin ella o si ya no está, con la mejor del género.
+    /// Dice `text` con la voz elegida (`voice`: "supertonic:5",
+    /// "piper:<model>:<speaker>" o "system:<id>"); sin ella o si ya no está,
+    /// con la mejor del género.
     /// Old "kokoro:*" ids saved before Supertonic fall through to the default.
     /// `hq` uses more steps: a slightly slower, higher-quality voice.
     pub async fn speak(&self, text: &str, lang: Lang, gender: tts::Gender, voice: Option<&str>, speed: f32, hq: bool) -> Result<Speech> {
@@ -236,6 +255,11 @@ impl Pipeline {
                     return self.speak_supertonic(text, lang, sid, speed, hq).await;
                 }
             }
+            Some(("piper", _)) => {
+                if let Some(v) = voice.and_then(piper::voice).filter(|v| piper::is_installed(v.model)) {
+                    return self.speak_piper(text, v, speed).await;
+                }
+            }
             Some(("system", id)) => match self.speak_system(crate::system_voice::synthesize_with(text, id, speed)).await {
                 Ok(speech) => return Ok(speech),
                 // Una voz que se desinstaló: sigue con la de por defecto.
@@ -243,15 +267,30 @@ impl Pipeline {
             },
             _ => {}
         }
-        match tts::voice_for(lang, gender) {
-            Some(sid) => self.speak_supertonic(text, lang, sid, speed, hq).await,
-            None => self.speak_system(crate::system_voice::synthesize(text, lang, gender, speed)).await,
+        // Without a choice: the natural voice, unless this is a low-end
+        // computer with a light voice downloaded; then the light voice, and
+        // last the system's.
+        let natural = tts::voice_for(lang, gender).filter(|_| tts::TtsEngine::is_installed(&self.settings.tts_model_dir));
+        let light = piper::default_voice(lang, gender);
+        match (natural, light) {
+            (Some(sid), None) => self.speak_supertonic(text, lang, sid, speed, hq).await,
+            (Some(sid), Some(_)) if !crate::perf::light_device() => self.speak_supertonic(text, lang, sid, speed, hq).await,
+            (_, Some(v)) => self.speak_piper(text, v, speed).await,
+            (None, None) => self.speak_system(crate::system_voice::synthesize(text, lang, gender, speed)).await,
         }
+    }
+
+    async fn speak_piper(&self, text: &str, voice: &'static piper::PiperVoice, speed: f32) -> Result<Speech> {
+        let t0 = std::time::Instant::now();
+        self.natural_last.store(false, std::sync::atomic::Ordering::Relaxed);
+        let (audio, sample_rate) = self.piper.synthesize(voice, text, speed).await?;
+        Ok(Speech { audio, sample_rate, phonemize_ms: 0, tts_ms: t0.elapsed().as_millis() as u64 })
     }
 
     async fn speak_supertonic(&self, text: &str, lang: Lang, sid: i32, speed: f32, hq: bool) -> Result<Speech> {
         let t0 = std::time::Instant::now();
         let steps = if hq { tts::STEPS_HQ } else { tts::STEPS };
+        self.natural_last.store(true, std::sync::atomic::Ordering::Relaxed);
         let audio = self.tts.synthesize(text, lang, sid, speed, steps).await?;
         Ok(Speech {
             audio,
@@ -263,6 +302,7 @@ impl Pipeline {
 
     async fn speak_system(&self, synthesis: impl std::future::Future<Output = Result<Vec<f32>>>) -> Result<Speech> {
         let t0 = std::time::Instant::now();
+        self.natural_last.store(false, std::sync::atomic::Ordering::Relaxed);
         let audio = synthesis.await?;
         Ok(Speech {
             audio,

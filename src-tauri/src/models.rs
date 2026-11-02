@@ -21,10 +21,18 @@ pub enum Model {
     Speakers,
     /// Optional: downloaded from a note the first time a summary is asked for.
     Summary,
+    /// A light voice (`piper.rs`), downloaded from the lane's voice menu.
+    Piper(&'static crate::piper::PiperModel),
 }
 
 impl Model {
+    /// The models Welcome and Diagnostics know about.
     pub const ALL: [Model; 6] = [Model::Listener, Model::Translator, Model::Voice, Model::SenseVoice, Model::Speakers, Model::Summary];
+
+    /// Everything that can be downloaded: `ALL` and the light voices.
+    pub fn every() -> impl Iterator<Item = Model> {
+        Model::ALL.into_iter().chain(crate::piper::MODELS.iter().map(|m| Model::Piper(m)))
+    }
 
     pub fn id(self) -> &'static str {
         match self {
@@ -35,11 +43,12 @@ impl Model {
             Model::Speakers => crate::doctor::SPEAKERS_CHECK,
             // Not in the diagnostics: it is optional and asked for from the note.
             Model::Summary => "summary",
+            Model::Piper(m) => m.id,
         }
     }
 
     pub fn from_id(id: &str) -> Option<Model> {
-        Model::ALL.into_iter().find(|m| m.id() == id)
+        Model::every().find(|m| m.id() == id)
     }
 
     /// Sin él no se puede empezar: escuchar y traducir.
@@ -56,6 +65,7 @@ impl Model {
             Model::Voice => 145_000_000,
             Model::Speakers => 39_600_000,
             Model::Summary => crate::summarizer::MODEL_BYTES,
+            Model::Piper(m) => m.bytes,
         }
     }
 
@@ -68,6 +78,7 @@ impl Model {
             Model::Voice => settings.tts_model_dir.clone(),
             Model::Speakers => settings.speaker_model.clone(),
             Model::Summary => crate::summarizer::model_path(),
+            Model::Piper(m) => crate::piper::dir(m),
         }
     }
 
@@ -80,6 +91,7 @@ impl Model {
             Model::Voice => crate::tts::TtsEngine::is_installed(&dest),
             Model::Speakers => crate::speakers::Speakers::is_installed(&dest),
             Model::Summary => crate::summarizer::is_installed(&dest),
+            Model::Piper(m) => crate::piper::is_installed(m),
         }
     }
 
@@ -98,6 +110,7 @@ impl Model {
             Model::Voice => {
                 format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", crate::tts::MODEL_NAME)
             }
+            Model::Piper(m) => format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", m.folder),
         }
     }
 
@@ -123,6 +136,7 @@ impl Model {
             Model::Listener => Engine::Parakeet.model_name(),
             Model::SenseVoice => Engine::SenseVoice.model_name(),
             Model::Voice => crate::tts::MODEL_NAME,
+            Model::Piper(m) => m.folder,
             Model::Translator | Model::Speakers | Model::Summary => "",
         }
     }
@@ -131,6 +145,7 @@ impl Model {
     fn keep(self) -> Vec<String> {
         match self {
             Model::Voice => crate::tts::FILES.iter().map(|f| format!("{}/{f}", self.archive_root())).collect(),
+            Model::Piper(m) => crate::piper::files(m).to_vec(),
             _ => Vec::new(),
         }
     }
@@ -314,8 +329,7 @@ impl Model {
 /// What is downloaded: the current models (installed or halfway) and the
 /// leftovers in the models folder.
 pub fn on_disk(settings: &Settings) -> Vec<OnDisk> {
-    let mut out: Vec<OnDisk> = Model::ALL
-        .into_iter()
+    let mut out: Vec<OnDisk> = Model::every()
         .filter_map(|m| {
             let bytes: u64 = m.paths(settings).iter().map(|p| size(p)).sum();
             (bytes > 0).then(|| OnDisk {
@@ -373,7 +387,7 @@ fn remove_in(dir: &Path, id: &str, settings: &Settings) -> Result<()> {
 /// What is in `dir` that no current model uses: a model an update replaced,
 /// with no list to keep up to date. Hidden files (`.DS_Store`) don't count.
 fn leftovers(dir: &Path, settings: &Settings) -> Vec<(String, PathBuf)> {
-    let current: Vec<PathBuf> = Model::ALL.into_iter().flat_map(|m| m.paths(settings)).collect();
+    let current: Vec<PathBuf> = Model::every().flat_map(|m| m.paths(settings)).collect();
     let Ok(entries) = std::fs::read_dir(dir) else {
         return Vec::new();
     };
@@ -391,7 +405,7 @@ fn leftovers(dir: &Path, settings: &Settings) -> Vec<(String, PathBuf)> {
 fn previous(name: &str) -> &'static str {
     if name.starts_with("Hy-MT2") {
         "translator"
-    } else if name.starts_with("kokoro") {
+    } else if name.starts_with("kokoro") || name.starts_with("vits-piper-") {
         "voice"
     } else {
         ""

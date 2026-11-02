@@ -1,0 +1,22 @@
+/* The text and its two choices on one line. The colors come from the card's notice. */
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notice p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.notice > button {
+  flex-shrink: 0;
+}
+
+.error {
+  display: block;
+  margin-top: 4px;
+  color: #fca5a5;
+}

@@ -11,12 +11,13 @@
   "purpose.indextranslate": "Translation and generated interface languages",
   "purpose.qwen": "Note summaries",
   "purpose.supertonic": "Voice",
+  "purpose.piper": "The light voice (modest computers)",
   "purpose.eres2net": "Telling speakers apart",
   "purpose.sherpa": "Runs listening, voice and speakers",
   "purpose.onnxruntime": "Comes inside sherpa-onnx",
   "purpose.llamacpp": "Runs the translation and the summary",
   "purpose.llamacpp2": "Connects llama.cpp to the app",
-  "purpose.espeak": "Phonemes for the voice (separate program)",
+  "purpose.espeak": "Phonemes for the light voice (separate program)",
   "purpose.tauri": "The app's frame",
   "purpose.react": "The interface"
 }

@@ -12,14 +12,21 @@ const WELCOMED_KEY = "lingora.welcomed";
  * en el diagnóstico solo a quien lo necesita. «Personas» (quién habla en las
  * notas) es pequeño y va con el resto.
  */
-const STEPS = [{ id: "listener" }, { id: "translator" }, { id: "voice_model" }, { id: "speakers" }];
+const ALL_STEPS = [{ id: "listener" }, { id: "translator" }, { id: "voice_model" }, { id: "speakers" }];
+
+/**
+ * En un equipo modesto la voz no se descarga aquí: la ligera se elige por
+ * idioma en la tarjeta del carril (docs/plan-voz-ligera.md).
+ * @param {boolean} light
+ */
+const stepsFor = (light) => (light ? ALL_STEPS.filter((s) => s.id !== "voice_model") : ALL_STEPS);
 
 /** Claves (`welcome.how.<id>.title|text`) de los pasos de «Cómo funciona». */
 const HOW_IT_WORKS = ["listen", "translate", "read", "local"];
 
 /** Si hay que pasar por la bienvenida: falta lo imprescindible, o la voz y aún no se vio. */
 export async function needsWelcome() {
-  const status = await api.setupStatus();
+  const [status, light] = await Promise.all([api.setupStatus(), api.lightDevice().catch(() => false)]);
   const missing = (id) => status.some((m) => m.id === id && !m.installed);
   let welcomed = false;
   try {
@@ -27,7 +34,7 @@ export async function needsWelcome() {
   } catch {
     // Sin almacenamiento se decide solo por los modelos.
   }
-  return missing("listener") || missing("translator") || (!welcomed && missing("voice_model"));
+  return missing("listener") || missing("translator") || (!welcomed && !light && missing("voice_model"));
 }
 
 /** @param {number} bytes @param {string} lang */
@@ -63,22 +70,24 @@ export default function Welcome({ onDone }) {
   const [etaSecs, setEtaSecs] = useState(0);
   const eta = remaining(etaSecs);
   const speed = useRef({ at: 0, bytes: 0, rate: 0 });
+  const [steps, setSteps] = useState(ALL_STEPS);
 
   useEffect(() => {
-    api
-      .setupStatus()
-      .then((status) => {
+    Promise.all([api.setupStatus(), api.lightDevice().catch(() => false)])
+      .then(([status, light]) => {
+        const wanted = stepsFor(light);
         const next = {};
         for (const m of status) next[m.id] = { installed: m.installed, partial: m.partial, total: m.approx_bytes, downloaded: m.installed ? m.approx_bytes : 0 };
+        setSteps(wanted);
         setModels(next);
-        if (STEPS.every((s) => next[s.id]?.installed)) setPhase("done");
+        if (wanted.every((s) => next[s.id]?.installed)) setPhase("done");
       })
       .catch(() => onDone());
   }, []);
 
-  const pending = STEPS.filter((s) => models[s.id] && !models[s.id].installed);
-  const total = STEPS.reduce((n, s) => n + (models[s.id]?.total ?? 0), 0);
-  const downloaded = STEPS.reduce((n, s) => n + (models[s.id]?.downloaded ?? 0), 0);
+  const pending = steps.filter((s) => models[s.id] && !models[s.id].installed);
+  const total = steps.reduce((n, s) => n + (models[s.id]?.total ?? 0), 0);
+  const downloaded = steps.reduce((n, s) => n + (models[s.id]?.downloaded ?? 0), 0);
   const left = pending.reduce((n, s) => n + models[s.id].total, 0);
   const resuming = pending.some((s) => models[s.id].partial);
   const ready = models.listener?.installed && models.translator?.installed;
@@ -91,9 +100,9 @@ export default function Welcome({ onDone }) {
     setError("");
     // Copia local: el progreso llega por callback y el estado de React iría con retraso.
     const local = structuredClone(models);
-    const left = () => STEPS.reduce((n, s) => n + (local[s.id].installed ? 0 : local[s.id].total - local[s.id].downloaded), 0);
+    const left = () => steps.reduce((n, s) => n + (local[s.id].installed ? 0 : local[s.id].total - local[s.id].downloaded), 0);
     speed.current = { at: performance.now(), bytes: left(), rate: 0 };
-    for (const step of STEPS) {
+    for (const step of steps) {
       if (local[step.id].installed) continue;
       setActive(step.id);
       try {
@@ -178,7 +187,7 @@ export default function Welcome({ onDone }) {
           </p>
 
           <ul className={styles.welcomeModels}>
-            {STEPS.map((step) => {
+            {steps.map((step) => {
               const m = models[step.id];
               const p = m ? (m.installed ? 100 : m.total ? (m.downloaded / m.total) * 100 : 0) : 0;
               const state = !m

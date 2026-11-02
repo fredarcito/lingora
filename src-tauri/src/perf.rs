@@ -30,6 +30,32 @@ pub fn log_system() {
         "compilado con GPU para la traducción: {}",
         if cfg!(feature = "vulkan") { "Vulkan" } else if cfg!(target_os = "macos") { "Metal" } else { "no (solo CPU)" }
     );
+    if light_device() {
+        tracing::info!("equipo modesto: se recomienda la voz ligera");
+    }
+}
+
+/// A computer where the natural voice can't keep up while listening: x86
+/// without VNNI (Intel before ~2021, AMD before Zen 4). A Ryzen 7 3750H ran it
+/// at 0.7–0.9× real time on its own (docs/plan-voz-ligera.md). Apple Silicon
+/// never is. `LINGORA_LIGHT_VOICE=1` (or `0`) forces it, to test.
+pub fn light_device() -> bool {
+    static LIGHT: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *LIGHT.get_or_init(|| match std::env::var("LINGORA_LIGHT_VOICE").as_deref() {
+        Ok("1") => true,
+        Ok("0") => false,
+        _ => without_vnni(),
+    })
+}
+
+#[cfg(target_arch = "x86_64")]
+fn without_vnni() -> bool {
+    !(is_x86_feature_detected!("avxvnni") || is_x86_feature_detected!("avx512vnni"))
+}
+
+#[cfg(not(target_arch = "x86_64"))]
+fn without_vnni() -> bool {
+    false
 }
 
 #[cfg(target_arch = "x86_64")]

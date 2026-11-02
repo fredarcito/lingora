@@ -78,6 +78,11 @@ solo escuchas.
   - **"Varias voces":** si en el vídeo hablan varias personas, cada una recibe
     su propia voz traducida, para que distingas quién habla.
   - Opción "Voz de más calidad" (algo más natural, unas décimas más lenta).
+  - **Voz ligera para equipos modestos:** en ordenadores sin mucha potencia
+    (PC de antes de ~2021, Mac con Intel) la app lo detecta sola y recomienda
+    una voz más ligera que llega a tiempo. Se activa con un botón ("Activar
+    voz") y cada voz se descarga aparte (~70 MB). La voz natural sigue
+    disponible para quien la quiera. (Recién hecho; en pruebas.)
   - **Velocidad de la voz a elegir, por carril** (Escuchar y Hablar guardan
     cada uno la suya), con tres atajos sobre un deslizador:
     - **Natural** (por defecto): va a su ritmo y solo acelera un poco si se
@@ -211,7 +216,9 @@ idioma de destino (en la app aparecen como "pronto").
 francés, italiano, portugués, japonés, coreano, alemán, neerlandés, polaco,
 checo, ruso, ucraniano, turco, árabe, hindi, vietnamita e indonesio). Para el
 resto usa las voces del sistema de macOS si están instaladas (gratis en
-Ajustes del Sistema); si no hay voz, solo subtítulos.
+Ajustes del Sistema); si no hay voz, solo subtítulos. En equipos modestos, la
+voz ligera (de momento en español e inglés; pronto en más idiomas, incluidos
+algunos que hoy solo tienen la voz del sistema, como chino, persa o hebreo).
 
 **Calidad por idioma (dato interno, para ser honestos en los mensajes):**
 la traducción es mejor en idiomas europeos, chino, japonés y coreano. Es

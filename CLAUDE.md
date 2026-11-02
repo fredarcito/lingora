@@ -155,6 +155,8 @@ documentación o su código).
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
   nube (llama.cpp y espeak-ng dentro de la app, resumen local hecho, firma).
 - `docs/plan-windows.md`: lo que falta para Windows (solo plan).
+- `docs/plan-voz-ligera.md`: la voz ligera (Piper) para equipos modestos y
+  los idiomas sin voz natural (motor e interfaz hechos; faltan más idiomas).
 - `docs/plan-plantillas-resumen.md`: plantillas de resumen (fase 1 hecha;
   las plantillas propias, en su fase 2).
 - `docs/plan-resumen-nube.md`: resumir con la clave de IA del propio usuario

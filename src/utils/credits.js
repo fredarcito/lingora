@@ -54,6 +54,15 @@ export const CREDITS = [
     url: "https://huggingface.co/Supertone/supertonic-3",
   },
   {
+    id: "piper",
+    kind: "model",
+    name: "Piper voices",
+    author: "Rhasspy / Open Home Foundation and each voice's authors",
+    license: "CC0, CC BY 3.0, CC BY-SA 4.0, Apache-2.0, Unlicense, public domain (per voice)",
+    licenseFile: "Piper-voices.txt",
+    url: "https://huggingface.co/rhasspy/piper-voices",
+  },
+  {
     id: "eres2net",
     kind: "model",
     name: "ERes2Net (3D-Speaker)",

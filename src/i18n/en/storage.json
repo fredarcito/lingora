@@ -10,6 +10,7 @@
   "item.voice_model": "Voice model",
   "item.speakers": "Model for telling people apart",
   "item.summary": "Summary model",
+  "item.light_voice": "Light voice ({name})",
   "item.old.translator": "Previous translation model",
   "item.old.voice": "Previous voice model",
   "item.old.unknown": "File from an older version",
@@ -27,6 +28,7 @@
   "warn.voice_model": "You won't hear the translation, only see the subtitles, until you download it again ({size}).",
   "warn.speakers": "Notes will stop telling who is speaking until you download it again ({size}).",
   "warn.summary": "Notes can't be summarized until you download it again from a note ({size}).",
+  "warn.light_voice": "That voice won't be heard until you download it again ({size}).",
   "warn.partial": "What has been downloaded so far is lost ({size}): the download will start over.",
   "warn.obsolete": "It's no longer used: deleting it changes nothing in Lingora and frees {size}."
 }

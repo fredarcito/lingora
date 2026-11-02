@@ -165,6 +165,48 @@
   min-width: 0;
 }
 
+/* "More voices…" and, open, its panel under it. */
+.more-voices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+
+.more-voices > :last-child:not(:first-child) {
+  align-self: stretch;
+}
+
+/* Grows from 0 to its content's height: the grid row animates, a plain height can't. */
+.accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: -8px;
+  transition:
+    grid-template-rows 0.25s ease,
+    opacity 0.2s ease,
+    margin-top 0.25s ease;
+}
+
+.accordion > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.accordion.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accordion {
+    transition: none;
+  }
+}
+
 .voice-preview {
   flex: none;
   display: inline-flex;

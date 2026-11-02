@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSize, itemNameKey, totalBytes, warningKey } from "./storage.js";
+import { formatSize, itemNameKey, itemNameVars, totalBytes, warningKey } from "./storage.js";
 
 /** @param {Partial<import("@utils/api").OnDisk>} over @returns {import("@utils/api").OnDisk} */
 const item = (over) => ({ id: "translator", obsolete: false, was: "", required: true, partial: false, bytes: 1, ...over });
@@ -25,6 +25,17 @@ describe("storage", () => {
     );
     expect(itemNameKey(item({ id: "kokoro-multi-lang-v1_0", obsolete: true, was: "voice" }))).toBe("storage.item.old.voice");
     expect(itemNameKey(item({ id: "whatever.bin", obsolete: true }))).toBe("storage.item.old.unknown");
+  });
+
+  it("names each light voice by its voice and country", () => {
+    const voice = item({ id: "piper:es_ES-sharvard-medium", required: false });
+    expect(itemNameKey(voice)).toBe("storage.item.light_voice");
+    expect(itemNameVars(voice)).toEqual({ name: "Sharvard, es-ES" });
+    expect(warningKey(voice)).toBe("storage.warn.light_voice");
+    expect(warningKey({ ...voice, partial: true })).toBe("storage.warn.partial");
+    // An old light voice's folder is a leftover like any other.
+    expect(itemNameKey(item({ id: "vits-piper-es_ES-old-medium", obsolete: true, was: "voice" }))).toBe("storage.item.old.voice");
+    expect(itemNameVars(item({}))).toEqual({});
   });
 
   it("warns about what stops working", () => {

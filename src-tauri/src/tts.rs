@@ -76,11 +76,26 @@ pub struct TtsEngine {
     /// una, más la escucha) y la primera tarda más en sonar. El mutex de tokio
     /// atiende por orden de llegada, que es el orden de las frases.
     busy: tokio::sync::Mutex<()>,
+    /// Real-time factor of the last sentences (generation only, without the
+    /// queue or the load): `struggling` reads it.
+    recent: std::sync::Mutex<std::collections::VecDeque<f32>>,
 }
+
+/// Sentences `struggling` averages, and the real-time factor above which the
+/// voice can't keep up while listening (docs/plan-voz-ligera.md).
+const STRUGGLE_SENTENCES: usize = 3;
+const STRUGGLE_RTF: f32 = 0.6;
 
 impl TtsEngine {
     pub fn new(model_dir: PathBuf) -> Self {
-        Self { model_dir, loaded: Default::default(), busy: Default::default() }
+        Self { model_dir, loaded: Default::default(), busy: Default::default(), recent: Default::default() }
+    }
+
+    /// The last sentences took more than `STRUGGLE_RTF` of their length to
+    /// make: on this computer the light voice would arrive on time.
+    pub fn struggling(&self) -> bool {
+        let recent = self.recent.lock().unwrap();
+        recent.len() >= STRUGGLE_SENTENCES && recent.iter().sum::<f32>() / recent.len() as f32 > STRUGGLE_RTF
     }
 
     /// El modelo está descargado en `dir`.
@@ -130,6 +145,13 @@ impl TtsEngine {
         // Real-time factor: below 1 the voice is made faster than it plays.
         let took = t1.elapsed().as_secs_f32();
         let audio_secs = audio.len() as f32 / SAMPLE_RATE as f32;
+        {
+            let mut recent = self.recent.lock().unwrap();
+            if recent.len() == STRUGGLE_SENTENCES {
+                recent.pop_front();
+            }
+            recent.push_back(took / audio_secs.max(0.01));
+        }
         tracing::info!(
             "voz: {chars} caracteres → {audio_secs:.1} s de audio en {took:.2} s ({:.2}× tiempo real) · cola {:.2} s · carga {:.2} s · {steps} pasos · velocidad {speed:.2}",
             took / audio_secs.max(0.01),

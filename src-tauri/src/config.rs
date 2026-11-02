@@ -30,8 +30,8 @@ pub struct LangInfo {
     /// Supertonic speaks it (with the same code as `code`); if not, the
     /// system voice is used.
     pub supertonic: bool,
-    /// espeak-ng locale. Unused since Kokoro was replaced; see Step 4 of
-    /// docs/plan-voz-supertonic.md.
+    /// espeak-ng locale, for the light voice (`piper.rs`). The bundled
+    /// espeak-ng-data has only these languages (`scripts/build-espeak.sh`).
     pub espeak: &'static str,
     /// Etiquetas BCP-47 de las voces del sistema que valen para este idioma,
     /// por orden de preferencia ("ja-JP", "yue", "zh-HK"…). Una etiqueta vale

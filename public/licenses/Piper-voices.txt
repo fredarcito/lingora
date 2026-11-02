@@ -1,0 +1,51 @@
+Piper voices (the light voice)
+==============================
+
+Lingora downloads these voices on demand from the Piper voice catalogue
+(https://huggingface.co/rhasspy/piper-voices), in the format sherpa-onnx
+publishes (https://github.com/k2-fsa/sherpa-onnx/releases/tag/tts-models).
+Each voice has its own licence, which comes from the recordings it was
+trained on. Only voices whose licence allows commercial use are offered.
+
+Spanish
+-------
+
+es_ES-sharvard-medium (two speakers)
+  Dataset: Sharvard corpus, University of Edinburgh
+           https://datashare.ed.ac.uk/handle/10283/574
+  Licence: Creative Commons Attribution 3.0 (CC BY 3.0)
+           http://creativecommons.org/licenses/by/3.0/
+
+es_ES-davefx-medium
+  Dataset: https://github.com/OHF-Voice/voice-datasets
+  Licence: CC0 1.0 (public domain dedication)
+
+es_MX-claude-high
+  Voice:   https://huggingface.co/spaces/HirCoir/Piper-TTS-Spanish
+  Licence: Apache License 2.0 (text in Apache-2.0.txt)
+
+es_MX-ald-medium
+  Dataset: https://huggingface.co/datasets/rmcpantoja/Ald_Mexican_Spanish_speech_dataset
+  Licence: The Unlicense (public domain) http://unlicense.org
+
+es_AR-daniela-high
+  Dataset: Crowdsourced high-quality Argentinian Spanish speech data set,
+           Google, https://www.openslr.org/61/
+  Trained by: https://huggingface.co/larcanio/piper-voices
+  Licence: Creative Commons Attribution-ShareAlike 4.0 (CC BY-SA 4.0)
+           https://creativecommons.org/licenses/by-sa/4.0/
+
+English
+-------
+
+en_US-ljspeech-medium
+  Dataset: The LJ Speech Dataset, https://keithito.com/LJ-Speech-Dataset/
+  Licence: public domain
+
+en_US-kristin-medium, en_US-john-medium, en_US-norman-medium, en_GB-cori-medium
+  Dataset: recordings from LibriVox, https://librivox.org
+  Licence: public domain
+
+en_US-joe-medium
+  Dataset: https://github.com/OHF-Voice/voice-datasets
+  Licence: CC0 1.0 (public domain dedication)

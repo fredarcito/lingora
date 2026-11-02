@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
-import { formatSize, itemNameKey, totalBytes, warningKey } from "@utils/storage";
+import { formatSize, itemNameKey, itemNameVars, totalBytes, warningKey } from "@utils/storage";
 import { useLang, useT } from "@i18n";
 import { Badge, Button, ConfirmDialog, Spinner, cx } from "@components/shared";
 import styles from "./styles.module.css";
@@ -61,7 +61,7 @@ export default function Storage({ recording, onRemoved }) {
       {items.map((item) => (
         <div key={item.id} className="prefs-row prefs-row-static">
           <span>
-            <strong>{t(itemNameKey(item))}</strong>
+            <strong>{t(itemNameKey(item), itemNameVars(item))}</strong>
             <small className={styles.storageMeta}>
               {formatSize(item.bytes, lang)}
               {item.obsolete && <Badge muted>{t("storage.unused")}</Badge>}
@@ -88,7 +88,7 @@ export default function Storage({ recording, onRemoved }) {
       {error && <p className="notes-error">{error}</p>}
       {asking && (
         <ConfirmDialog
-          title={t("storage.confirmTitle", { name: t(itemNameKey(asking)) })}
+          title={t("storage.confirmTitle", { name: t(itemNameKey(asking), itemNameVars(asking)) })}
           body={t(warningKey(asking), { size: formatSize(asking.bytes, lang) })}
           confirmLabel={t("storage.delete")}
           cancelLabel={t("storage.cancel")}

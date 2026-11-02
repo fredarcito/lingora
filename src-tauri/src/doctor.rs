@@ -112,8 +112,22 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
         )
     });
 
+    let light = crate::perf::light_device();
+    let light_installed = crate::piper::MODELS.iter().any(|m| crate::piper::is_installed(m));
     out.push(if crate::tts::TtsEngine::is_installed(&settings.tts_model_dir) {
         Check::ok(VOICE_CHECK, "Voz", "Descargada.")
+    } else if light && light_installed {
+        Check::ok(VOICE_CHECK, "Voz", "Voz ligera descargada (la recomendada en este equipo).")
+    } else if light {
+        // Without the "Download" button: the light voice is chosen per language, in the lane.
+        Check::problem(
+            VOICE_CHECK,
+            Status::Warning,
+            "Falta la voz",
+            "En este equipo va mejor la voz ligera: actívala en la tarjeta de traducción (Ajustes del \
+             carril → Voz → Activar voz). Sin ella solo hay subtítulos.",
+            None,
+        )
     } else {
         Check::problem(
             VOICE_CHECK,

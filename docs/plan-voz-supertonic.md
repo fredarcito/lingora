@@ -142,6 +142,9 @@ deletes **only** `models/kokoro-multi-lang-v1_0`.
 
 ## Step 4 (separate confirmation): espeak-ng
 
+**Cancelled 2026-11-03:** the light voice (Piper, `docs/plan-voz-ligera.md`)
+needs espeak-ng for its phonemes. Keep it.
+
 After Step 1, nothing calls espeak-ng or `phonemizer.rs`. Removing them saves
 bundle size, but it touches `tauri.conf.json` (protected), the build scripts
 and `docs/plan-autonomia.md`. Propose it apart, after the user has tested the

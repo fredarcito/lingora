@@ -14,6 +14,7 @@ mod perf;
 mod objc;
 mod phonemizer;
 mod pipeline;
+mod piper;
 mod route;
 mod speakers;
 mod summarizer;
@@ -64,7 +65,7 @@ async fn listen_warm_up(state: tauri::State<'_, AppState>, lang: Lang) -> error:
 #[tauri::command]
 async fn release_models(state: tauri::State<'_, AppState>) -> error::Result<()> {
     state.listener.release().await;
-    state.pipeline.tts().release().await;
+    state.pipeline.release_voices().await;
     state.speakers.release().await;
     state.pipeline.local_translator().shutdown();
     Ok(())
@@ -161,7 +162,8 @@ async fn speak(
 /// Una voz que se puede elegir para un idioma.
 #[derive(serde::Serialize)]
 struct VoiceInfo {
-    /// "supertonic:5" o "system:<identificador>"; se pasa tal cual a `speak`.
+    /// "supertonic:5", "piper:<model>:<speaker>" o "system:<identificador>";
+    /// se pasa tal cual a `speak`.
     id: String,
     /// The system voice's name, or the number (1–5) of a Supertonic voice
     /// within its gender: the UI names it ("Voice 1").
@@ -172,8 +174,8 @@ struct VoiceInfo {
     detail: String,
 }
 
-/// Las voces del idioma: las de Supertonic (si está descargado) y las del
-/// sistema, cada grupo de mejor a peor.
+/// Las voces del idioma: las de Supertonic (si está descargado), las ligeras
+/// descargadas y las del sistema, cada grupo de mejor a peor.
 #[tauri::command]
 async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<Vec<VoiceInfo>> {
     let mut out = Vec::new();
@@ -186,6 +188,13 @@ async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<
             detail: String::new(),
         }));
     }
+    out.extend(piper::voices(lang).filter(|v| piper::is_installed(v.model)).map(|v| VoiceInfo {
+        id: v.id.to_string(),
+        name: v.name.to_string(),
+        engine: "piper",
+        gender: Some(v.gender),
+        detail: system_voice::region(v.tag),
+    }));
     let all = tauri::async_runtime::spawn_blocking(system_voice::voices).await.unwrap_or_default();
     let mut system = system_voice::voices_for(lang, &all);
     system.sort_by_key(|v| std::cmp::Reverse(system_voice::score(v)));
@@ -204,6 +213,69 @@ async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<
         }
     }));
     Ok(out)
+}
+
+/// A light voice of the catalogue, downloaded or not, for the voice menu.
+#[derive(serde::Serialize)]
+struct LightVoice {
+    /// What `speak` gets ("piper:es_ES-sharvard-medium:1").
+    id: &'static str,
+    /// What `download_model` gets ("piper:es_ES-sharvard-medium"); several
+    /// voices can share one download.
+    model: &'static str,
+    name: &'static str,
+    gender: tts::Gender,
+    /// The country ("España").
+    detail: String,
+    installed: bool,
+    bytes: u64,
+}
+
+/// What can be downloaded to give the language a voice: the natural voice
+/// (one download, all its languages) and the light ones (one per voice), and
+/// which kind this computer should use. docs/plan-voz-ligera.md.
+#[derive(serde::Serialize)]
+struct VoiceDownloads {
+    /// This is a low-end computer: the light voice goes first.
+    light_recommended: bool,
+    /// The natural voice speaks the language.
+    natural: bool,
+    natural_installed: bool,
+    natural_bytes: u64,
+    light: Vec<LightVoice>,
+}
+
+#[tauri::command]
+fn voice_downloads(state: tauri::State<'_, AppState>, lang: Lang) -> VoiceDownloads {
+    VoiceDownloads {
+        light_recommended: perf::light_device(),
+        natural: lang.info().supertonic,
+        natural_installed: tts::TtsEngine::is_installed(&state.pipeline.settings().tts_model_dir),
+        natural_bytes: models::Model::Voice.approx_bytes(),
+        light: piper::voices(lang)
+            .map(|v| LightVoice {
+                id: v.id,
+                model: v.model.id,
+                name: v.name,
+                gender: v.gender,
+                detail: system_voice::region(v.tag),
+                installed: piper::is_installed(v.model),
+                bytes: v.model.bytes,
+            })
+            .collect(),
+    }
+}
+
+/// This is a low-end computer (`perf::light_device`): Welcome skips the voice.
+#[tauri::command]
+fn light_device() -> bool {
+    perf::light_device()
+}
+
+/// The natural voice is in use and can't keep up: the lane suggests the light one.
+#[tauri::command]
+fn voice_struggling(state: tauri::State<'_, AppState>) -> bool {
+    state.pipeline.voice_struggling()
 }
 
 #[tauri::command]
@@ -272,7 +344,7 @@ fn storage_status(state: tauri::State<'_, AppState>) -> Vec<models::OnDisk> {
 #[tauri::command]
 async fn remove_download(state: tauri::State<'_, AppState>, id: String) -> error::Result<Vec<models::OnDisk>> {
     state.listener.release().await;
-    state.pipeline.tts().release().await;
+    state.pipeline.release_voices().await;
     state.speakers.release().await;
     state.pipeline.local_translator().shutdown();
     models::remove(&id, state.pipeline.settings())?;
@@ -342,13 +414,20 @@ struct LanguageInfo {
 
 /// Todos los idiomas, español e inglés primero y el resto por orden alfabético.
 #[tauri::command]
-async fn languages() -> Vec<LanguageInfo> {
+async fn languages(state: tauri::State<'_, AppState>) -> error::Result<Vec<LanguageInfo>> {
+    let natural = tts::TtsEngine::is_installed(&state.pipeline.settings().tts_model_dir);
     let voices = tauri::async_runtime::spawn_blocking(system_voice::voices).await.unwrap_or_default();
     let mut out: Vec<LanguageInfo> = Lang::all()
         .map(|lang| {
             let info = lang.info();
-            let (female_voice, male_voice) =
-                if info.supertonic { (true, true) } else { system_voice::available(lang, &voices) };
+            // The natural voice counts once it is downloaded; until then the lane offers it.
+            let (female_voice, male_voice) = if info.supertonic && natural {
+                (true, true)
+            } else {
+                let (female, male) = system_voice::available(lang, &voices);
+                let light = |g| piper::voices(lang).any(|v| v.gender == g && piper::is_installed(v.model));
+                (female || light(tts::Gender::Female), male || light(tts::Gender::Male))
+            };
             LanguageInfo {
                 code: lang,
                 name: info.spanish,
@@ -362,7 +441,7 @@ async fn languages() -> Vec<LanguageInfo> {
     // Sin tildes para ordenar: "Árabe" va con la A.
     let key = |name: &str| name.replace(['Á', 'á'], "a").replace(['É', 'é'], "e").to_lowercase();
     out.sort_by_key(|l| (![Lang::Es, Lang::En].contains(&l.code), key(l.name)));
-    out
+    Ok(out)
 }
 
 /// Si este Mac puede capturar su audio sin BlackHole (macOS 14.2+).
@@ -516,6 +595,9 @@ pub fn run() {
             release_models,
             speak,
             voices,
+            voice_downloads,
+            light_device,
+            voice_struggling,
             play_audio,
             run_diagnostics,
             fix_diagnostic,

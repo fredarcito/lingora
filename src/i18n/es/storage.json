@@ -10,6 +10,7 @@
   "item.voice_model": "Modelo de voz",
   "item.speakers": "Modelo para distinguir a las personas",
   "item.summary": "Modelo de resumen",
+  "item.light_voice": "Voz ligera ({name})",
   "item.old.translator": "Modelo de traducción anterior",
   "item.old.voice": "Modelo de voz anterior",
   "item.old.unknown": "Archivo de una versión anterior",
@@ -27,6 +28,7 @@
   "warn.voice_model": "No oirás la traducción, solo verás los subtítulos, hasta que lo vuelvas a descargar ({size}).",
   "warn.speakers": "Las notas dejarán de distinguir quién habla hasta que lo vuelvas a descargar ({size}).",
   "warn.summary": "Las notas no se podrán resumir hasta que lo vuelvas a descargar desde una nota ({size}).",
+  "warn.light_voice": "Esa voz dejará de oírse hasta que la vuelvas a descargar ({size}).",
   "warn.partial": "Se pierde lo descargado hasta ahora ({size}): la descarga empezará de cero.",
   "warn.obsolete": "Ya no se usa: borrarlo no cambia nada en Lingora y libera {size}."
 }

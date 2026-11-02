@@ -1,0 +1,15 @@
+/* "Turn on voice": the button and, under it, why this voice. */
+.offer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.offer p {
+  margin: 0;
+}
+
+.error {
+  color: #fca5a5;
+}

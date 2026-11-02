@@ -28,11 +28,31 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 
 /**
  * @typedef {Object} VoiceInfo
- * @property {string} id "supertonic:5" or "system:<identifier>".
- * @property {string} name The system voice's name, or the number (1–5) of a Lingora voice within its gender.
- * @property {"supertonic" | "system"} engine
+ * @property {string} id "supertonic:5", "piper:<model>:<speaker>" or "system:<identifier>".
+ * @property {string} name The voice's name, or the number (1–5) of a natural voice within its gender.
+ * @property {"supertonic" | "piper" | "system"} engine Natural, light or system voice.
  * @property {"female" | "male" | null} gender
  * @property {string} detail Country and quality ("México · Premium"), or empty.
+ */
+
+/**
+ * @typedef {Object} LightVoice A light voice of the catalogue, downloaded or not.
+ * @property {string} id What `speak` gets ("piper:es_ES-sharvard-medium:1").
+ * @property {string} model What `downloadModel` gets; several voices can share one download.
+ * @property {string} name
+ * @property {"female" | "male"} gender
+ * @property {string} detail The country ("España").
+ * @property {boolean} installed
+ * @property {number} bytes Size of the download.
+ */
+
+/**
+ * @typedef {Object} VoiceDownloads What can be downloaded to give a language a voice (docs/plan-voz-ligera.md).
+ * @property {boolean} light_recommended Low-end computer: the light voice goes first.
+ * @property {boolean} natural The natural voice speaks the language.
+ * @property {boolean} natural_installed
+ * @property {number} natural_bytes One download for all its languages.
+ * @property {LightVoice[]} light
  */
 
 /**
@@ -222,6 +242,15 @@ export const api = {
    * @returns {Promise<VoiceInfo[]>}
    */
   voices: (lang) => invoke("voices", { lang }),
+  /**
+   * What can be downloaded to give the language a voice, and which kind this computer should use.
+   * @param {Lang} lang @returns {Promise<VoiceDownloads>}
+   */
+  voiceDownloads: (lang) => invoke("voice_downloads", { lang }),
+  /** Low-end computer: the light voice is recommended. @returns {Promise<boolean>} */
+  lightDevice: () => invoke("light_device"),
+  /** The natural voice is in use and can't keep up on this computer. @returns {Promise<boolean>} */
+  voiceStruggling: () => invoke("voice_struggling"),
   /**
    * Plays the voice on an output (by name; "" = system output) and
    * resolves when it finishes playing. Raw, like `listen`: sample rate (u32
