@@ -18,6 +18,7 @@
   "lane.floatClose": "Cerrar los subtítulos flotantes",
   "lane.floatOpen": "Subtítulos flotantes, encima de cualquier ventana",
   "lane.settings": "Ajustes del carril",
+  "lane.settings.close": "Cerrar",
   "lane.subtitles": "Subtítulos",
   "lane.subtitles.translated": "Traducidos",
   "lane.subtitles.translated.hint": "Solo la traducción",

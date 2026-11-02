@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { SYSTEM_AUDIO } from "@utils/audio";
 import { NO_SIGNAL_SECS, VIRTUAL_MIC, apiLang, originalText } from "@utils/lanes";
@@ -15,6 +15,7 @@ import PeoplePanel from "@components/PeoplePanel";
 import VirtualMicNotice from "@components/VirtualMicNotice";
 import {
   ArrowIcon,
+  Dialog,
   FloatIcon,
   IconButton,
   LinkButton,
@@ -52,12 +53,13 @@ const VOICE_SAMPLES = {
 const voiceCache = new Map();
 
 /**
- * Lane card: header, main control, collapsible settings and the
+ * Lane card: header, main control, settings (in a dialog) and the
  * translations as subtitles (the most recent one at the bottom, highlighted).
  */
 export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, saveNotes, onSaveNotes, floating, onFloating, onOpenSettings, multiVoice }) {
   const t = useT();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   const [detailsId, setDetailsId] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
   /** @type {[import("@utils/api").VoiceInfo[], Function]} */
@@ -176,7 +178,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             active={settingsOpen}
             onClick={() => setSettingsOpen((v) => !v)}
             title={t("app.lane.settings")}
-            aria-expanded={settingsOpen}
+            aria-haspopup="dialog"
           >
             <SlidersIcon />
           </IconButton>
@@ -184,84 +186,97 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
       </header>
 
       {settingsOpen && (
-        <div className={styles.settings}>
-          {/* The essentials: what you see and what you hear. */}
-          <div className={styles.settingRow}>
-            <span className={styles.settingLabel}>{t("app.lane.subtitles")}</span>
-            <Segmented
-              value={subtitles}
-              onChange={chooseSubtitles}
-              options={subtitleOptions.map(([value, label, hint]) => ({ value, label, hint }))}
-            />
-          </div>
-          {/* In "Original" it stays, so the voice can be turned back on without leaving it. */}
-          {(!same || original === true) && (
+        <Dialog
+          light
+          title={`${lane.title} · ${t("app.lane.settings")}`}
+          closeLabel={t("app.lane.settings.close")}
+          onClose={closeSettings}
+        >
+          <div className={cx(styles.settings, LANE_CLASS[lane.direction])}>
+            {/* The essentials: what you see and what you hear. */}
             <div className={styles.settingRow}>
-              <span className={styles.settingLabel}>{t("app.lane.voice")}</span>
+              <span className={styles.settingLabel}>{t("app.lane.subtitles")}</span>
               <Segmented
-                value={speaks ? voice : "off"}
-                onChange={(value) => {
-                  if (value === "off") return onChange({ speak: false });
-                  // A specific voice of another gender no longer applies: it goes back to automatic.
-                  // With several voices it stays: it is Person 1's voice.
-                  const chosen = voiceList.find((v) => v.id === voiceId);
-                  const { [target]: _, ...rest } = lane.voiceIds;
-                  const drop = value !== "multi" && chosen && chosen.gender !== value;
-                  onChange({ speak: true, voice: value, ...(drop ? { voiceIds: rest } : {}) });
-                }}
-                options={[
-                  { value: "off", label: t("app.lane.voice.off"), hint: t("app.lane.voice.off.hint") },
-                  // It is read in every sentence: it can be changed while the lane is running.
-                  {
-                    value: "female",
-                    label: t("app.lane.voice.female"),
-                    disabled: !lane.voices.female,
-                    hint: lane.voices.female ? undefined : t("app.lane.voice.female.missing"),
-                  },
-                  {
-                    value: "male",
-                    label: t("app.lane.voice.male"),
-                    disabled: !lane.voices.male,
-                    hint: lane.voices.male ? undefined : t("app.lane.voice.male.missing"),
-                  },
-                  ...(multiVoice
-                    ? [
-                        {
-                          value: "multi",
-                          label: t("app.lane.voice.multi"),
-                          disabled: !multiOk,
-                          hint: !hasLingoraVoices
-                            ? t("app.lane.voice.multi.noVoices")
-                            : multiOk
-                              ? t("app.lane.voice.multi.hint")
-                              : t("app.lane.voice.multi.missing"),
-                        },
-                      ]
-                    : []),
-                ]}
+                value={subtitles}
+                onChange={chooseSubtitles}
+                options={subtitleOptions.map(([value, label, hint]) => ({ value, label, hint }))}
               />
             </div>
-          )}
-          {/* The specific voice and the speed, at hand; the devices, in Settings. */}
-          {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} multiVoice={voice === "multi" ? multiVoice : undefined} />}
-          {!same && !lane.voices.female && !lane.voices.male && (
-            <p className="settings-note">
-              {t("app.lane.noVoicesNote")}
-            </p>
-          )}
+            {/* In "Original" it stays, so the voice can be turned back on without leaving it. */}
+            {(!same || original === true) && (
+              <div className={styles.settingRow}>
+                <span className={styles.settingLabel}>{t("app.lane.voice")}</span>
+                <Segmented
+                  value={speaks ? voice : "off"}
+                  onChange={(value) => {
+                    if (value === "off") return onChange({ speak: false });
+                    // A specific voice of another gender no longer applies: it goes back to automatic.
+                    // With several voices it stays: it is Person 1's voice.
+                    const chosen = voiceList.find((v) => v.id === voiceId);
+                    const { [target]: _, ...rest } = lane.voiceIds;
+                    const drop = value !== "multi" && chosen && chosen.gender !== value;
+                    onChange({ speak: true, voice: value, ...(drop ? { voiceIds: rest } : {}) });
+                  }}
+                  options={[
+                    { value: "off", label: t("app.lane.voice.off"), hint: t("app.lane.voice.off.hint") },
+                    // It is read in every sentence: it can be changed while the lane is running.
+                    {
+                      value: "female",
+                      label: t("app.lane.voice.female"),
+                      disabled: !lane.voices.female,
+                      hint: lane.voices.female ? undefined : t("app.lane.voice.female.missing"),
+                    },
+                    {
+                      value: "male",
+                      label: t("app.lane.voice.male"),
+                      disabled: !lane.voices.male,
+                      hint: lane.voices.male ? undefined : t("app.lane.voice.male.missing"),
+                    },
+                    ...(multiVoice
+                      ? [
+                          {
+                            value: "multi",
+                            label: t("app.lane.voice.multi"),
+                            disabled: !multiOk,
+                            hint: !hasLingoraVoices
+                              ? t("app.lane.voice.multi.noVoices")
+                              : multiOk
+                                ? t("app.lane.voice.multi.hint")
+                                : t("app.lane.voice.multi.missing"),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
+              </div>
+            )}
+            {/* The specific voice and the speed, at hand; the devices, in Settings. */}
+            {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} multiVoice={voice === "multi" ? multiVoice : undefined} />}
+            {!same && !lane.voices.female && !lane.voices.male && (
+              <p className="settings-note">
+                {t("app.lane.noVoicesNote")}
+              </p>
+            )}
 
-          {/* Devices: the app chooses them by itself; they are changed in Settings. */}
-          <div className={styles.settingRow}>
-            <span className={styles.settingLabel}>{t("app.lane.audio")}</span>
-            <button className={styles.settingSummary} onClick={onOpenSettings}>
-              <span className={styles.settingSummaryText}>
-                {inputName}
-                {speaks && ` → ${lane.outputDevice || t("app.lane.output.default")}`}
-              </span>
-              <span className={styles.settingMore}>{t("app.lane.audio.change")}</span>
-            </button>
+            {/* Devices: the app chooses them by itself; they are changed in Settings. */}
+            <div className={styles.settingRow}>
+              <span className={styles.settingLabel}>{t("app.lane.audio")}</span>
+              <button
+                  className={styles.settingSummary}
+                  onClick={() => {
+                    closeSettings();
+                    onOpenSettings();
+                  }}
+                >
+                <span className={styles.settingSummaryText}>
+                  {inputName}
+                  {speaks && ` → ${lane.outputDevice || t("app.lane.output.default")}`}
+                </span>
+                <span className={styles.settingMore}>{t("app.lane.audio.change")}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </Dialog>
       )}
 
       <div className={styles.control}>

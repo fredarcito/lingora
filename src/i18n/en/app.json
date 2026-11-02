@@ -18,6 +18,7 @@
   "lane.floatClose": "Close the floating captions",
   "lane.floatOpen": "Floating captions, on top of any window",
   "lane.settings": "Lane settings",
+  "lane.settings.close": "Close",
   "lane.subtitles": "Captions",
   "lane.subtitles.translated": "Translated",
   "lane.subtitles.translated.hint": "Translation only",

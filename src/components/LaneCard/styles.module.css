@@ -115,17 +115,12 @@
   margin-top: 2px;
 }
 
-/* Collapsible settings */
+/* Settings, in a dialog; it carries the lane's class for its accent color. */
 
 .settings {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 14px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--hairline);
-  animation: global(reveal) 0.18s ease-out;
 }
 
 /* One row per setting: label on the left, control on the right. */
