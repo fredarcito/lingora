@@ -568,6 +568,11 @@ Detalles que marcan diferencia:
   audio del Mac (los demás) y tu micrófono ("Yo"). Detecta si usas
   auriculares, Bluetooth o el micrófono integrado, y filtra el eco cuando la
   llamada suena por los altavoces.
+- **Cancelación de eco como la de Chrome y Meet.** Sin auriculares, el
+  micrófono oye la reunión por los altavoces. Lingora quita ese eco del
+  micrófono en tiempo real (la misma técnica de WebRTC que usan Chrome y Meet,
+  en el propio equipo), sin añadir retraso. Se activa sola cuando no hay
+  auriculares. *(Recién hecho; en pruebas.)*
 - **Interfaz traducida en local.** El mismo modelo de traducción genera la
   interfaz de la app en cualquier idioma, sin servicios externos.
 - **Sin dependencias externas.** La app incluye todo lo necesario (motores de

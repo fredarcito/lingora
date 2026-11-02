@@ -137,6 +137,9 @@ documentación o su código).
 
 - `docs/problemas-conocidos.md`: fallos reales del audio de macOS, con su
   causa y arreglo. Míralo antes de depurar audio.
+- `docs/aislamiento-audio.md`: cómo se aísla la voz (captura sin Lingora,
+  micrófono, detección de voz, filtros, eco, personas) y la cancelación de
+  eco del micrófono (`echo_cancel.rs`).
 - `docs/plan-notas.md`: notas, resumen y personas (hecho).
 - `docs/plan-tomar-notas.md`: el modo "Tomar notas" (en curso).
 - `docs/plan-componentes.md`: componentes reutilizables y CSS Modules (hecho;

@@ -292,6 +292,44 @@ people).
 
 ---
 
+## Speaker echo into the microphone
+
+**Done 2026-11-02 (to test on Windows):** echo cancellation with `sonora`
+(WebRTC AEC3), on unless headphones are known: `src-tauri/src/echo_cancel.rs`,
+explained in `docs/aislamiento-audio.md` section 7. On Windows the reference is
+the WASAPI loopback of the default output. The notes below are the history.
+
+
+Seen 2026-11-02 in an online meeting on speakers: the microphone hears the
+meeting, so the "Speak" lane translates the others as if the user had said it.
+Lingora doesn't cause it (it happens even when Lingora isn't speaking); it just
+records the raw microphone. The meeting app cancels its own echo, but only in
+the audio it sends. Headphones avoid it.
+
+- The microphone is recorded by the WebView (`getUserMedia` in
+  `src/utils/audio.js`) with `echoCancellation: false` on purpose (on the Mac,
+  WKWebView could deliver silence from virtual devices). Turning it on would
+  likely not help: the WebView's canceller only knows what the WebView plays,
+  not the meeting app nor Lingora's voice (played from Rust). Cheap to try in
+  one build anyway.
+- The standard fix: capture the microphone from Rust on Windows with the
+  system's echo canceller, using what plays on the speakers as the reference
+  (communications mode / Voice Capture DSP). ~10 ms frames: no noticeable delay.
+  To verify against Microsoft's docs before planning.
+- The user doesn't want added delay, so the text-based filter of Take notes
+  (`src/utils/echo.js`) is ruled out for the lanes.
+- Or our own canceller for both platforms (WebRTC's AEC3): the microphone
+  minus the reference. Lingora already captures what plays, but that capture
+  excludes Lingora's own voice on purpose, so the reference needs it added. A
+  new C++ dependency (needs the user's yes).
+- Cons: a new capture path, touches `audio.js` and `audio.rs` (protected); the
+  canceller may clip the user's voice when both talk at once. Behind a switch
+  ("Meeting on speakers"), off by default.
+- The Mac has the same problem (`docs/plan-distribucion.md`, echo filter for
+  Speak); today the Speak card warns to use headphones.
+
+---
+
 ## Order and size
 
 | Phase | Size | Blocks |

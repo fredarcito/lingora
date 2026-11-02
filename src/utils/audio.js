@@ -174,6 +174,34 @@ export function joinWords(words) {
 const CLAUSE_START =
   /^(and|but|so|because|that|which|who|when|if|then|or|y|pero|así|porque|que|cuando|si|entonces|o)$/i;
 
+/** Sample rate of the last microphone opened by `startEchoCancelledMic`. */
+let echoMicRate = 0;
+
+/**
+ * Opens the microphone in Rust with echo cancellation. Rust knows devices by
+ * name, and the window's label matches it on the Mac and on Windows; "" is the
+ * default one. Returns false if it can't (then the window opens it).
+ * @param {string} deviceId
+ * @param {boolean} autoGain
+ * @param {(samples: Float32Array) => void} onBlock
+ */
+async function startEchoCancelledMic(deviceId, autoGain, onBlock) {
+  let name = "";
+  if (deviceId && deviceId !== "default") {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    name = devices.find((d) => d.kind === "audioinput" && d.deviceId === deviceId)?.label ?? "";
+    if (!name) return false;
+  }
+  try {
+    echoMicRate = await api.micStart(name, autoGain, onBlock);
+    console.info(`[lingora] entrada: ${name || "micrófono por defecto"} con cancelación de eco, ${echoMicRate} Hz`);
+    return true;
+  } catch (e) {
+    console.warn("[lingora] sin cancelación de eco:", e);
+    return false;
+  }
+}
+
 /**
  * @typedef {Object} SegmentInfo
  * @property {number} secs Duración del trozo.
@@ -206,15 +234,17 @@ const CLAUSE_START =
  *   onEnded?: () => void,
  *   listen?: (samples: Float32Array) => Promise<import("./api").Word[]>,
  *   onPartial?: (text: string) => void,
+ *   cancelEcho?: boolean,
  * }} options
  *   `autoGain` activa el control automático de ganancia; solo para micrófonos
- *   reales. `onEnded` avisa si el dispositivo deja de entregar audio (se
- *   desconectó o se reinició el audio del sistema). `listen` es la escucha
+ *   reales. `cancelEcho` quita del micrófono lo que suena por los altavoces
+ *   (lo abre Rust). `onEnded` avisa si el dispositivo deja de entregar audio
+ *   (se desconectó o se reinició el audio del sistema). `listen` es la escucha
  *   local: con ella cada frase se entrega en cuanto termina, cortando entre dos
  *   palabras, y `onPartial` recibe el texto de la frase en curso.
  * @returns {Promise<AutoCapture>}
  */
-export async function startAutoCapture(deviceId, { autoGain = false, onSegment, onEnded, listen, onPartial }) {
+export async function startAutoCapture(deviceId, { autoGain = false, cancelEcho = false, onSegment, onEnded, listen, onPartial }) {
   /** Frecuencia de la entrada; 0 hasta saberla. */
   let inputRate = 0;
   /** Suelta la entrada. @type {() => Promise<void>} */
@@ -227,6 +257,11 @@ export async function startAutoCapture(deviceId, { autoGain = false, onSegment, 
     inputRate = await api.systemAudioStart((samples) => inputRate && onBlock(samples));
     console.info(`[lingora] entrada: audio del Mac, ${inputRate} Hz`);
     closeSource = () => api.systemAudioStop();
+  } else if (cancelEcho && (await startEchoCancelledMic(deviceId, autoGain, (samples) => inputRate && onBlock(samples)))) {
+    // Rust opens the microphone and removes what plays on the speakers
+    // (docs/aislamiento-audio.md, section 7). Without it, the window opens it as always.
+    inputRate = echoMicRate;
+    closeSource = () => api.micStop();
   } else {
     // Procesamiento del sistema desactivado: con cancelación de eco o
     // supresión de ruido, WKWebView puede entregar silencio en dispositivos

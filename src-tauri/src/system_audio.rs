@@ -44,6 +44,9 @@ pub struct Capture {
 pub fn start(on_block: impl Fn(Vec<f32>) + Send + 'static) -> Result<Capture> {
     #[cfg(any(target_os = "macos", windows))]
     {
+        #[cfg(target_os = "macos")]
+        let (tap, sample_rate) = imp::Tap::start(Box::new(on_block), true, BLOCK_FRAMES)?;
+        #[cfg(windows)]
         let (tap, sample_rate) = imp::Tap::start(Box::new(on_block))?;
         Ok(Capture { _inner: tap, sample_rate })
     }
@@ -52,6 +55,15 @@ pub fn start(on_block: impl Fn(Vec<f32>) + Send + 'static) -> Result<Capture> {
         let _ = on_block;
         Err(Error::Audio("solo macOS por ahora".into()))
     }
+}
+
+/// Captures everything that plays on the Mac, Lingora included: the echo
+/// canceller's reference (`echo_cancel.rs`). `on_chunk` gets mono chunks as
+/// they arrive (a few ms each), not `BLOCK_FRAMES` blocks.
+#[cfg(target_os = "macos")]
+pub fn start_reference(on_chunk: impl Fn(Vec<f32>) + Send + 'static) -> Result<Capture> {
+    let (tap, sample_rate) = imp::Tap::start(Box::new(on_chunk), false, 1)?;
+    Ok(Capture { _inner: tap, sample_rate })
 }
 
 #[cfg(target_os = "macos")]
@@ -123,16 +135,21 @@ mod imp {
         (st == 0 && object != kAudioObjectUnknown).then_some(object)
     }
 
-    /// Crea la tap global estéreo sin este proceso. Devuelve su ID y su UUID.
-    fn create_tap() -> Result<(AudioObjectID, String)> {
+    /// Crea la tap global estéreo, sin este proceso si `exclude_self`.
+    /// Devuelve su ID y su UUID.
+    fn create_tap(exclude_self: bool) -> Result<(AudioObjectID, String)> {
         let create = symbol("AudioHardwareCreateProcessTap");
         if create.is_null() {
             return Err(Error::Audio("este Mac no permite capturar el audio del sistema (hace falta macOS 14.2)".into()));
         }
         let create: CreateTap = unsafe { std::mem::transmute(create) };
 
-        let excluded: Vec<CFNumber> = own_process_object().map(|id| CFNumber::from(id as i32)).into_iter().collect();
-        if excluded.is_empty() {
+        let excluded: Vec<CFNumber> = if exclude_self {
+            own_process_object().map(|id| CFNumber::from(id as i32)).into_iter().collect()
+        } else {
+            Vec::new()
+        };
+        if exclude_self && excluded.is_empty() {
             tracing::warn!("no se encontró el proceso de Lingora en Core Audio: su voz entrará en la captura");
         }
         let excluded = CFArray::from_CFTypes(&excluded);
@@ -252,8 +269,9 @@ mod imp {
     unsafe impl Send for Tap {}
 
     impl Tap {
-        pub fn start(on_block: Box<dyn Fn(Vec<f32>) + Send>) -> Result<(Tap, u32)> {
-            let (tap, uuid) = create_tap()?;
+        /// `on_block` gets blocks of `block` samples (1: each chunk as it arrives).
+        pub fn start(on_block: Box<dyn Fn(Vec<f32>) + Send>, exclude_self: bool, block: usize) -> Result<(Tap, u32)> {
+            let (tap, uuid) = create_tap(exclude_self)?;
             let aggregate = match create_aggregate(&uuid) {
                 Ok(id) => id,
                 Err(e) => {
@@ -286,11 +304,17 @@ mod imp {
             std::thread::Builder::new()
                 .name("lingora-system-audio".into())
                 .spawn(move || {
-                    let mut pending = Vec::with_capacity(BLOCK_FRAMES * 2);
+                    if block <= 1 {
+                        while let Ok(chunk) = rx.recv() {
+                            on_block(chunk);
+                        }
+                        return;
+                    }
+                    let mut pending = Vec::with_capacity(block * 2);
                     while let Ok(chunk) = rx.recv() {
                         pending.extend_from_slice(&chunk);
-                        while pending.len() >= BLOCK_FRAMES {
-                            on_block(pending.drain(..BLOCK_FRAMES).collect());
+                        while pending.len() >= block {
+                            on_block(pending.drain(..block).collect());
                         }
                     }
                 })

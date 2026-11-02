@@ -154,6 +154,18 @@ pub mod macos {
         })
     }
 
+    /// Same as `output_format`, for an input (the echo canceller's microphone).
+    pub fn input_format(name: &str) -> Option<(u32, u16)> {
+        device_ids().into_iter().find_map(|id| {
+            if string_property(id, kAudioObjectPropertyName)? != name {
+                return None;
+            }
+            let channels = channel_count(id, kAudioObjectPropertyScopeInput);
+            let rate = nominal_sample_rate(id)?;
+            (channels > 0).then_some((rate as u32, channels.min(u16::MAX as u32) as u16))
+        })
+    }
+
     fn address(selector: u32, scope: u32) -> AudioObjectPropertyAddress {
         AudioObjectPropertyAddress {
             mSelector: selector,

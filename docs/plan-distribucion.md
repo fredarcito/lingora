@@ -97,6 +97,13 @@ was planned then:
   `App/index.jsx` (protected) and delays your sentence only while the other
   person is talking (usually under 1 s; cap lower than the 8 s of notes). A
   fallback, not a replacement for headphones.
+  - **Done 2026-11-02:** echo cancellation on the microphone (`echo_cancel.rs`,
+    `docs/aislamiento-audio.md` section 7), to be tested in real calls.
+  - **2026-11-02: the user doesn't want added delay**, so the preferred fix is
+    acoustic echo cancellation on the microphone (~10 ms frames): the
+    microphone minus what plays on the speakers. Same problem and same fix on
+    the Mac and Windows; options and caveats in `docs/plan-windows.md` →
+    "Pending: speaker echo into the microphone".
 
 ## 4. First launch and installer
 

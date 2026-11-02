@@ -2,6 +2,7 @@ mod audio;
 mod captions_window;
 mod config;
 mod doctor;
+mod echo_cancel;
 mod error;
 mod groq;
 mod listener;
@@ -33,6 +34,8 @@ struct AppState {
     speakers: speakers::Speakers,
     /// Captura del audio del Mac en curso (sin BlackHole).
     system_audio: std::sync::Mutex<Option<system_audio::Capture>>,
+    /// The microphone with echo cancellation, when it is on.
+    mic: std::sync::Mutex<Option<echo_cancel::Capture>>,
 }
 
 #[tauri::command]
@@ -390,6 +393,32 @@ fn system_audio_stop(state: tauri::State<'_, AppState>) {
     state.system_audio.lock().unwrap_or_else(|e| e.into_inner()).take();
 }
 
+/// Opens the microphone `device` ("" for the default one) with echo
+/// cancellation and sends it in float32 LE mono blocks through `on_audio`,
+/// like `system_audio_start`. Returns the sample rate.
+#[tauri::command]
+fn mic_start(
+    state: tauri::State<'_, AppState>,
+    device: String,
+    auto_gain: bool,
+    on_audio: tauri::ipc::Channel<tauri::ipc::InvokeResponseBody>,
+) -> error::Result<u32> {
+    let mut slot = state.mic.lock().unwrap_or_else(|e| e.into_inner());
+    slot.take();
+    let capture = echo_cancel::start(&device, auto_gain, move |block| {
+        let bytes = block.iter().flat_map(|v| v.to_le_bytes()).collect();
+        let _ = on_audio.send(tauri::ipc::InvokeResponseBody::Raw(bytes));
+    })?;
+    let rate = capture.sample_rate;
+    *slot = Some(capture);
+    Ok(rate)
+}
+
+#[tauri::command]
+fn mic_stop(state: tauri::State<'_, AppState>) {
+    state.mic.lock().unwrap_or_else(|e| e.into_inner()).take();
+}
+
 /// Abre (o muestra) la ventana flotante de subtítulos.
 #[tauri::command]
 async fn open_captions(app: tauri::AppHandle) -> error::Result<()> {
@@ -465,6 +494,7 @@ pub fn run() {
             speakers: speakers::Speakers::new(settings.speaker_model.clone()),
             pipeline: Pipeline::new(settings),
             system_audio: std::sync::Mutex::new(None),
+            mic: std::sync::Mutex::new(None),
         })
         .invoke_handler(tauri::generate_handler![
             transcribe,
@@ -477,6 +507,8 @@ pub fn run() {
             system_audio_supported,
             system_audio_start,
             system_audio_stop,
+            mic_start,
+            mic_stop,
             open_captions,
             languages,
             release_models,

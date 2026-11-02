@@ -15,6 +15,7 @@ import Sidebar from "@components/Sidebar";
 import { createRecorder, loadNotesCaptions, loadNotesConsent, loadNotesInput, loadNotesLang, loadNotesListen, loadSaveNotes, loadSpeakers, storeNotesCaptions, storeNotesInput, storeNotesListen, storeSaveNotes } from "@utils/notes.js";
 import { t, useT } from "@i18n";
 import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "@utils/audio";
+import { echoPossible, readRoute } from "@utils/route";
 import { useAudioRoute } from "@hooks/useAudioRoute.js";
 import { useDevices } from "@hooks/useDevices.js";
 import { useFloatingCaptions } from "@hooks/useFloatingCaptions.js";
@@ -690,10 +691,13 @@ export default function App() {
         }
         if (!canTranslate) throw new Error(t("app.error.missingTranslateModel"));
         Object.assign(runtime.current[lane.direction], { context: "", carry: "" });
+        // El micrófono necesita ganancia automática; BlackHole no la tolera.
+        // En Tomar notas, también el micrófono de una reunión en persona.
+        const realMic = lane.direction === "local_to_remote" || (Boolean(lane.notes) && lane.inputDeviceId !== SYSTEM_AUDIO);
         runtime.current[lane.direction].capture = await startAutoCapture(lane.inputDeviceId, {
-          // El micrófono necesita ganancia automática; BlackHole no la tolera.
-          // En Tomar notas, también el micrófono de una reunión en persona.
-          autoGain: lane.direction === "local_to_remote" || (Boolean(lane.notes) && lane.inputDeviceId !== SYSTEM_AUDIO),
+          autoGain: realMic,
+          // Like Chrome: on unless headphones are known to be connected.
+          cancelEcho: realMic && echoPossible(await readRoute()),
           onSegment: (wav, info) => enqueue(lane, wav, info),
           listen: (samples) => api.listen(samples, source),
           onPartial: (partial) => patchState(lane.direction, { partial }),

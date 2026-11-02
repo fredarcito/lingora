@@ -24,6 +24,8 @@ hound = "3.5"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 cpal = "0.15"
+# Echo cancellation for the microphone (WebRTC AEC3, pure Rust): docs/aislamiento-audio.md.
+sonora = "0.2"
 # Librerías de sherpa-onnx como archivos aparte (dylib / dll), no estáticas: así
 # Windows y Mac usan el mismo enlazado. Mac las empaqueta en el .app (ver
 # tauri.conf.json); Windows, junto al .exe (ver tauri.windows.conf.json).

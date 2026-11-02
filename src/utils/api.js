@@ -329,6 +329,22 @@ export const api = {
   /** @returns {Promise<void>} */
   systemAudioStop: () => invoke("system_audio_stop"),
   /**
+   * Opens a microphone in Rust with echo cancellation: what plays on the
+   * speakers is removed. The blocks arrive like `systemAudioStart`'s.
+   * @param {string} device The device's name; "" for the default one.
+   * @param {boolean} autoGain
+   * @param {(samples: Float32Array) => void} onBlock
+   * @returns {Promise<number>} The sample rate.
+   */
+  micStart: (device, autoGain, onBlock) => {
+    const channel = new Channel();
+    channel.onmessage = (data) =>
+      onBlock(new Float32Array(data instanceof ArrayBuffer ? data : Uint8Array.from(data).buffer));
+    return invoke("mic_start", { device, autoGain, onAudio: channel });
+  },
+  /** @returns {Promise<void>} */
+  micStop: () => invoke("mic_stop"),
+  /**
    * Logs a UI error to the log (on Windows, a .txt on the desktop).
    * @param {string} message
    * @returns {Promise<void>}
