@@ -895,7 +895,8 @@ export default function App() {
           />
         ) : (
           <>
-            <SaveNotesBar checked={saveNotes} onChange={changeSaveNotes} />
+            {/* In a call the note is written by both lanes: the switch goes above them. */}
+            {mode === "call" && <SaveNotesBar checked={saveNotes} onChange={changeSaveNotes} />}
             <div className={cx("lanes", mode === "video" && "single", focused && FOCUS_CLASS[focused])}>
               {visible.map((lane) => (
                 <LaneCard
@@ -912,6 +913,8 @@ export default function App() {
                   onToggle={() => (state[lane.direction].running ? stop(lane) : start(lane))}
                   onChange={(patch) => updateLane(lane.direction, patch)}
                   onVolume={(v) => changeVolume(lane.direction, v)}
+                  saveNotes={mode === "video" && lane.direction === "remote_to_local" ? saveNotes : undefined}
+                  onSaveNotes={changeSaveNotes}
                   floating={lane.direction === "remote_to_local" ? floating : undefined}
                   onFloating={toggleFloating}
                   multiVoice={lane.direction === "remote_to_local" ? multiVoice : undefined}

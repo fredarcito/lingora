@@ -56,7 +56,7 @@ const voiceCache = new Map();
  * Lane card: header, main control, settings (in a dialog) and the
  * translations as subtitles (the most recent one at the bottom, highlighted).
  */
-export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, floating, onFloating, onOpenSettings, multiVoice }) {
+export default function LaneCard({ lane, compact, original, onOriginal, state: s, meter, volume, inputs, onToggle, onChange, onVolume, saveNotes, onSaveNotes, floating, onFloating, onOpenSettings, multiVoice }) {
   const t = useT();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
@@ -294,6 +294,15 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
             {s.pending > 0 ? t("app.lane.queued", { count: s.pending }) : s.running ? t("app.lane.autoTranslating") : t("app.lane.pressToStart")}
           </span>
         </div>
+        {saveNotes !== undefined && (
+          <Switch
+            className={styles.laneSave}
+            title={saveNotes ? t("app.lane.saveNotes.on") : t("app.lane.saveNotes.off")}
+            checked={saveNotes}
+            onChange={onSaveNotes}
+            label={t("app.lane.saveNotes")}
+          />
+        )}
         {/* The wave shape is always visible; the real level only stretches it, and the
             pulse inside says "someone is speaking" or, softer, "listening". Still when
             paused or without signal. */}
