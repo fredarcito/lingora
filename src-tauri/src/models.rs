@@ -31,7 +31,7 @@ impl Model {
 
     /// Everything that can be downloaded: `ALL` and the light voices.
     pub fn every() -> impl Iterator<Item = Model> {
-        Model::ALL.into_iter().chain(crate::piper::MODELS.iter().map(|m| Model::Piper(m)))
+        Model::ALL.into_iter().chain(crate::piper::models().iter().map(Model::Piper))
     }
 
     pub fn id(self) -> &'static str {
@@ -43,7 +43,7 @@ impl Model {
             Model::Speakers => crate::doctor::SPEAKERS_CHECK,
             // Not in the diagnostics: it is optional and asked for from the note.
             Model::Summary => "summary",
-            Model::Piper(m) => m.id,
+            Model::Piper(m) => &m.id,
         }
     }
 
@@ -136,7 +136,7 @@ impl Model {
             Model::Listener => Engine::Parakeet.model_name(),
             Model::SenseVoice => Engine::SenseVoice.model_name(),
             Model::Voice => crate::tts::MODEL_NAME,
-            Model::Piper(m) => m.folder,
+            Model::Piper(m) => &m.folder,
             Model::Translator | Model::Speakers | Model::Summary => "",
         }
     }
@@ -145,7 +145,7 @@ impl Model {
     fn keep(self) -> Vec<String> {
         match self {
             Model::Voice => crate::tts::FILES.iter().map(|f| format!("{}/{f}", self.archive_root())).collect(),
-            Model::Piper(m) => crate::piper::files(m).to_vec(),
+            Model::Piper(m) => crate::piper::files(m),
             _ => Vec::new(),
         }
     }

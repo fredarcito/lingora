@@ -68,24 +68,27 @@ export default function MoreVoices({ lang, gender, onPick }) {
         {downloads.light_recommended && <Badge>{t("app.voices.recommended")}</Badge>}
       </header>
       <p>{t("app.voices.light.text")}</p>
-      {lightDownloads(downloads.light).map((group) => {
-        const pick = group.voices.find((v) => v.gender === gender) ?? group.voices[0];
-        return (
-          <div key={group.model} className={styles.row}>
-            <span>
-              {group.voices
-                .map((v) => `${v.name} · ${t(`app.voices.gender.${v.gender}`)}, ${v.detail}`)
-                .join(" / ")}
-            </span>
-            {action(group.model, group.bytes, group.installed, pick.id)}
-          </div>
-        );
-      })}
+      <div className={styles.list}>
+        {lightDownloads(downloads.light).map((group) => {
+          const pick = group.voices.find((v) => v.gender === gender) ?? group.voices[0];
+          return (
+            <div key={group.model} className={styles.row}>
+              <span>
+                {group.voices
+                  .map((v) => `${v.name} · ${t(`app.voices.gender.${v.gender}`)}, ${v.detail}`)
+                  .join(" / ")}
+              </span>
+              {action(group.model, group.bytes, group.installed, pick.id)}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 
   return (
     <div className={styles.panel}>
+      {!natural && !light && <p className={styles.none}>{t("app.voices.none")}</p>}
       {downloads.light_recommended ? [light, natural] : [natural, light]}
       {error && <p className={styles.error}>{error}</p>}
     </div>

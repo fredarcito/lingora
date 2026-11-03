@@ -100,6 +100,7 @@
   "voices.natural.all": "Todas sus voces, en sus 18 idiomas",
   "voices.light.title": "Voz ligera",
   "voices.light.text": "Llega a tiempo en equipos modestos. Cada voz se descarga aparte.",
+  "voices.none": "Este idioma aún no tiene voces de Lingora para descargar: se usan las voces del sistema que tenga el equipo.",
   "voices.recommended": "Recomendada para este equipo",
   "voices.download": "Descargar · {size}",
   "voices.downloading": "Descargando… {percent} %",

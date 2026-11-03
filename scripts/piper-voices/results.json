@@ -1,0 +1,3929 @@
+{
+ "ar_JO-SA_miro_V2-high": {
+  "lang": "ar",
+  "espeak": "ar",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ar_JO-SA_miro_V2-high.onnx",
+  "files": [
+   "README.md",
+   "ar_JO-SA_miro_V2-high.onnx",
+   "ar_JO-SA_miro_V2-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 104,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.116
+   }
+  ]
+ },
+ "ar_JO-SA_dii-high": {
+  "lang": "ar",
+  "espeak": "ar",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ar_JO-SA_dii-high.onnx",
+  "files": [
+   "README.md",
+   "ar_JO-SA_dii-high.onnx",
+   "ar_JO-SA_dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 188,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.094
+   }
+  ]
+ },
+ "ar_JO-SA_miro-high": {
+  "error": "expected str, bytes or os.PathLike object, not NoneType"
+ },
+ "ar_JO-kareem-medium": {
+  "lang": "ar",
+  "espeak": "ar",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ar_JO-kareem-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ar_JO-kareem-medium.onnx",
+   "ar_JO-kareem-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 109,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "ar_JO-kareem-low": {
+  "lang": "ar",
+  "espeak": "ar",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "ar_JO-kareem-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ar_JO-kareem-low.onnx",
+   "ar_JO-kareem-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 115,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.073
+   }
+  ]
+ },
+ "cs_CZ-jirka-low": {
+  "lang": "cs",
+  "espeak": "cs",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "cs_CZ-jirka-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "cs_CZ-jirka-low.onnx",
+   "cs_CZ-jirka-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 157,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Ahoj, toto je test přeloženého hlasu. Měl by znít přirozeně a dorazit včas.",
+    "rtf": 0.07
+   }
+  ]
+ },
+ "cs_CZ-jirka-medium": {
+  "lang": "cs",
+  "espeak": "cs",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "cs_CZ-jirka-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "cs_CZ-jirka-medium.onnx",
+   "cs_CZ-jirka-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 155,
+    "gender": "male",
+    "score": 0.92,
+    "heard": "Ahoj, toto je test přeloženého hlasu. Měl by zní přirozeně a dorazit včas.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "de_DE-dii-high": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "de_DE-dii-high.onnx",
+  "files": [
+   "README.md",
+   "de_DE-dii-high.onnx",
+   "de_DE-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 181,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtseitig ankommen.",
+    "rtf": 0.099
+   }
+  ]
+ },
+ "de_DE-eva_k-x_low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-eva_k-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-eva_k-x_low.onnx",
+   "de_DE-eva_k-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 193,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und Rähzeit dir ankommen.",
+    "rtf": 0.055
+   }
+  ]
+ },
+ "de_DE-karlsson-low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-karlsson-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-karlsson-low.onnx",
+   "de_DE-karlsson-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 118,
+    "gender": "male",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und heidseitig ankommen.",
+    "rtf": 0.076
+   }
+  ]
+ },
+ "de_DE-kerstin-low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-kerstin-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-kerstin-low.onnx",
+   "de_DE-kerstin-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 162,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und Rähzeit hier ankommen.",
+    "rtf": 0.076
+   }
+  ]
+ },
+ "de_DE-miro-high": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "de_DE-miro-high.onnx",
+  "files": [
+   "README.md",
+   "de_DE-miro-high.onnx",
+   "de_DE-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 118,
+    "gender": "male",
+    "score": 0.87,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich rennen und rechtseitig ankommen.",
+    "rtf": 0.092
+   }
+  ]
+ },
+ "de_DE-ramona-low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-ramona-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-ramona-low.onnx",
+   "de_DE-ramona-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 208,
+    "gender": "female",
+    "score": 0.8,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte nach Türplen und rezeit hier ankommen.",
+    "rtf": 0.08
+   }
+  ]
+ },
+ "de_DE-pavoque-low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-pavoque-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-pavoque-low.onnx",
+   "de_DE-pavoque-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 132,
+    "gender": "male",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und Drehzeit hier ankommen.",
+    "rtf": 0.075
+   }
+  ]
+ },
+ "de_DE-thorsten-high": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "de_DE-thorsten-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-thorsten-high.onnx",
+   "de_DE-thorsten-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 121,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtzeitig ankommen.",
+    "rtf": 0.798
+   }
+  ]
+ },
+ "de_DE-thorsten-low": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "de_DE-thorsten-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-thorsten-low.onnx",
+   "de_DE-thorsten-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 131,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtzeitig ankommen.",
+    "rtf": 0.081
+   }
+  ]
+ },
+ "de_DE-thorsten-medium": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "de_DE-thorsten-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-thorsten-medium.onnx",
+   "de_DE-thorsten-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 121,
+    "gender": "male",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich und rechtzeitig ankommen.",
+    "rtf": 0.104
+   }
+  ]
+ },
+ "de_DE-thorsten_emotional-medium": {
+  "lang": "de",
+  "espeak": "de",
+  "phoneme_type": "espeak",
+  "num_speakers": 8,
+  "sample_rate": 22050,
+  "onnx": "de_DE-thorsten_emotional-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "de_DE-thorsten_emotional-medium.onnx",
+   "de_DE-thorsten_emotional-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "amused",
+    "pitch": 158,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtshaltig ankommen.",
+    "rtf": 0.109
+   },
+   {
+    "sid": 1,
+    "name": "angry",
+    "pitch": 223,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und Rettseite ankommen.",
+    "rtf": 0.099
+   },
+   {
+    "sid": 2,
+    "name": "disgusted",
+    "pitch": 174,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollten natürlich klingen und rechtzeitig ankommen.",
+    "rtf": 0.094
+   },
+   {
+    "sid": 3,
+    "name": "drunk",
+    "pitch": 152,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtzeitig ankommen.",
+    "rtf": 0.093
+   },
+   {
+    "sid": 4,
+    "name": "neutral",
+    "pitch": 120,
+    "gender": "male",
+    "score": 0.93,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rezzeitig ankommen.",
+    "rtf": 0.097
+   },
+   {
+    "sid": 5,
+    "name": "sleepy",
+    "pitch": 120,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dies ist ein Test der übersetzten Stimme. Sie sollte natürlich klingen und rechtzeitig ankommen.",
+    "rtf": 0.098
+   }
+  ]
+ },
+ "en_GB-alan-low": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_GB-alan-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-alan-low.onnx",
+   "en_GB-alan-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 97,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hullo, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.067
+   }
+  ]
+ },
+ "en_GB-alan-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-alan-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-alan-medium.onnx",
+   "en_GB-alan-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 93,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.098
+   }
+  ]
+ },
+ "en_GB-aru-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 12,
+  "sample_rate": 22050,
+  "onnx": "en_GB-aru-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-aru-medium.onnx",
+   "en_GB-aru-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "03",
+    "pitch": 229,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translative voice. It should sound natural and arrive on time.",
+    "rtf": 0.096
+   },
+   {
+    "sid": 1,
+    "name": "06",
+    "pitch": 148,
+    "gender": "male",
+    "score": 0.82,
+    "heard": "Pelophis is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.085
+   },
+   {
+    "sid": 2,
+    "name": "10",
+    "pitch": 160,
+    "gender": "female",
+    "score": 0.88,
+    "heard": "Although this is a test of the translated for it should sound natural and arrive on time.",
+    "rtf": 0.092
+   },
+   {
+    "sid": 3,
+    "name": "01",
+    "pitch": 114,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hulog, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.084
+   },
+   {
+    "sid": 4,
+    "name": "09",
+    "pitch": 165,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.083
+   },
+   {
+    "sid": 7,
+    "name": "05",
+    "pitch": 119,
+    "gender": "male",
+    "score": 0.88,
+    "heard": "Hello, this is a test of the translator voice. It should sound natural and arriving on time.",
+    "rtf": 0.089
+   }
+  ]
+ },
+ "en_GB-cori-high": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-cori-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-cori-high.onnx",
+   "en_GB-cori-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 207,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.834
+   }
+  ]
+ },
+ "en_GB-cori-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-cori-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-cori-medium.onnx",
+   "en_GB-cori-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 218,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.12
+   }
+  ]
+ },
+ "en_GB-alba-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-alba-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-alba-medium.onnx",
+   "en_GB-alba-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 200,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice, it should sound natural and arrive on time.",
+    "rtf": 0.11
+   }
+  ]
+ },
+ "en_GB-dii-high": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-dii-high.onnx",
+  "files": [
+   "README.md",
+   "en_GB-dii-high.onnx",
+   "en_GB-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 206,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.094
+   }
+  ]
+ },
+ "en_GB-jenny_dioco-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-jenny_dioco-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-jenny_dioco-medium.onnx",
+   "en_GB-jenny_dioco-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 200,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural, and arrive on time.",
+    "rtf": 0.106
+   }
+  ]
+ },
+ "en_GB-miro-high": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-miro-high.onnx",
+  "files": [
+   "README.md",
+   "en_GB-miro-high.onnx",
+   "en_GB-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 118,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "en_GB-northern_english_male-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-northern_english_male-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-northern_english_male-medium.onnx",
+   "en_GB-northern_english_male-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 95,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arriv on time.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "en_GB-southern_english_female-low": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_GB-southern_english_female-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-southern_english_female-low.onnx",
+   "en_GB-southern_english_female-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 186,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice it should sound natural and arrive on time.",
+    "rtf": 0.091
+   }
+  ]
+ },
+ "en_GB-semaine-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 4,
+  "sample_rate": 22050,
+  "onnx": "en_GB-semaine-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-semaine-medium.onnx",
+   "en_GB-semaine-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "prudence",
+    "pitch": 224,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.112
+   },
+   {
+    "sid": 1,
+    "name": "spike",
+    "pitch": 97,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.169
+   },
+   {
+    "sid": 2,
+    "name": "obadiah",
+    "pitch": 106,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.092
+   },
+   {
+    "sid": 3,
+    "name": "poppy",
+    "pitch": 288,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice, it should sound natural and arrive on time.",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "en_GB-southern_english_female-medium": {
+  "lang": "en",
+  "espeak": "en-GB-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 6,
+  "sample_rate": 22050,
+  "onnx": "en_GB-southern_english_female-medium.onnx",
+  "files": [
+   "en_GB-southern_english_female-medium.onnx",
+   "en_GB-southern_english_female-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "0",
+    "pitch": 188,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.107
+   },
+   {
+    "sid": 1,
+    "name": "1",
+    "pitch": 195,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello, this is a test with the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.097
+   },
+   {
+    "sid": 2,
+    "name": "2",
+    "pitch": 204,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello this is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.09
+   }
+  ]
+ },
+ "en_GB-southern_english_female_medium": {
+  "lang": "en",
+  "espeak": "en-GB-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 6,
+  "sample_rate": 22050,
+  "onnx": "vits-piper-en_GB-southern_english_female_medium.onnx",
+  "files": [
+   "tokens.txt",
+   "vits-piper-en_GB-southern_english_female_medium.onnx",
+   "vits-piper-en_GB-southern_english_female_medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "0",
+    "pitch": 188,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.109
+   },
+   {
+    "sid": 1,
+    "name": "1",
+    "pitch": 195,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello, this is a test with the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.089
+   },
+   {
+    "sid": 2,
+    "name": "2",
+    "pitch": 204,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello this is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.089
+   }
+  ]
+ },
+ "en_GB-southern_english_male-medium": {
+  "lang": "en",
+  "espeak": "en-GB-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 8,
+  "sample_rate": 22050,
+  "onnx": "en_GB-southern_english_male-medium.onnx",
+  "files": [
+   "en_GB-southern_english_male-medium.onnx",
+   "en_GB-southern_english_male-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "4",
+    "pitch": 87,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.095
+   },
+   {
+    "sid": 1,
+    "name": "0",
+    "pitch": 95,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on timer.",
+    "rtf": 0.092
+   },
+   {
+    "sid": 2,
+    "name": "1",
+    "pitch": 133,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.088
+   }
+  ]
+ },
+ "en_US-amy-low": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_US-amy-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-amy-low.onnx",
+   "en_US-amy-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 195,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice, it should sound natural and arrive on time.",
+    "rtf": 0.071
+   }
+  ]
+ },
+ "en_GB-vctk-medium": {
+  "lang": "en",
+  "espeak": "en-gb-x-rp",
+  "phoneme_type": "espeak",
+  "num_speakers": 109,
+  "sample_rate": 22050,
+  "onnx": "en_GB-vctk-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_GB-vctk-medium.onnx",
+   "en_GB-vctk-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "p239",
+    "pitch": 179,
+    "gender": "female",
+    "score": 0.88,
+    "heard": "Although this is a test of the translative voice, it should sound natural and arrive on time.",
+    "rtf": 0.097
+   },
+   {
+    "sid": 1,
+    "name": "p236",
+    "pitch": 227,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.099
+   },
+   {
+    "sid": 2,
+    "name": "p264",
+    "pitch": 199,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Although, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.092
+   },
+   {
+    "sid": 4,
+    "name": "p259",
+    "pitch": 114,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.088
+   },
+   {
+    "sid": 5,
+    "name": "p247",
+    "pitch": 131,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.088
+   },
+   {
+    "sid": 7,
+    "name": "p263",
+    "pitch": 102,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.088
+   }
+  ]
+ },
+ "en_GB-sweetbbak-amy": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_GB-sweetbbak-amy.onnx",
+  "files": [
+   "README.md",
+   "en_GB-sweetbbak-amy.onnx",
+   "en_GB-sweetbbak-amy.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 174,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.759
+   }
+  ]
+ },
+ "en_US-amy-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-amy-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-amy-medium.onnx",
+   "en_US-amy-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 188,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.094
+   }
+  ]
+ },
+ "en_US-bryce-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-bryce-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-bryce-medium.onnx",
+   "en_US-bryce-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 130,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.093
+   }
+  ]
+ },
+ "en_US-arctic-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 18,
+  "sample_rate": 22050,
+  "onnx": "en_US-arctic-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-arctic-medium.onnx",
+   "en_US-arctic-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "awb",
+    "pitch": 134,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.098
+   },
+   {
+    "sid": 1,
+    "name": "rms",
+    "pitch": 93,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arriv on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 2,
+    "name": "slt",
+    "pitch": 174,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 3,
+    "name": "ksp",
+    "pitch": 131,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.087
+   },
+   {
+    "sid": 4,
+    "name": "clb",
+    "pitch": 175,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.084
+   },
+   {
+    "sid": 5,
+    "name": "lnh",
+    "pitch": 178,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.09
+   }
+  ]
+ },
+ "en_US-danny-low": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_US-danny-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-danny-low.onnx",
+   "en_US-danny-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 120,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.079
+   }
+  ]
+ },
+ "en_US-hfc_female-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-hfc_female-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-hfc_female-medium.onnx",
+   "en_US-hfc_female-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 213,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "en_US-hfc_male-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-hfc_male-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-hfc_male-medium.onnx",
+   "en_US-hfc_male-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 120,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "en_US-joe-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-joe-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-joe-medium.onnx",
+   "en_US-joe-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 87,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello. This is a test of the translated voice that should sound natural and arrive on time.",
+    "rtf": 0.098
+   }
+  ]
+ },
+ "en_US-john-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-john-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-john-medium.onnx",
+   "en_US-john-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 110,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "en_US-kathleen-low": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_US-kathleen-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-kathleen-low.onnx",
+   "en_US-kathleen-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 163,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.077
+   }
+  ]
+ },
+ "en_US-kristin-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-kristin-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-kristin-medium.onnx",
+   "en_US-kristin-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 166,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arriving on time.",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "en_US-kusal-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-kusal-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-kusal-medium.onnx",
+   "en_US-kusal-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 103,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "en_US-lessac-low": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_US-lessac-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-lessac-low.onnx",
+   "en_US-lessac-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 203,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hello, this is a test of a translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.073
+   }
+  ]
+ },
+ "en_US-l2arctic-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 24,
+  "sample_rate": 22050,
+  "onnx": "en_US-l2arctic-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-l2arctic-medium.onnx",
+   "en_US-l2arctic-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "TXHC",
+    "pitch": 137,
+    "gender": "male",
+    "score": 0.88,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrival time.",
+    "rtf": 0.096
+   },
+   {
+    "sid": 1,
+    "name": "THV",
+    "pitch": 214,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 2,
+    "name": "SVBI",
+    "pitch": 220,
+    "gender": "female",
+    "score": 0.82,
+    "heard": "Oh, this is a test of the translated voice. Stuart sound natural and arrive on time.",
+    "rtf": 0.087
+   },
+   {
+    "sid": 3,
+    "name": "ZHAA",
+    "pitch": 205,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Paolo, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 5,
+    "name": "TLV",
+    "pitch": 145,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Although this is a test of the translated voice, it should sound natural and arrive on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 6,
+    "name": "ERMS",
+    "pitch": 108,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Although this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.085
+   }
+  ]
+ },
+ "en_US-lessac-high": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-lessac-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-lessac-high.onnx",
+   "en_US-lessac-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 188,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.706
+   }
+  ]
+ },
+ "en_US-lessac-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-lessac-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-lessac-medium.onnx",
+   "en_US-lessac-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 197,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "en_US-libritts_r-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 904,
+  "sample_rate": 22050,
+  "onnx": "en_US-libritts_r-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-libritts_r-medium.onnx",
+   "en_US-libritts_r-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "3922",
+    "pitch": 178,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.094
+   },
+   {
+    "sid": 1,
+    "name": "8699",
+    "pitch": 179,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.087
+   },
+   {
+    "sid": 2,
+    "name": "4535",
+    "pitch": 165,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.093
+   },
+   {
+    "sid": 3,
+    "name": "6701",
+    "pitch": 102,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arriving on time.",
+    "rtf": 0.084
+   },
+   {
+    "sid": 5,
+    "name": "922",
+    "pitch": 95,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.086
+   },
+   {
+    "sid": 6,
+    "name": "2531",
+    "pitch": 109,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.09
+   }
+  ]
+ },
+ "en_US-ljspeech-high": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-ljspeech-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-ljspeech-high.onnx",
+   "en_US-ljspeech-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 200,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.812
+   }
+  ]
+ },
+ "en_US-ljspeech-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-ljspeech-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-ljspeech-medium.onnx",
+   "en_US-ljspeech-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 197,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.105
+   }
+  ]
+ },
+ "en_US-libritts-high": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 904,
+  "sample_rate": 22050,
+  "onnx": "en_US-libritts-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-libritts-high.onnx",
+   "en_US-libritts-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "p3922",
+    "pitch": 178,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.892
+   },
+   {
+    "sid": 1,
+    "name": "p8699",
+    "pitch": 167,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural, and arrive on time.",
+    "rtf": 0.829
+   },
+   {
+    "sid": 2,
+    "name": "p4535",
+    "pitch": 168,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.762
+   },
+   {
+    "sid": 3,
+    "name": "p6701",
+    "pitch": 104,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.789
+   },
+   {
+    "sid": 5,
+    "name": "p922",
+    "pitch": 102,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.746
+   },
+   {
+    "sid": 6,
+    "name": "p2531",
+    "pitch": 113,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.738
+   }
+  ]
+ },
+ "en_US-miro-high": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-miro-high.onnx",
+  "files": [
+   "README.md",
+   "en_US-miro-high.onnx",
+   "en_US-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 114,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.103
+   }
+  ]
+ },
+ "en_US-norman-medium": {
+  "lang": "en",
+  "espeak": "en",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-norman-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-norman-medium.onnx",
+   "en_US-norman-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 95,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello. This is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.108
+   }
+  ]
+ },
+ "en_US-reza_ibrahim-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-reza_ibrahim-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-reza_ibrahim-medium.onnx",
+   "en_US-reza_ibrahim-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 108,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.105
+   }
+  ]
+ },
+ "en_US-ryan-high": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-ryan-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-ryan-high.onnx",
+   "en_US-ryan-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 156,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.699
+   }
+  ]
+ },
+ "en_US-ryan-low": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "en_US-ryan-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-ryan-low.onnx",
+   "en_US-ryan-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 148,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.074
+   }
+  ]
+ },
+ "en_US-ryan-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-ryan-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-ryan-medium.onnx",
+   "en_US-ryan-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 150,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "en_US-sam-medium": {
+  "lang": "en",
+  "espeak": "en-us",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "en_US-sam-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "en_US-sam-medium.onnx",
+   "en_US-sam-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 149,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hello, this is a test of the translated voice. It should sound natural and arrive on time.",
+    "rtf": 0.154
+   }
+  ]
+ },
+ "es_ES-carlfm-x_low": {
+  "lang": "es",
+  "espeak": "es",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "es_ES-carlfm-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_ES-carlfm-x_low.onnx",
+   "es_ES-carlfm-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 124,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.071
+   }
+  ]
+ },
+ "es_AR-daniela-high": {
+  "lang": "es",
+  "espeak": "es-419",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "es_AR-daniela-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_AR-daniela-high.onnx",
+   "es_AR-daniela-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 182,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.705
+   }
+  ]
+ },
+ "es_ES-davefx-medium": {
+  "lang": "es",
+  "espeak": "es",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "es_ES-davefx-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_ES-davefx-medium.onnx",
+   "es_ES-davefx-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 122,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Espera, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "es_ES-miro-high": {
+  "lang": "es",
+  "espeak": "es",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "es_ES-miro-high.onnx",
+  "files": [
+   "README.md",
+   "es_ES-miro-high.onnx",
+   "es_ES-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 111,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "es_MX-ald-medium": {
+  "lang": "es",
+  "espeak": "es-419",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "es_MX-ald-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_MX-ald-medium.onnx",
+   "es_MX-ald-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 150,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "es_ES-sharvard-medium": {
+  "lang": "es",
+  "espeak": "es",
+  "phoneme_type": "espeak",
+  "num_speakers": 2,
+  "sample_rate": 22050,
+  "onnx": "es_ES-sharvard-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_ES-sharvard-medium.onnx",
+   "es_ES-sharvard-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "M",
+    "pitch": 119,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.1
+   },
+   {
+    "sid": 1,
+    "name": "F",
+    "pitch": 199,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hola, esto es una prueba de la voz traducida. Deberías sonar natural y llegar a tiempo.",
+    "rtf": 0.088
+   }
+  ]
+ },
+ "es_MX-claude-high": {
+  "lang": "es",
+  "espeak": "es-419",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "es_MX-claude-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "es_MX-claude-high.onnx",
+   "es_MX-claude-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 181,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hola, esto es una prueba de la voz traducida. Debería sonar natural y llegar a tiempo.",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "fa-haaniye_low": {
+  "error": "expected str, bytes or os.PathLike object, not NoneType"
+ },
+ "fa_IR-amir-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_IR-amir-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_IR-amir-medium.onnx",
+   "fa_IR-amir-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 141,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.13
+   }
+  ]
+ },
+ "fa_IR-ganji-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_IR-ganji-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_IR-ganji-medium.onnx",
+   "fa_IR-ganji-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 99,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.103
+   }
+  ]
+ },
+ "fa_IR-ganji_adabi-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_IR-ganji_adabi-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_IR-ganji_adabi-medium.onnx",
+   "fa_IR-ganji_adabi-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 104,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.101
+   }
+  ]
+ },
+ "fa_IR-gyro-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_IR-gyro-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_IR-gyro-medium.onnx",
+   "fa_IR-gyro-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 97,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.107
+   }
+  ]
+ },
+ "fa_IR-reza_ibrahim-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_IR-reza_ibrahim-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_IR-reza_ibrahim-medium.onnx",
+   "fa_IR-reza_ibrahim-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 98,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.116
+   }
+  ]
+ },
+ "fr_FR-gilles-low": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "fr_FR-gilles-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fr_FR-gilles-low.onnx",
+   "fr_FR-gilles-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 98,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.08
+   }
+  ]
+ },
+ "fa_en-rezahedayatfar-ibrahimwalk-medium": {
+  "lang": "fa",
+  "espeak": "fa",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fa_en-rezahedayatfar-ibrahimwalk-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fa_en-rezahedayatfar-ibrahimwalk-medium.onnx",
+   "fa_en-rezahedayatfar-ibrahimwalk-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 102,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "fr_FR-miro-high": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fr_FR-miro-high.onnx",
+  "files": [
+   "README.md",
+   "fr_FR-miro-high.onnx",
+   "fr_FR-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 114,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.09
+   }
+  ]
+ },
+ "fr_FR-siwis-low": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "fr_FR-siwis-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fr_FR-siwis-low.onnx",
+   "fr_FR-siwis-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 219,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.06
+   }
+  ]
+ },
+ "fr_FR-siwis-medium": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "fr_FR-siwis-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fr_FR-siwis-medium.onnx",
+   "fr_FR-siwis-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 204,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "fr_FR-tjiho-model1": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 44100,
+  "onnx": "fr_FR-tjiho-model1.onnx",
+  "files": [
+   "LICENSE.txt",
+   "MODEL_CARD",
+   "fr_FR-tjiho-model1.onnx",
+   "fr_FR-tjiho-model1.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 142,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.214
+   }
+  ]
+ },
+ "fr_FR-tjiho-model3": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 44100,
+  "onnx": "fr_FR-tjiho-model3.onnx",
+  "files": [
+   "LICENSE.txt",
+   "MODEL_CARD",
+   "fr_FR-tjiho-model3.onnx",
+   "fr_FR-tjiho-model3.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 141,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.186
+   }
+  ]
+ },
+ "fr_FR-tjiho-model2": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 44100,
+  "onnx": "fr_FR-tjiho-model2.onnx",
+  "files": [
+   "LICENSE.txt",
+   "MODEL_CARD",
+   "fr_FR-tjiho-model2.onnx",
+   "fr_FR-tjiho-model2.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 0,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.201
+   }
+  ]
+ },
+ "fr_FR-tom-medium": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 44100,
+  "onnx": "fr_FR-tom-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fr_FR-tom-medium.onnx",
+   "fr_FR-tom-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 141,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.182
+   }
+  ]
+ },
+ "hi_IN-pratham-medium": {
+  "lang": "hi",
+  "espeak": "hi",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "hi_IN-pratham-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "hi_IN-pratham-medium.onnx",
+   "hi_IN-pratham-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 108,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.114
+   }
+  ]
+ },
+ "hi_IN-priyamvada-medium": {
+  "lang": "hi",
+  "espeak": "hi",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "hi_IN-priyamvada-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "hi_IN-priyamvada-medium.onnx",
+   "hi_IN-priyamvada-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 200,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "fr_FR-upmc-medium": {
+  "lang": "fr",
+  "espeak": "fr",
+  "phoneme_type": "espeak",
+  "num_speakers": 2,
+  "sample_rate": 22050,
+  "onnx": "fr_FR-upmc-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "fr_FR-upmc-medium.onnx",
+   "fr_FR-upmc-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "jessica",
+    "pitch": 227,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.097
+   },
+   {
+    "sid": 1,
+    "name": "pierre",
+    "pitch": 124,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Bonjour, ceci est un test de la voix traduite. Elle devrait sonner naturelle et arriver à temps.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "hi_IN-rohan-medium": {
+  "lang": "hi",
+  "espeak": "hi",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "hi_IN-rohan-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "hi_IN-rohan-medium.onnx",
+   "hi_IN-rohan-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 142,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.113
+   }
+  ]
+ },
+ "it_IT-dii-high": {
+  "lang": "it",
+  "espeak": "it",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "it_IT-dii-high.onnx",
+  "files": [
+   "README.md",
+   "it_IT-dii-high.onnx",
+   "it_IT-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 200,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Ciao, questa è una prova della voce tradotta. Dovrebbe suonare naturale e arrivare in tempo.",
+    "rtf": 0.099
+   }
+  ]
+ },
+ "id_ID-news_tts-medium": {
+  "lang": "id",
+  "espeak": "id",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "id_ID-news_tts-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "id_ID-news_tts-medium.onnx",
+   "id_ID-news_tts-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 251,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.092
+   }
+  ]
+ },
+ "it_IT-miro-high": {
+  "lang": "it",
+  "espeak": "it",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "it_IT-miro-high.onnx",
+  "files": [
+   "README.md",
+   "it_IT-miro-high.onnx",
+   "it_IT-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 112,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Ciao, questa è una prova della voce tradotta, dovrebbe suonare naturale e arrivare in tempo.",
+    "rtf": 0.089
+   }
+  ]
+ },
+ "it_IT-riccardo-x_low": {
+  "lang": "it",
+  "espeak": "it",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "it_IT-riccardo-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "it_IT-riccardo-x_low.onnx",
+   "it_IT-riccardo-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 150,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Ciao, questa è una prova della voce tradotta, dovrebbe suonare naturale e arrivare in tempo.",
+    "rtf": 0.057
+   }
+  ]
+ },
+ "it_IT-paola-medium": {
+  "lang": "it",
+  "espeak": "it",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "it_IT-paola-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "it_IT-paola-medium.onnx",
+   "it_IT-paola-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 193,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Ciao, questa è una prova della voce tradotta, dovrebbe suonare naturale e arrivare in tempo.",
+    "rtf": 0.098
+   }
+  ]
+ },
+ "kk_KZ-iseke-x_low": {
+  "lang": "kk",
+  "espeak": "kk",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "kk_KZ-iseke-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "kk_KZ-iseke-x_low.onnx",
+   "kk_KZ-iseke-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 126,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.068
+   }
+  ]
+ },
+ "kk_KZ-raya-x_low": {
+  "lang": "kk",
+  "espeak": "kk",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "kk_KZ-raya-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "kk_KZ-raya-x_low.onnx",
+   "kk_KZ-raya-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 229,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.057
+   }
+  ]
+ },
+ "nl_BE-nathalie-x_low": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "nl_BE-nathalie-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_BE-nathalie-x_low.onnx",
+   "nl_BE-nathalie-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 162,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Hallo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.059
+   }
+  ]
+ },
+ "nl_BE-nathalie-medium": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_BE-nathalie-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_BE-nathalie-medium.onnx",
+   "nl_BE-nathalie-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 159,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Hallo, dit is een test van de vertelde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.107
+   }
+  ]
+ },
+ "kk_KZ-issai-high": {
+  "lang": "kk",
+  "espeak": "kk",
+  "phoneme_type": "espeak",
+  "num_speakers": 6,
+  "sample_rate": 22050,
+  "onnx": "kk_KZ-issai-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "kk_KZ-issai-high.onnx",
+   "kk_KZ-issai-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "ISSAI_KazakhTTS2_M2",
+    "pitch": 147,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.846
+   },
+   {
+    "sid": 1,
+    "name": "ISSAI_KazakhTTS_M1_Iseke",
+    "pitch": 117,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.689
+   },
+   {
+    "sid": 2,
+    "name": "ISSAI_KazakhTTS2_F3",
+    "pitch": 223,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.677
+   },
+   {
+    "sid": 3,
+    "name": "ISSAI_KazakhTTS_F1_Raya",
+    "pitch": 230,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.707
+   },
+   {
+    "sid": 4,
+    "name": "ISSAI_KazakhTTS2_F1",
+    "pitch": 223,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.683
+   }
+  ]
+ },
+ "nl_BE-rdh-x_low": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "nl_BE-rdh-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_BE-rdh-x_low.onnx",
+   "nl_BE-rdh-x_low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 113,
+    "gender": "male",
+    "score": 0.94,
+    "heard": "Hallo, dit is een test van de verteldde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.058
+   }
+  ]
+ },
+ "nl_BE-rdh-medium": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_BE-rdh-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_BE-rdh-medium.onnx",
+   "nl_BE-rdh-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 109,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.098
+   }
+  ]
+ },
+ "nl_NL-alex-medium": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_NL-alex-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_NL-alex-medium.onnx",
+   "nl_NL-alex-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 117,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.107
+   }
+  ]
+ },
+ "nl_NL-dii-high": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_NL-dii-high.onnx",
+  "files": [
+   "README.md",
+   "nl_NL-dii-high.onnx",
+   "nl_NL-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 216,
+    "gender": "female",
+    "score": 0.94,
+    "heard": "Allo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.099
+   }
+  ]
+ },
+ "nl_NL-miro-high": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_NL-miro-high.onnx",
+  "files": [
+   "README.md",
+   "nl_NL-miro-high.onnx",
+   "nl_NL-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 118,
+    "gender": "male",
+    "score": 0.88,
+    "heard": "Allo, dit is een test van de vertaalde stem en moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.093
+   }
+  ]
+ },
+ "nl_NL-pim-medium": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_NL-pim-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_NL-pim-medium.onnx",
+   "nl_NL-pim-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 126,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.106
+   }
+  ]
+ },
+ "nl_NL-ronnie-medium": {
+  "lang": "nl",
+  "espeak": "nl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "nl_NL-ronnie-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "nl_NL-ronnie-medium.onnx",
+   "nl_NL-ronnie-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 149,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Hallo, dit is een test van de vertaalde stem. Hij moet natuurlijk klinken en op tijd aankomen.",
+    "rtf": 0.117
+   }
+  ]
+ },
+ "pl_PL-bass-high": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-bass-high.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pl_PL-bass-high.onnx",
+   "pl_PL-bass-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 88,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmieć naturalnie i dotrzeć na czas.",
+    "rtf": 0.723
+   }
+  ]
+ },
+ "pl_PL-darkman-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-darkman-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pl_PL-darkman-medium.onnx",
+   "pl_PL-darkman-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 113,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmieć naturalnie i dotrzeć na czas.",
+    "rtf": 0.106
+   }
+  ]
+ },
+ "pl_PL-gosia-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-gosia-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pl_PL-gosia-medium.onnx",
+   "pl_PL-gosia-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 208,
+    "gender": "female",
+    "score": 0.92,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmieć naturalnie i toczyć na czas.",
+    "rtf": 0.103
+   }
+  ]
+ },
+ "pl_PL-jarvis_wg_glos-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-jarvis_wg_glos-medium.onnx",
+  "files": [
+   "README.md",
+   "pl_PL-jarvis_wg_glos-medium.onnx",
+   "pl_PL-jarvis_wg_glos-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 110,
+    "gender": "male",
+    "score": 0.92,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmie naturalnie i dotrzeć na czas.",
+    "rtf": 0.101
+   }
+  ]
+ },
+ "pl_PL-justyna_wg_glos-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-justyna_wg_glos-medium.onnx",
+  "files": [
+   "README.md",
+   "pl_PL-justyna_wg_glos-medium.onnx",
+   "pl_PL-justyna_wg_glos-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 248,
+    "gender": "female",
+    "score": 0.85,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmie naturalnie i doczyć na czas.",
+    "rtf": 0.133
+   }
+  ]
+ },
+ "pl_PL-mc_speech-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-mc_speech-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pl_PL-mc_speech-medium.onnx",
+   "pl_PL-mc_speech-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 112,
+    "gender": "male",
+    "score": 0.92,
+    "heard": "Cześć, to jest test przetłumaczonego głosu. Powinien brzmi mieć naturalnie i dotrzeć na czas.",
+    "rtf": 0.103
+   }
+  ]
+ },
+ "pl_PL-meski_wg_glos-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-meski_wg_glos-medium.onnx",
+  "files": [
+   "README.md",
+   "pl_PL-meski_wg_glos-medium.onnx",
+   "pl_PL-meski_wg_glos-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 115,
+    "gender": "male",
+    "score": 0.85,
+    "heard": "Cześć to jest test przetłumaczonego głosu. Powinien brzmie naturalnie i doczeć na czas.",
+    "rtf": 0.106
+   }
+  ]
+ },
+ "pl_PL-zenski_wg_glos-medium": {
+  "lang": "pl",
+  "espeak": "pl",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pl_PL-zenski_wg_glos-medium.onnx",
+  "files": [
+   "README.md",
+   "pl_PL-zenski_wg_glos-medium.onnx",
+   "pl_PL-zenski_wg_glos-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 162,
+    "gender": "female",
+    "score": 0.85,
+    "heard": "Cześć to jest test przetłumaczonego głos. Powinien brzmieć naturalnie i doczeć na czas.",
+    "rtf": 0.104
+   }
+  ]
+ },
+ "pt_BR-dii-high": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_BR-dii-high.onnx",
+  "files": [
+   "README.md",
+   "pt_BR-dii-high.onnx",
+   "pt_BR-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 187,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Olá, este é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "pt_BR-cadu-medium": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_BR-cadu-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pt_BR-cadu-medium.onnx",
+   "pt_BR-cadu-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 128,
+    "gender": "male",
+    "score": 0.93,
+    "heard": "Olá, esse é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.118
+   }
+  ]
+ },
+ "pt_BR-edresson-low": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "pt_BR-edresson-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pt_BR-edresson-low.onnx",
+   "pt_BR-edresson-low.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 172,
+    "gender": "female",
+    "score": 0.8,
+    "heard": "Olá, esse é um teste da voz traduzida. Ele diz só natural e chegar a tempo.",
+    "rtf": 0.081
+   }
+  ]
+ },
+ "pt_BR-faber-medium": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_BR-faber-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pt_BR-faber-medium.onnx",
+   "pt_BR-faber-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 154,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Olá, este é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "pt_BR-jeff-medium": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_BR-jeff-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pt_BR-jeff-medium.onnx",
+   "pt_BR-jeff-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 139,
+    "gender": "male",
+    "score": 0.87,
+    "heard": "Olá, isso é um teste da voz traduzida. Deveria suar natural e chegar a tempo.",
+    "rtf": 0.12
+   }
+  ]
+ },
+ "pt_PT-dii-high": {
+  "lang": "pt",
+  "espeak": "pt",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_PT-dii-high.onnx",
+  "files": [
+   "README.md",
+   "pt_PT-dii-high.onnx",
+   "pt_PT-dii-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 182,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Olá, este é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.101
+   }
+  ]
+ },
+ "pt_BR-miro-high": {
+  "lang": "pt",
+  "espeak": "pt-br",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_BR-miro-high.onnx",
+  "files": [
+   "README.md",
+   "pt_BR-miro-high.onnx",
+   "pt_BR-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 109,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Olá, este é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.101
+   }
+  ]
+ },
+ "pt_PT-miro-high": {
+  "lang": "pt",
+  "espeak": "pt",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_PT-miro-high.onnx",
+  "files": [
+   "README.md",
+   "pt_PT-miro-high.onnx",
+   "pt_PT-miro-high.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 98,
+    "gender": "male",
+    "score": 1.0,
+    "heard": "Olá, este é um teste da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "pt_PT-tugao-medium": {
+  "lang": "pt",
+  "espeak": "pt",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "pt_PT-tugao-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "pt_PT-tugao-medium.onnx",
+   "pt_PT-tugao-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 173,
+    "gender": "female",
+    "score": 0.93,
+    "heard": "Olá, este é um texto da voz traduzida. Deveria soar natural e chegar a tempo.",
+    "rtf": 0.1
+   }
+  ]
+ },
+ "ru_RU-denis-medium": {
+  "lang": "ru",
+  "espeak": "ru",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ru_RU-denis-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ru_RU-denis-medium.onnx",
+   "ru_RU-denis-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 136,
+    "gender": "male",
+    "score": 0.92,
+    "heard": "Привет, это проверка переведенного голоса. Он должен звучать, естественно, и приходить вовремя.",
+    "rtf": 0.106
+   }
+  ]
+ },
+ "ru_RU-dmitri-medium": {
+  "lang": "ru",
+  "espeak": "ru",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ru_RU-dmitri-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ru_RU-dmitri-medium.onnx",
+   "ru_RU-dmitri-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 182,
+    "gender": "female",
+    "score": 0.92,
+    "heard": "Привет, это проверка переведенного голоса. Он должен звучать, естественно, и приходить вовремя.",
+    "rtf": 0.097
+   }
+  ]
+ },
+ "ru_RU-ruslan-medium": {
+  "lang": "ru",
+  "espeak": "ru",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ru_RU-ruslan-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ru_RU-ruslan-medium.onnx",
+   "ru_RU-ruslan-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 113,
+    "gender": "male",
+    "score": 0.92,
+    "heard": "Привет<unk> это проверка переведенного голоса. Он должен звучать естественно и приходить вовремя.",
+    "rtf": 0.102
+   }
+  ]
+ },
+ "ru_RU-irina-medium": {
+  "lang": "ru",
+  "espeak": "ru",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ru_RU-irina-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "ru_RU-irina-medium.onnx",
+   "ru_RU-irina-medium.onnx.json",
+   "tokens.txt"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 192,
+    "gender": "female",
+    "score": 0.83,
+    "heard": "Привет, это проверка переведенного голоса. Он должен звучать естественное и приходить вовремя.",
+    "rtf": 0.115
+   }
+  ]
+ },
+ "tr_TR-dfki-medium": {
+  "lang": "tr",
+  "espeak": "tr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "tr_TR-dfki-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "tr_TR-dfki-medium.onnx",
+   "tr_TR-dfki-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 106,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.096
+   }
+  ]
+ },
+ "tr_TR-fahrettin-medium": {
+  "lang": "tr",
+  "espeak": "tr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "tr_TR-fahrettin-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "tr_TR-fahrettin-medium.onnx",
+   "tr_TR-fahrettin-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 107,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.097
+   }
+  ]
+ },
+ "uk_UA-lada-x_low": {
+  "lang": "uk",
+  "espeak": "uk",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "uk_UA-lada-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "uk_UA-lada-x_low.onnx",
+   "uk_UA-lada-x_low.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 314,
+    "gender": "female",
+    "score": 0.75,
+    "heard": "Повітця перевіка перекладеного голосу він має звучати природно і приходити вчасно.",
+    "rtf": 0.058
+   }
+  ]
+ },
+ "tr_TR-fettah-medium": {
+  "lang": "tr",
+  "espeak": "tr",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "tr_TR-fettah-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "tr_TR-fettah-medium.onnx",
+   "tr_TR-fettah-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 187,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.095
+   }
+  ]
+ },
+ "uk_UA-ukrainian_tts-medium": {
+  "lang": "uk",
+  "espeak": "uk",
+  "phoneme_type": "text",
+  "num_speakers": 3,
+  "sample_rate": 22050,
+  "onnx": "uk_UA-ukrainian_tts-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "uk_UA-ukrainian_tts-medium.onnx",
+   "uk_UA-ukrainian_tts-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "lada",
+    "pitch": 356,
+    "gender": "female",
+    "score": 0.67,
+    "heard": "Ревіться перевірка перекладеного голосу. І не є звучати природно і приходити вчасно.",
+    "rtf": 0.088
+   },
+   {
+    "sid": 1,
+    "name": "mykyta",
+    "pitch": 168,
+    "gender": "female",
+    "score": 0.83,
+    "heard": "Ревіт<unk> це перевірка перекладеного голосу, і має звучати природно і приходити вчасно.",
+    "rtf": 0.093
+   },
+   {
+    "sid": 2,
+    "name": "tetiana",
+    "pitch": 245,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "Привіт, це перевірка перекладеного голосу. Він має звучати природно і приходити вчасно.",
+    "rtf": 0.09
+   }
+  ]
+ },
+ "ur_PK-fasih-medium": {
+  "lang": "ur",
+  "espeak": "ur",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "ur_PK-fasih-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "ur_PK-fasih-medium.onnx",
+   "ur_PK-fasih-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 107,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.104
+   }
+  ]
+ },
+ "vi_VN-vais1000-medium": {
+  "lang": "vi",
+  "espeak": "vi",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "vi_VN-vais1000-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "vi_VN-vais1000-medium.onnx",
+   "vi_VN-vais1000-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 253,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.143
+   }
+  ]
+ },
+ "vi_VN-25hours_single-low": {
+  "lang": "vi",
+  "espeak": "vi",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 16000,
+  "onnx": "vi_VN-25hours_single-low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "vi_VN-25hours_single-low.onnx",
+   "vi_VN-25hours_single-low.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 219,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.092
+   }
+  ]
+ },
+ "vi_VN-vivos-x_low": {
+  "lang": "vi",
+  "espeak": "vi",
+  "phoneme_type": "espeak",
+  "num_speakers": 65,
+  "sample_rate": 16000,
+  "onnx": "vi_VN-vivos-x_low.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "vi_VN-vivos-x_low.onnx",
+   "vi_VN-vivos-x_low.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "VIVOSSPK13",
+    "pitch": 302,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.058
+   },
+   {
+    "sid": 1,
+    "name": "VIVOSSPK14",
+    "pitch": 291,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.051
+   },
+   {
+    "sid": 2,
+    "name": "VIVOSSPK15",
+    "pitch": 170,
+    "gender": "female",
+    "score": null,
+    "heard": "",
+    "rtf": 0.051
+   },
+   {
+    "sid": 8,
+    "name": "VIVOSSPK21",
+    "pitch": 139,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.055
+   },
+   {
+    "sid": 25,
+    "name": "VIVOSSPK04",
+    "pitch": 151,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.056
+   },
+   {
+    "sid": 28,
+    "name": "VIVOSSPK07",
+    "pitch": 155,
+    "gender": "male",
+    "score": null,
+    "heard": "",
+    "rtf": 0.056
+   }
+  ]
+ },
+ "zh_CN-chaowen-medium": {
+  "lang": "zh",
+  "espeak": "zh",
+  "phoneme_type": "lexicon",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "zh_CN-chaowen-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "date.fst",
+   "lexicon.txt",
+   "number.fst",
+   "phone.fst",
+   "tokens.txt",
+   "zh_CN-chaowen-medium.onnx",
+   "zh_CN-chaowen-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 178,
+    "gender": "female",
+    "score": 0.96,
+    "heard": "你好这是翻译语音的测试它应该听起来自然并且按时到答",
+    "rtf": 0.108
+   }
+  ]
+ },
+ "zh_CN-xiao_ya-medium": {
+  "lang": "zh",
+  "espeak": "zh",
+  "phoneme_type": "lexicon",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "zh_CN-xiao_ya-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "date.fst",
+   "lexicon.txt",
+   "number.fst",
+   "phone.fst",
+   "tokens.txt",
+   "zh_CN-xiao_ya-medium.onnx",
+   "zh_CN-xiao_ya-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 276,
+    "gender": "female",
+    "score": 1.0,
+    "heard": "你好这是翻译语音的测试它应该听起来自然并且按时到达",
+    "rtf": 0.116
+   }
+  ]
+ },
+ "zh_CN-huayan-medium": {
+  "lang": "zh",
+  "espeak": "cmn",
+  "phoneme_type": "espeak",
+  "num_speakers": 1,
+  "sample_rate": 22050,
+  "onnx": "zh_CN-huayan-medium.onnx",
+  "files": [
+   "MODEL_CARD",
+   "tokens.txt",
+   "zh_CN-huayan-medium.onnx",
+   "zh_CN-huayan-medium.onnx.json"
+  ],
+  "speakers": [
+   {
+    "sid": 0,
+    "name": "",
+    "pitch": 208,
+    "gender": "female",
+    "score": 0.92,
+    "heard": "你好这是范译语音的测试他应该听起来自然并且按时到达",
+    "rtf": 0.101
+   }
+  ]
+ }
+}

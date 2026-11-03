@@ -1,0 +1,2978 @@
+{
+ "models": [
+  {
+   "name": "ar_JO-SA_dii-high",
+   "bytes": 66982233,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ar",
+   "files": [
+    "README.md",
+    "ar_JO-SA_dii-high.onnx",
+    "ar_JO-SA_dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ar_JO-SA_miro_V2-high",
+   "bytes": 66977293,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ar",
+   "files": [
+    "README.md",
+    "ar_JO-SA_miro_V2-high.onnx",
+    "ar_JO-SA_miro_V2-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ar_JO-kareem-medium",
+   "bytes": 67177830,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ar",
+   "files": [
+    "ar_JO-kareem-medium.onnx",
+    "ar_JO-kareem-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "cs_CZ-jirka-medium",
+   "bytes": 67212775,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "cs",
+   "files": [
+    "cs_CZ-jirka-medium.onnx",
+    "cs_CZ-jirka-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-dii-high",
+   "bytes": 67200058,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "README.md",
+    "de_DE-dii-high.onnx",
+    "de_DE-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-eva_k-x_low",
+   "bytes": 26521242,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-eva_k-x_low.onnx",
+    "de_DE-eva_k-x_low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-karlsson-low",
+   "bytes": 67100500,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-karlsson-low.onnx",
+    "de_DE-karlsson-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-kerstin-low",
+   "bytes": 67107768,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-kerstin-low.onnx",
+    "de_DE-kerstin-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-miro-high",
+   "bytes": 67160790,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "README.md",
+    "de_DE-miro-high.onnx",
+    "de_DE-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-pavoque-low",
+   "bytes": 67113377,
+   "license": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-pavoque-low.onnx",
+    "de_DE-pavoque-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-ramona-low",
+   "bytes": 67084795,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-ramona-low.onnx",
+    "de_DE-ramona-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-thorsten-medium",
+   "bytes": 67214254,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-thorsten-medium.onnx",
+    "de_DE-thorsten-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "de_DE-thorsten_emotional-medium",
+   "bytes": 80215792,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "de",
+   "files": [
+    "de_DE-thorsten_emotional-medium.onnx",
+    "de_DE-thorsten_emotional-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-alan-medium",
+   "bytes": 67220121,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-alan-medium.onnx",
+    "en_GB-alan-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-alba-medium",
+   "bytes": 67212349,
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-alba-medium.onnx",
+    "en_GB-alba-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-aru-medium",
+   "bytes": 80309222,
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-aru-medium.onnx",
+    "en_GB-aru-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-cori-medium",
+   "bytes": 67257412,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_GB-cori-medium.onnx",
+    "en_GB-cori-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-dii-high",
+   "bytes": 67229442,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "README.md",
+    "en_GB-dii-high.onnx",
+    "en_GB-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-jenny_dioco-medium",
+   "bytes": 67225842,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-jenny_dioco-medium.onnx",
+    "en_GB-jenny_dioco-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-miro-high",
+   "bytes": 67194499,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "README.md",
+    "en_GB-miro-high.onnx",
+    "en_GB-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-northern_english_male-medium",
+   "bytes": 67210490,
+   "license": "CC-BY-SA 4.0 International",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-northern_english_male-medium.onnx",
+    "en_GB-northern_english_male-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-semaine-medium",
+   "bytes": 80241918,
+   "license": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-semaine-medium.onnx",
+    "en_GB-semaine-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-southern_english_female-medium",
+   "bytes": 80275090,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-GB-x-rp",
+   "files": [
+    "en_GB-southern_english_female-medium.onnx",
+    "en_GB-southern_english_female-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-southern_english_male-medium",
+   "bytes": 80299212,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-GB-x-rp",
+   "files": [
+    "en_GB-southern_english_male-medium.onnx",
+    "en_GB-southern_english_male-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-sweetbbak-amy",
+   "bytes": 115595629,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "README.md",
+    "en_GB-sweetbbak-amy.onnx",
+    "en_GB-sweetbbak-amy.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_GB-vctk-medium",
+   "bytes": 80488085,
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-gb-x-rp",
+   "files": [
+    "en_GB-vctk-medium.onnx",
+    "en_GB-vctk-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-amy-medium",
+   "bytes": 67223746,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-amy-medium.onnx",
+    "en_US-amy-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-arctic-medium",
+   "bytes": 80255511,
+   "license": "See LICENSE file",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-arctic-medium.onnx",
+    "en_US-arctic-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-bryce-medium",
+   "bytes": 67278133,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_US-bryce-medium.onnx",
+    "en_US-bryce-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-danny-low",
+   "bytes": 67107780,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-danny-low.onnx",
+    "en_US-danny-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-hfc_female-medium",
+   "bytes": 67228166,
+   "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-hfc_female-medium.onnx",
+    "en_US-hfc_female-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-hfc_male-medium",
+   "bytes": 67214049,
+   "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-hfc_male-medium.onnx",
+    "en_US-hfc_male-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-joe-medium",
+   "bytes": 67169394,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-joe-medium.onnx",
+    "en_US-joe-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-john-medium",
+   "bytes": 67249181,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_US-john-medium.onnx",
+    "en_US-john-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-kathleen-low",
+   "bytes": 67118360,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-kathleen-low.onnx",
+    "en_US-kathleen-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-kristin-medium",
+   "bytes": 67259230,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_US-kristin-medium.onnx",
+    "en_US-kristin-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-kusal-medium",
+   "bytes": 67219292,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-kusal-medium.onnx",
+    "en_US-kusal-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-l2arctic-medium",
+   "bytes": 80314104,
+   "license": "https://creativecommons.org/licenses/by-nc/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-l2arctic-medium.onnx",
+    "en_US-l2arctic-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-lessac-medium",
+   "bytes": 67230653,
+   "license": "https://www.cstr.ed.ac.uk/projects/blizzard/2013/lessac_blizzard2013/license.html",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-lessac-medium.onnx",
+    "en_US-lessac-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-libritts-high",
+   "bytes": 131033598,
+   "license": "CC BY 4.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-libritts-high.onnx",
+    "en_US-libritts-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-libritts_r-medium",
+   "bytes": 82038311,
+   "license": "CC BY 4.0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-libritts_r-medium.onnx",
+    "en_US-libritts_r-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-ljspeech-medium",
+   "bytes": 67169893,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_US-ljspeech-medium.onnx",
+    "en_US-ljspeech-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-miro-high",
+   "bytes": 67198472,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "README.md",
+    "en_US-miro-high.onnx",
+    "en_US-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-norman-medium",
+   "bytes": 67203672,
+   "license": "public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "en",
+   "files": [
+    "en_US-norman-medium.onnx",
+    "en_US-norman-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-reza_ibrahim-medium",
+   "bytes": 67214755,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-reza_ibrahim-medium.onnx",
+    "en_US-reza_ibrahim-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-ryan-medium",
+   "bytes": 67213100,
+   "license": "CC BY-NC-SA 4.0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-ryan-medium.onnx",
+    "en_US-ryan-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "en_US-sam-medium",
+   "bytes": 67249919,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "en-us",
+   "files": [
+    "en_US-sam-medium.onnx",
+    "en_US-sam-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_AR-daniela-high",
+   "bytes": 115562134,
+   "license": "Attribution-ShareAlike 4.0 International",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "es-419",
+   "files": [
+    "es_AR-daniela-high.onnx",
+    "es_AR-daniela-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_ES-carlfm-x_low",
+   "bytes": 26520563,
+   "license": "Public domain",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "es",
+   "files": [
+    "es_ES-carlfm-x_low.onnx",
+    "es_ES-carlfm-x_low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_ES-davefx-medium",
+   "bytes": 67184952,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "es",
+   "files": [
+    "es_ES-davefx-medium.onnx",
+    "es_ES-davefx-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_ES-miro-high",
+   "bytes": 67162898,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "es",
+   "files": [
+    "README.md",
+    "es_ES-miro-high.onnx",
+    "es_ES-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_ES-sharvard-medium",
+   "bytes": 80318184,
+   "license": "http://creativecommons.org/licenses/by/3.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "es",
+   "files": [
+    "es_ES-sharvard-medium.onnx",
+    "es_ES-sharvard-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_MX-ald-medium",
+   "bytes": 67196497,
+   "license": "http://unlicense.org",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "es-419",
+   "files": [
+    "es_MX-ald-medium.onnx",
+    "es_MX-ald-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "es_MX-claude-high",
+   "bytes": 67207890,
+   "license": "apache-2.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "es-419",
+   "files": [
+    "es_MX-claude-high.onnx",
+    "es_MX-claude-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_IR-amir-medium",
+   "bytes": 67180373,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_IR-amir-medium.onnx",
+    "fa_IR-amir-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_IR-ganji-medium",
+   "bytes": 67186157,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_IR-ganji-medium.onnx",
+    "fa_IR-ganji-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_IR-ganji_adabi-medium",
+   "bytes": 67221431,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_IR-ganji_adabi-medium.onnx",
+    "fa_IR-ganji_adabi-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_IR-gyro-medium",
+   "bytes": 67183308,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_IR-gyro-medium.onnx",
+    "fa_IR-gyro-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_IR-reza_ibrahim-medium",
+   "bytes": 67187249,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_IR-reza_ibrahim-medium.onnx",
+    "fa_IR-reza_ibrahim-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fa_en-rezahedayatfar-ibrahimwalk-medium",
+   "bytes": 67246929,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fa",
+   "files": [
+    "fa_en-rezahedayatfar-ibrahimwalk-medium.onnx",
+    "fa_en-rezahedayatfar-ibrahimwalk-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-gilles-low",
+   "bytes": 67094350,
+   "license": "CC0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "fr_FR-gilles-low.onnx",
+    "fr_FR-gilles-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-miro-high",
+   "bytes": 67162880,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "README.md",
+    "fr_FR-miro-high.onnx",
+    "fr_FR-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-siwis-medium",
+   "bytes": 67207459,
+   "license": "CC-BY 4.0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "fr_FR-siwis-medium.onnx",
+    "fr_FR-siwis-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-tjiho-model1",
+   "bytes": 67204019,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "LICENSE.txt",
+    "fr_FR-tjiho-model1.onnx",
+    "fr_FR-tjiho-model1.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-tjiho-model2",
+   "bytes": 67204483,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "LICENSE.txt",
+    "fr_FR-tjiho-model2.onnx",
+    "fr_FR-tjiho-model2.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-tjiho-model3",
+   "bytes": 67251174,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "LICENSE.txt",
+    "fr_FR-tjiho-model3.onnx",
+    "fr_FR-tjiho-model3.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-tom-medium",
+   "bytes": 67202955,
+   "license": "AGPLv3",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "fr_FR-tom-medium.onnx",
+    "fr_FR-tom-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "fr_FR-upmc-medium",
+   "bytes": 80422639,
+   "license": "http://creativecommons.org/licenses/by-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "fr",
+   "files": [
+    "fr_FR-upmc-medium.onnx",
+    "fr_FR-upmc-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "hi_IN-pratham-medium",
+   "bytes": 67238438,
+   "license": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "hi",
+   "files": [
+    "hi_IN-pratham-medium.onnx",
+    "hi_IN-pratham-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "hi_IN-priyamvada-medium",
+   "bytes": 67240610,
+   "license": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "hi",
+   "files": [
+    "hi_IN-priyamvada-medium.onnx",
+    "hi_IN-priyamvada-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "hi_IN-rohan-medium",
+   "bytes": 67221139,
+   "license": "https://www.iitm.ac.in/donlab/indictts/downloads/license.pdf",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "hi",
+   "files": [
+    "hi_IN-rohan-medium.onnx",
+    "hi_IN-rohan-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "id_ID-news_tts-medium",
+   "bytes": 67243848,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "id",
+   "files": [
+    "id_ID-news_tts-medium.onnx",
+    "id_ID-news_tts-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "it_IT-dii-high",
+   "bytes": 67196676,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "it",
+   "files": [
+    "README.md",
+    "it_IT-dii-high.onnx",
+    "it_IT-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "it_IT-miro-high",
+   "bytes": 67162890,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "it",
+   "files": [
+    "README.md",
+    "it_IT-miro-high.onnx",
+    "it_IT-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "it_IT-paola-medium",
+   "bytes": 67221173,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "it",
+   "files": [
+    "it_IT-paola-medium.onnx",
+    "it_IT-paola-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "it_IT-riccardo-x_low",
+   "bytes": 26496614,
+   "license": "See URL",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "it",
+   "files": [
+    "it_IT-riccardo-x_low.onnx",
+    "it_IT-riccardo-x_low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "kk_KZ-iseke-x_low",
+   "bytes": 26517675,
+   "license": "CC-BY-4.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "kk",
+   "files": [
+    "kk_KZ-iseke-x_low.onnx",
+    "kk_KZ-iseke-x_low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "kk_KZ-issai-high",
+   "bytes": 129278805,
+   "license": "CC-BY-4.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "kk",
+   "files": [
+    "kk_KZ-issai-high.onnx",
+    "kk_KZ-issai-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "kk_KZ-raya-x_low",
+   "bytes": 26497880,
+   "license": "CC-BY-4.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "kk",
+   "files": [
+    "kk_KZ-raya-x_low.onnx",
+    "kk_KZ-raya-x_low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_BE-nathalie-medium",
+   "bytes": 67226472,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "nl_BE-nathalie-medium.onnx",
+    "nl_BE-nathalie-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_BE-rdh-medium",
+   "bytes": 67047636,
+   "license": "CC0 1.0 Universal",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "nl_BE-rdh-medium.onnx",
+    "nl_BE-rdh-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_NL-alex-medium",
+   "bytes": 67172584,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "nl_NL-alex-medium.onnx",
+    "nl_NL-alex-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_NL-dii-high",
+   "bytes": 67203791,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "README.md",
+    "nl_NL-dii-high.onnx",
+    "nl_NL-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_NL-miro-high",
+   "bytes": 67169101,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "README.md",
+    "nl_NL-miro-high.onnx",
+    "nl_NL-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_NL-pim-medium",
+   "bytes": 67240538,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "nl_NL-pim-medium.onnx",
+    "nl_NL-pim-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "nl_NL-ronnie-medium",
+   "bytes": 67194164,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "nl",
+   "files": [
+    "nl_NL-ronnie-medium.onnx",
+    "nl_NL-ronnie-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-bass-high",
+   "bytes": 115576949,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "pl_PL-bass-high.onnx",
+    "pl_PL-bass-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-darkman-medium",
+   "bytes": 67215635,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "pl_PL-darkman-medium.onnx",
+    "pl_PL-darkman-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-gosia-medium",
+   "bytes": 67211182,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "pl_PL-gosia-medium.onnx",
+    "pl_PL-gosia-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-jarvis_wg_glos-medium",
+   "bytes": 67244103,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "README.md",
+    "pl_PL-jarvis_wg_glos-medium.onnx",
+    "pl_PL-jarvis_wg_glos-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-justyna_wg_glos-medium",
+   "bytes": 67242145,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "README.md",
+    "pl_PL-justyna_wg_glos-medium.onnx",
+    "pl_PL-justyna_wg_glos-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-mc_speech-medium",
+   "bytes": 67234285,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "pl_PL-mc_speech-medium.onnx",
+    "pl_PL-mc_speech-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-meski_wg_glos-medium",
+   "bytes": 67246175,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "README.md",
+    "pl_PL-meski_wg_glos-medium.onnx",
+    "pl_PL-meski_wg_glos-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pl_PL-zenski_wg_glos-medium",
+   "bytes": 67251520,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pl",
+   "files": [
+    "README.md",
+    "pl_PL-zenski_wg_glos-medium.onnx",
+    "pl_PL-zenski_wg_glos-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-cadu-medium",
+   "bytes": 67207562,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "pt_BR-cadu-medium.onnx",
+    "pt_BR-cadu-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-dii-high",
+   "bytes": 67238016,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "README.md",
+    "pt_BR-dii-high.onnx",
+    "pt_BR-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-edresson-low",
+   "bytes": 67081775,
+   "license": "CC BY 4.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "pt_BR-edresson-low.onnx",
+    "pt_BR-edresson-low.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-faber-medium",
+   "bytes": 67183065,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "pt_BR-faber-medium.onnx",
+    "pt_BR-faber-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-jeff-medium",
+   "bytes": 67207052,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "pt_BR-jeff-medium.onnx",
+    "pt_BR-jeff-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_BR-miro-high",
+   "bytes": 67207707,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt-br",
+   "files": [
+    "README.md",
+    "pt_BR-miro-high.onnx",
+    "pt_BR-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_PT-dii-high",
+   "bytes": 67243408,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt",
+   "files": [
+    "README.md",
+    "pt_PT-dii-high.onnx",
+    "pt_PT-dii-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_PT-miro-high",
+   "bytes": 67208098,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt",
+   "files": [
+    "README.md",
+    "pt_PT-miro-high.onnx",
+    "pt_PT-miro-high.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "pt_PT-tugao-medium",
+   "bytes": 67195014,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "pt",
+   "files": [
+    "pt_PT-tugao-medium.onnx",
+    "pt_PT-tugao-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ru_RU-denis-medium",
+   "bytes": 67190991,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ru",
+   "files": [
+    "ru_RU-denis-medium.onnx",
+    "ru_RU-denis-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ru_RU-dmitri-medium",
+   "bytes": 67188551,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ru",
+   "files": [
+    "ru_RU-dmitri-medium.onnx",
+    "ru_RU-dmitri-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ru_RU-irina-medium",
+   "bytes": 67153308,
+   "license": "Unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ru",
+   "files": [
+    "ru_RU-irina-medium.onnx",
+    "ru_RU-irina-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "ru_RU-ruslan-medium",
+   "bytes": 67210684,
+   "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ru",
+   "files": [
+    "ru_RU-ruslan-medium.onnx",
+    "ru_RU-ruslan-medium.onnx.json",
+    "tokens.txt"
+   ]
+  },
+  {
+   "name": "tr_TR-dfki-medium",
+   "bytes": 67201221,
+   "license": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "tr",
+   "files": [
+    "tokens.txt",
+    "tr_TR-dfki-medium.onnx",
+    "tr_TR-dfki-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "tr_TR-fahrettin-medium",
+   "bytes": 67212827,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "tr",
+   "files": [
+    "tokens.txt",
+    "tr_TR-fahrettin-medium.onnx",
+    "tr_TR-fahrettin-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "tr_TR-fettah-medium",
+   "bytes": 67174342,
+   "license": "CC0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "tr",
+   "files": [
+    "tokens.txt",
+    "tr_TR-fettah-medium.onnx",
+    "tr_TR-fettah-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "uk_UA-lada-x_low",
+   "bytes": 26520908,
+   "license": "Apache 2.0",
+   "commercial": true,
+   "input": "espeak",
+   "espeak": "uk",
+   "files": [
+    "tokens.txt",
+    "uk_UA-lada-x_low.onnx",
+    "uk_UA-lada-x_low.onnx.json"
+   ]
+  },
+  {
+   "name": "uk_UA-ukrainian_tts-medium",
+   "bytes": 80355083,
+   "license": "CC0",
+   "commercial": true,
+   "input": "text",
+   "espeak": "uk",
+   "files": [
+    "tokens.txt",
+    "uk_UA-ukrainian_tts-medium.onnx",
+    "uk_UA-ukrainian_tts-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "ur_PK-fasih-medium",
+   "bytes": 67227718,
+   "license": "unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "ur",
+   "files": [
+    "tokens.txt",
+    "ur_PK-fasih-medium.onnx",
+    "ur_PK-fasih-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "vi_VN-25hours_single-low",
+   "bytes": 67059380,
+   "license": "Unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "vi",
+   "files": [
+    "tokens.txt",
+    "vi_VN-25hours_single-low.onnx",
+    "vi_VN-25hours_single-low.onnx.json"
+   ]
+  },
+  {
+   "name": "vi_VN-vais1000-medium",
+   "bytes": 67154040,
+   "license": "https://creativecommons.org/licenses/by/4.0/",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "vi",
+   "files": [
+    "tokens.txt",
+    "vi_VN-vais1000-medium.onnx",
+    "vi_VN-vais1000-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "vi_VN-vivos-x_low",
+   "bytes": 33409065,
+   "license": "CC BY-NC-SA 4.0",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "vi",
+   "files": [
+    "tokens.txt",
+    "vi_VN-vivos-x_low.onnx",
+    "vi_VN-vivos-x_low.onnx.json"
+   ]
+  },
+  {
+   "name": "zh_CN-chaowen-medium",
+   "bytes": 60443846,
+   "license": "unknown",
+   "commercial": false,
+   "input": "lexicon",
+   "espeak": "zh",
+   "files": [
+    "date.fst",
+    "lexicon.txt",
+    "number.fst",
+    "phone.fst",
+    "tokens.txt",
+    "zh_CN-chaowen-medium.onnx",
+    "zh_CN-chaowen-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "zh_CN-huayan-medium",
+   "bytes": 67255926,
+   "license": "Unknown",
+   "commercial": false,
+   "input": "espeak",
+   "espeak": "cmn",
+   "files": [
+    "tokens.txt",
+    "zh_CN-huayan-medium.onnx",
+    "zh_CN-huayan-medium.onnx.json"
+   ]
+  },
+  {
+   "name": "zh_CN-xiao_ya-medium",
+   "bytes": 60462944,
+   "license": "unknown",
+   "commercial": false,
+   "input": "lexicon",
+   "espeak": "zh",
+   "files": [
+    "date.fst",
+    "lexicon.txt",
+    "number.fst",
+    "phone.fst",
+    "tokens.txt",
+    "zh_CN-xiao_ya-medium.onnx",
+    "zh_CN-xiao_ya-medium.onnx.json"
+   ]
+  }
+ ],
+ "voices": [
+  {
+   "model": "ar_JO-kareem-medium",
+   "speaker": 0,
+   "lang": "ar",
+   "gender": "male",
+   "name": "Kareem",
+   "tag": "ar-JO"
+  },
+  {
+   "model": "ar_JO-SA_dii-high",
+   "speaker": 0,
+   "lang": "ar",
+   "gender": "female",
+   "name": "Sa Dii",
+   "tag": "ar-JO"
+  },
+  {
+   "model": "ar_JO-SA_miro_V2-high",
+   "speaker": 0,
+   "lang": "ar",
+   "gender": "male",
+   "name": "Sa Miro V2",
+   "tag": "ar-JO"
+  },
+  {
+   "model": "cs_CZ-jirka-medium",
+   "speaker": 0,
+   "lang": "cs",
+   "gender": "male",
+   "name": "Jirka",
+   "tag": "cs-CZ"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 3,
+   "lang": "de",
+   "gender": "male",
+   "name": "Thorsten Emotional drunk",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 5,
+   "lang": "de",
+   "gender": "male",
+   "name": "Thorsten Emotional sleepy",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-dii-high",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-eva_k-x_low",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "female",
+   "name": "Eva K",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-karlsson-low",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "male",
+   "name": "Karlsson",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-kerstin-low",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "female",
+   "name": "Kerstin",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-pavoque-low",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "male",
+   "name": "Pavoque",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten-medium",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "male",
+   "name": "Thorsten",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "female",
+   "name": "Thorsten Emotional amused",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 1,
+   "lang": "de",
+   "gender": "female",
+   "name": "Thorsten Emotional angry",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 2,
+   "lang": "de",
+   "gender": "female",
+   "name": "Thorsten Emotional disgusted",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-thorsten_emotional-medium",
+   "speaker": 4,
+   "lang": "de",
+   "gender": "male",
+   "name": "Thorsten Emotional neutral",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-miro-high",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "de-DE"
+  },
+  {
+   "model": "de_DE-ramona-low",
+   "speaker": 0,
+   "lang": "de",
+   "gender": "female",
+   "name": "Ramona",
+   "tag": "de-DE"
+  },
+  {
+   "model": "en_US-ljspeech-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Ljspeech",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-john-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "John",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-alan-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Alan",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-alba-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Alba",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-amy-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Amy",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Arctic awb",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 4,
+   "lang": "en",
+   "gender": "female",
+   "name": "Arctic clb",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "male",
+   "name": "Arctic ksp",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 5,
+   "lang": "en",
+   "gender": "female",
+   "name": "Arctic lnh",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Arctic slt",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 4,
+   "lang": "en",
+   "gender": "female",
+   "name": "Aru 09",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-bryce-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Bryce",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-cori-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Cori",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-danny-low",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Danny",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-dii-high",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-hfc_female-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Hfc Female",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-hfc_male-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Hfc Male",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-jenny_dioco-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Jenny Dioco",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-kathleen-low",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Kathleen",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-kusal-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Kusal",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "female",
+   "name": "L2arctic THV",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-lessac-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Lessac",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 6,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts R 2531",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts R 3922",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts R 4535",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts R 8699",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 5,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts R 922",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 6,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts p2531",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts p3922",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts p4535",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts p6701",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "female",
+   "name": "Libritts p8699",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts-high",
+   "speaker": 5,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts p922",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-miro-high",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-miro-high",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-norman-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Norman",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-reza_ibrahim-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Reza Ibrahim",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-ryan-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Ryan",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-sam-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Sam",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-semaine-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "male",
+   "name": "Semaine obadiah",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-semaine-medium",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "female",
+   "name": "Semaine poppy",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-semaine-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Semaine prudence",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-semaine-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "male",
+   "name": "Semaine spike",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_female-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Southern English Female 0",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-sweetbbak-amy",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Sweetbbak",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "female",
+   "name": "Vctk p236",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 4,
+   "lang": "en",
+   "gender": "male",
+   "name": "Vctk p259",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 7,
+   "lang": "en",
+   "gender": "male",
+   "name": "Vctk p263",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-arctic-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "male",
+   "name": "Arctic rms",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "male",
+   "name": "Aru 01",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Aru 03",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-joe-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Joe",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-kristin-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Kristin",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 6,
+   "lang": "en",
+   "gender": "male",
+   "name": "L2arctic ERMS",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 5,
+   "lang": "en",
+   "gender": "male",
+   "name": "L2arctic TLV",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "female",
+   "name": "L2arctic ZHAA",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_US-libritts_r-medium",
+   "speaker": 3,
+   "lang": "en",
+   "gender": "male",
+   "name": "Libritts R 6701",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-northern_english_male-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Northern English Male",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_female-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "female",
+   "name": "Southern English Female 1",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_female-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Southern English Female 2",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_male-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "male",
+   "name": "Southern English Male 0",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_male-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "male",
+   "name": "Southern English Male 1",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-southern_english_male-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "Southern English Male 4",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 5,
+   "lang": "en",
+   "gender": "male",
+   "name": "Vctk p247",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Vctk p264",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 7,
+   "lang": "en",
+   "gender": "male",
+   "name": "Aru 05",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "Aru 10",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "male",
+   "name": "L2arctic TXHC",
+   "tag": "en-US"
+  },
+  {
+   "model": "en_GB-vctk-medium",
+   "speaker": 0,
+   "lang": "en",
+   "gender": "female",
+   "name": "Vctk p239",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_GB-aru-medium",
+   "speaker": 1,
+   "lang": "en",
+   "gender": "male",
+   "name": "Aru 06",
+   "tag": "en-GB"
+  },
+  {
+   "model": "en_US-l2arctic-medium",
+   "speaker": 2,
+   "lang": "en",
+   "gender": "female",
+   "name": "L2arctic SVBI",
+   "tag": "en-US"
+  },
+  {
+   "model": "es_ES-sharvard-medium",
+   "speaker": 1,
+   "lang": "es",
+   "gender": "female",
+   "name": "Sharvard F",
+   "tag": "es-ES"
+  },
+  {
+   "model": "es_ES-sharvard-medium",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "male",
+   "name": "Sharvard M",
+   "tag": "es-ES"
+  },
+  {
+   "model": "es_MX-ald-medium",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "male",
+   "name": "Ald",
+   "tag": "es-MX"
+  },
+  {
+   "model": "es_ES-carlfm-x_low",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "male",
+   "name": "Carlfm",
+   "tag": "es-ES"
+  },
+  {
+   "model": "es_MX-claude-high",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "female",
+   "name": "Claude",
+   "tag": "es-MX"
+  },
+  {
+   "model": "es_AR-daniela-high",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "female",
+   "name": "Daniela",
+   "tag": "es-AR"
+  },
+  {
+   "model": "es_ES-miro-high",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "es-ES"
+  },
+  {
+   "model": "es_ES-davefx-medium",
+   "speaker": 0,
+   "lang": "es",
+   "gender": "male",
+   "name": "Davefx",
+   "tag": "es-ES"
+  },
+  {
+   "model": "fa_IR-amir-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Amir",
+   "tag": "fa-IR"
+  },
+  {
+   "model": "fa_IR-ganji-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Ganji",
+   "tag": "fa-IR"
+  },
+  {
+   "model": "fa_IR-ganji_adabi-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Ganji Adabi",
+   "tag": "fa-IR"
+  },
+  {
+   "model": "fa_IR-gyro-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Gyro",
+   "tag": "fa-IR"
+  },
+  {
+   "model": "fa_IR-reza_ibrahim-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Reza Ibrahim",
+   "tag": "fa-IR"
+  },
+  {
+   "model": "fa_en-rezahedayatfar-ibrahimwalk-medium",
+   "speaker": 0,
+   "lang": "fa",
+   "gender": "male",
+   "name": "Rezahedayatfar",
+   "tag": "fa"
+  },
+  {
+   "model": "fr_FR-gilles-low",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Gilles",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-miro-high",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-siwis-medium",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "female",
+   "name": "Siwis",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-tjiho-model1",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Tjiho",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-tjiho-model2",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Tjiho",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-tjiho-model3",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Tjiho",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-tom-medium",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Tom",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-upmc-medium",
+   "speaker": 0,
+   "lang": "fr",
+   "gender": "female",
+   "name": "Upmc jessica",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "fr_FR-upmc-medium",
+   "speaker": 1,
+   "lang": "fr",
+   "gender": "male",
+   "name": "Upmc pierre",
+   "tag": "fr-FR"
+  },
+  {
+   "model": "hi_IN-pratham-medium",
+   "speaker": 0,
+   "lang": "hi",
+   "gender": "male",
+   "name": "Pratham",
+   "tag": "hi-IN"
+  },
+  {
+   "model": "hi_IN-priyamvada-medium",
+   "speaker": 0,
+   "lang": "hi",
+   "gender": "female",
+   "name": "Priyamvada",
+   "tag": "hi-IN"
+  },
+  {
+   "model": "hi_IN-rohan-medium",
+   "speaker": 0,
+   "lang": "hi",
+   "gender": "male",
+   "name": "Rohan",
+   "tag": "hi-IN"
+  },
+  {
+   "model": "id_ID-news_tts-medium",
+   "speaker": 0,
+   "lang": "id",
+   "gender": "female",
+   "name": "News Tts",
+   "tag": "id-ID"
+  },
+  {
+   "model": "it_IT-dii-high",
+   "speaker": 0,
+   "lang": "it",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "it-IT"
+  },
+  {
+   "model": "it_IT-miro-high",
+   "speaker": 0,
+   "lang": "it",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "it-IT"
+  },
+  {
+   "model": "it_IT-paola-medium",
+   "speaker": 0,
+   "lang": "it",
+   "gender": "female",
+   "name": "Paola",
+   "tag": "it-IT"
+  },
+  {
+   "model": "it_IT-riccardo-x_low",
+   "speaker": 0,
+   "lang": "it",
+   "gender": "male",
+   "name": "Riccardo",
+   "tag": "it-IT"
+  },
+  {
+   "model": "kk_KZ-iseke-x_low",
+   "speaker": 0,
+   "lang": "kk",
+   "gender": "male",
+   "name": "Iseke",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-issai-high",
+   "speaker": 4,
+   "lang": "kk",
+   "gender": "female",
+   "name": "Issai ISSAI_KazakhTTS2_F1",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-issai-high",
+   "speaker": 2,
+   "lang": "kk",
+   "gender": "female",
+   "name": "Issai ISSAI_KazakhTTS2_F3",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-issai-high",
+   "speaker": 0,
+   "lang": "kk",
+   "gender": "male",
+   "name": "Issai ISSAI_KazakhTTS2_M2",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-issai-high",
+   "speaker": 3,
+   "lang": "kk",
+   "gender": "female",
+   "name": "Issai ISSAI_KazakhTTS_F1_Raya",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-issai-high",
+   "speaker": 1,
+   "lang": "kk",
+   "gender": "male",
+   "name": "Issai ISSAI_KazakhTTS_M1_Iseke",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "kk_KZ-raya-x_low",
+   "speaker": 0,
+   "lang": "kk",
+   "gender": "female",
+   "name": "Raya",
+   "tag": "kk-KZ"
+  },
+  {
+   "model": "nl_NL-alex-medium",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "male",
+   "name": "Alex",
+   "tag": "nl-NL"
+  },
+  {
+   "model": "nl_NL-pim-medium",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "male",
+   "name": "Pim",
+   "tag": "nl-NL"
+  },
+  {
+   "model": "nl_BE-rdh-medium",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "male",
+   "name": "Rdh",
+   "tag": "nl-BE"
+  },
+  {
+   "model": "nl_NL-ronnie-medium",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "male",
+   "name": "Ronnie",
+   "tag": "nl-NL"
+  },
+  {
+   "model": "nl_NL-dii-high",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "nl-NL"
+  },
+  {
+   "model": "nl_BE-nathalie-medium",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "female",
+   "name": "Nathalie",
+   "tag": "nl-BE"
+  },
+  {
+   "model": "nl_NL-miro-high",
+   "speaker": 0,
+   "lang": "nl",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "nl-NL"
+  },
+  {
+   "model": "pl_PL-bass-high",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "male",
+   "name": "Bass",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-darkman-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "male",
+   "name": "Darkman",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-gosia-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "female",
+   "name": "Gosia",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-jarvis_wg_glos-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "male",
+   "name": "Jarvis Wg Glos",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-mc_speech-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "male",
+   "name": "Mc Speech",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-justyna_wg_glos-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "female",
+   "name": "Justyna Wg Glos",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-meski_wg_glos-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "male",
+   "name": "Meski Wg Glos",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pl_PL-zenski_wg_glos-medium",
+   "speaker": 0,
+   "lang": "pl",
+   "gender": "female",
+   "name": "Zenski Wg Glos",
+   "tag": "pl-PL"
+  },
+  {
+   "model": "pt_BR-dii-high",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "pt_PT-dii-high",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "female",
+   "name": "Dii",
+   "tag": "pt-PT"
+  },
+  {
+   "model": "pt_BR-faber-medium",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "male",
+   "name": "Faber",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "pt_BR-miro-high",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "pt_PT-miro-high",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "male",
+   "name": "Miro",
+   "tag": "pt-PT"
+  },
+  {
+   "model": "pt_BR-cadu-medium",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "male",
+   "name": "Cadu",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "pt_PT-tugao-medium",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "female",
+   "name": "Tugao",
+   "tag": "pt-PT"
+  },
+  {
+   "model": "pt_BR-jeff-medium",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "male",
+   "name": "Jeff",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "pt_BR-edresson-low",
+   "speaker": 0,
+   "lang": "pt",
+   "gender": "female",
+   "name": "Edresson",
+   "tag": "pt-BR"
+  },
+  {
+   "model": "ru_RU-denis-medium",
+   "speaker": 0,
+   "lang": "ru",
+   "gender": "male",
+   "name": "Denis",
+   "tag": "ru-RU"
+  },
+  {
+   "model": "ru_RU-dmitri-medium",
+   "speaker": 0,
+   "lang": "ru",
+   "gender": "female",
+   "name": "Dmitri",
+   "tag": "ru-RU"
+  },
+  {
+   "model": "ru_RU-ruslan-medium",
+   "speaker": 0,
+   "lang": "ru",
+   "gender": "male",
+   "name": "Ruslan",
+   "tag": "ru-RU"
+  },
+  {
+   "model": "ru_RU-irina-medium",
+   "speaker": 0,
+   "lang": "ru",
+   "gender": "female",
+   "name": "Irina",
+   "tag": "ru-RU"
+  },
+  {
+   "model": "tr_TR-dfki-medium",
+   "speaker": 0,
+   "lang": "tr",
+   "gender": "male",
+   "name": "Dfki",
+   "tag": "tr-TR"
+  },
+  {
+   "model": "tr_TR-fahrettin-medium",
+   "speaker": 0,
+   "lang": "tr",
+   "gender": "male",
+   "name": "Fahrettin",
+   "tag": "tr-TR"
+  },
+  {
+   "model": "tr_TR-fettah-medium",
+   "speaker": 0,
+   "lang": "tr",
+   "gender": "female",
+   "name": "Fettah",
+   "tag": "tr-TR"
+  },
+  {
+   "model": "uk_UA-ukrainian_tts-medium",
+   "speaker": 2,
+   "lang": "uk",
+   "gender": "female",
+   "name": "Ukrainian Tts tetiana",
+   "tag": "uk-UA"
+  },
+  {
+   "model": "uk_UA-ukrainian_tts-medium",
+   "speaker": 1,
+   "lang": "uk",
+   "gender": "female",
+   "name": "Ukrainian Tts mykyta",
+   "tag": "uk-UA"
+  },
+  {
+   "model": "uk_UA-lada-x_low",
+   "speaker": 0,
+   "lang": "uk",
+   "gender": "female",
+   "name": "Lada",
+   "tag": "uk-UA"
+  },
+  {
+   "model": "uk_UA-ukrainian_tts-medium",
+   "speaker": 0,
+   "lang": "uk",
+   "gender": "female",
+   "name": "Ukrainian Tts lada",
+   "tag": "uk-UA"
+  },
+  {
+   "model": "ur_PK-fasih-medium",
+   "speaker": 0,
+   "lang": "ur",
+   "gender": "male",
+   "name": "Fasih",
+   "tag": "ur-PK"
+  },
+  {
+   "model": "vi_VN-25hours_single-low",
+   "speaker": 0,
+   "lang": "vi",
+   "gender": "female",
+   "name": "25hours Single",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vais1000-medium",
+   "speaker": 0,
+   "lang": "vi",
+   "gender": "female",
+   "name": "Vais1000",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 25,
+   "lang": "vi",
+   "gender": "male",
+   "name": "Vivos VIVOSSPK04",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 28,
+   "lang": "vi",
+   "gender": "male",
+   "name": "Vivos VIVOSSPK07",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 0,
+   "lang": "vi",
+   "gender": "female",
+   "name": "Vivos VIVOSSPK13",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 1,
+   "lang": "vi",
+   "gender": "female",
+   "name": "Vivos VIVOSSPK14",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 2,
+   "lang": "vi",
+   "gender": "female",
+   "name": "Vivos VIVOSSPK15",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "vi_VN-vivos-x_low",
+   "speaker": 8,
+   "lang": "vi",
+   "gender": "male",
+   "name": "Vivos VIVOSSPK21",
+   "tag": "vi-VN"
+  },
+  {
+   "model": "zh_CN-xiao_ya-medium",
+   "speaker": 0,
+   "lang": "zh",
+   "gender": "female",
+   "name": "Xiao Ya",
+   "tag": "zh-CN"
+  },
+  {
+   "model": "zh_CN-chaowen-medium",
+   "speaker": 0,
+   "lang": "zh",
+   "gender": "female",
+   "name": "Chaowen",
+   "tag": "zh-CN"
+  },
+  {
+   "model": "zh_CN-huayan-medium",
+   "speaker": 0,
+   "lang": "zh",
+   "gender": "female",
+   "name": "Huayan",
+   "tag": "zh-CN"
+  }
+ ]
+}

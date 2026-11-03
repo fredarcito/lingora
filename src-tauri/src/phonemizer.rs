@@ -17,7 +17,14 @@ pub const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 /// eme". Esas palabras se sustituyen por el sonido real (una m larga) y las
 /// que solo tienen haches ("hhh", una respiración transcrita) se omiten.
 // Used by the light voice (`piper.rs`); Supertonic reads plain text.
+#[allow(dead_code)]
 pub async fn phonemize(bin: &str, text: &str, lang: Lang) -> Result<String> {
+    phonemize_with(bin, text, lang.espeak_voice()).await
+}
+
+/// Like `phonemize`, with an espeak-ng voice ("en-us", "pt-br", "fa"…): each
+/// light voice says which one it was trained with.
+pub async fn phonemize_with(bin: &str, text: &str, voice: &str) -> Result<String> {
     let mut parts: Vec<String> = Vec::new();
     let mut pending: Vec<&str> = Vec::new();
     for word in text.split_whitespace() {
@@ -26,13 +33,13 @@ pub async fn phonemize(bin: &str, text: &str, lang: Lang) -> Result<String> {
             continue;
         };
         if !pending.is_empty() {
-            parts.push(espeak(bin, &pending.join(" "), lang).await?);
+            parts.push(espeak(bin, &pending.join(" "), voice).await?);
             pending.clear();
         }
         parts.extend(hum);
     }
     if !pending.is_empty() {
-        parts.push(espeak(bin, &pending.join(" "), lang).await?);
+        parts.push(espeak(bin, &pending.join(" "), voice).await?);
     }
     let ipa = parts.join(" ");
     if ipa.trim().is_empty() {
@@ -66,7 +73,7 @@ pub fn data_dir(bin: &str) -> Option<PathBuf> {
         .find(|d| d.join("espeak-ng-data/phontab").exists())
 }
 
-async fn espeak(bin: &str, text: &str, lang: Lang) -> Result<String> {
+async fn espeak(bin: &str, text: &str, voice: &str) -> Result<String> {
     let mut command = tokio::process::Command::new(bin);
     // Desde la carpeta de los datos y con una ruta relativa: espeak-ng corta
     // las rutas largas (en una carpeta con nombre largo no los encontraría).
@@ -77,7 +84,7 @@ async fn espeak(bin: &str, text: &str, lang: Lang) -> Result<String> {
     #[cfg(windows)]
     command.creation_flags(CREATE_NO_WINDOW);
     let output = command
-        .args(["-v", lang.espeak_voice(), "-q", "--ipa", text])
+        .args(["-v", voice, "-q", "--ipa", text])
         .output()
         .await
         .map_err(|e| Error::Audio(format!("no se pudo ejecutar espeak-ng en {bin}: {e}")))?;

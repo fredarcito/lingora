@@ -217,8 +217,9 @@ francés, italiano, portugués, japonés, coreano, alemán, neerlandés, polaco,
 checo, ruso, ucraniano, turco, árabe, hindi, vietnamita e indonesio). Para el
 resto usa las voces del sistema de macOS si están instaladas (gratis en
 Ajustes del Sistema); si no hay voz, solo subtítulos. En equipos modestos, la
-voz ligera (de momento en español e inglés; pronto en más idiomas, incluidos
-algunos que hoy solo tienen la voz del sistema, como chino, persa o hebreo).
+voz ligera: 174 voces en 20 idiomas, entre ellos algunos sin voz natural
+(chino, persa, urdu, kazajo). Algunas son solo para uso no comercial (válido
+mientras Lingora sea una demo).
 
 **Calidad por idioma (dato interno, para ser honestos en los mensajes):**
 la traducción es mejor en idiomas europeos, chino, japonés y coreano. Es

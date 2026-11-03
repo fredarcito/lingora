@@ -100,6 +100,7 @@
   "voices.natural.all": "All its voices, in its 18 languages",
   "voices.light.title": "Light voice",
   "voices.light.text": "Arrives on time on modest computers. Each voice is downloaded on its own.",
+  "voices.none": "This language has no Lingora voices to download yet: the computer's system voices are used.",
   "voices.recommended": "Recommended for this computer",
   "voices.download": "Download · {size}",
   "voices.downloading": "Downloading… {percent}%",

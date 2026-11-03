@@ -1,8 +1,7 @@
 # Plan: a light voice (Piper) for low-end computers
 
-Status: Phase 1 (engine, Spanish and English) and Phase 2 (UI) built
-2026-11-03, not yet tried on a low-end computer; Phase 3 (more languages)
-pending. Approved by the user; it touches protected
+Status: Phases 1 (engine), 2 (UI) and 3 (all voices) built 2026-11-03, not
+yet tried on a low-end computer. Approved by the user; it touches protected
 files (`models.rs`, `pipeline.rs`, `config.rs`, `phonemizer.rs`, and in Phase 2
 `src/pages/Welcome`), each listed below.
 
@@ -208,8 +207,7 @@ Piper catalogue, and fill in the `espeak` field in `config.rs` for them.
    perf log. This is where the extrapolated 0.2× gets confirmed or not.
 2. **Done 2026-11-03.** UI: voice menu with download entries, recommended
    group, Welcome on light devices, the safety-net suggestion.
-3. **More languages:** licence review of the catalogue and the `espeak`
-   locales.
+3. **Done 2026-11-03.** All voices: see "Phase 3" below.
 
 ## Verification
 
@@ -262,6 +260,41 @@ Piper catalogue, and fill in the `espeak` field in `config.rs` for them.
 - Texts in `es` and `en`; "Lingora voices" is now "Natural voices".
 - Verified: `npx vite build`, `pnpm test` (115), `cargo check`, `cargo test`
   (38). Not tried in the running app yet.
+
+## Phase 3: every voice (2026-11-03)
+
+The user decided: Lingora is a demo, so it offers every voice, also the
+non-commercial ones. Each model keeps `commercial` (licence allows it and not
+fine-tuned from "lessac", whose recordings forbid commercial use: 5 of the
+first 11 were) to filter them if it is ever sold.
+
+- Source: the 537 Piper archives sherpa-onnx publishes (more than the 178 of
+  the official catalogue, community voices included; 29 official ones are not
+  in sherpa-onnx, among them every Japanese, Korean, Hebrew, Thai, Bengali,
+  Marathi and Telugu voice). Each comes as normal, `-fp16` (doesn't load in
+  sherpa-onnx 2.0.1) and `-int8` (2.4× slower without VNNI, and it changes the
+  voice): only the normal one.
+- `scripts/piper-voices` (README): `fetch_meta.py` → `survey.py` (downloads all
+  148 in Lingora's languages, one at a time; pitch per speaker; checked with
+  the app's listener: every European and Chinese voice understood ≥ 92 %) →
+  `catalog.py` (one quality per voice, medium first; up to 3 speakers per
+  gender; GLaDOS/turret out) → `src-tauri/src/piper_voices.json` (119 models,
+  174 voices, 20 languages; 22 models clearly commercial) and the Credits text.
+- `piper.rs` reads that JSON (`include_str!`). Per model: `espeak` voice,
+  `input` ("espeak", "text" for one Ukrainian voice, "lexicon" for two of the
+  three Chinese ones, with their rule FSTs), the files to keep. espeak-ng's
+  language marks ("(en)…(fa)") are dropped before the model sees them.
+- `phonemizer.rs` (protected): `phonemize_with` takes the espeak-ng voice.
+- espeak-ng data: `DICTS` grew to the catalogue's languages (2.1 → 13 MB);
+  rebuilt with `scripts/build-espeak.sh` (Mac binary and data; Windows builds
+  its binary in CI and uses the same data).
+- New languages with a local voice: Chinese, Persian, Urdu, Kazakh. Also a
+  light voice (besides the natural one) in Arabic, Turkish, Hindi, Indonesian,
+  Vietnamese, Russian, Ukrainian, Czech, Polish, German, Dutch, French,
+  Italian and Portuguese.
+- Verified: `cargo test` (38), `pnpm test` (115), `npx vite build`, the speech
+  test with the installed Spanish voices. Not tried in Rust: a Chinese
+  (lexicon) voice end to end; the survey did it with the same sherpa-onnx.
 
 ## Open questions for the user
 

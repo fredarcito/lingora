@@ -113,7 +113,7 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
     });
 
     let light = crate::perf::light_device();
-    let light_installed = crate::piper::MODELS.iter().any(|m| crate::piper::is_installed(m));
+    let light_installed = crate::piper::models().iter().any(crate::piper::is_installed);
     out.push(if crate::tts::TtsEngine::is_installed(&settings.tts_model_dir) {
         Check::ok(VOICE_CHECK, "Voz", "Descargada.")
     } else if light && light_installed {

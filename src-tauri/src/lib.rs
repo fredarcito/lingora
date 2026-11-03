@@ -188,12 +188,12 @@ async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<
             detail: String::new(),
         }));
     }
-    out.extend(piper::voices(lang).filter(|v| piper::is_installed(v.model)).map(|v| VoiceInfo {
-        id: v.id.to_string(),
-        name: v.name.to_string(),
+    out.extend(piper::voices(lang).filter(|v| piper::is_installed(v.model())).map(|v| VoiceInfo {
+        id: v.id.clone(),
+        name: v.name.clone(),
         engine: "piper",
         gender: Some(v.gender),
-        detail: system_voice::region(v.tag),
+        detail: system_voice::region(&v.tag),
     }));
     let all = tauri::async_runtime::spawn_blocking(system_voice::voices).await.unwrap_or_default();
     let mut system = system_voice::voices_for(lang, &all);
@@ -254,13 +254,13 @@ fn voice_downloads(state: tauri::State<'_, AppState>, lang: Lang) -> VoiceDownlo
         natural_bytes: models::Model::Voice.approx_bytes(),
         light: piper::voices(lang)
             .map(|v| LightVoice {
-                id: v.id,
-                model: v.model.id,
-                name: v.name,
+                id: &v.id,
+                model: &v.model().id,
+                name: &v.name,
                 gender: v.gender,
-                detail: system_voice::region(v.tag),
-                installed: piper::is_installed(v.model),
-                bytes: v.model.bytes,
+                detail: system_voice::region(&v.tag),
+                installed: piper::is_installed(v.model()),
+                bytes: v.model().bytes,
             })
             .collect(),
     }
@@ -425,7 +425,7 @@ async fn languages(state: tauri::State<'_, AppState>) -> error::Result<Vec<Langu
                 (true, true)
             } else {
                 let (female, male) = system_voice::available(lang, &voices);
-                let light = |g| piper::voices(lang).any(|v| v.gender == g && piper::is_installed(v.model));
+                let light = |g| piper::voices(lang).any(|v| v.gender == g && piper::is_installed(v.model()));
                 (female || light(tts::Gender::Female), male || light(tts::Gender::Male))
             };
             LanguageInfo {

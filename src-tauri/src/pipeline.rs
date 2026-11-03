@@ -256,7 +256,7 @@ impl Pipeline {
                 }
             }
             Some(("piper", _)) => {
-                if let Some(v) = voice.and_then(piper::voice).filter(|v| piper::is_installed(v.model)) {
+                if let Some(v) = voice.and_then(piper::voice).filter(|v| piper::is_installed(v.model())) {
                     return self.speak_piper(text, v, speed).await;
                 }
             }

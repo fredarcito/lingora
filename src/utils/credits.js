@@ -58,7 +58,7 @@ export const CREDITS = [
     kind: "model",
     name: "Piper voices",
     author: "Rhasspy / Open Home Foundation and each voice's authors",
-    license: "CC0, CC BY 3.0, CC BY-SA 4.0, Apache-2.0, Unlicense, public domain (per voice)",
+    license: "Per voice (CC0, CC BY, CC BY-SA, CC BY-NC-SA, Apache-2.0, MIT, public domain…)",
     licenseFile: "Piper-voices.txt",
     url: "https://huggingface.co/rhasspy/piper-voices",
   },

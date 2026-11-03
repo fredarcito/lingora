@@ -22,8 +22,9 @@ set -euo pipefail
 # If you change it, change it in `src/utils/credits.js` too.
 VERSION=1.52.0
 SHA256=bb4338102ff3b49a81423da8a1a158b420124b055b60fa76cfb4b18677130a23
-# Only the languages the voice pronounces (the `espeak` field of LANGS in config.rs).
-DICTS=(en es fr it pt)
+# Only the languages the light voice pronounces: the `espeak` voices of
+# src-tauri/src/piper_voices.json (scripts/piper-voices).
+DICTS=(en es fr it pt de nl pl cs ru uk tr ar fa hi ur kk vi id cmn)
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT_BIN="$ROOT/src-tauri/binaries/espeak-ng-aarch64-apple-darwin"
