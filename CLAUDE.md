@@ -107,7 +107,8 @@ documentación o su código).
   alrededor (JSDoc en JS, `///` en Rust). Los nombres de funciones, claves y
   variables ya están en inglés y no se tocan.
 - **La voz y la velocidad se quedan en la tarjeta del carril**, a mano. En
-  Ajustes solo van los dispositivos, las notas y el diagnóstico.
+  Ajustes solo van los dispositivos, las notas, el diagnóstico y la grabación
+  de «Tu voz» (Ajustes → Hablar); elegir «Tu voz» se hace en la tarjeta.
 - **Diseño:** estilo shadcn / Sembly, sobrio. Reutiliza las variables
   `--n-*` de `src/styles.css`. Lo nuevo va en el `styles.module.css` de su
   componente (CSS Modules: las clases de uno no pisan las de otro). Dentro
@@ -155,6 +156,8 @@ documentación o su código).
 - `docs/plan-autonomia.md`: quitar lo que aún depende de Homebrew o de la
   nube (llama.cpp y espeak-ng dentro de la app, resumen local hecho, firma).
 - `docs/plan-windows.md`: lo que falta para Windows (solo plan).
+- `docs/plan-tu-voz.md`: «Tu voz», Hablar con la voz propia clonada (hecho;
+  solo inglés, falta probarlo en una llamada real).
 - `docs/plan-voz-ligera.md`: la voz ligera (Piper) para equipos modestos y
   los idiomas sin voz natural (motor e interfaz hechos; faltan más idiomas).
 - `docs/plan-plantillas-resumen.md`: plantillas de resumen (fase 1 hecha;
@@ -162,6 +165,7 @@ documentación o su código).
 - `docs/plan-resumen-nube.md`: resumir con la clave de IA del propio usuario
   (opcional; recomendado en equipos con poca RAM). Hecho; falta probar cada servicio.
 - `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
+- `docs/plan-inicio.md`: pantalla de inicio y modo claro (planeado; para Sonnet).
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su
   clave en `src/i18n/es/` y `en/`**; no escribas texto fijo en los componentes.

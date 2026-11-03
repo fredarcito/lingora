@@ -8,6 +8,14 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  */
 
 /**
+ * @typedef {Object} OwnVoiceStatus "Your voice" (Settings → Speak): docs/plan-tu-voz.md.
+ * @property {boolean} model_installed
+ * @property {number} model_bytes Size of the download.
+ * @property {number} sample_secs Seconds of the saved recording; 0 without one.
+ * @property {string[]} langs App codes of the languages it speaks.
+ */
+
+/**
  * @typedef {Object} ModelStatus
  * @property {string} id Same id as its diagnostics check.
  * @property {boolean} required Cannot start without it.
@@ -28,9 +36,9 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 
 /**
  * @typedef {Object} VoiceInfo
- * @property {string} id "supertonic:5", "piper:<model>:<speaker>" or "system:<identifier>".
+ * @property {string} id "supertonic:5", "piper:<model>:<speaker>", "system:<identifier>" or "own".
  * @property {string} name The voice's name, or the number (1–5) of a natural voice within its gender.
- * @property {"supertonic" | "piper" | "system"} engine Natural, light or system voice.
+ * @property {"own" | "supertonic" | "piper" | "system"} engine Your voice, natural, light or system voice.
  * @property {"female" | "male" | null} gender
  * @property {string} detail Country and quality ("México · Premium"), or empty.
  */
@@ -247,6 +255,32 @@ export const api = {
    * @param {Lang} lang @returns {Promise<VoiceDownloads>}
    */
   voiceDownloads: (lang) => invoke("voice_downloads", { lang }),
+  /** @returns {Promise<OwnVoiceStatus>} */
+  ownVoiceStatus: () => invoke("own_voice_status"),
+  /**
+   * Keeps a new recording of your voice in place of the old one. Raw: sample
+   * rate (u32 LE), then the samples (f32 LE).
+   * @param {Float32Array} samples @param {number} sampleRate
+   * @returns {Promise<"silent" | "too_short" | null>} Why it was not kept, or null.
+   */
+  saveOwnVoice: (samples, sampleRate) => {
+    const body = new Uint8Array(4 + samples.length * 4);
+    new DataView(body.buffer).setUint32(0, sampleRate, true);
+    new Float32Array(body.buffer, 4, samples.length).set(samples);
+    return invoke("save_own_voice", body);
+  },
+  /**
+   * The saved recording of your voice, to hear it back. Raw: sample rate (u32 LE), then the samples (f32 LE).
+   * @returns {Promise<{ audio: Float32Array, sample_rate: number }>}
+   */
+  ownVoiceSample: async () => {
+    /** @type {ArrayBuffer | number[]} */
+    const data = await invoke("own_voice_sample");
+    const buffer = data instanceof ArrayBuffer ? data : Uint8Array.from(data).buffer;
+    return { sample_rate: new DataView(buffer, 0, 4).getUint32(0, true), audio: new Float32Array(buffer, 4) };
+  },
+  /** @returns {Promise<void>} */
+  deleteOwnVoice: () => invoke("delete_own_voice"),
   /** Low-end computer: the light voice is recommended. @returns {Promise<boolean>} */
   lightDevice: () => invoke("light_device"),
   /** The natural voice is in use and can't keep up on this computer. @returns {Promise<boolean>} */

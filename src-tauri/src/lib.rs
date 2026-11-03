@@ -12,6 +12,7 @@ mod notes;
 mod perf;
 #[cfg(target_os = "macos")]
 mod objc;
+mod own_voice;
 mod phonemizer;
 mod pipeline;
 mod piper;
@@ -162,8 +163,8 @@ async fn speak(
 /// Una voz que se puede elegir para un idioma.
 #[derive(serde::Serialize)]
 struct VoiceInfo {
-    /// "supertonic:5", "piper:<model>:<speaker>" o "system:<identificador>";
-    /// se pasa tal cual a `speak`.
+    /// "supertonic:5", "piper:<model>:<speaker>", "system:<identificador>" u
+    /// "own" (tu voz); se pasa tal cual a `speak`.
     id: String,
     /// The system voice's name, or the number (1–5) of a Supertonic voice
     /// within its gender: the UI names it ("Voice 1").
@@ -174,11 +175,15 @@ struct VoiceInfo {
     detail: String,
 }
 
-/// Las voces del idioma: las de Supertonic (si está descargado), las ligeras
-/// descargadas y las del sistema, cada grupo de mejor a peor.
+/// Las voces del idioma: tu voz (si está grabada y habla el idioma), las de
+/// Supertonic (si está descargado), las ligeras descargadas y las del sistema,
+/// cada grupo de mejor a peor.
 #[tauri::command]
 async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<Vec<VoiceInfo>> {
     let mut out = Vec::new();
+    if own_voice::speaks(lang) && own_voice::is_installed(&own_voice::model_dir()) && own_voice::has_sample() {
+        out.push(VoiceInfo { id: own_voice::ID.into(), name: String::new(), engine: "own", gender: None, detail: String::new() });
+    }
     if tts::TtsEngine::is_installed(&state.pipeline.settings().tts_model_dir) {
         out.extend(tts::voices(lang).into_iter().map(|v| VoiceInfo {
             id: format!("supertonic:{}", v.sid),
@@ -264,6 +269,51 @@ fn voice_downloads(state: tauri::State<'_, AppState>, lang: Lang) -> VoiceDownlo
             })
             .collect(),
     }
+}
+
+/// Your voice: whether its model is downloaded and the recording saved (Settings → Speak).
+#[tauri::command]
+fn own_voice_status() -> own_voice::Status {
+    own_voice::status()
+}
+
+/// Keeps a new recording of your voice. Raw, like `play_audio`: sample rate
+/// (u32 LE), then the samples (f32 LE). Returns the problem if it was not kept
+/// ("silent", "too_short").
+#[tauri::command]
+async fn save_own_voice(state: tauri::State<'_, AppState>, request: tauri::ipc::Request<'_>) -> error::Result<Option<own_voice::Problem>> {
+    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
+        return Err(error::Error::Audio("se esperaba audio en crudo".into()));
+    };
+    let rate = bytes.get(..4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]])).filter(|r| *r > 0);
+    let rate = rate.ok_or_else(|| error::Error::Audio("grabación inválida".into()))?;
+    let samples: Vec<f32> = bytes[4..].chunks_exact(4).map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]])).collect();
+    let saved = tauri::async_runtime::spawn_blocking(move || own_voice::save_sample(&samples, rate))
+        .await
+        .map_err(|e| error::Error::Audio(format!("guardar tu voz terminó mal: {e}")))??;
+    state.pipeline.own_voice().forget_sample().await;
+    Ok(saved.err())
+}
+
+/// The saved recording of your voice, to hear it back. Raw: sample rate (u32
+/// LE), then the samples (f32 LE).
+#[tauri::command]
+async fn own_voice_sample() -> error::Result<tauri::ipc::Response> {
+    let (samples, rate) = tauri::async_runtime::spawn_blocking(own_voice::saved_sample)
+        .await
+        .map_err(|e| error::Error::Audio(format!("leer tu voz terminó mal: {e}")))?
+        .ok_or_else(|| error::Error::Audio("aún no has grabado tu voz".into()))?;
+    let mut out = Vec::with_capacity(4 + samples.len() * 4);
+    out.extend_from_slice(&rate.to_le_bytes());
+    samples.iter().for_each(|s| out.extend_from_slice(&s.to_le_bytes()));
+    Ok(tauri::ipc::Response::new(out))
+}
+
+#[tauri::command]
+async fn delete_own_voice(state: tauri::State<'_, AppState>) -> error::Result<()> {
+    own_voice::delete_sample()?;
+    state.pipeline.own_voice().forget_sample().await;
+    Ok(())
 }
 
 /// This is a low-end computer (`perf::light_device`): Welcome skips the voice.
@@ -596,6 +646,10 @@ pub fn run() {
             speak,
             voices,
             voice_downloads,
+            own_voice_status,
+            save_own_voice,
+            own_voice_sample,
+            delete_own_voice,
             light_device,
             voice_struggling,
             play_audio,

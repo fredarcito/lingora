@@ -42,5 +42,10 @@
   "summary.missing": "Not set up. Download the summary ({size}) or enter your AI key in Settings → Notes.",
   "summary.missingLow": "Not set up. This computer has little memory: we recommend entering your AI key in Settings → Notes.",
   "summary.downloading": "Downloading the summary…",
-  "fix.summary": "Download (2.7 GB)"
+  "ownVoice.title": "Your voice",
+  "ownVoice.missing": "So people hear you in your own voice in calls. Download it ({size}) and record it in Settings → Speak.",
+  "ownVoice.notRecorded": "Downloaded. It still needs recording in Settings → Speak.",
+  "ownVoice.ready": "Recorded. Choose it on the Speak card.",
+  "fix.summary": "Download (2.7 GB)",
+  "fix.own_voice": "Download (98 MB)"
 }

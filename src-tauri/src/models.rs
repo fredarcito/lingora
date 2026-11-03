@@ -23,15 +23,17 @@ pub enum Model {
     Summary,
     /// A light voice (`piper.rs`), downloaded from the lane's voice menu.
     Piper(&'static crate::piper::PiperModel),
+    /// Your voice (`own_voice.rs`), downloaded from Settings → Speak.
+    OwnVoice,
 }
 
 impl Model {
     /// The models Welcome and Diagnostics know about.
     pub const ALL: [Model; 6] = [Model::Listener, Model::Translator, Model::Voice, Model::SenseVoice, Model::Speakers, Model::Summary];
 
-    /// Everything that can be downloaded: `ALL` and the light voices.
+    /// Everything that can be downloaded: `ALL`, the light voices and your voice.
     pub fn every() -> impl Iterator<Item = Model> {
-        Model::ALL.into_iter().chain(crate::piper::models().iter().map(Model::Piper))
+        Model::ALL.into_iter().chain(crate::piper::models().iter().map(Model::Piper)).chain([Model::OwnVoice])
     }
 
     pub fn id(self) -> &'static str {
@@ -44,6 +46,7 @@ impl Model {
             // Not in the diagnostics: it is optional and asked for from the note.
             Model::Summary => "summary",
             Model::Piper(m) => &m.id,
+            Model::OwnVoice => "own_voice",
         }
     }
 
@@ -66,6 +69,7 @@ impl Model {
             Model::Speakers => 39_600_000,
             Model::Summary => crate::summarizer::MODEL_BYTES,
             Model::Piper(m) => m.bytes,
+            Model::OwnVoice => crate::own_voice::MODEL_BYTES,
         }
     }
 
@@ -79,6 +83,7 @@ impl Model {
             Model::Speakers => settings.speaker_model.clone(),
             Model::Summary => crate::summarizer::model_path(),
             Model::Piper(m) => crate::piper::dir(m),
+            Model::OwnVoice => crate::own_voice::model_dir(),
         }
     }
 
@@ -92,6 +97,7 @@ impl Model {
             Model::Speakers => crate::speakers::Speakers::is_installed(&dest),
             Model::Summary => crate::summarizer::is_installed(&dest),
             Model::Piper(m) => crate::piper::is_installed(m),
+            Model::OwnVoice => crate::own_voice::is_installed(&dest),
         }
     }
 
@@ -111,6 +117,9 @@ impl Model {
                 format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", crate::tts::MODEL_NAME)
             }
             Model::Piper(m) => format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", m.folder),
+            Model::OwnVoice => {
+                format!("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/{}.tar.bz2", crate::own_voice::MODEL_NAME)
+            }
         }
     }
 
@@ -137,6 +146,7 @@ impl Model {
             Model::SenseVoice => Engine::SenseVoice.model_name(),
             Model::Voice => crate::tts::MODEL_NAME,
             Model::Piper(m) => &m.folder,
+            Model::OwnVoice => crate::own_voice::MODEL_NAME,
             Model::Translator | Model::Speakers | Model::Summary => "",
         }
     }
@@ -146,6 +156,7 @@ impl Model {
         match self {
             Model::Voice => crate::tts::FILES.iter().map(|f| format!("{}/{f}", self.archive_root())).collect(),
             Model::Piper(m) => crate::piper::files(m),
+            Model::OwnVoice => crate::own_voice::FILES.iter().map(|f| format!("{}/{f}", self.archive_root())).collect(),
             _ => Vec::new(),
         }
     }

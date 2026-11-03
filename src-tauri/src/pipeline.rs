@@ -11,7 +11,7 @@
 
 use crate::config::{Lang, Settings};
 use crate::error::Result;
-use crate::{groq::Groq, piper, translator::LocalTranslator, tts};
+use crate::{groq::Groq, own_voice, piper, translator::LocalTranslator, tts};
 use serde::Serialize;
 use std::sync::Arc;
 
@@ -105,6 +105,8 @@ pub struct Pipeline {
     tts: tts::TtsEngine,
     /// The light voice (Piper), for low-end computers: docs/plan-voz-ligera.md.
     piper: piper::PiperEngine,
+    /// The user's own voice, for Speak in a call: docs/plan-tu-voz.md.
+    own: own_voice::OwnVoice,
     /// The last sentence was said with the natural voice (Supertonic).
     natural_last: std::sync::atomic::AtomicBool,
     local: LocalTranslator,
@@ -116,7 +118,7 @@ impl Pipeline {
         let tts = tts::TtsEngine::new(settings.tts_model_dir.clone());
         let local = LocalTranslator::new(settings.translator_model.clone());
         let piper = piper::PiperEngine::new(settings.espeak_bin.clone());
-        Self { settings, groq, tts, piper, natural_last: Default::default(), local }
+        Self { settings, groq, tts, piper, own: Default::default(), natural_last: Default::default(), local }
     }
 
     /// Carga el modelo de voz con una frase mínima, para que la primera frase
@@ -147,6 +149,11 @@ impl Pipeline {
     pub async fn release_voices(&self) {
         self.tts.release().await;
         self.piper.release().await;
+        self.own.release().await;
+    }
+
+    pub fn own_voice(&self) -> &own_voice::OwnVoice {
+        &self.own
     }
 
     pub fn local_translator(&self) -> &LocalTranslator {
@@ -243,12 +250,16 @@ impl Pipeline {
     /// Sintetiza la voz de un fragmento de texto. `speed` acelera la voz
     /// cuando la UI tiene frases en cola.
     /// Dice `text` con la voz elegida (`voice`: "supertonic:5",
-    /// "piper:<model>:<speaker>" o "system:<id>"); sin ella o si ya no está,
-    /// con la mejor del género.
+    /// "piper:<model>:<speaker>", "system:<id>" u "own", tu voz); sin ella o si
+    /// ya no está, con la mejor del género.
     /// Old "kokoro:*" ids saved before Supertonic fall through to the default.
     /// `hq` uses more steps: a slightly slower, higher-quality voice.
     pub async fn speak(&self, text: &str, lang: Lang, gender: tts::Gender, voice: Option<&str>, speed: f32, hq: bool) -> Result<Speech> {
         let speed = speed.clamp(0.8, 1.5);
+        // Your voice only speaks some languages; in the rest, the default voice.
+        if voice == Some(own_voice::ID) && own_voice::speaks(lang) && own_voice::is_installed(&own_voice::model_dir()) && own_voice::has_sample() {
+            return self.speak_own(text, speed).await;
+        }
         match voice.and_then(|v| v.split_once(':')) {
             Some(("supertonic", sid)) if tts::voice_for(lang, gender).is_some() => {
                 if let Ok(sid) = sid.parse() {
@@ -278,6 +289,13 @@ impl Pipeline {
             (_, Some(v)) => self.speak_piper(text, v, speed).await,
             (None, None) => self.speak_system(crate::system_voice::synthesize(text, lang, gender, speed)).await,
         }
+    }
+
+    async fn speak_own(&self, text: &str, speed: f32) -> Result<Speech> {
+        let t0 = std::time::Instant::now();
+        self.natural_last.store(false, std::sync::atomic::Ordering::Relaxed);
+        let (audio, sample_rate) = self.own.synthesize(text, speed).await?;
+        Ok(Speech { audio, sample_rate, phonemize_ms: 0, tts_ms: t0.elapsed().as_millis() as u64 })
     }
 
     async fn speak_piper(&self, text: &str, voice: &'static piper::PiperVoice, speed: f32) -> Result<Speech> {

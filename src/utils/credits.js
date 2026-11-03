@@ -63,6 +63,17 @@ export const CREDITS = [
     url: "https://huggingface.co/rhasspy/piper-voices",
   },
   {
+    // The weights are CC-BY-4.0, but sherpa-onnx's export says "for
+    // non-commercial" use: check it before selling Lingora (docs/plan-tu-voz.md).
+    id: "pocket",
+    kind: "model",
+    name: "Pocket TTS",
+    author: "Kyutai",
+    license: "CC-BY-4.0",
+    licenseFile: "CC-BY-4.0.txt",
+    url: "https://huggingface.co/kyutai/pocket-tts",
+  },
+  {
     id: "eres2net",
     kind: "model",
     name: "ERes2Net (3D-Speaker)",

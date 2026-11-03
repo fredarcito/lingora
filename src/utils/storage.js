@@ -4,7 +4,7 @@
  */
 
 /** Current models, by id (the same as its diagnostics check). */
-const MODELS = new Set(["listener", "sense_voice", "translator", "voice_model", "speakers", "summary"]);
+const MODELS = new Set(["listener", "sense_voice", "translator", "voice_model", "speakers", "summary", "own_voice"]);
 
 /**
  * Size as people read it: "1,3 GB" or "145 MB" (in the interface language).

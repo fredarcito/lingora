@@ -6,6 +6,7 @@ import { LinkButton, Spinner, cx } from "@components/shared";
 import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";
 import { useSummarySource } from "@hooks/useSummarySource";
 import { formatSize } from "@utils/storage";
+import { VOICES_CHANGED, announceVoices } from "@utils/voiceDownloads";
 import { isLowMemory, providerOf } from "@utils/summarySource.js";
 import styles from "./styles.module.css";
 
@@ -20,7 +21,7 @@ const GROUPS = [
   { key: "call", title: "diagnostics.group.call", ids: ["blackhole", "routing", "sample_rate", "capture_volume"] },
   { key: "mic", title: "diagnostics.group.mic", ids: ["microphone"] },
   { key: "translate", title: "diagnostics.group.translate", ids: ["listener", "sense_voice", "translator"] },
-  { key: "voice", title: "diagnostics.group.voice", ids: ["espeak", "voice_model"] },
+  { key: "voice", title: "diagnostics.group.voice", ids: ["espeak", "voice_model", "own_voice"] },
   { key: "notes", title: "diagnostics.group.notes", ids: ["speakers", "summary"] },
 ];
 
@@ -37,7 +38,8 @@ const BLACKHOLE_CAPTURE = new Set(["blackhole", "routing", "sample_rate", "captu
  * @param {string} id @param {string[]} [required]
  */
 const isOptional = (id, required = []) =>
-  !required.includes(id) && (id === "sense_voice" || id === "summary" || (id === "speakers" && !loadSpeakers()));
+  !required.includes(id) &&
+  (id === "sense_voice" || id === "summary" || id === "own_voice" || (id === "speakers" && !loadSpeakers()));
 
 /**
  * What the user is told when each check fails. The backend's title
@@ -68,6 +70,7 @@ const FIX_LABEL = {
   speakers: "diagnostics.fix.speakers",
   translator: "diagnostics.fix.translator",
   summary: "diagnostics.fix.summary",
+  own_voice: "diagnostics.fix.own_voice",
 };
 
 /** @param {import("@utils/api").Check} c @param {string[]} [required] */
@@ -109,11 +112,21 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
   const [allChecks, setChecks] = useState([]);
   const { lang } = useLang();
   const summary = summaryCheck(useSummaryModel(), useSummarySource(), lang);
+  const [ownStatus, setOwnStatus] = useState(/** @type {import("@utils/api").OwnVoiceStatus | null} */ (null));
+  const readOwnVoice = useCallback(() => api.ownVoiceStatus().then(setOwnStatus).catch(() => {}), []);
+  useEffect(() => {
+    readOwnVoice();
+    // Recorded or deleted in Settings → Speak.
+    window.addEventListener(VOICES_CHANGED, readOwnVoice);
+    return () => window.removeEventListener(VOICES_CHANGED, readOwnVoice);
+  }, [readOwnVoice]);
+  // Your voice is only for Speak, in Translate call.
+  const own = mode === "call" && ownStatus ? ownVoiceCheck(ownStatus, lang) : null;
   // In video mode the microphone is not used: it is not a problem and does not need to be shown.
   const checks = [
     ...allChecks.filter((c) => !(mode === "video" && c.id === "microphone") && !(systemAudio && BLACKHOLE_CAPTURE.has(c.id))),
-    // Only next to the backend's checks, so the panel doesn't show it alone while those load.
-    ...(summary && allChecks.length ? [summary] : []),
+    // Only next to the backend's checks, so the panel doesn't show them alone while those load.
+    ...(allChecks.length ? [summary, own].filter(Boolean) : []),
   ];
   const [fixing, setFixing] = useState(null);
   const [error, setError] = useState(null);
@@ -154,6 +167,11 @@ export default function Diagnostics({ mode, systemAudio = false, onFixed, onlyPr
       if (id === "speakers") await ensureSpeakers().then(() => refresh(true));
       // The summary is not a backend check: its download is shared with the note's.
       else if (id === "summary") await downloadSummaryModel();
+      // Neither is your voice: its model downloads like the voices in the lane's menu.
+      else if (id === "own_voice") {
+        await api.downloadModel("own_voice", () => {});
+        announceVoices();
+      }
       else merge(await api.fixDiagnostic(id));
       onFixed?.();
     } catch (e) {
@@ -289,6 +307,23 @@ function summaryCheck(model, source, lang) {
       ? t("diagnostics.summary.missingLow")
       : t("diagnostics.summary.missing", { size: formatSize(model.total, lang) });
   return { id: "summary", status: "warning", title, detail, fix: "Descargar" };
+}
+
+/**
+ * Your voice, as one more check of the Voice group, like the summary in Notes:
+ * it is not one of the backend's, and its recording is made in Settings →
+ * Speak. Optional: without it, Speak uses a Lingora voice.
+ * @param {import("@utils/api").OwnVoiceStatus} status @param {string} lang
+ * @returns {import("@utils/api").Check}
+ */
+function ownVoiceCheck(status, lang) {
+  const title = t("diagnostics.ownVoice.title");
+  if (!status.model_installed) {
+    const detail = t("diagnostics.ownVoice.missing", { size: formatSize(status.model_bytes, lang) });
+    return { id: "own_voice", status: "warning", title, detail, fix: "Descargar" };
+  }
+  if (status.sample_secs <= 0) return { id: "own_voice", status: "warning", title, detail: t("diagnostics.ownVoice.notRecorded") };
+  return { id: "own_voice", status: "ok", title, detail: t("diagnostics.ownVoice.ready") };
 }
 
 const icon = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round", strokeLinejoin: "round" };

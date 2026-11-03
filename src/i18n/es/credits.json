@@ -12,6 +12,7 @@
   "purpose.qwen": "El resumen de las notas",
   "purpose.supertonic": "La voz",
   "purpose.piper": "La voz ligera (equipos modestos)",
+  "purpose.pocket": "Tu voz (Hablar con tu propia voz)",
   "purpose.eres2net": "Distinguir a las personas",
   "purpose.sherpa": "Ejecuta la escucha, la voz y las personas",
   "purpose.onnxruntime": "Viene dentro de sherpa-onnx",

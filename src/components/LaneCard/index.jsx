@@ -129,6 +129,10 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
   const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
   // Several voices needs Lingora's voices in the language and the speakers add-on.
   const hasLingoraVoices = voiceList.some((v) => v.engine === "supertonic");
+  // "Your voice" is a choice of its own, next to the genders: Speak only, once
+  // recorded and in a language it speaks (it is in the list then).
+  const hasOwnVoice = lane.direction === "local_to_remote" && voiceList.some((v) => v.engine === "own");
+  const ownChosen = hasOwnVoice && lane.voiceIds[target] === "own";
   const multiOk = hasLingoraVoices && multiVoice?.available === true;
   const showSource = !same && !lane.captionsOriginal && (lane.showSource ?? speaks);
   // A single setting for which text is shown: the translation, the original without
@@ -216,18 +220,24 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
               <div className={styles.settingRow}>
                 <span className={styles.settingLabel}>{t("app.lane.voice")}</span>
                 <Segmented
-                  value={speaks ? voice : "off"}
+                  value={!speaks ? "off" : ownChosen ? "own" : voice}
                   onChange={(value) => {
                     if (value === "off") return onChange({ speak: false });
+                    if (value === "own") return onChange({ speak: true, voiceIds: { ...lane.voiceIds, [target]: "own" } });
                     // A specific voice of another gender no longer applies: it goes back to automatic.
-                    // With several voices it stays: it is Person 1's voice.
+                    // With several voices it stays: it is Person 1's voice. Leaving your voice, too.
                     const chosen = voiceList.find((v) => v.id === voiceId);
                     const { [target]: _, ...rest } = lane.voiceIds;
-                    const drop = value !== "multi" && chosen && chosen.gender !== value;
+                    const drop = ownChosen || (value !== "multi" && chosen && chosen.gender !== value);
                     onChange({ speak: true, voice: value, ...(drop ? { voiceIds: rest } : {}) });
                   }}
                   options={[
-                    { value: "off", label: t("app.lane.voice.off"), hint: t("app.lane.voice.off.hint") },
+                    {
+                      value: "off",
+                      label: t("app.lane.voice.off"),
+                      // In Speak the voice is what the call hears: without it, nobody hears you.
+                      hint: t(lane.direction === "local_to_remote" ? "app.lane.voice.off.hint.speak" : "app.lane.voice.off.hint"),
+                    },
                     // It is read in every sentence: it can be changed while the lane is running.
                     {
                       value: "female",
@@ -241,6 +251,7 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
                       disabled: !lane.voices.male,
                       hint: lane.voices.male ? undefined : t("app.lane.voice.male.missing"),
                     },
+                    ...(hasOwnVoice ? [{ value: "own", label: t("app.lane.voice.own"), hint: t("app.lane.voice.own.hint") }] : []),
                     ...(multiVoice
                       ? [
                           {
@@ -260,7 +271,18 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
               </div>
             )}
             {/* The specific voice and the speed, at hand; the devices, in Settings. */}
-            {speaks && <VoiceControls lane={lane} volume={volume} onChange={onChange} multiVoice={voice === "multi" ? multiVoice : undefined} />}
+            {speaks && (
+              <VoiceControls
+                lane={lane}
+                volume={volume}
+                onChange={onChange}
+                multiVoice={voice === "multi" ? multiVoice : undefined}
+                onOpenSettings={() => {
+                  closeSettings();
+                  onOpenSettings();
+                }}
+              />
+            )}
             {/* No voice yet: one button downloads the one this computer should use. */}
             {!same && !lane.voices.female && !lane.voices.male && (
               <VoiceOffer lang={target} gender={lane.voice === "male" ? "male" : "female"} />
@@ -349,6 +371,12 @@ export default function LaneCard({ lane, compact, original, onOriginal, state: s
           running={s.running}
           onUse={() => onChange({ outputDevice: VIRTUAL_MIC })}
         />
+      )}
+      {/* Speak without a voice into the call's microphone: the call hears silence. */}
+      {lane.direction === "local_to_remote" && !lane.speak && !same && lane.outputDevice === VIRTUAL_MIC && !compact && (
+        <p className={cx(styles.notice, styles.noticeWarn)}>
+          {t("app.lane.voiceOffInCall")} <LinkButton onClick={() => onChange({ speak: true })}>{t("app.lane.voiceOffInCall.turnOn")}</LinkButton>
+        </p>
       )}
       {speaks && voice !== "multi" && !compact && (
         <VoiceStruggleNotice
@@ -467,10 +495,12 @@ const voiceLabel = (v) =>
  * The specific voice (with preview) and the maximum speed, on the lane's card:
  * they are changed often and must be at hand.
  * With several voices (`multiVoice`), one row per person instead of the specific voice.
+ * Speak also points to "Your voice" while it is not recorded (it is recorded in Settings).
  * @param {{ lane: import("@app/types").Lane & { voices: { female: boolean, male: boolean } }, volume: number,
- *   onChange: (patch: Partial<import("@app/types").Lane>) => void, multiVoice?: import("@hooks/useMultiVoice").MultiVoice }} props
+ *   onChange: (patch: Partial<import("@app/types").Lane>) => void, multiVoice?: import("@hooks/useMultiVoice").MultiVoice,
+ *   onOpenSettings: () => void }} props
  */
-function VoiceControls({ lane, volume, onChange, multiVoice }) {
+function VoiceControls({ lane, volume, onChange, multiVoice, onOpenSettings }) {
   const t = useT();
   /** @type {[import("@utils/api").VoiceInfo[], Function]} */
   const target = apiLang(lane.targetLang);
@@ -481,6 +511,15 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
   const [previewError, setPreviewError] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
   const lightDevice = useLightDevice();
+  // The languages "Your voice" speaks, to point Speak to it while it is not recorded.
+  const [ownLangs, setOwnLangs] = useState(/** @type {string[]} */ ([]));
+  useEffect(() => {
+    if (lane.direction !== "local_to_remote") return;
+    api
+      .ownVoiceStatus()
+      .then((status) => setOwnLangs(status.langs))
+      .catch(() => {});
+  }, [lane.direction]);
 
   // The voices of the language; they are checked again when returning to the app in case one was downloaded.
   useEffect(() => {
@@ -505,7 +544,9 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
   // If the chosen gender has no voice in this language, Rust uses the other one.
   const voice = lane.voices[lane.voice] ? lane.voice : lane.voices.female ? "female" : "male";
   const speed = speedRange(lane.maxSpeed);
-  const voiceId =voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
+  const voiceId = voiceList.some((v) => v.id === lane.voiceIds[target]) ? lane.voiceIds[target] : "";
+  // Chosen next to the genders: no specific voice to pick, only its preview.
+  const ownChosen = voiceId === "own";
   // Automatic uses the natural voice whenever the language has one, except on a
   // low-end computer with a light voice downloaded (`Pipeline::speak`).
   const lingoraVoices = voiceList.filter((v) => v.engine === "supertonic");
@@ -530,7 +571,9 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
         VOICE_SAMPLES[target] ?? (await api.translate(VOICE_SAMPLES.es, "es", target, "", () => {}, false, true)).translation;
       // At the lane's lowest speed: in Agile that is already faster than 1.
       const speech = await api.speak(text, target, gender, speedRange(lane.maxSpeed).base, id, lane.voiceHq);
-      await api.playAudio(trimSilence(speech.audio, speech.sample_rate), speech.sample_rate, lane.outputDevice, volume);
+      // The preview is for you: not into the call's microphone.
+      const output = lane.outputDevice === VIRTUAL_MIC ? "" : lane.outputDevice;
+      await api.playAudio(trimSilence(speech.audio, speech.sample_rate), speech.sample_rate, output, volume);
     } catch (e) {
       setPreviewError(errorMessage(e));
     } finally {
@@ -554,7 +597,17 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
       )}
       {/* Always in view, so the card does not jump when the voices arrive:
           disabled while they load or if the language has only one. */}
-      {!multiVoice && <div className={cx(styles.settingRow, styles.settingSub)}>
+      {!multiVoice && ownChosen && (
+        <div className={cx(styles.settingRow, styles.settingSub)}>
+          <span className={styles.settingLabel} />
+          <div>
+            <button className={styles.voicePreview} onClick={() => previewVoice()} disabled={previewing} title={t("app.voices.preview.hint")}>
+              {previewing ? <Spinner /> : t("app.voices.preview")}
+            </button>
+          </div>
+        </div>
+      )}
+      {!multiVoice && !ownChosen && <div className={cx(styles.settingRow, styles.settingSub)}>
         <span className={styles.settingLabel} />
         <div className={styles.voicePick}>
           <select
@@ -588,13 +641,21 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
           </button>
         </div>
       </div>}
-      {!multiVoice && (
+      {!multiVoice && !ownChosen && (
         <div className={cx(styles.settingRow, styles.settingSub)}>
           <span className={styles.settingLabel} />
           <div className={styles.moreVoices}>
-            <LinkButton onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}>
-              {t(moreOpen ? "app.voices.more.hide" : "app.voices.more.show")}
-            </LinkButton>
+            <div className={styles.voiceLinks}>
+              <LinkButton onClick={() => setMoreOpen((open) => !open)} aria-expanded={moreOpen}>
+                {t(moreOpen ? "app.voices.more.hide" : "app.voices.more.show")}
+              </LinkButton>
+              {/* Speak, while "Your voice" is not recorded: it is recorded in Settings. */}
+              {voicesLoaded && ownLangs.includes(target) && !voiceList.some((v) => v.engine === "own") && (
+                <LinkButton onClick={onOpenSettings} title={t("app.voices.own.setup.hint")}>
+                  {t("app.voices.own.setup")}
+                </LinkButton>
+              )}
+            </div>
             {/* An accordion: always mounted, so its list is ready when it opens and
                 it can fold back with the same animation. */}
             <div className={cx(styles.accordion, moreOpen && styles.isOpen)} inert={!moreOpen || undefined}>
@@ -612,7 +673,6 @@ function VoiceControls({ lane, volume, onChange, multiVoice }) {
             to the mode's recommended value, moving it selects the mode it lands in. */}
         <div className={styles.speedControl}>
           <Segmented
-            small
             value={speedMode(lane.maxSpeed)}
             onChange={(id) => onChange({ maxSpeed: SPEED_MODES.find((m) => m.id === id)?.value ?? lane.maxSpeed })}
             options={SPEED_MODES.map((m) => ({ value: m.id, label: t(`app.voices.speed.mode.${m.id}`), hint: t(`app.voices.speed.mode.${m.id}.hint`) }))}

@@ -1,0 +1,70 @@
+/* Settings → Speak: "Your voice". The row uses the global .prefs-row. A line
+   sets it apart from the devices above, in the same card. */
+.own-voice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 18px;
+  border-top: 1px solid var(--n-border);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Recorded: hear what you read and how the other person will hear you. */
+.listen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-left: -4px;
+}
+
+.listen > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+/* While recording: the text to read, the level and the seconds. */
+.recorder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--n-border);
+  border-radius: var(--n-radius);
+  background: var(--n-muted);
+}
+
+.script {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.meter {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--n-border);
+  overflow: hidden;
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 80ms linear;
+}
+
+.secs,
+.consent {
+  font-size: 12px;
+  color: var(--text-3);
+}

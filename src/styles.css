@@ -193,6 +193,29 @@ button.link:hover {
   color: var(--text);
 }
 
+/* One that opens something below (`aria-expanded`): a chevron that turns when open. */
+button.link[aria-expanded]::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-3px) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+
+button.link[aria-expanded="true"]::after {
+  transform: translateY(0) rotate(-135deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.link[aria-expanded]::after {
+    transition: none;
+  }
+}
+
 /* ---------- Forms ---------- */
 
 .field {

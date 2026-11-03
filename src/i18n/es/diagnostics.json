@@ -42,5 +42,10 @@
   "summary.missing": "Sin configurar. Descarga el resumen ({size}) o pon tu clave de IA en Ajustes → Notas.",
   "summary.missingLow": "Sin configurar. Este equipo tiene poca memoria: te recomendamos poner tu clave de IA en Ajustes → Notas.",
   "summary.downloading": "Descargando el resumen…",
-  "fix.summary": "Descargar (2,7 GB)"
+  "ownVoice.title": "Tu voz",
+  "ownVoice.missing": "Para que en las llamadas te oigan con tu propia voz. Descárgala ({size}) y grábala en Ajustes → Hablar.",
+  "ownVoice.notRecorded": "Descargada. Falta grabarla en Ajustes → Hablar.",
+  "ownVoice.ready": "Grabada. Elígela en la tarjeta de Hablar.",
+  "fix.summary": "Descargar (2,7 GB)",
+  "fix.own_voice": "Descargar (98 MB)"
 }

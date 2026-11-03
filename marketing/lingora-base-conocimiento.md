@@ -137,6 +137,13 @@ llega a la otra persona). Aparece en la app como "**pronto**". Usa un
 micrófono virtual propio ("Lingora Mic") que ya existe pero aún está en
 pruebas. **No prometerlo como disponible.**
 
+- **Tu voz (hecho, sin probar en una llamada real):** la otra persona te oye
+  **con tu propia voz** en su idioma. Se graba una vez en Ajustes → Hablar
+  (unos 15 s leyendo un texto) y se queda en el Mac. Por ahora solo habla
+  inglés (la grabación puede ser en cualquier idioma). No es más rápida que la
+  voz de Lingora y suena algo menos limpia que una voz de estudio: lo que gana
+  es que suena a ti. Solo se puede clonar la voz propia.
+
 ### 3.4 Notas (biblioteca)
 
 - Cada sesión puede guardarse como nota en el propio Mac.
@@ -461,6 +468,7 @@ contenidos del tipo "lo que viene".
 
 | Qué | Valor para el usuario | Estado |
 |---|---|---|
+| **Tu voz en más idiomas** | Hoy "Tu voz" solo habla inglés; el mismo modelo existe en francés, alemán, italiano, portugués y español. | Pendiente de probar |
 | **Resumen local** | Cierra el mensaje "100 % en tu Mac": el resumen ya no usa la nube ni pide ninguna clave. El modelo (~2,7 GB) se descarga aparte la primera vez. | **Hecho** (2 nov 2026). Groq se quitó del todo |
 | **Traducir llamada (en los dos sentidos)** | Tu voz, traducida, le llega a la otra persona en Zoom, Meet, etc. Es la función "estrella" pendiente. | En desarrollo y bloqueada. Ya existe el micrófono virtual propio ("Lingora Mic", se instala con un botón en Ajustes y la contraseña del Mac); falta probarlo en llamadas reales y firmarlo |
 | **Escuchar 21 idiomas más** | Hoy esos idiomas solo pueden ser de destino (árabe, hindi, turco, tailandés, vietnamita…). Con esto también podrían ser el idioma que se oye. | Pendiente; requiere un modelo de escucha adicional, más lento y pesado |
