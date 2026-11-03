@@ -18,7 +18,7 @@ own server), recommended on computers with less than 8 GB of RAM.
 |---|---|
 | **Translate audio** | Translates what you hear: a video, a class, a podcast. Captions in the app or floating over any window (also in full screen), with an optional translated voice. |
 | **Take notes** | Transcribes without translating, with speakers and a summary. Listens to the computer audio, the microphone, or both in an **online meeting** (the others from the computer, you from the microphone as "Me"). |
-| **Translate call** | Both ways: what you hear and what you say. Locked while it is being finished (see `VITE_CALL_MODE`). |
+| **Translate call** | Both ways: what you hear and what you say. Your translated voice reaches the call through **Lingora Mic**, the app's own virtual microphone. Locked while it is being finished (see `VITE_CALL_MODE`). |
 
 Also:
 
@@ -26,6 +26,16 @@ Also:
   each person in the video speaks with their own voice. Needs the speakers
   add-on and a language with Lingora voices. See
   [docs/plan-varias-voces.md](docs/plan-varias-voces.md).
+- **Your voice:** in a call, the other person can hear your translation in
+  **your own voice**, cloned from a short reading recorded in *Settings →
+  Speak*. English only for now. See [docs/plan-tu-voz.md](docs/plan-tu-voz.md).
+- **Light voice:** on computers where the natural voice can't keep up (Intel
+  Macs, older PCs), a faster voice is recommended; it also speaks 9 languages
+  the natural voice doesn't. See
+  [docs/plan-voz-ligera.md](docs/plan-voz-ligera.md).
+- **Echo cancellation:** in a meeting on speakers, the microphone's echo of the
+  meeting and of Lingora's voice is removed before it is translated. See
+  [docs/aislamiento-audio.md](docs/aislamiento-audio.md), section 7.
 - **Notes:** every session can be saved as a note (pause and resume while
   recording). Search, filters by date, rename speakers or merge two that are the
   same person, export to Markdown or text, and copy for an AI chat.
@@ -60,10 +70,12 @@ Computer audio ──► process tap, Lingora excluded            Microphone
               Translation (llama.cpp inside the app), streamed sentence by sentence
                                            │
                                            ▼
-              Voice: Supertonic 3 (sherpa-onnx), or a system voice
+              Voice (sherpa-onnx): Supertonic 3, Piper (light), Pocket TTS
+              (your voice), or a system voice
                                            │
                                            ▼
-              Played on the chosen output, sped up a little if it falls behind
+              Played on the chosen output (Lingora Mic in a call), sped up a
+              little if it falls behind
 ```
 
 Models live in `~/Library/Application Support/lingora/models/` (macOS) or
@@ -76,7 +88,10 @@ Models live in `~/Library/Application Support/lingora/models/` (macOS) or
 | Index-Translate-2B Q4_K_M (llama.cpp) | Translation and generated interface languages | ~1.3 GB, required |
 | SenseVoice Small int8 | Listening, Chinese/Cantonese/Japanese/Korean | ~165 MB |
 | Supertonic 3 int8 | Voice in 18 languages (the rest use a macOS system voice; none yet on Windows) | ~145 MB |
+| Piper voices | Light voice; one download per voice (Supertonic's languages plus 9 more) | ~63 MB each |
 | 3D-Speaker ERes2Net | Telling speakers apart (notes and several voices) | ~40 MB |
+| Pocket TTS int8 | Your voice (English) | ~98 MB, optional |
+| Qwen3.5-4B Q4_K_M (llama.cpp) | Local note summaries; downloaded the first time a summary is asked for | ~2.7 GB, optional |
 
 ### Why each decision
 
@@ -84,9 +99,15 @@ Models live in `~/Library/Application Support/lingora/models/` (macOS) or
   that excludes Lingora (`system_audio.rs`). No driver, and the translated voice
   doesn't loop back in. The first time, macOS asks for "Screen & System Audio
   Recording" permission. Windows has the same idea (WASAPI process loopback,
-  Windows 10 2004+), with no permission prompt. Translating a call in the other direction still needs
-  a virtual microphone, because macOS doesn't allow creating one without a
-  driver.
+  Windows 10 2004+), with no permission prompt.
+- **Lingora Mic, our own virtual microphone** (`driver/LingoraMic.c`): macOS
+  doesn't allow creating a microphone without a driver, so the app carries one
+  and installs it from Settings (macOS asks for the admin password once). It
+  replaces BlackHole for calls.
+- **Echo cancellation with WebRTC's AEC3** (`sonora` crate, pure Rust): on
+  speakers, the microphone hears the meeting and Lingora's voice. A text filter
+  was ruled out because it adds delay; AEC works in 10 ms blocks. On by
+  default unless headphones are connected.
 - **All local**: free, no quotas, works
   offline, and the audio never leaves the machine. It costs about 2–2.5 GB of
   RAM with the models loaded.
@@ -103,6 +124,17 @@ Models live in `~/Library/Application Support/lingora/models/` (macOS) or
   plain text. It runs at 5 steps (~0.14 s per second of speech on an M1 Pro), or 8 with the
   lane's "higher-quality voice" switch (~0.21 s). See
   [docs/plan-voz-supertonic.md](docs/plan-voz-supertonic.md).
+- **Piper for the light voice**: ~3.5× faster than Supertonic on x86 without
+  VNNI (0.09× real time with 2 threads), where Supertonic fell behind. It
+  uses the app's own espeak-ng for phonemes. Only voices with commercial-friendly
+  licences are offered.
+- **Pocket TTS for your voice**: clones a voice from a short reference through
+  the same sherpa-onnx library (no new dependency). It brings identity, not
+  speed (~0.19 s per second of speech, like Supertonic). A fixed seed makes the
+  same text always sound the same.
+- **Qwen3.5-4B for local summaries**: the best of the models compared on the
+  Mac (see [docs/plan-autonomia.md](docs/plan-autonomia.md)). On computers with less
+  than 8 GB of RAM, summarizing with the user's own AI key is recommended.
 - **Speakers**: each sentence's voice print is grouped live, and the whole
   conversation is reviewed when it ends. Tuned on a real 55-minute interview
   (94 % right) and synthetic voices (100 %).
@@ -151,6 +183,8 @@ root (it is in `.gitignore`) or in the environment:
 | `GROQ_API_KEY` | Development only: the old cloud listening and translation in `pipeline.rs`. |
 | `LINGORA_SUMMARY_KEY` | Development only: the AI key for summaries when the Keychain has none for the chosen service. Release builds only read the Keychain. |
 | `VITE_CALL_MODE` | `true` unlocks "Translate call". Read when the interface is built. |
+| `LINGORA_LIGHT_VOICE` | `1` or `0` forces the light-voice recommendation on or off, to test it. |
+| `LINGORA_ESPEAK_BIN` | Use another espeak-ng binary instead of the bundled one. |
 | `LINGORA_LISTENER_MODEL_DIR`, `LINGORA_SENSE_VOICE_MODEL_DIR`, `LINGORA_TRANSLATOR_MODEL`, `LINGORA_TTS_MODEL_DIR`, `LINGORA_SPEAKER_MODEL` | Use a model from another path instead of the downloaded one. |
 
 ## Windows
@@ -168,8 +202,8 @@ summaries. What changes:
   still needs more testing with real audio.
 - **Translation on the CPU**, slower on laptops. GPU translation (`--features
   vulkan`) is being tested in a separate Actions job.
-- **No system voices yet**: only the 18 languages with Lingora voices are
-  spoken.
+- **No system voices yet**: only the languages with Lingora voices (natural
+  or light) are spoken. Older laptops get the light voice recommended.
 - Device names come from the WebView; headphones and Bluetooth aren't detected
   yet.
 - Some interface texts still say "Mac".
@@ -186,6 +220,7 @@ src/
   hooks/            Own React hooks (devices, languages, meeting notes, several voices…)
   utils/            Non-UI code: api (bridge to Rust), audio, notes, prefs, lanes, mindMap…
   i18n/             Interface texts (es/, en/)
+driver/             Lingora Mic, the virtual microphone (Core Audio HAL plug-in)
 src-tauri/src/
   lib.rs            Tauri commands
   pipeline.rs       Per-direction pipeline, with timings per stage
@@ -194,6 +229,10 @@ src-tauri/src/
   listener.rs       Local listening (Parakeet, SenseVoice)
   translator.rs     Local translation (llama.cpp, on its own thread)
   tts.rs, system_voice.rs  Voice (Supertonic) and macOS system voices
+  piper.rs, phonemizer.rs  Light voice (Piper) and its phonemes (espeak-ng)
+  own_voice.rs      Your voice: the recording and the cloned voice (Pocket TTS)
+  echo_cancel.rs    Microphone with echo cancellation (WebRTC AEC3)
+  virtual_mic.rs    Installs Lingora Mic
   speakers.rs       Voice prints to tell people apart
   notes.rs          Notes on disk, export, summary templates and mind map
   summarizer.rs     Local note summaries (llama.cpp, loaded per summary)
@@ -203,17 +242,20 @@ src-tauri/src/
   captions_window.rs  Floating captions window
   config.rs         Languages (LANGS) and settings
   log_file.rs       Log file (on the desktop on Windows)
+  perf.rs           Machine info and CPU use for the log; low-end detection
 ```
 
 ## Status and next steps
 
 - **Works:** Translate audio (with several voices), Take notes (also online
   meetings), Notes with speakers, summary templates and mind map, floating
-  captions, 37 languages, everything inside the app with no Homebrew.
-- **In progress:** Translate call (needs a virtual microphone), notes of your
-  own and bookmarks in Take notes, custom summary templates, removing espeak-ng now
-  that the voice doesn't use it (Step 4 of
-  [docs/plan-voz-supertonic.md](docs/plan-voz-supertonic.md)).
+  captions, 37 languages, local summaries, light voice, everything inside the
+  app with no Homebrew.
+- **In progress:** Translate call (Lingora Mic worked in a real call; echo
+  cancellation and your voice are built but untested in real calls), notes of
+  your own and bookmarks in Take notes, custom summary templates, a home screen
+  and light mode ([docs/plan-inicio.md](docs/plan-inicio.md)).
+- **Untested on real hardware:** the light voice on a low-end computer.
 - **Test version:** Windows (see [Windows](#windows)).
 - **Pending:** Apple signing and notarization; Windows signing (Microsoft Store
   or a certificate).
@@ -227,4 +269,6 @@ Known audio problems on macOS, with causes and fixes:
   translated into.
 - The voice takes ~0.14× the audio duration; short sentences keep up best.
 - Several voices needs one of the 18 languages with Lingora voices.
+- Your voice only speaks English for now, and clones less faithfully from a
+  recording in Chinese, Japanese or similar languages.
 - Computer audio needs macOS 14.2+ or Windows 10 2004+.
