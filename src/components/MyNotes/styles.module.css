@@ -169,8 +169,8 @@
   line-height: 1.45;
   color: var(--text);
   border-radius: var(--n-radius);
-  border: 1px solid var(--n-input);
-  background: var(--surface-2);
+  border: 1px solid var(--control-border);
+  background: var(--control);
 }
 
 .mark-edit {
