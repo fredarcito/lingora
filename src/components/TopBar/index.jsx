@@ -1,11 +1,12 @@
 import { useT } from "@i18n";
 import PairBar from "@components/PairBar";
 import { MenuButton } from "@components/Sidebar";
-import { WaveIcon, cx } from "@components/shared";
+import ThemeToggle from "@components/ThemeToggle";
+import { cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
- * The Translate header: ☰, logo, the conversation languages and the mode
+ * The Translate header: ☰, the conversation languages and the mode
  * (Video, Take notes, Call). With a lane running (`running`) neither the mode nor the
  * languages can be changed. `callMode`: "Translate call" is already
  * available; otherwise it is shown locked. `modeRef` gets the mode selector, so
@@ -21,13 +22,6 @@ export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, 
     <header className="topbar">
       <div className="brand">
         <MenuButton onClick={onMenu} recording={running} />
-        <span className="logo" aria-hidden>
-          <WaveIcon />
-        </span>
-        <div>
-          <h1>Lingora</h1>
-          <p>{t("app.tagline")}</p>
-        </div>
       </div>
       <div className={styles.topbarActions}>
         {/* In Take notes it is hidden instead of removed, so the mode selector does not shift. */}
@@ -62,6 +56,7 @@ export default function TopBar({ mode, onMode, callMode, running, onMenu, pair, 
             </button>
           ))}
         </div>
+        <ThemeToggle />
       </div>
     </header>
   );

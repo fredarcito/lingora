@@ -10,7 +10,7 @@
   border-radius: var(--n-radius);
   border: 1px solid var(--n-border);
   background: var(--n-popover);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 30px var(--shadow-2);
   animation: global(fade-in) 0.1s ease-out;
 }
 
@@ -54,5 +54,5 @@
 
 .note-menu button.note-menu-danger:hover,
 .note-menu button.note-menu-danger:focus-visible {
-  background: rgba(248, 113, 113, 0.1);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }

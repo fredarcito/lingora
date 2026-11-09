@@ -4,8 +4,8 @@
   grid-template-columns: 1fr 1fr;
   min-height: var(--control-h);
   border-radius: var(--n-radius, 8px);
-  border: 1px solid var(--n-border, var(--hairline));
-  background: var(--surface-2);
+  border: 1px solid var(--control-border);
+  background: var(--control);
   overflow: hidden;
 }
 
@@ -28,7 +28,7 @@
 
 .segmented button:hover:not(:disabled):not(.is-selected) {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--n-hover);
 }
 
 .segmented.small {
@@ -41,12 +41,11 @@
 }
 
 /* The selected option of a form control gets a ✓ and a touch of the accent
-   color; its border covers the hairlines next to it. The mode selector and the
+   color, flat (no border). The mode selector and the
    tabs are navigation: they have their own style, without ✓ or green. */
 .segmented button.is-selected {
   color: var(--text);
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--control));
 }
 
 .seg-check {

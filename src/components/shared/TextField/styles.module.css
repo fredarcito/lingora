@@ -8,8 +8,8 @@
   color: var(--text);
   padding: 0 10px;
   border-radius: var(--n-radius);
-  border: 1px solid var(--hairline);
-  background: var(--surface-2);
+  border: 1px solid var(--control-border);
+  background: var(--control);
 }
 
 .text-field::placeholder {

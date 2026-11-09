@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLang, useT } from "@i18n";
 import { MenuButton } from "@components/Sidebar";
+import ThemeToggle from "@components/ThemeToggle";
 import NotePage from "@components/NotePage";
 import { useNotesList } from "@hooks/useNotesList.js";
 import { activeNoteId, formatDuration } from "@utils/notes.js";
 import { dateFormats, daysAgo, langPair, monthLabel, timeRange } from "@utils/noteList.js";
-import { Badge, ChevronIcon, NoteIcon, PageHeader, SearchBox, Select, TranslateIcon, cx } from "@components/shared";
+import { Badge, ChevronIcon, NoteIcon, PageHeader, PenIcon, SearchBox, Select, SwapIcon, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -30,6 +31,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     formats,
     t,
   });
+  const [topSlot, setTopSlot] = useState(/** @type {HTMLElement | null} */ (null));
   const scroller = useRef(/** @type {HTMLDivElement | null} */ (null));
   const scrollTop = useRef(0);
   const search = useRef(/** @type {HTMLInputElement | null} */ (null));
@@ -97,13 +99,17 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
   return (
     <main className="app notes-view" hidden={!visible}>
       <header className="topbar notes-topbar">
-        <div className={cx("brand", !openId && styles.notesBrand)}>
+        <div className={cx("brand", styles.notesBrand)}>
           <MenuButton onClick={onMenu} recording={recording} />
+          {/* The list has the search box; an open note puts «← All notes» and its day here, level with the ☰. */}
           {openId ? (
-            <h1>{t("notes.title")}</h1>
+            <div className={styles.notesTopslot} ref={setTopSlot} />
           ) : (
             <SearchBox className={styles.notesTopsearch} inputRef={search} value={query} onChange={setQuery} placeholder={t("notes.search")} shortcut="⌘K" />
           )}
+        </div>
+        <div className="topbar-end">
+          <ThemeToggle />
         </div>
       </header>
 
@@ -112,6 +118,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
           key={openId}
           id={openId}
           live={live === openId}
+          topSlot={topSlot}
           languages={languages}
           onBack={() => {
             setOpenId(null);
@@ -181,9 +188,9 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
                             {n.id === live && <span className="note-live">{t("notes.live")}</span>}
                             {/* The kind at a glance: notes in the accent color, translated conversations in gray. */}
                             {n.kind === "notes" ? (
-                              <Badge icon={<NoteIcon />}>{t("notes.badge.notes")}</Badge>
+                              <Badge icon={<PenIcon />}>{t("notes.badge.notes")}</Badge>
                             ) : (
-                              <Badge icon={<TranslateIcon />} muted>
+                              <Badge icon={<SwapIcon />} muted>
                                 {t("notes.badge.conversation")}
                               </Badge>
                             )}

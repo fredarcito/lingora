@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useT } from "@i18n";
-import { CloseIcon, IconButton, LockIcon, MenuIcon, NoteIcon, SettingsIcon, WaveIcon, cx } from "@components/shared";
+import { CallIcon, CloseIcon, HomeIcon, IconButton, LockIcon, MenuIcon, NoteIcon, PenIcon, SettingsIcon, SwapIcon, WaveIcon, SparkIcon, cx } from "@components/shared";
 import { useSummarySource } from "@hooks/useSummarySource";
 import { providerOf } from "@utils/summarySource.js";
 import styles from "./styles.module.css";
 
 /**
- * @typedef {"translate" | "notes" | "settings"} View
+ * @typedef {"home" | "translate" | "notes" | "settings"} View
  */
 
 /**
@@ -24,20 +24,35 @@ export function MenuButton({ onClick, recording }) {
   );
 }
 
-/** Menu sections: group and entries; the title and the line that says what is there are in `sidebar.<group>` and `sidebar.<entry>`. */
-const SECTIONS = /** @type {const} */ ([
-  ["translation", [["translate", WaveIcon]]],
-  ["library", [["notes", NoteIcon]]],
-  ["general", [["settings", SettingsIcon]]],
-]);
+/**
+ * Menu entries, the same as Home's shortcuts. A `view` entry goes to that
+ * screen; a `mode` entry opens Translate in that mode; `soon` is shown locked.
+ * The names are in `sidebar.<id>`.
+ * @typedef {{ id: string, icon: () => import("react").JSX.Element, view?: View, mode?: import("@app/types").Mode, soon?: boolean }} Entry
+ */
+
+/** @type {Entry[][]} Groups: the last one goes apart, at the bottom. */
+const SECTIONS = [
+  [
+    { id: "home", icon: HomeIcon, view: "home" },
+    { id: "video", icon: SwapIcon, mode: "video" },
+    { id: "call", icon: CallIcon, mode: "call" },
+    { id: "notesMode", icon: PenIcon, mode: "notes" },
+    { id: "notes", icon: NoteIcon, view: "notes" },
+    { id: "chat", icon: SparkIcon, soon: true },
+  ],
+  [{ id: "settings", icon: SettingsIcon, view: "settings" }],
+];
 
 /**
  * Panel that opens above the content without pushing it. It closes when
  * choosing, when clicking outside, with Esc or with the ✕. Focus goes to the first
  * entry when it opens and goes back to where it was when it closes.
- * @param {{ open: boolean, view: View, recording: boolean, onSelect: (view: View) => void, onClose: () => void }} props
+ * With a lane running (`recording`) only the running mode can be picked, like Home's cards.
+ * @param {{ open: boolean, view: View, mode: import("@app/types").Mode, callMode: boolean, recording: boolean,
+ *   onSelect: (view: View) => void, onPickMode: (mode: import("@app/types").Mode) => void, onClose: () => void }} props
  */
-export default function Sidebar({ open, view, recording, onSelect, onClose }) {
+export default function Sidebar({ open, view, mode, callMode, recording, onSelect, onPickMode, onClose }) {
   const t = useT();
   const first = useRef(/** @type {HTMLButtonElement | null} */ (null));
   const opener = useRef(/** @type {Element | null} */ (null));
@@ -77,30 +92,38 @@ export default function Sidebar({ open, view, recording, onSelect, onClose }) {
             <CloseIcon />
           </button>
         </div>
-        {SECTIONS.map(([group, entries]) => (
+        {SECTIONS.map((entries, group) => (
           <div key={group} className={styles.drawerSection}>
-            <p className={styles.drawerSectionTitle}>{t(`sidebar.group.${group}`)}</p>
-            {entries.map(([id, Icon]) => (
-              <button
-                key={id}
-                ref={index++ === 0 ? first : undefined}
-                className={cx(styles.drawerEntry, view === id && styles.isSelected)}
-                aria-current={view === id ? "page" : undefined}
-                onClick={() => {
-                  onSelect(id);
-                  onClose();
-                }}
-              >
-                <span className={styles.drawerEntryIcon}>
-                  <Icon />
-                </span>
-                <span className={styles.drawerEntryText}>
-                  <span>{t(`sidebar.${id}`)}</span>
-                  <small>{t(`sidebar.${id}.hint`)}</small>
-                </span>
-                {id === "translate" && recording && <span className={cx(styles.menuDot, styles.inline)} title={t("sidebar.translating")} />}
-              </button>
-            ))}
+            {entries.map(({ id, icon: Icon, view: target, mode: pick, soon }) => {
+              const locked = soon || (pick === "call" && !callMode);
+              const blocked = !locked && pick !== undefined && recording && pick !== mode;
+              const selected = pick ? view === "translate" && mode === pick : view === target;
+              return (
+                <button
+                  key={id}
+                  ref={index++ === 0 ? first : undefined}
+                  className={cx(styles.drawerEntry, selected && styles.isSelected)}
+                  aria-current={selected ? "page" : undefined}
+                  disabled={locked || blocked}
+                  title={blocked ? t("app.mode.stopToChange") : pick === "call" && locked ? t("app.mode.callSoon.hint") : undefined}
+                  onClick={() => {
+                    if (pick) onPickMode(pick);
+                    else if (target) onSelect(target);
+                    onClose();
+                  }}
+                >
+                  <span className={styles.drawerEntryIcon}>
+                    <Icon />
+                  </span>
+                  <span className={styles.drawerEntryText}>
+                    <span>{t(`sidebar.${id}`)}</span>
+                  </span>
+                  {soon && <span className={styles.drawerSoon}>{t("home.chat.soon")}</span>}
+                  {pick === "call" && locked && <span className={styles.drawerSoon}>{t("home.chat.soon")}</span>}
+                  {pick && pick === mode && recording && <span className={cx(styles.menuDot, styles.inline)} title={t("sidebar.translating")} />}
+                </button>
+              );
+            })}
           </div>
         ))}
         <p className={styles.drawerFoot}>

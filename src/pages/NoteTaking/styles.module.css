@@ -1,11 +1,5 @@
 /* Take notes */
 .note-taking {
-  --n-border: rgba(255, 255, 255, 0.09);
-  --n-input: rgba(255, 255, 255, 0.12);
-  --n-hover: rgba(255, 255, 255, 0.045);
-  --n-muted: rgba(255, 255, 255, 0.06);
-  --n-radius: 8px;
-  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
   flex: 1;
   min-height: 0;
   display: flex;
@@ -237,7 +231,7 @@
   padding: 8px 24px 24px;
   border-radius: 16px;
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
 }
 
 .setup-section {
@@ -292,7 +286,7 @@
   align-items: center;
   border-radius: var(--n-radius);
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
 }
 
 .taking-summary-lang strong {
@@ -364,10 +358,10 @@
   z-index: 1;
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  background: #15181d;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  background: var(--n-popover);
+  box-shadow: 0 8px 24px var(--shadow-3);
 }
 
 .taking-live .taking-end:hover {
-  background: #1b1f25;
+  background: var(--n-raised);
 }

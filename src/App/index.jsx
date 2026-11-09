@@ -7,6 +7,7 @@ import LaneCard from "@components/LaneCard";
 import SaveNotesBar from "@components/SaveNotesBar";
 import LaneSettings from "@components/LaneSettings";
 import TopBar from "@components/TopBar";
+import Home from "@pages/Home";
 import NoteTaking from "@pages/NoteTaking";
 import Notes from "@pages/Notes";
 import { cx } from "@components/shared";
@@ -322,7 +323,7 @@ export default function App() {
     /** @param {number} index */
     removeBookmark: (index) => recorderRef.current?.removeBookmark(index),
   }));
-  const [view, setView] = useState(/** @type {import("@components/Sidebar").View} */ ("translate"));
+  const [view, setView] = useState(/** @type {import("@components/Sidebar").View} */ ("home"));
   // Each pick in the side menu: the screen opens on its main page (the list of
   // notes, not the note that was open; Settings, not its licenses).
   const [home, setHome] = useState(0);
@@ -343,6 +344,13 @@ export default function App() {
   const changeMode = (next) => {
     setMode(next);
     storeMode(next);
+  };
+
+  // A mode picked on Home or in the menu: Translate in that mode (with a lane running, it only goes back to it).
+  /** @param {Mode} next */
+  const pickMode = (next) => {
+    if (!anyRunningRef.current) changeMode(next);
+    goTo("translate");
   };
 
   /** @param {import("@utils/notes.js").NotesInput} next */
@@ -845,6 +853,23 @@ export default function App() {
 
   return (
     <>
+    <Home
+      visible={view === "home"}
+      mode={mode}
+      running={anyRunning}
+      callMode={CALL_MODE}
+      pair={pair}
+      languages={shownLanguages}
+      onPair={changePair}
+      noTranslate={noTranslate}
+      onPick={pickMode}
+      onMenu={() => setMenuOpen(true)}
+      onOpenNote={(id) => {
+        setView("notes");
+        setOpenRequest({ id, nonce: Date.now() });
+      }}
+      onSeeAll={() => goTo("notes")}
+    />
     <main className="app" hidden={view !== "translate"}>
       <TopBar
         modeRef={modeRef}
@@ -961,7 +986,7 @@ export default function App() {
         }))}
       />
     )}
-    <Sidebar open={menuOpen} view={view} recording={anyRunning} onSelect={goTo} onClose={closeMenu} />
+    <Sidebar open={menuOpen} view={view} mode={mode} callMode={CALL_MODE} recording={anyRunning} onSelect={goTo} onPickMode={pickMode} onClose={closeMenu} />
     </>
   );
 }

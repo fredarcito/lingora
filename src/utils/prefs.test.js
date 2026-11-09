@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CALL_MODE, loadLaneSettings, loadMode, loadPair, loadVolumes, storeLaneSettings, storeMode, storeNoTranslate, storePair, storeVolumes } from "./prefs";
+import { CALL_MODE, loadLaneSettings, loadMode, loadPair, loadTheme, loadVolumes, storeLaneSettings, storeMode, storeNoTranslate, storePair, storeTheme, storeVolumes } from "./prefs";
 
 /** @type {Map<string, string>} */
 let store;
@@ -38,6 +38,15 @@ describe("prefs", () => {
     ]);
     expect(store.get("lingora.noTranslate")).toBe("1");
     expect(store.get("lingora.speak")).toBe('{"remote_to_local":false}');
+  });
+
+  it("stores the theme under its own key, defaulting to the system", () => {
+    expect(loadTheme()).toBe("system");
+    storeTheme("light");
+    expect([...store.keys()]).toEqual(["lingora.theme"]);
+    expect(loadTheme()).toBe("light");
+    store.set("lingora.theme", "nonsense");
+    expect(loadTheme()).toBe("system");
   });
 
   it("reads them back", () => {

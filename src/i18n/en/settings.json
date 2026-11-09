@@ -19,5 +19,11 @@
   "myNameTitle": "Your name",
   "myNameHint": "In notes, what you say into your microphone shows as \"{label}\".",
   "myNamePlaceholder": "Your name",
-  "aboutWithKey": "Everything runs on your computer, except the summaries you ask for: that transcript is sent to {name}."
+  "aboutWithKey": "Everything runs on your computer, except the summaries you ask for: that transcript is sent to {name}.",
+  "appearance": "Appearance",
+  "appearanceHint": "Lingora's colors.",
+  "themeTitle": "Theme",
+  "theme.system": "Like the Mac",
+  "theme.light": "Light",
+  "theme.dark": "Dark"
 }

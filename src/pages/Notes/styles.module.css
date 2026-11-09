@@ -164,6 +164,11 @@
   grid-column: 2;
 }
 
+.notes-topslot {
+  grid-column: 2;
+  min-width: 0;
+}
+
 .notes-filters {
   display: flex;
   flex-wrap: wrap;
@@ -174,7 +179,7 @@
 .notes-list .note-item {
   padding: 20px 22px;
   border-color: var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
 }
 
 .notes-list .note-item:hover {

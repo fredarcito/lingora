@@ -1,7 +1,6 @@
 # Plan: home screen and light mode
 
-Status: planned (2026-11-03), to implement the week of 2026-11-09 with
-Sonnet. Nothing is built yet.
+Status: phases 1 and 2 built (2026-11-09). Appearance row in Settings added (user OK 2026-11-09). Pending: a manual pass over every screen in both themes.
 
 Goal: the app opens on a **Home** screen that explains the three modes in
 one line each and lets you pick one, with the recent notes below. The app
@@ -13,7 +12,9 @@ Reference design: two screenshots the user shared (light and dark) with a
 fixed sidebar, a "What do you want to do?" title, three mode cards
 (Translate audio, Translate call, Take notes), a language pair top right,
 "Recent activity" and a "Chat with Lingora" card. **Out of scope:** the
-fixed sidebar (we keep the ☰ drawer) and the chat (separate future plan).
+fixed sidebar (we keep the ☰ drawer; switching to a fixed one is a later
+layout plan) and the chat itself (separate future plan). The chat card is
+shown, but only as a "coming soon" placeholder (see 2.2).
 
 ---
 
@@ -161,7 +162,7 @@ invisible borders, white-on-white text, unreadable accents, harsh shadows.
    - The **last used mode** (`loadMode()`) is highlighted: border in its
      color and a filled button (as in the dark reference). Same in both
      themes.
-3. **Recent activity** (full width, the chat card is out of scope): the 5
+3. **Recent activity** (left, about two thirds of the width): the 5
    latest notes from `useNotesList` (`@hooks/useNotesList.js`): icon by kind
    (conversation vs take-notes), title, short description and relative day
    (reuse `daysAgo` / `groupLabel` / `dateFormats` from `@utils/noteList.js`).
@@ -169,6 +170,13 @@ invisible borders, white-on-white text, unreadable accents, harsh shadows.
    (`setOpenRequest({ id, nonce })` + `goTo("notes")`). A "Ver todas" link
    goes to My notes. Empty state: one muted line ("Aquí aparecerán tus
    notas.").
+4. **Chat card, placeholder only** (right, about one third; stacks under
+   Recent activity on narrow windows): title "Chat con Lingora",
+   description "Pregunta sobre una transcripción, traducción o tus notas.",
+   a `Badge` "Próximamente", a disabled input with the placeholder
+   "«Resume los puntos clave…»" and a disabled "Abrir chat" button. No
+   logic, no state, no handlers. Same locked look as the call card when
+   `CALL_MODE` is off. Do not show the "Contexto: sesión abierta" line.
 
 ### 2.3 Shared components
 
@@ -188,13 +196,15 @@ New `src/i18n/es/home.json` and `en/home.json` (loaded automatically by the
 glob in `src/i18n/index.jsx`): `title`, `subtitle`, `origin`,
 `audio.title/desc/action`, `call.title/desc/action`,
 `notes.title/desc/action`, `running`, `recent`, `recent.empty`, `seeAll`,
-`open`. Plus `sidebar.home` and `sidebar.home.hint`. Spanish as in the
+`open`, `chat.title`, `chat.desc`, `chat.placeholder`, `chat.action`,
+`chat.soon`. Plus `sidebar.home` and `sidebar.home.hint`. Spanish as in the
 reference, except the activity footer (dropped).
 
 ### 2.5 Check phase 2
 
 Home in both themes, narrow and wide window; each card opens its mode;
-locked call card with the flag off and working with it on; running lane →
+locked call card with the flag off and working with it on; chat card
+visible, locked and not focusable as an action; running lane →
 other cards disabled; "Abrir" opens the right note; empty list; the ☰
 drawer from every screen; keyboard focus order and visible focus rings.
 
@@ -210,4 +220,8 @@ drawer from every screen; keyboard focus order and visible focus rings.
 ## Pending
 
 - Chat with the notes (local summary model + search over notes): own plan.
+  Home already has its placeholder card; that plan turns it on.
+- Fixed sidebar like the reference (instead of the ☰ drawer): own layout
+  plan. It changes the shell of every screen (less width for Translate,
+  Notes, Settings), not just Home.
 - Decide whether the top bar's mode switch goes away once Home exists.

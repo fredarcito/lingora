@@ -55,7 +55,10 @@ descargado, funciona sin internet.
 
 ## 3. Qué hace (funciones reales, hoy)
 
-La app tiene tres modos y una biblioteca de notas.
+La app tiene tres modos y una biblioteca de notas. Se abre en una pantalla de
+Inicio que explica cada modo en una línea, deja elegirlo y muestra las notas
+recientes (con una tarjeta «Chat con Lingora» marcada como próximamente). La
+interfaz tiene modo claro y oscuro y sigue el del Mac.
 
 ### 3.1 Modo "Traducir audio" (funciona)
 

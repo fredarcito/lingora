@@ -105,9 +105,9 @@
   transform: translateX(-50%);
   padding: 8px 14px;
   border-radius: var(--n-radius);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  background: #111317;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--n-border);
+  background: var(--n-popover);
+  box-shadow: 0 10px 30px var(--shadow-2);
   font-size: 13px;
   color: var(--text);
   animation: global(fade-in) 0.15s ease-out;
@@ -148,8 +148,8 @@
 
 .note-tabs-group button.is-selected {
   color: var(--text);
-  background: #1b1e24;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border);
+  background: var(--n-raised);
+  box-shadow: 0 1px 2px var(--shadow-1), inset 0 0 0 1px var(--n-border);
 }
 
 .note-tabs-group button:focus-visible {
@@ -209,8 +209,8 @@
 
 .note-tabs-group button.is-selected {
   color: var(--text);
-  background: #1b1e24;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--n-border, var(--hairline));
+  background: var(--n-raised);
+  box-shadow: 0 1px 2px var(--shadow-1), inset 0 0 0 1px var(--n-border, var(--hairline));
 }
 
 .note-tabs-group {
@@ -278,7 +278,7 @@
   padding: 20px 24px;
   border-radius: 12px;
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
 }
 
 .note-summary .summary-md h3:first-child::before {
@@ -520,7 +520,7 @@
   height: 44px;
   border-radius: 12px;
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
   color: var(--accent);
 }
 

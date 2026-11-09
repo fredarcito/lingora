@@ -19,5 +19,5 @@
 .mic-error {
   display: block;
   margin-top: 4px;
-  color: #fca5a5;
+  color: var(--danger-text);
 }

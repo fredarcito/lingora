@@ -1,11 +1,4 @@
 .dialog {
-  --n-border: rgba(255, 255, 255, 0.09);
-  --n-input: rgba(255, 255, 255, 0.12);
-  --n-hover: rgba(255, 255, 255, 0.045);
-  --n-muted: rgba(255, 255, 255, 0.06);
-  --n-popover: #111317;
-  --n-radius: 8px;
-  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .dialog-backdrop {
@@ -15,13 +8,13 @@
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
   animation: global(fade-in) 0.15s ease-out;
 }
 
 /* The page behind stays readable (the captions while adjusting the voice). */
 .dialog-backdrop.is-light {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--well);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -36,7 +29,7 @@
   border-radius: 12px;
   border: 1px solid var(--n-border);
   background: var(--n-popover);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 60px var(--shadow-3);
 }
 
 /* The title and, on its right, the ✕: quieter than the controls inside. */

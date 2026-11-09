@@ -6,7 +6,7 @@
   place-items: center;
   color: var(--text-2);
   border: 1px solid var(--hairline);
-  background: var(--surface);
+  background: var(--card);
   transition: background 0.15s, color 0.15s;
 }
 

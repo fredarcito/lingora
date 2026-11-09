@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysAgo, dateFormats, fold, groupByLabel, groupLabel, inPeriod, langPair, monthKey, monthLabel, nameSuggestions, olderMonths } from "./noteList";
+import { daysAgo, dateFormats, fold, groupByLabel, groupLabel, inPeriod, langPair, monthKey, monthLabel, nameSuggestions, olderMonths, relativeDay } from "./noteList";
 
 const now = new Date(2026, 9, 29, 15, 0); // Thursday, 29 Oct 2026
 const at = (y, m, d, h = 10) => new Date(y, m - 1, d, h).toISOString();
@@ -7,6 +7,13 @@ const formats = dateFormats("es");
 const t = (key, vars) => `${key}${vars ? ` ${JSON.stringify(vars)}` : ""}`;
 
 describe("dates", () => {
+  it("shows a short relative day", () => {
+    expect(relativeDay(at(2026, 10, 29), formats, t, now)).toBe("home.today");
+    expect(relativeDay(at(2026, 10, 28), formats, t, now)).toBe("home.yesterday");
+    expect(relativeDay(at(2026, 10, 26), formats, t, now)).toBe("lunes");
+    expect(relativeDay(at(2026, 9, 20), formats, t, now)).toBe(formats.short.format(new Date(at(2026, 9, 20))));
+  });
+
   it("counts calendar days, not 24 h", () => {
     expect(daysAgo(new Date(2026, 9, 28, 23, 59), now)).toBe(1);
     expect(daysAgo(new Date(2026, 9, 29, 0, 1), now)).toBe(0);

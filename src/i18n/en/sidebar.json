@@ -4,16 +4,14 @@
   "closeMenu": "Close the menu",
   "close": "Close",
   "tagline": "Voice translator",
-  "group.translation": "Translation",
-  "group.library": "Library",
-  "group.general": "General",
-  "translate": "Translate",
-  "translate.hint": "Live captions and voice",
+  "home": "Home",
   "notes": "Notes",
-  "notes.hint": "Saved conversations",
   "settings": "Settings",
-  "settings.hint": "Audio, notes and diagnostics",
   "translating": "Translating",
   "privacy": "Everything runs on your computer",
-  "privacyWithKey": "Everything runs on your computer, except the summaries you send to {name}"
+  "privacyWithKey": "Everything runs on your computer, except the summaries you send to {name}",
+  "video": "Translate audio",
+  "call": "Translate call",
+  "notesMode": "Take notes",
+  "chat": "Chat"
 }

@@ -1,0 +1,98 @@
+.card {
+  --tone: var(--mode-audio);
+  --tone-soft: var(--mode-audio-soft);
+  /* Text and icon on the soft tint: the tone mixed with the text color, so it reads in both themes. */
+  --tone-ink: color-mix(in srgb, var(--tone) 55%, var(--text));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--n-border);
+  background: var(--card);
+  transition: border-color 0.2s;
+}
+
+.call {
+  --tone: var(--mode-call);
+  --tone-soft: var(--mode-call-soft);
+}
+
+.notes {
+  --tone: var(--mode-notes);
+  --tone-soft: var(--mode-notes-soft);
+}
+
+.card h3 {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card p {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--tone-ink);
+  background: var(--tone-soft);
+}
+
+.icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tone-ink);
+  background: var(--tone-soft);
+}
+
+.action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tone) 22%, transparent);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.is-highlighted {
+  border-color: color-mix(in srgb, var(--tone) 55%, transparent);
+}
+
+.is-highlighted .action {
+  color: var(--accent-ink);
+  background: var(--tone);
+}
+
+.is-highlighted .action:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--tone) 85%, var(--text));
+}
+
+.is-disabled {
+  opacity: 0.55;
+}
+
+.is-disabled .action {
+  color: var(--text-3);
+  background: var(--n-muted);
+}

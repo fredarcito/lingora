@@ -39,10 +39,10 @@
 }
 
 .lane {
-  --accent: #5eead4;
-  --accent-2: #22d3ee;
-  --accent-ink: #04201c;
-  --accent-soft: rgba(94, 234, 212, 0.12);
+  --accent: var(--lane-in);
+  --accent-2: var(--lane-in-2);
+  --accent-ink: var(--lane-in-ink);
+  --accent-soft: color-mix(in srgb, var(--lane-in) 12%, transparent);
 
   display: flex;
   flex-direction: column;
@@ -72,10 +72,10 @@
 }
 
 .lane-local_to_remote {
-  --accent: #a78bfa;
-  --accent-2: #818cf8;
-  --accent-ink: #120b29;
-  --accent-soft: rgba(167, 139, 250, 0.12);
+  --accent: var(--lane-out);
+  --accent-2: var(--lane-out-2);
+  --accent-ink: var(--lane-out-ink);
+  --accent-soft: color-mix(in srgb, var(--lane-out) 12%, transparent);
 }
 
 .lane.is-running {
@@ -224,8 +224,8 @@
   min-width: 82px;
   padding: 0 12px;
   border-radius: 9px;
-  border: 1px solid var(--hairline);
-  background: var(--surface-2);
+  border: 1px solid var(--control-border);
+  background: var(--control);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -253,8 +253,8 @@
   text-align: left;
   font-size: 13px;
   color: var(--text-2);
-  background: var(--surface-2);
-  border: 1px solid var(--hairline);
+  background: var(--control);
+  border: 1px solid var(--control-border);
 }
 
 .setting-summary:hover {
@@ -289,7 +289,7 @@
   gap: 14px;
   padding: 12px;
   border-radius: 16px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--well-box);
   border: 1px solid var(--hairline);
 }
 
@@ -468,15 +468,15 @@ input[type="range"].wide {
 }
 
 .notice-warn {
-  color: #fcd98a;
-  background: rgba(251, 191, 36, 0.07);
-  border: 1px solid rgba(251, 191, 36, 0.18);
+  color: var(--warn-text);
+  background: color-mix(in srgb, var(--warn) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warn) 18%, transparent);
 }
 
 .notice-error {
-  color: #fca5a5;
-  background: rgba(248, 113, 113, 0.07);
-  border: 1px solid rgba(248, 113, 113, 0.18);
+  color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 18%, transparent);
 }
 
 /* Subtitles */
@@ -503,7 +503,7 @@ input[type="range"].wide {
   color: var(--accent);
   background: color-mix(in srgb, var(--bg) 80%, var(--accent));
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 18px var(--shadow-1);
   animation: global(rise) 0.2s ease-out;
 }
 

@@ -5,7 +5,7 @@ import { formatClock, gapLabel, marksByPart, speakerLabel, transcriptParts } fro
 import styles from "./styles.module.css";
 
 /** One color per person; "Yo" (0) uses the app color. */
-const SPEAKER_COLORS = ["#7dd3fc", "#fca5a5", "#c4b5fd", "#fcd34d", "#86efac", "#f9a8d4"];
+const SPEAKER_COLORS = [1, 2, 3, 4, 5, 6].map((n) => `var(--speaker-${n})`);
 /** @param {number | null | undefined} n */
 export const speakerColor = (n) => (n === 0 || n === null || n === undefined ? "var(--accent)" : SPEAKER_COLORS[(n - 1) % SPEAKER_COLORS.length]);
 

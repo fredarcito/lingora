@@ -28,6 +28,19 @@ export function daysAgo(date, now = new Date()) {
   return Math.round((day(now) - day(date)) / 86_400_000);
 }
 
+/**
+ * Short day for a compact list: "Hoy", "Ayer", the weekday within the last week
+ * and "28 sept" beyond that.
+ * @param {string} iso @param {DateFormats} formats @param {import("@i18n").t} t @param {Date} [now]
+ */
+export function relativeDay(iso, formats, t, now = new Date()) {
+  const date = new Date(iso);
+  const diff = daysAgo(date, now);
+  if (diff <= 0) return t("home.today");
+  if (diff === 1) return t("home.yesterday");
+  return diff < 7 ? formats.day.format(date) : formats.short.format(date);
+}
+
 /** "2026-09": the month of a date, to group and filter. @param {Date} d */
 export const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 

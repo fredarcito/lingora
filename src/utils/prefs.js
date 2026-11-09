@@ -134,3 +134,20 @@ export function storeLaneSettings(lanes, patch) {
     if (field in patch) save(key, JSON.stringify(Object.fromEntries(lanes.map((l) => [l.direction, l[field]]))));
   }
 }
+
+const THEME_KEY = "lingora.theme";
+
+/** Appearance: follow macOS, or force light or dark. @typedef {"system" | "light" | "dark"} Theme */
+
+/** @returns {Theme} */
+export function loadTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    return saved === "light" || saved === "dark" ? saved : "system";
+  } catch {
+    return "system";
+  }
+}
+
+/** @param {Theme} theme */
+export const storeTheme = (theme) => save(THEME_KEY, theme);

@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { api, errorMessage } from "@utils/api";
 import Markdown from "@components/Markdown";
 import MindMap from "@components/MindMap";
@@ -57,9 +58,10 @@ const WORKING_PHRASES = Array.from({ length: 9 }, (_, i) => `notes.working${i + 
 
 /**
  * A note's page: editable title, actions and tabs.
- * @param {{ id: string, live: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void }} props
+ * @param {{ id: string, live: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void, topSlot?: HTMLElement | null }} props
+ * `topSlot`: where «← All notes» and the day go (the page header, level with the ☰); without it they stay at the top of the page.
  */
-export default function NotePage({ id, live, languages, onBack }) {
+export default function NotePage({ id, live, languages, onBack, topSlot }) {
   const t = useT();
   const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [error, setError] = useState("");
@@ -228,13 +230,18 @@ export default function NotePage({ id, live, languages, onBack }) {
       onBack();
     });
 
+  /** @param {import("react").ReactNode} node */
+  const inTop = (node) => (topSlot ? createPortal(node, topSlot) : node);
+
   if (!note) {
     return (
       <div className="notes-scroll">
         <div className="notes-column">
-          <LinkButton className={styles.notesBack} onClick={onBack}>
-            {t("notes.back")}
-          </LinkButton>
+          {inTop(
+            <LinkButton className={styles.notesBack} onClick={onBack}>
+              {t("notes.back")}
+            </LinkButton>,
+          )}
           <p className={error ? "notes-error" : cx("muted", styles.notesOpening)}>{error || t("notes.opening")}</p>
         </div>
       </div>
@@ -278,12 +285,14 @@ export default function NotePage({ id, live, languages, onBack }) {
   return (
     <div className="notes-scroll">
       <div className="notes-column">
-        <div className={styles.noteTopline}>
-          <LinkButton className={styles.notesBack} onClick={onBack}>
-            {t("notes.back")}
-          </LinkButton>
-          <span className={styles.noteDay}>{day}</span>
-        </div>
+        {inTop(
+          <div className={styles.noteTopline}>
+            <LinkButton className={styles.notesBack} onClick={onBack}>
+              {t("notes.back")}
+            </LinkButton>
+            <span className={styles.noteDay}>{day}</span>
+          </div>,
+        )}
 
         <div className={cx(styles.noteHead, styles.noteHeadRow)}>
           <div className={styles.noteTitleBlock}>

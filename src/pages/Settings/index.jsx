@@ -3,15 +3,17 @@ import { getVersion } from "@tauri-apps/api/app";
 import Credits from "@components/Credits";
 import Diagnostics from "@components/Diagnostics";
 import { MenuButton } from "@components/Sidebar";
+import ThemeToggle from "@components/ThemeToggle";
 import { api } from "@utils/api";
 import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notes.js";
 import LanguagePicker from "@components/LanguagePicker";
 import Storage from "@components/Storage";
 import SummarySource from "@components/SummarySource";
 import { useSummarySource } from "@hooks/useSummarySource";
+import { useTheme } from "@hooks/useTheme.js";
 import { providerOf } from "@utils/summarySource.js";
 import { useT } from "@i18n";
-import { LinkButton, PageHeader, Select, Switch, TextField, cx } from "@components/shared";
+import { LinkButton, PageHeader, Segmented, Select, Switch, TextField, cx } from "@components/shared";
 import styles from "./styles.module.css";
 
 /**
@@ -26,6 +28,7 @@ import styles from "./styles.module.css";
 export default function Settings({ lanes, mode, systemAudio, recording, languages, onFixed, onMenu }) {
   const t = useT();
   const [showCredits, setShowCredits] = useState(false);
+  const [theme, setTheme] = useTheme();
   const [saveOn, setSaveOn] = useState(loadSaveNotes);
   const [speakersOn, setSpeakersOn] = useState(loadSpeakers);
   const [summaryLang, setSummaryLang] = useState(loadNotesLang);
@@ -83,6 +86,9 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
             <PageHeader title={t("settings.title")} />
           </div>
         </div>
+        <div className="topbar-end">
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="notes-scroll">
@@ -94,6 +100,29 @@ export default function Settings({ lanes, mode, systemAudio, recording, language
             </div>
             <div className="prefs-card">
               <LanguagePicker languages={languages} />
+            </div>
+          </section>
+
+          <section className="prefs-section">
+            <div className="prefs-section-head">
+              <h2>{t("settings.appearance")}</h2>
+              <p>{t("settings.appearanceHint")}</p>
+            </div>
+            <div className="prefs-card">
+              <div className="prefs-row">
+                <span>
+                  <strong>{t("settings.themeTitle")}</strong>
+                </span>
+                <Segmented
+                  value={theme}
+                  onChange={(v) => setTheme(/** @type {import("@utils/prefs.js").Theme} */ (v))}
+                  options={[
+                    { value: "system", label: t("settings.theme.system") },
+                    { value: "light", label: t("settings.theme.light") },
+                    { value: "dark", label: t("settings.theme.dark") },
+                  ]}
+                />
+              </div>
             </div>
           </section>
 

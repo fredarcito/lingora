@@ -11,7 +11,7 @@
   min-height: var(--control-h);
   border-radius: var(--n-radius, 8px);
   border: 1px solid var(--n-border, var(--hairline));
-  background: var(--surface-2);
+  background: var(--card);
   overflow: hidden;
 }
 
@@ -33,7 +33,7 @@
 
 .mode-switch button:hover:not(:disabled):not(.is-selected) {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--tint-03);
 }
 
 .mode-switch button.is-selected {

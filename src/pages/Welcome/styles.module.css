@@ -226,7 +226,7 @@
 
 .welcome-secondary:hover:not(:disabled) {
   background: var(--surface-2);
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: var(--tint-24);
 }
 
 .welcome-primary:active:not(:disabled),

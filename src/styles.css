@@ -3,9 +3,16 @@
    `spinner`, the transcript…). Each component's own styles go in its
    `styles.module.css`; see docs/componentes.md. */
 
+/* Theme tokens. `:root` is the dark theme; light overrides it below, either
+   following macOS (no `data-theme`) or forced with `data-theme="light"`.
+   Components use only these variables, never literal colors. */
 :root {
-  --bg: #0b0c10;
+  /* Dark background: blue-grey like the reference. The previous near-black
+     was #0b0c10 (with popovers #111317 and raised #1b1e24). */
+  --bg: #14171c;
   --surface: rgba(255, 255, 255, 0.035);
+  /* Cards on the page (Home): translucent on dark, plain white on light. */
+  --card: rgba(255, 255, 255, 0.035);
   --surface-2: rgba(255, 255, 255, 0.06);
   --surface-3: rgba(255, 255, 255, 0.09);
   --hairline: rgba(255, 255, 255, 0.08);
@@ -13,19 +20,249 @@
   --text: #eef0f5;
   --text-2: #a3a9b8;
   --text-3: #6b7180;
+  --text-hover: #d6d9e0;
   --ok: #34d399;
   --warn: #fbbf24;
   --danger: #f87171;
+  /* Readable text on a tinted warn/danger background. */
+  --warn-text: #fcd98a;
+  --warn-ink: #1a1204;
+  --danger-text: #fca5a5;
+  --danger-solid: #dc2626;
+  --danger-solid-hover: #b91c1c;
+  --danger-solid-ink: #fff;
   /* Lane color; each lane redefines it. */
   --accent: #5eead4;
   --accent-2: #22d3ee;
   --accent-ink: #04201c;
+  --lane-in: #5eead4;
+  --lane-in-2: #22d3ee;
+  --lane-in-ink: #04201c;
+  --lane-out: #a78bfa;
+  --lane-out-2: #818cf8;
+  --lane-out-ink: #120b29;
+  /* Home modes. */
+  --mode-audio: #5eead4;
+  --mode-call: #a78bfa;
+  --mode-notes: #fbbf24;
+  --mode-audio-soft: color-mix(in srgb, var(--mode-audio) 14%, transparent);
+  --mode-call-soft: color-mix(in srgb, var(--mode-call) 14%, transparent);
+  --mode-notes-soft: color-mix(in srgb, var(--mode-notes) 14%, transparent);
+  /* Faint fills (white on dark, black on light) and wells. */
+  --tint-02: rgba(255, 255, 255, 0.02);
+  --tint-03: rgba(255, 255, 255, 0.03);
+  --tint-24: rgba(255, 255, 255, 0.24);
+  --well: rgba(0, 0, 0, 0.2);
+  /* A box inset in another (the lane's play bar): darker on dark, plain white on light. */
+  --well-box: rgba(0, 0, 0, 0.2);
+  /* Buttons, fields and segmented controls: tinted on dark, plain white on light. */
+  --control: var(--surface-2);
+  --control-border: var(--hairline);
+  /* Switch, off: its track and knob. */
+  --switch-off: color-mix(in srgb, var(--text) 22%, transparent);
+  --switch-off-ring: color-mix(in srgb, var(--text) 18%, transparent);
+  --switch-knob: var(--text-2);
+  --scrim: rgba(0, 0, 0, 0.6);
+  --shadow-1: rgba(0, 0, 0, 0.4);
+  --shadow-2: rgba(0, 0, 0, 0.45);
+  --shadow-3: rgba(0, 0, 0, 0.55);
+  --caption-shadow: rgba(0, 0, 0, 0.9);
+  --caption-glow: rgba(0, 0, 0, 0.6);
+  --thumb: #fff;
+  /* Mind map sections and people in a transcript. */
+  --tone-0: #5eead4;
+  --tone-1: #a78bfa;
+  --tone-2: #fbbf24;
+  --tone-3: #fb923c;
+  --tone-4: #60a5fa;
+  --speaker-1: #7dd3fc;
+  --speaker-2: #fca5a5;
+  --speaker-3: #c4b5fd;
+  --speaker-4: #fcd34d;
+  --speaker-5: #86efac;
+  --speaker-6: #f9a8d4;
+  /* Own scale for Notes, the menu and the dialogs, shadcn style: neutral
+     grays, thin borders, 8 px radius and a single accent. */
+  --n-border: rgba(255, 255, 255, 0.09);
+  --n-input: rgba(255, 255, 255, 0.12);
+  --n-hover: color-mix(in srgb, var(--accent) 7%, transparent);
+  --n-muted: rgba(255, 255, 255, 0.06);
+  --n-popover: #191d24;
+  --n-raised: #20252d;
+  --n-radius: 8px;
+  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
+  /* Border of a field in focus. */
+  --n-focus-border: color-mix(in srgb, var(--text) 38%, transparent);
 
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-family: var(--font-ui);
+  /* San Francisco at text sizes is tracked loosely; this closes it a little. */
+  letter-spacing: -0.011em;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   color-scheme: dark;
+}
+
+/* The floating captions window keeps its own look, as tuned. */
+.view-captions {
+  letter-spacing: normal;
+}
+
+/* macOS: the page extends under the title bar. The top strip is reserved so the
+   traffic lights do not cover anything, and it drags the window. */
+:root {
+  --titlebar-h: 0px;
+}
+
+:root.titlebar-overlay {
+  --titlebar-h: 28px;
+}
+
+.titlebar-drag {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--titlebar-h);
+  z-index: 60;
+}
+
+/* Light theme, defined twice: following macOS and forced from Settings. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #ffffff;
+    /* Boxes are plain white on light; the other surfaces stay tinted for controls. */
+    --surface: #ffffff;
+    --card: #ffffff;
+    --surface-2: rgba(0, 0, 0, 0.05);
+    --surface-3: rgba(0, 0, 0, 0.08);
+    --hairline: rgba(0, 0, 0, 0.08);
+    --hairline-strong: rgba(0, 0, 0, 0.14);
+    --text: #16181d;
+    --text-2: #5b6170;
+    --text-3: #8a90a0;
+    --text-hover: #3a3f4c;
+    --ok: #059669;
+    --warn: #b45309;
+    --danger: #dc2626;
+    --warn-text: #92400e;
+    --warn-ink: #ffffff;
+    --danger-text: #b91c1c;
+    --accent: #0f9488;
+    --accent-2: #0891b2;
+    --accent-ink: #ffffff;
+    --lane-in: #0f9488;
+    --lane-in-2: #0891b2;
+    --lane-in-ink: #ffffff;
+    --lane-out: #7c3aed;
+    --lane-out-2: #4f46e5;
+    --lane-out-ink: #ffffff;
+    --mode-audio: #0f9488;
+    --mode-call: #7c3aed;
+    --mode-notes: #d9b44a;
+    --tint-02: #ffffff;
+    --tint-03: rgba(0, 0, 0, 0.03);
+    --tint-24: rgba(0, 0, 0, 0.24);
+    --well: rgba(0, 0, 0, 0.035);
+    --well-box: #ffffff;
+    --control: #ffffff;
+    --control-border: var(--hairline-strong);
+    --switch-off: color-mix(in srgb, var(--text) 16%, transparent);
+    --switch-off-ring: transparent;
+    --switch-knob: #ffffff;
+    --scrim: rgba(15, 18, 25, 0.35);
+    --shadow-1: rgba(15, 18, 25, 0.12);
+    --shadow-2: rgba(15, 18, 25, 0.12);
+    --shadow-3: rgba(15, 18, 25, 0.16);
+    --caption-shadow: transparent;
+    --caption-glow: transparent;
+    --tone-0: #0f9488;
+    --tone-1: #7c3aed;
+    --tone-2: #b45309;
+    --tone-3: #c2410c;
+    --tone-4: #2563eb;
+    --speaker-1: #0369a1;
+    --speaker-2: #b91c1c;
+    --speaker-3: #6d28d9;
+    --speaker-4: #a16207;
+    --speaker-5: #15803d;
+    --speaker-6: #be185d;
+    --n-border: rgba(0, 0, 0, 0.09);
+    --n-input: rgba(0, 0, 0, 0.14);
+    --n-hover: color-mix(in srgb, var(--accent) 7%, transparent);
+    --n-muted: rgba(0, 0, 0, 0.05);
+    --n-popover: #ffffff;
+    --n-raised: #f4f5f7;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --bg: #ffffff;
+  /* Boxes are plain white on light; the other surfaces stay tinted for controls. */
+  --surface: #ffffff;
+  --card: #ffffff;
+  --surface-2: rgba(0, 0, 0, 0.05);
+  --surface-3: rgba(0, 0, 0, 0.08);
+  --hairline: rgba(0, 0, 0, 0.08);
+  --hairline-strong: rgba(0, 0, 0, 0.14);
+  --text: #16181d;
+  --text-2: #5b6170;
+  --text-3: #8a90a0;
+  --text-hover: #3a3f4c;
+  --ok: #059669;
+  --warn: #b45309;
+  --danger: #dc2626;
+  --warn-text: #92400e;
+  --warn-ink: #ffffff;
+  --danger-text: #b91c1c;
+  --accent: #0f9488;
+  --accent-2: #0891b2;
+  --accent-ink: #ffffff;
+  --lane-in: #0f9488;
+  --lane-in-2: #0891b2;
+  --lane-in-ink: #ffffff;
+  --lane-out: #7c3aed;
+  --lane-out-2: #4f46e5;
+  --lane-out-ink: #ffffff;
+  --mode-audio: #0f9488;
+  --mode-call: #7c3aed;
+  --mode-notes: #d9b44a;
+  --tint-02: #ffffff;
+  --tint-03: rgba(0, 0, 0, 0.03);
+  --tint-24: rgba(0, 0, 0, 0.24);
+  --well: rgba(0, 0, 0, 0.035);
+  --well-box: #ffffff;
+  --control: #ffffff;
+  --control-border: var(--hairline-strong);
+  --switch-off: color-mix(in srgb, var(--text) 16%, transparent);
+  --switch-off-ring: transparent;
+  --switch-knob: #ffffff;
+  --scrim: rgba(15, 18, 25, 0.35);
+  --shadow-1: rgba(15, 18, 25, 0.12);
+  --shadow-2: rgba(15, 18, 25, 0.12);
+  --shadow-3: rgba(15, 18, 25, 0.16);
+  --caption-shadow: transparent;
+  --caption-glow: transparent;
+  --tone-0: #0f9488;
+  --tone-1: #7c3aed;
+  --tone-2: #b45309;
+  --tone-3: #c2410c;
+  --tone-4: #2563eb;
+  --speaker-1: #0369a1;
+  --speaker-2: #b91c1c;
+  --speaker-3: #6d28d9;
+  --speaker-4: #a16207;
+  --speaker-5: #15803d;
+  --speaker-6: #be185d;
+  --n-border: rgba(0, 0, 0, 0.09);
+  --n-input: rgba(0, 0, 0, 0.14);
+  --n-hover: color-mix(in srgb, var(--accent) 7%, transparent);
+  --n-muted: rgba(0, 0, 0, 0.05);
+  --n-popover: #ffffff;
+  --n-raised: #f4f5f7;
+  color-scheme: light;
 }
 
 * {
@@ -35,10 +272,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(45, 212, 191, 0.08), transparent 60%),
-    radial-gradient(1000px 600px at 100% 0%, rgba(167, 139, 250, 0.08), transparent 60%),
-    var(--bg);
+  background: var(--bg);
 }
 
 button {
@@ -66,7 +300,8 @@ p {
 .app {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 28px 28px 32px;
+  /* Little room above: the title bar already gives some. */
+  padding: calc(var(--titlebar-h) + 8px) 28px 32px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -160,17 +395,17 @@ p {
 
 .dot.ok {
   background: var(--ok);
-  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 15%, transparent);
 }
 
 .dot.warn {
   background: var(--warn);
-  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--warn) 15%, transparent);
 }
 
 .dot.bad {
   background: var(--danger);
-  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 15%, transparent);
 }
 
 /* ---------- Shared pieces: small spinner and link button ---------- */
@@ -241,18 +476,18 @@ select {
   color: var(--text);
   padding: 8px 30px 8px 10px;
   border-radius: 9px;
-  border: 1px solid var(--hairline);
+  border: 1px solid var(--control-border);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a3a9b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
       no-repeat right 10px center,
-    var(--surface-2);
+    var(--control);
   text-overflow: ellipsis;
 }
 
 /* Windows (WebView2) draws the native dropdown list from the options' own
    colors; with the translucent select background it came out white on white. */
 select option {
-  background-color: var(--n-popover, #111317);
+  background-color: var(--n-popover);
   color: var(--text);
 }
 
@@ -277,7 +512,7 @@ button:focus-visible {
   margin-left: 108px;
   padding: 12px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.18);
+  background: var(--well);
   border: 1px solid var(--hairline);
   animation: reveal 0.18s ease-out;
 }
@@ -342,8 +577,8 @@ input[type="range"]::-webkit-slider-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  background: var(--thumb);
+  box-shadow: 0 1px 4px var(--shadow-1);
 }
 
 .field > .field-hint {
@@ -444,15 +679,7 @@ html.view-captions body {
    thin borders, 8 px radius and a single accent. */
 .notes-view,
 .note-toast {
-  --n-border: rgba(255, 255, 255, 0.09);
-  --n-input: rgba(255, 255, 255, 0.12);
-  --n-hover: rgba(255, 255, 255, 0.045);
-  --n-muted: rgba(255, 255, 255, 0.06);
-  --n-popover: #111317;
-  --n-radius: 8px;
-  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
-  /* Border of a field in focus. */
-  --n-focus-border: color-mix(in srgb, var(--text) 38%, transparent);
+  /* The `--n-*` scale lives in `:root`. */
 }
 
 /* ---- Animations of the ☰ menu, the menus and the dialogs ---- */
@@ -481,6 +708,19 @@ main.app:not([hidden]) {
 }
 
 /* ---- Structure ---- */
+
+/* The theme switch sits at the right edge without taking room from the header,
+   so the search box and the title stay centered on the content column. */
+.notes-topbar {
+  position: relative;
+}
+
+.topbar-end {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
 
 .notes-topbar .brand h1 {
   font-size: 17px;
@@ -516,8 +756,8 @@ main.app:not([hidden]) {
   border-radius: 5px;
   font-size: 11.5px;
   font-weight: 500;
-  color: #fca5a5;
-  background: rgba(248, 113, 113, 0.12);
+  color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
   flex: none;
 }
 
@@ -657,7 +897,7 @@ main.app:not([hidden]) {
   padding: 18px;
   border-radius: 12px;
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
 }
 
 .prefs-fields {

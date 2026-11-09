@@ -19,5 +19,11 @@
   "myNameTitle": "Tu nombre",
   "myNameHint": "En las notas, lo que dices por tu micrófono sale como «{label}».",
   "myNamePlaceholder": "Tu nombre",
-  "aboutWithKey": "Todo se procesa en tu equipo, salvo los resúmenes que pidas: esa transcripción se envía a {name}."
+  "aboutWithKey": "Todo se procesa en tu equipo, salvo los resúmenes que pidas: esa transcripción se envía a {name}.",
+  "appearance": "Apariencia",
+  "appearanceHint": "Los colores de Lingora.",
+  "themeTitle": "Tema",
+  "theme.system": "Como el Mac",
+  "theme.light": "Claro",
+  "theme.dark": "Oscuro"
 }

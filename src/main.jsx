@@ -9,6 +9,9 @@ import { ErrorBoundary } from "./components/shared";
 import { I18nProvider, t } from "./i18n";
 import { captureErrors } from "./utils/log";
 import { ensureSpeakers } from "./utils/notes";
+import { applyTheme } from "./hooks/useTheme";
+import { TITLEBAR_OVERLAY } from "./utils/windowChrome";
+import { loadTheme } from "./utils/prefs";
 
 // Interface errors also go to the app's log.
 captureErrors();
@@ -16,6 +19,12 @@ captureErrors();
 // The floating subtitles window loads this same page; Rust marks which one it is.
 const floating = /** @type {any} */ (window).__LINGORA_VIEW === "captions";
 if (floating) document.documentElement.classList.add("view-captions");
+// Mac: the page extends under the title bar (the floating captions have none).
+const overlay = TITLEBAR_OVERLAY && !floating;
+if (overlay) document.documentElement.classList.add("titlebar-overlay");
+// Before React mounts, to avoid a flash of the wrong theme. The floating
+// captions sit on top of videos, so they stay dark in both themes.
+applyTheme(floating ? "dark" : loadTheme());
 
 /** Welcome screen the first time; if something fails while checking, go straight to the app. */
 function Main() {
@@ -48,6 +57,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <I18nProvider>
       <ErrorBoundary title={t("errorBoundary.title")} body={t("errorBoundary.body")} reloadLabel={t("errorBoundary.reload")}>
+        {overlay && <div className="titlebar-drag" data-tauri-drag-region />}
         {floating ? <FloatingCaptions /> : <Main />}
       </ErrorBoundary>
     </I18nProvider>

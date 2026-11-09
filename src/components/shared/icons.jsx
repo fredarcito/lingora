@@ -279,3 +279,49 @@ export function DownloadIcon() {
     </svg>
   );
 }
+
+/** A house: the Home entry of the menu. */
+export function HomeIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5" />
+    </svg>
+  );
+}
+
+/** A ring with a dot: Translate call (a live line). */
+export function CallIcon() {
+  return (
+    <svg {...svgProps}>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="4" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** A sun: switch to the light theme. */
+export function SunIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </svg>
+  );
+}
+
+/** A moon: switch to the dark theme. */
+export function MoonIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5" />
+    </svg>
+  );
+}
+
+/** A four-point spark: the Lingora chat. */
+export function SparkIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" />
+    </svg>
+  );
+}

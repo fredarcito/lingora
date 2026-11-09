@@ -1,22 +1,15 @@
 .dialog {
-  --n-border: rgba(255, 255, 255, 0.09);
-  --n-input: rgba(255, 255, 255, 0.12);
-  --n-hover: rgba(255, 255, 255, 0.045);
-  --n-muted: rgba(255, 255, 255, 0.06);
-  --n-popover: #111317;
-  --n-radius: 8px;
-  --n-ring: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .dialog .confirm.is-danger {
   margin-left: 0;
   border-color: transparent;
-  background: #dc2626;
-  color: #fff;
+  background: var(--danger-solid);
+  color: var(--danger-solid-ink);
 }
 
 .dialog .confirm.is-danger:hover {
-  background: #b91c1c;
+  background: var(--danger-solid-hover);
 }
 
 .dialog-backdrop {
@@ -26,7 +19,7 @@
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
   animation: global(fade-in) 0.15s ease-out;
 }
 
@@ -40,7 +33,7 @@
   border-radius: 12px;
   border: 1px solid var(--n-border);
   background: var(--n-popover);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 24px 60px var(--shadow-3);
 }
 
 .dialog h3 {
@@ -74,10 +67,10 @@
 }
 
 .dialog .confirm.is-danger {
-  background: #dc2626;
+  background: var(--danger-solid);
 }
 
 .dialog .confirm.is-danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--danger-solid);
   filter: brightness(1.1);
 }

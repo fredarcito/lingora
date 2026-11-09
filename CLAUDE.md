@@ -107,7 +107,8 @@ documentación o su código).
   alrededor (JSDoc en JS, `///` en Rust). Los nombres de funciones, claves y
   variables ya están en inglés y no se tocan.
 - **La voz y la velocidad se quedan en la tarjeta del carril**, a mano. En
-  Ajustes solo van los dispositivos, las notas, el diagnóstico y la grabación
+  Ajustes solo van los dispositivos, la apariencia (tema claro u oscuro), las
+  notas, el diagnóstico y la grabación
   de «Tu voz» (Ajustes → Hablar); elegir «Tu voz» se hace en la tarjeta.
 - **Diseño:** estilo shadcn / Sembly, sobrio. Reutiliza las variables
   `--n-*` de `src/styles.css`. Lo nuevo va en el `styles.module.css` de su
@@ -119,7 +120,7 @@ documentación o su código).
   pantalla. Cada componente va en su carpeta: `Nombre/index.jsx` y su CSS en
   `Nombre/styles.module.css`, nunca como `Nombre.jsx` suelto.
   `src/styles.css` es solo para lo general.
-- **Carpetas:** `src/pages/` (pantallas), `src/components/` (piezas de una
+- **Carpetas:** `src/pages/` (pantallas; `Home` es la que abre la app), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
   `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
   `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`, `summarySource`), `src/hooks/` (hooks propios de React,
@@ -165,7 +166,7 @@ documentación o su código).
 - `docs/plan-resumen-nube.md`: resumir con la clave de IA del propio usuario
   (opcional; recomendado en equipos con poca RAM). Hecho; falta probar cada servicio.
 - `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
-- `docs/plan-inicio.md`: pantalla de inicio y modo claro (planeado; para Sonnet).
+- `docs/plan-inicio.md`: pantalla de inicio y modo claro (hechos, con la fila «Apariencia» en Ajustes). Los colores son variables (`:root` oscuro, claro bajo `data-theme`): no escribas colores literales en los CSS.
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera
   con el modelo local). **Todo texto nuevo de la interfaz va con `t()` y su
   clave en `src/i18n/es/` y `en/`**; no escribas texto fijo en los componentes.

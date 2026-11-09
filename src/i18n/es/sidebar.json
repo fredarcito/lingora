@@ -4,16 +4,14 @@
   "closeMenu": "Cerrar el menú",
   "close": "Cerrar",
   "tagline": "Traductor de voz",
-  "group.translation": "Traducción",
-  "group.library": "Biblioteca",
-  "group.general": "General",
-  "translate": "Traducir",
-  "translate.hint": "Subtítulos y voz en vivo",
+  "home": "Inicio",
   "notes": "Notas",
-  "notes.hint": "Conversaciones guardadas",
   "settings": "Ajustes",
-  "settings.hint": "Audio, notas y diagnóstico",
   "translating": "Traduciendo",
   "privacy": "Todo se procesa en tu equipo",
-  "privacyWithKey": "Todo se procesa en tu equipo, salvo los resúmenes que envíes a {name}"
+  "privacyWithKey": "Todo se procesa en tu equipo, salvo los resúmenes que envíes a {name}",
+  "video": "Traducir audio",
+  "call": "Traducir llamada",
+  "notesMode": "Tomar notas",
+  "chat": "Chat"
 }

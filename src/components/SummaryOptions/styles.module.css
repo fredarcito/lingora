@@ -7,7 +7,7 @@
   padding: 18px;
   border-radius: 12px;
   border: 1px solid var(--n-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--tint-02);
   font-size: 14px;
   line-height: 1.55;
   color: var(--text-2);

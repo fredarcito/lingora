@@ -26,11 +26,11 @@
 .note-action.primary {
   border-color: transparent;
   background: var(--text);
-  color: #0b0c10;
+  color: var(--bg);
 }
 
 .note-action.primary:hover {
-  background: #d6d9e0;
+  background: var(--text-hover);
 }
 
 .note-action.danger {
@@ -41,7 +41,7 @@
 
 .note-action.danger:hover {
   color: var(--danger);
-  background: rgba(248, 113, 113, 0.1);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 @media (max-width: 560px) {
@@ -61,12 +61,12 @@
 .note-action {
   height: 34px;
   border-radius: 9px;
-  border: 1px solid var(--hairline);
-  background: var(--surface-2);
+  border: 1px solid var(--control-border);
+  background: var(--control);
 }
 
 .note-action:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--control);
   border-color: var(--accent);
 }
 
@@ -80,7 +80,7 @@
 }
 
 .note-action.primary:hover:not(:disabled) {
-  background: #d6d9e0;
+  background: var(--text-hover);
 }
 
 .note-action.danger {
@@ -90,7 +90,7 @@
 
 .note-action.danger:hover:not(:disabled) {
   border-color: transparent;
-  background: rgba(248, 113, 113, 0.1);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 .note-action {
@@ -114,6 +114,6 @@
 }
 
 .note-action.stop:hover:not(:disabled) {
-  border-color: rgba(248, 113, 113, 0.45);
-  background: rgba(248, 113, 113, 0.1);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }

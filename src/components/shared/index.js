@@ -1,5 +1,6 @@
 // Basic UI components. Catalog in docs/componentes.md.
 export { cx } from "./cx";
+export { default as ActivityRow } from "./ActivityRow";
 export { default as Badge } from "./Badge";
 export { default as Button } from "./Button";
 export { default as ChoiceCards } from "./ChoiceCards";
@@ -10,6 +11,7 @@ export { default as IconButton } from "./IconButton";
 export { default as InlineSelect } from "./InlineSelect";
 export { default as LinkButton } from "./LinkButton";
 export { default as Menu, MenuItem, MenuSeparator, useDismiss } from "./Menu";
+export { default as ModeCard } from "./ModeCard";
 export { default as PageHeader } from "./PageHeader";
 export { default as RotatingText } from "./RotatingText";
 export { default as SearchBox } from "./SearchBox";
