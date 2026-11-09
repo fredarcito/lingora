@@ -5,7 +5,7 @@ import styles from "./styles.module.css";
 /**
  * A card that starts a mode (Home): icon tile, title, one line and an action
  * button. `tone` picks the `--mode-*` color; `highlighted` outlines the card and
- * fills the button (the last mode used); `disabled` locks it, and `hint`
+ * fills the button (the mode running); hovering any enabled card shows its border; `disabled` locks it, and `hint`
  * explains why (shown as a tooltip).
  * @param {{
  *   icon: import("react").ReactNode, title: string, description: string, action: string,

@@ -36,8 +36,8 @@ const SECTIONS = [
   [
     { id: "home", icon: HomeIcon, view: "home" },
     { id: "video", icon: SwapIcon, mode: "video" },
-    { id: "call", icon: CallIcon, mode: "call" },
     { id: "notesMode", icon: PenIcon, mode: "notes" },
+    { id: "call", icon: CallIcon, mode: "call" },
     { id: "notes", icon: NoteIcon, view: "notes" },
     { id: "chat", icon: SparkIcon, soon: true },
   ],

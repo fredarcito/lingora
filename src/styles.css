@@ -350,9 +350,9 @@ p {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  color: #0b0c10;
-  background: linear-gradient(135deg, #5eead4, #a78bfa);
-  box-shadow: 0 6px 20px rgba(94, 234, 212, 0.18);
+  /* The brand: flat teal with white waves, the same as the app icon. */
+  color: #ffffff;
+  background: #0d9488;
 }
 
 .brand h1 {

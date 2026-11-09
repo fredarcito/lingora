@@ -16,7 +16,7 @@ const RECENT = 5;
  * a placeholder for the future chat. Picking a mode only calls `onPick`; the
  * wiring (changing mode, going to Translate) lives in `App`. With a lane
  * running (`running`) only the running mode (`mode`) can be picked: it goes
- * back to it. `mode` is also the one highlighted when nothing runs (the last used).
+ * back to it, and its card is the one highlighted. Nothing runs: all cards look alike.
  * @param {{
  *   visible: boolean, mode: import("@app/types").Mode, running: boolean, callMode: boolean,
  *   pair: import("@app/types").LangPair, languages: import("@utils/api").LanguageInfo[],
@@ -35,8 +35,8 @@ export default function Home({ visible, mode, running, callMode, pair, languages
   /** @type {[import("@app/types").Mode, "audio" | "call" | "notes", string, import("react").ReactNode][]} */
   const modes = [
     ["video", "audio", "audio", <SwapIcon key="a" />],
-    ["call", "call", "call", <CallIcon key="c" />],
     ["notes", "notes", "notes", <PenIcon key="n" />],
+    ["call", "call", "call", <CallIcon key="c" />],
   ];
 
   return (
@@ -66,7 +66,7 @@ export default function Home({ visible, mode, running, callMode, pair, languages
                   title={t(`home.${key}.title`)}
                   description={t(`home.${key}.desc`)}
                   action={locked ? t("app.mode.callSoon") : isRunning ? t("home.running.action") : t(`home.${key}.action`)}
-                  highlighted={!locked && mode === value}
+                  highlighted={isRunning}
                   disabled={locked || (running && mode !== value)}
                   hint={locked ? t("app.mode.callSoon.hint") : running && mode !== value ? t("app.mode.stopToChange") : undefined}
                   onClick={() => onPick(value)}

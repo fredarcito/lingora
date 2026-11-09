@@ -63,11 +63,11 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--tone-ink);
-  background: var(--tone-soft);
+  background: color-mix(in srgb, var(--tone) 24%, transparent);
 }
 
 .action:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--tone) 22%, transparent);
+  background: color-mix(in srgb, var(--tone) 34%, transparent);
 }
 
 .action:focus-visible {
@@ -75,6 +75,7 @@
   outline-offset: 2px;
 }
 
+.card:hover:not(.is-disabled),
 .is-highlighted {
   border-color: color-mix(in srgb, var(--tone) 55%, transparent);
 }
