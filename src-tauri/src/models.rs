@@ -1,8 +1,8 @@
-//! Descarga de los modelos, con progreso y reanudación.
+//! Model downloads, with progress and resuming.
 //!
-//! Se descarga a `<destino>.part` y se renombra al terminar. Si la descarga
-//! se corta (sin conexión, la app se cerró), la siguiente sigue desde lo que
-//! ya había con una petición `Range`.
+//! It downloads to `<destination>.part` and renames when done. If the download
+//! is cut (no connection, the app was closed), the next one continues from what
+//! was already there with a `Range` request.
 
 use crate::config::Settings;
 use crate::error::{Error, Result};
@@ -10,8 +10,8 @@ use crate::listener::Engine;
 use std::path::{Path, PathBuf};
 use tokio::io::AsyncWriteExt;
 
-/// Los modelos que se descargan. Su `id` es el de su comprobación en el
-/// diagnóstico (`doctor.rs`), así el mismo botón sirve en los dos sitios.
+/// The models that are downloaded. Their `id` is that of their check in the
+/// diagnostics (`doctor.rs`), so the same button works in both places.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Model {
     Listener,
@@ -54,12 +54,12 @@ impl Model {
         Model::every().find(|m| m.id() == id)
     }
 
-    /// Sin él no se puede empezar: escuchar y traducir.
+    /// Without it nothing can start: listening and translating.
     pub fn required(self) -> bool {
         matches!(self, Model::Listener | Model::Translator)
     }
 
-    /// Tamaño aproximado de la descarga, para mostrarlo antes de empezar.
+    /// Approximate size of the download, to show it before starting.
     pub fn approx_bytes(self) -> u64 {
         match self {
             Model::Listener => 487_000_000,
@@ -73,7 +73,7 @@ impl Model {
         }
     }
 
-    /// Carpeta (o archivo, en la traducción, las personas y el resumen) donde queda instalado.
+    /// Folder (or file, for translation, people and the summary) where it ends up installed.
     fn dest(self, settings: &Settings) -> PathBuf {
         match self {
             Model::Listener => settings.listener_model_dir.clone(),
@@ -101,7 +101,7 @@ impl Model {
         }
     }
 
-    /// Hay una descarga a medias que se puede continuar.
+    /// There is a half-finished download that can be resumed.
     pub fn is_partial(self, settings: &Settings) -> bool {
         partial(&self.download_path(settings)).exists()
     }
@@ -123,8 +123,8 @@ impl Model {
         }
     }
 
-    /// Lo que se descarga: el archivo comprimido junto a la carpeta del
-    /// modelo, o el propio modelo si es un solo archivo.
+    /// What is downloaded: the compressed file next to the model's
+    /// folder, or the model itself if it is a single file.
     fn download_path(self, settings: &Settings) -> PathBuf {
         let dest = self.dest(settings);
         if self.single_file() {
@@ -134,12 +134,12 @@ impl Model {
         dest.with_file_name(format!("{name}.tar.bz2"))
     }
 
-    /// Se publica como un solo archivo, sin comprimir.
+    /// It is published as a single file, uncompressed.
     fn single_file(self) -> bool {
         matches!(self, Model::Translator | Model::Speakers | Model::Summary)
     }
 
-    /// Carpeta que trae el archivo comprimido (su nombre en la publicación).
+    /// Folder the compressed file carries (its name in the release).
     fn archive_root(self) -> &'static str {
         match self {
             Model::Listener => Engine::Parakeet.model_name(),
@@ -151,7 +151,7 @@ impl Model {
         }
     }
 
-    /// Del archivo comprimido solo se extrae esto; vacío = todo.
+    /// Only this is extracted from the compressed file; empty = everything.
     fn keep(self) -> Vec<String> {
         match self {
             Model::Voice => crate::tts::FILES.iter().map(|f| format!("{}/{f}", self.archive_root())).collect(),
@@ -172,7 +172,7 @@ fn partial(path: &Path) -> PathBuf {
     PathBuf::from(p)
 }
 
-/// Descarga e instala el modelo. `progress` recibe (bytes descargados, total).
+/// Downloads and installs the model. `progress` receives (bytes downloaded, total).
 pub async fn download(model: Model, settings: &Settings, progress: &(dyn Fn(u64, u64) + Send + Sync)) -> Result<()> {
     let failed = |what: &str| Error::Download(format!("No se pudo {what}. Revisa la conexión y vuelve a intentarlo: seguirá donde lo dejó."));
     let target = model.download_path(settings);
@@ -187,8 +187,8 @@ pub async fn download(model: Model, settings: &Settings, progress: &(dyn Fn(u64,
         if !ok {
             return Err(failed("descomprimir la descarga"));
         }
-        // El archivo trae su propia carpeta; si la configurada se llama
-        // distinto (variables de entorno), se mueve a su sitio.
+        // The archive carries its own folder; if the configured one has a
+        // different name (environment variables), it is moved into place.
         let dest = model.dest(settings);
         let unpacked = target.with_file_name(model.archive_root());
         if unpacked != dest {
@@ -202,7 +202,7 @@ pub async fn download(model: Model, settings: &Settings, progress: &(dyn Fn(u64,
     Ok(())
 }
 
-/// Descarga `url` en `dest`, siguiendo desde `dest.part` si existe.
+/// Downloads `url` into `dest`, continuing from `dest.part` if it exists.
 async fn fetch(url: &str, dest: &Path, progress: &(dyn Fn(u64, u64) + Send + Sync)) -> Result<()> {
     if let Some(parent) = dest.parent() {
         tokio::fs::create_dir_all(parent).await?;
@@ -220,14 +220,14 @@ async fn fetch(url: &str, dest: &Path, progress: &(dyn Fn(u64, u64) + Send + Syn
     let mut response = request.send().await.map_err(|e| Error::Audio(e.to_string()))?;
     let status = response.status();
     if status == reqwest::StatusCode::RANGE_NOT_SATISFIABLE {
-        // Lo que había ya era el archivo entero.
+        // What was already there was the whole file.
         tokio::fs::rename(&part, dest).await?;
         return Ok(());
     }
     if !status.is_success() {
         return Err(Error::Audio(format!("HTTP {status}")));
     }
-    // Sin 206 el servidor manda el archivo entero: se empieza de cero.
+    // Without a 206 the server sends the whole file: it starts from scratch.
     if status != reqwest::StatusCode::PARTIAL_CONTENT {
         have = 0;
     }
@@ -256,7 +256,7 @@ async fn fetch(url: &str, dest: &Path, progress: &(dyn Fn(u64, u64) + Send + Syn
     Ok(())
 }
 
-/// Descomprime un `.tar.bz2` en su carpeta; `only` limita lo que se extrae.
+/// Unpacks a `.tar.bz2` into its folder; `only` limits what is extracted.
 #[cfg(not(windows))]
 async fn extract(archive: &Path, only: &[String]) -> bool {
     let Some(parent) = archive.parent() else { return false };
@@ -273,8 +273,8 @@ async fn extract(archive: &Path, only: &[String]) -> bool {
         .unwrap_or(false)
 }
 
-/// Windows: su `tar` no trae bzip2 («unable to run program bzip2 -d»). Se descomprime
-/// el bzip2 en Rust a un `.tar` temporal y ese sí lo extrae `tar`.
+/// Windows: its `tar` has no bzip2 ("unable to run program bzip2 -d"). The bzip2 is
+/// decompressed in Rust to a temporary `.tar`, which `tar` can extract.
 #[cfg(windows)]
 async fn extract(archive: &Path, only: &[String]) -> bool {
     let Some(parent) = archive.parent() else { return false };
@@ -438,7 +438,7 @@ fn size(path: &Path) -> u64 {
 mod tests {
     use super::*;
 
-    /// Corta una descarga a la mitad y comprueba que la siguiente sigue desde ahí.
+    /// Cuts a download halfway and checks that the next one continues from there.
     #[tokio::test]
     #[ignore]
     async fn resumes_a_partial_download() {

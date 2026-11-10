@@ -1,17 +1,17 @@
-//! Escucha local (sherpa-onnx): transcribe en el equipo, sin nube.
+//! Local listening (sherpa-onnx): transcribes on the computer, with no cloud.
 //!
-//! Dos modelos según el idioma que se oye:
-//! - Parakeet v3 para los idiomas europeos.
-//! - SenseVoice para chino, cantonés, japonés y coreano (también entiende
-//!   inglés, así que un vídeo japonés con frases en inglés sale bien).
+//! Two models depending on the language heard:
+//! - Parakeet v3 for European languages.
+//! - SenseVoice for Chinese, Cantonese, Japanese and Korean (it also understands
+//!   English, so a Japanese video with English phrases comes out fine).
 //!
-//! Los dos son tan rápidos (~0,05–0,1 s por segundo de audio en un M1 Pro)
-//! que la UI les pasa la frase en curso cada medio segundo para mostrar
-//! subtítulos en vivo y, con las marcas de tiempo por palabra, saber dónde
-//! termina cada frase. Así el audio se corta entre dos palabras en cuanto
-//! acaba una frase, en vez de esperar a una pausa. El mismo modelo da después
-//! la transcripción del trozo entero. Cada modelo se carga la primera vez que
-//! hace falta y `release` los suelta para liberar memoria.
+//! Both are so fast (~0.05–0.1 s per second of audio on an M1 Pro)
+//! that the UI passes them the sentence in progress every half second to show
+//! live captions and, with the per-word timestamps, know where
+//! each sentence ends. So the audio is cut between two words as soon as
+//! a sentence ends, instead of waiting for a pause. The same model then gives
+//! the transcription of the whole chunk. Each model is loaded the first time
+//! it is needed and `release` drops them to free memory.
 
 use crate::config::Lang;
 use crate::error::{Error, Result};
@@ -27,11 +27,11 @@ pub enum Engine {
     SenseVoice,
 }
 
-/// Idiomas que escucha SenseVoice (los europeos los escucha Parakeet).
+/// Languages SenseVoice listens to (Parakeet listens to the European ones).
 const SENSE_VOICE_LANGS: &[&str] = &["zh", "zh-hant", "yue", "ja", "ko"];
 
 impl Engine {
-    /// El modelo que escucha el idioma, o `None` si aún no se puede escuchar en local.
+    /// The model that listens to the language, or `None` if it cannot be listened to locally yet.
     pub fn for_lang(lang: Lang) -> Option<Engine> {
         if lang.info().parakeet {
             Some(Engine::Parakeet)
@@ -42,11 +42,11 @@ impl Engine {
         }
     }
 
-    /// Carpeta del modelo dentro de `models/`; es el nombre del archivo publicado.
+    /// Folder of the model inside `models/`; it is the name of the published file.
     pub fn model_name(self) -> &'static str {
         match self {
             Engine::Parakeet => "sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8",
-            // La versión de 2025 no pone puntuación y falla en japonés.
+            // The 2025 version adds no punctuation and fails in Japanese.
             Engine::SenseVoice => "sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17",
         }
     }
@@ -58,17 +58,17 @@ impl Engine {
         }
     }
 
-    /// El modelo está descargado en `dir`.
+    /// The model is downloaded in `dir`.
     pub fn is_installed(self, dir: &Path) -> bool {
         self.files().iter().all(|f| dir.join(f).exists())
     }
 }
 
-/// Duración que se asume para un token sin duración propia (un fotograma del
-/// codificador de Parakeet).
+/// Duration assumed for a token with no duration of its own (one frame of
+/// Parakeet's encoder).
 const TOKEN_SECS: f32 = 0.08;
 
-/// Una palabra reconocida, con su posición en segundos desde el inicio del audio.
+/// A recognized word, with its position in seconds from the start of the audio.
 #[derive(Debug, Clone, Serialize)]
 pub struct Word {
     pub text: String,
@@ -97,7 +97,7 @@ impl Listener {
         }
     }
 
-    /// Carga el modelo (~1 s) la primera vez; después lo reutiliza.
+    /// Loads the model (~1 s) the first time; afterwards it reuses it.
     async fn recognizer(&self, engine: Engine) -> Result<Arc<OfflineRecognizer>> {
         let slot = match engine {
             Engine::Parakeet => &self.parakeet,
@@ -118,7 +118,7 @@ impl Listener {
         Ok(r)
     }
 
-    /// Carga el modelo que escucha `lang`. Devuelve si está disponible.
+    /// Loads the model that listens to `lang`. Returns whether it is available.
     pub async fn warm_up(&self, lang: Lang) -> bool {
         let Some(engine) = Engine::for_lang(lang) else { return false };
         match self.recognizer(engine).await {
@@ -130,14 +130,14 @@ impl Listener {
         }
     }
 
-    /// Suelta los modelos cargados (~0,3–0,9 GB cada uno). Se vuelven a
-    /// cargar al escuchar otra vez.
+    /// Drops the loaded models (~0.3–0.9 GB each). They are loaded
+    /// again when listening once more.
     pub async fn release(&self) {
         self.parakeet.lock().await.take();
         self.sense_voice.lock().await.take();
     }
 
-    /// Reconoce audio mono de 16 kHz en `lang` y devuelve las palabras con sus tiempos.
+    /// Recognizes 16 kHz mono audio in `lang` and returns the words with their times.
     pub async fn recognize(&self, samples: Vec<f32>, lang: Lang) -> Result<Vec<Word>> {
         let engine = Engine::for_lang(lang).ok_or_else(|| {
             Error::Audio(format!("aún no se puede escuchar {} en local", lang.info().spanish.to_lowercase()))
@@ -174,15 +174,15 @@ fn load(engine: Engine, dir: &Path) -> Result<Arc<OfflineRecognizer>> {
             config.model_config.model_type = Some("nemo_transducer".into());
         }
         Engine::SenseVoice => {
-            // "auto": distingue solo chino, cantonés, japonés, coreano e
-            // inglés, también mezclados en el mismo vídeo. Con `use_itn` pone
-            // puntuación y escribe los números con cifras.
+            // "auto": it tells apart only Chinese, Cantonese, Japanese, Korean and
+            // English, also mixed in the same video. With `use_itn` it adds
+            // punctuation and writes numbers as digits.
             config.model_config.sense_voice =
                 OfflineSenseVoiceModelConfig { model: path("model.int8.onnx"), language: Some("auto".into()), use_itn: true };
         }
     }
     config.model_config.tokens = path("tokens.txt");
-    // Con más hilos apenas gana en trozos de pocos segundos y gasta el doble de CPU.
+    // With more threads it barely gains on chunks of a few seconds and uses twice the CPU.
     config.model_config.num_threads = 2;
     let t0 = std::time::Instant::now();
     let recognizer = OfflineRecognizer::create(&config)
@@ -191,16 +191,16 @@ fn load(engine: Engine, dir: &Path) -> Result<Arc<OfflineRecognizer>> {
     Ok(Arc::new(recognizer))
 }
 
-/// Escrituras sin espacios entre palabras (china, japonesa): cada carácter
-/// que da SenseVoice cuenta como palabra, para cortar entre ellos.
+/// Scripts without spaces between words (Chinese, Japanese): each character
+/// SenseVoice gives counts as a word, to cut between them.
 fn no_spaces(c: char) -> bool {
     matches!(c, '\u{3040}'..='\u{30ff}' | '\u{3400}'..='\u{9fff}' | '\u{f900}'..='\u{faff}')
 }
 
-/// Junta los tokens en palabras. Un token que empieza con espacio abre una
-/// palabra nueva, y en chino y japonés cada carácter es una; la puntuación
-/// se pega a la anterior sin alargar su final, porque Parakeet la marca un
-/// poco después de la palabra.
+/// Joins the tokens into words. A token that starts with a space opens a
+/// new word, and in Chinese and Japanese each character is one; punctuation
+/// sticks to the previous one without extending its end, because Parakeet marks
+/// it a little after the word.
 fn words(tokens: &[String], starts: &[f32], durations: Option<&[f32]>) -> Vec<Word> {
     let mut out: Vec<Word> = Vec::new();
     for (i, token) in tokens.iter().enumerate() {
@@ -237,7 +237,7 @@ mod tests {
         let texts: Vec<_> = w.iter().map(|w| w.text.as_str()).collect();
         assert_eq!(texts, ["Hi,", "thanks", "for."]);
         assert!((w[1].start - 0.56).abs() < 1e-6 && (w[1].end - 0.88).abs() < 1e-6);
-        // La puntuación no alarga la palabra.
+        // Punctuation does not extend the word.
         assert!((w[2].end - 1.04).abs() < 1e-6);
     }
 
@@ -249,13 +249,13 @@ mod tests {
         assert_eq!(texts, ["开", "饭", "时", "间。", "OK"]);
     }
 
-    /// Con el modelo descargado: `cargo test --lib listener -- --ignored`.
+    /// With the model downloaded: `cargo test --lib listener -- --ignored`.
     #[test]
     #[ignore]
     fn recognizes_with_downloaded_model() {
         let s = crate::config::Settings::from_env_fallback();
         let listener = Listener::new(s.listener_model_dir, s.sense_voice_model_dir);
-        // Un segundo de tono no es voz: no debe inventarse palabras largas.
+        // A second of tone is not speech: it must not make up long words.
         let tone: Vec<f32> = (0..16_000).map(|i| (i as f32 * 0.05).sin() * 0.01).collect();
         tauri::async_runtime::block_on(async {
             for lang in [Lang::Es, Lang::Zh] {

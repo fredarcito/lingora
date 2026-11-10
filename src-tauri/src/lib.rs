@@ -36,7 +36,7 @@ struct AppState {
     pipeline: Pipeline,
     listener: listener::Listener,
     speakers: speakers::Speakers,
-    /// Captura del audio del Mac en curso (sin BlackHole).
+    /// The Mac audio capture in progress (without BlackHole).
     system_audio: std::sync::Mutex<Option<system_audio::Capture>>,
     /// The microphone with echo cancellation, when it is on.
     mic: std::sync::Mutex<Option<echo_cancel::Capture>>,
@@ -54,15 +54,15 @@ async fn transcribe(
     state.pipeline.transcribe(wav, direction, source, target, prompt.as_deref()).await
 }
 
-/// Carga el modelo que escucha `lang`. Devuelve si está disponible.
+/// Loads the model that listens to `lang`. Returns whether it is available.
 #[tauri::command]
 async fn listen_warm_up(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<bool> {
     Ok(state.listener.warm_up(lang).await)
 }
 
-/// Suelta los modelos de escucha y de traducción para liberar memoria; la UI
-/// lo pide un rato después de detener la traducción. Se vuelven a cargar al
-/// empezar otra vez (~1–2 s).
+/// Drops the listening and translation models to free memory; the UI
+/// asks for it a while after translation stops. They are loaded again when
+/// starting once more (~1–2 s).
 #[tauri::command]
 async fn release_models(state: tauri::State<'_, AppState>) -> error::Result<()> {
     state.listener.release().await;
@@ -72,10 +72,10 @@ async fn release_models(state: tauri::State<'_, AppState>) -> error::Result<()> 
     Ok(())
 }
 
-/// Reconoce en local la frase en curso para los subtítulos en vivo, para
-/// saber dónde termina cada frase y como transcripción. Recibe el audio en
-/// crudo (float32 LE, mono 16 kHz): la UI lo manda cada medio segundo y en
-/// JSON pesaría 10 veces más. El idioma va en la cabecera `lang`.
+/// Recognizes the sentence in progress locally for the live captions, to
+/// know where each sentence ends and as the transcription. It receives raw
+/// audio (float32 LE, mono 16 kHz): the UI sends it every half second and as
+/// JSON it would weigh 10 times more. The language goes in the `lang` header.
 #[tauri::command]
 async fn listen(state: tauri::State<'_, AppState>, request: tauri::ipc::Request<'_>) -> error::Result<Vec<listener::Word>> {
     let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
@@ -94,8 +94,8 @@ async fn listen(state: tauri::State<'_, AppState>, request: tauri::ipc::Request<
     state.listener.recognize(samples, lang).await
 }
 
-/// Huella de voz de una frase, para saber en las notas quién habla. Recibe
-/// el audio en crudo como `listen` (float32 LE, mono 16 kHz).
+/// Voiceprint of a sentence, to know who is speaking in the notes. It receives
+/// raw audio like `listen` (float32 LE, mono 16 kHz).
 #[tauri::command]
 async fn voice_print(state: tauri::State<'_, AppState>, request: tauri::ipc::Request<'_>) -> error::Result<Vec<f32>> {
     let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
@@ -108,8 +108,8 @@ async fn voice_print(state: tauri::State<'_, AppState>, request: tauri::ipc::Req
     state.speakers.voice_print(samples).await
 }
 
-/// Traduce y manda la traducción a trozos por `on_delta` según llega, para
-/// que la UI empiece la voz con la primera frase. Devuelve el texto completo.
+/// Translates and sends the translation in chunks through `on_delta` as it arrives,
+/// so the UI starts the voice with the first sentence. Returns the full text.
 #[tauri::command]
 async fn translate(
     state: tauri::State<'_, AppState>,
@@ -137,14 +137,14 @@ async fn translate(
         .await
 }
 
-/// Arranca la traducción local y carga el modelo. Devuelve si está disponible.
+/// Starts local translation and loads the model. Returns whether it is available.
 #[tauri::command]
 async fn translate_warm_up(state: tauri::State<'_, AppState>) -> error::Result<bool> {
     Ok(state.pipeline.local_translator().warm_up().await)
 }
 
-/// Sintetiza la voz de un fragmento; la UI la pide frase a frase para que la
-/// primera suene mientras se generan las siguientes. Returns it raw
+/// Synthesizes the voice of a fragment; the UI asks for it sentence by sentence
+/// so the first one plays while the next ones are generated. Returns it raw
 /// (`Speech::to_bytes`), not as JSON.
 #[tauri::command]
 async fn speak(
@@ -160,24 +160,24 @@ async fn speak(
     Ok(tauri::ipc::Response::new(speech.to_bytes()))
 }
 
-/// Una voz que se puede elegir para un idioma.
+/// A voice that can be chosen for a language.
 #[derive(serde::Serialize)]
 struct VoiceInfo {
-    /// "supertonic:5", "piper:<model>:<speaker>", "system:<identificador>" u
-    /// "own" (tu voz); se pasa tal cual a `speak`.
+    /// "supertonic:5", "piper:<model>:<speaker>", "system:<identifier>" or
+    /// "own" (your voice); it is passed as is to `speak`.
     id: String,
     /// The system voice's name, or the number (1–5) of a Supertonic voice
     /// within its gender: the UI names it ("Voice 1").
     name: String,
     engine: &'static str,
     gender: Option<tts::Gender>,
-    /// País y calidad ("México · Premium"), o vacío.
+    /// Country and quality ("México · Premium"), or empty.
     detail: String,
 }
 
-/// Las voces del idioma: tu voz (si está grabada y habla el idioma), las de
-/// Supertonic (si está descargado), las ligeras descargadas y las del sistema,
-/// cada grupo de mejor a peor.
+/// The language's voices: your voice (if it is recorded and speaks the language),
+/// Supertonic's (if it is downloaded), the downloaded light ones and the system's,
+/// each group from best to worst.
 #[tauri::command]
 async fn voices(state: tauri::State<'_, AppState>, lang: Lang) -> error::Result<Vec<VoiceInfo>> {
     let mut out = Vec::new();
@@ -333,8 +333,8 @@ async fn warm_up(state: tauri::State<'_, AppState>) -> error::Result<()> {
     state.pipeline.warm_up().await
 }
 
-/// Reproduce la voz traducida en una salida concreta (por nombre; vacío =
-/// salida del sistema) y vuelve cuando termina de sonar. Raw, like `listen`
+/// Plays the translated voice on a given output (by name; empty =
+/// system output) and returns when it finishes playing. Raw, like `listen`
 /// (layout in `parse_playback`).
 #[tauri::command]
 async fn play_audio(request: tauri::ipc::Request<'_>) -> error::Result<()> {
@@ -371,7 +371,7 @@ async fn run_diagnostics(state: tauri::State<'_, AppState>, full: bool) -> error
     Ok(doctor::run(state.pipeline.settings(), full).await)
 }
 
-/// Aplica un arreglo automático y devuelve el diagnóstico actualizado.
+/// Applies an automatic fix and returns the updated diagnostics.
 #[tauri::command]
 async fn fix_diagnostic(state: tauri::State<'_, AppState>, id: String) -> error::Result<Vec<doctor::Check>> {
     if let Some(model) = models::Model::from_id(&id) {
@@ -382,15 +382,15 @@ async fn fix_diagnostic(state: tauri::State<'_, AppState>, id: String) -> error:
     Ok(doctor::run(state.pipeline.settings(), false).await)
 }
 
-/// Lo descargado que hay en disco (Ajustes → Espacio en disco): los modelos
-/// y lo que dejaron versiones anteriores.
+/// What is downloaded on disk (Settings → Disk space): the models
+/// and what earlier versions left behind.
 #[tauri::command]
 fn storage_status(state: tauri::State<'_, AppState>) -> Vec<models::OnDisk> {
     models::on_disk(state.pipeline.settings())
 }
 
-/// Borra algo descargado y devuelve la lista al día. Antes suelta los modelos
-/// de memoria, como `release_models`: la UI no deja borrar mientras se traduce.
+/// Deletes something downloaded and returns the updated list. It first drops the
+/// models from memory, like `release_models`: the UI does not allow deleting while translating.
 #[tauri::command]
 async fn remove_download(state: tauri::State<'_, AppState>, id: String) -> error::Result<Vec<models::OnDisk>> {
     state.listener.release().await;
@@ -401,18 +401,18 @@ async fn remove_download(state: tauri::State<'_, AppState>, id: String) -> error
     Ok(models::on_disk(state.pipeline.settings()))
 }
 
-/// Un modelo para la bienvenida: qué es, cuánto pesa y si ya está.
+/// A model for the welcome screen: what it is, how much it weighs and whether it is there.
 #[derive(serde::Serialize)]
 struct ModelStatus {
     id: &'static str,
     required: bool,
     installed: bool,
-    /// Hay una descarga a medias: se continúa, no empieza de cero.
+    /// There is a half-finished download: it resumes, it does not start from scratch.
     partial: bool,
     approx_bytes: u64,
 }
 
-/// Estado de los modelos que se descargan.
+/// Status of the models that are downloaded.
 #[tauri::command]
 fn setup_status(state: tauri::State<'_, AppState>) -> Vec<ModelStatus> {
     let settings = state.pipeline.settings();
@@ -434,7 +434,7 @@ struct DownloadProgress {
     total: u64,
 }
 
-/// Descarga un modelo y manda el progreso por `on_progress`.
+/// Downloads a model and sends the progress through `on_progress`.
 #[tauri::command]
 async fn download_model(
     state: tauri::State<'_, AppState>,
@@ -448,21 +448,21 @@ async fn download_model(
     .await
 }
 
-/// Un idioma tal como lo necesita la UI: si Parakeet lo entiende y qué voces
-/// tiene en este equipo.
+/// A language as the UI needs it: whether Parakeet understands it and what voices
+/// it has on this computer.
 #[derive(serde::Serialize)]
 struct LanguageInfo {
     code: Lang,
     name: &'static str,
     parakeet: bool,
-    /// Se puede escuchar en local (Parakeet o SenseVoice); si no, solo sirve
-    /// como idioma de la traducción.
+    /// It can be listened to locally (Parakeet or SenseVoice); otherwise it only
+    /// works as a translation language.
     can_listen: bool,
     female_voice: bool,
     male_voice: bool,
 }
 
-/// Todos los idiomas, español e inglés primero y el resto por orden alfabético.
+/// All the languages, Spanish and English first and the rest in alphabetical order.
 #[tauri::command]
 async fn languages(state: tauri::State<'_, AppState>) -> error::Result<Vec<LanguageInfo>> {
     let natural = tts::TtsEngine::is_installed(&state.pipeline.settings().tts_model_dir);
@@ -488,27 +488,27 @@ async fn languages(state: tauri::State<'_, AppState>) -> error::Result<Vec<Langu
             }
         })
         .collect();
-    // Sin tildes para ordenar: "Árabe" va con la A.
+    // Without accents for sorting: "Árabe" goes with the A.
     let key = |name: &str| name.replace(['Á', 'á'], "a").replace(['É', 'é'], "e").to_lowercase();
     out.sort_by_key(|l| (![Lang::Es, Lang::En].contains(&l.code), key(l.name)));
     Ok(out)
 }
 
-/// Si este Mac puede capturar su audio sin BlackHole (macOS 14.2+).
+/// Whether this Mac can capture its audio without BlackHole (macOS 14.2+).
 #[tauri::command]
 fn system_audio_supported() -> bool {
     system_audio::supported()
 }
 
-/// Empieza a capturar el audio del Mac (todo menos Lingora) y lo manda en
-/// bloques float32 LE mono por `on_audio`. Devuelve la frecuencia.
+/// Starts capturing the Mac's audio (everything but Lingora) and sends it in
+/// float32 LE mono blocks through `on_audio`. Returns the sample rate.
 #[tauri::command]
 fn system_audio_start(
     state: tauri::State<'_, AppState>,
     on_audio: tauri::ipc::Channel<tauri::ipc::InvokeResponseBody>,
 ) -> error::Result<u32> {
     let mut slot = state.system_audio.lock().unwrap_or_else(|e| e.into_inner());
-    // Solo una captura a la vez: la anterior se suelta antes de crear otra.
+    // Only one capture at a time: the previous one is dropped before creating another.
     slot.take();
     let capture = system_audio::start(move |block| {
         let bytes = block.iter().flat_map(|v| v.to_le_bytes()).collect();
@@ -550,13 +550,13 @@ fn mic_stop(state: tauri::State<'_, AppState>) {
     state.mic.lock().unwrap_or_else(|e| e.into_inner()).take();
 }
 
-/// Abre (o muestra) la ventana flotante de subtítulos.
+/// Opens (or shows) the floating captions window.
 #[tauri::command]
 async fn open_captions(app: tauri::AppHandle) -> error::Result<()> {
     captions_window::open(&app).map_err(|e| error::Error::Audio(format!("no se pudo abrir los subtítulos: {e}")))
 }
 
-/// Fuera del hilo de la ventana, como `audio_route`: Core Audio puede tardar.
+/// Off the window thread, like `audio_route`: Core Audio can take a while.
 #[tauri::command]
 async fn list_audio_devices() -> error::Result<Vec<audio::DeviceInfo>> {
     tauri::async_runtime::spawn_blocking(audio::list_devices)
@@ -564,14 +564,14 @@ async fn list_audio_devices() -> error::Result<Vec<audio::DeviceInfo>> {
         .map_err(|e| error::Error::Audio(format!("no se pudo leer los dispositivos: {e}")))?
 }
 
-/// Deja en el registro un error de la interfaz (en Windows, el archivo del escritorio).
+/// Writes an interface error to the log (on Windows, the file on the desktop).
 #[tauri::command]
 fn log_ui(message: String) {
     tracing::warn!("interfaz: {message}");
 }
 
-/// Deja en el registro una medida de la interfaz (retraso de la voz, frases
-/// omitidas, tiempo de preparación). No es un error.
+/// Writes an interface measurement to the log (voice delay, skipped
+/// sentences, preparation time). It is not an error.
 #[tauri::command]
 fn log_ui_event(message: String) {
     tracing::info!("interfaz: {message}");
@@ -592,8 +592,8 @@ fn settings_summary(state: tauri::State<'_, AppState>) -> serde_json::Value {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // El .env vive en la raíz del proyecto en desarrollo y junto al binario en
-    // producción. Nunca se empaqueta la clave en el bundle.
+    // The .env lives at the project root in development and next to the binary in
+    // production. The key is never packaged in the bundle.
     let _ = dotenvy::dotenv();
     log_file::init();
     perf::log_system();
@@ -606,12 +606,12 @@ pub fn run() {
 
     tauri::Builder::default()
         .setup(|app| {
-            // Sin icono en el Dock: la app acompaña a la videollamada.
+            // No Dock icon: the app accompanies the video call.
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
             Ok(())
         })
-        // Sin la ventana principal no llega texto: los subtítulos se cierran con ella.
+        // Without the main window no text arrives: the captions close with it.
         .on_window_event(|window, event| {
             if window.label() == "main" && matches!(event, tauri::WindowEvent::Destroyed) {
                 captions_window::close(window.app_handle());
@@ -686,7 +686,7 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error al arrancar Lingora")
         .run(|app, event| {
-            // Los modelos de traducción y de resumen usan la GPU: si siguen cargados al salir, Metal aborta.
+            // The translation and summary models use the GPU: if they are still loaded on exit, Metal aborts.
             if let tauri::RunEvent::Exit = event {
                 app.state::<AppState>().pipeline.local_translator().shutdown();
                 summarizer::shutdown();

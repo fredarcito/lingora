@@ -1,5 +1,5 @@
-//! Lo mínimo del runtime de Objective-C para las pocas llamadas a AppKit y
-//! Core Audio que Tauri no expone, sin añadir dependencias.
+//! The bare minimum of the Objective-C runtime for the few calls to AppKit and
+//! Core Audio that Tauri does not expose, without adding dependencies.
 
 use std::ffi::{c_char, c_void, CString};
 
@@ -14,7 +14,7 @@ extern "C" {
     pub fn objc_autoreleasePoolPop(pool: *mut c_void);
 }
 
-/// Clase por nombre; nula si este macOS no la tiene.
+/// Class by name; null if this macOS does not have it.
 pub fn class(name: &str) -> Id {
     let name = CString::new(name).expect("nombre sin ceros");
     unsafe { objc_getClass(name.as_ptr()) }
@@ -25,8 +25,8 @@ pub fn sel(name: &str) -> Id {
     unsafe { sel_registerName(name.as_ptr()) }
 }
 
-/// `objc_msgSend` con la firma concreta de cada mensaje (obligatorio en arm64).
-/// Devuelve lo que haya en el registro de retorno como `Id`.
+/// `objc_msgSend` with the exact signature of each message (required on arm64).
+/// Returns whatever is in the return register as an `Id`.
 macro_rules! msg {
     ($obj:expr, $sel:expr) => {{
         let f: unsafe extern "C" fn($crate::objc::Id, $crate::objc::Id) -> $crate::objc::Id =

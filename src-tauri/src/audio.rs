@@ -1,15 +1,15 @@
-//! Captura y reproducción de audio con Core Audio.
+//! Audio capture and playback with Core Audio.
 //!
-//! Fase 0 validada con scripts sueltos: BlackHole 2ch recibe el audio del
-//! sistema (a través de la salida múltiple "Lingora") y la app lo lee; la voz
-//! traducida se escribe en BlackHole para que la llamada la use como micrófono.
-//! La voz que escucha el usuario se reproduce **directamente** en las bocinas,
-//! nunca por la salida múltiple, para no realimentar la captura.
+//! Phase 0 validated with loose scripts: BlackHole 2ch receives the system
+//! audio (through the "Lingora" multi-output) and the app reads it; the
+//! translated voice is written to BlackHole so the call uses it as a microphone.
+//! The voice the user hears is played **directly** on the speakers, never
+//! through the multi-output, so it does not feed back into the capture.
 
 use crate::error::{Error, Result};
 
-/// Lista los dispositivos de audio con sus canales, para que la UI muestre
-/// nombres reales en lugar de los que da el WebView.
+/// Lists the audio devices with their channels, so the UI shows real
+/// names instead of the ones the WebView gives.
 pub fn list_devices() -> Result<Vec<DeviceInfo>> {
     #[cfg(target_os = "macos")]
     {
@@ -92,7 +92,7 @@ pub mod macos {
         if st != 0 || cf.is_null() {
             return None;
         }
-        // CFStringGetCString con un buffer fijo evita depender de CFStringGetLength.
+        // CFStringGetCString with a fixed buffer avoids depending on CFStringGetLength.
         let mut buf = [0i8; 512];
         let ok = unsafe { CFStringGetCString(cf, buf.as_mut_ptr(), buf.len() as i64, 0x0800_0100) };
         unsafe { CFRelease(cf as CFTypeRef) };
@@ -142,7 +142,7 @@ pub mod macos {
         (st == 0 && rate > 0.0).then_some(rate)
     }
 
-    /// Frecuencia nominal y canales de salida de un dispositivo, por nombre.
+    /// Nominal sample rate and output channels of a device, by name.
     pub fn output_format(name: &str) -> Option<(u32, u16)> {
         device_ids().into_iter().find_map(|id| {
             if string_property(id, kAudioObjectPropertyName)? != name {
@@ -202,7 +202,7 @@ pub mod macos {
         Ok(())
     }
 
-    /// Dispositivo con lo que necesita el diagnóstico.
+    /// A device with what the diagnostics need.
     #[derive(Debug, Clone)]
     pub struct Device {
         pub id: AudioObjectID,
@@ -264,7 +264,7 @@ pub mod macos {
         set(id, kAudioDevicePropertyNominalSampleRate, kAudioObjectPropertyScopeGlobal, &rate)
     }
 
-    /// Volumen (0–1) y silencio de la entrada de un dispositivo.
+    /// Volume (0–1) and mute of a device's input.
     pub fn input_volume(id: AudioObjectID) -> Option<(f32, bool)> {
         let vol = get(id, kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeInput, 0f32)?;
         let mute = get(id, kAudioDevicePropertyMute, kAudioObjectPropertyScopeInput, 0u32).unwrap_or(0);
@@ -272,12 +272,12 @@ pub mod macos {
     }
 
     pub fn set_input_full_volume(id: AudioObjectID) -> Result<()> {
-        // Algunos dispositivos no exponen mute; no es un error.
+        // Some devices do not expose mute; it is not an error.
         let _ = set(id, kAudioDevicePropertyMute, kAudioObjectPropertyScopeInput, &0u32);
         set(id, kAudioDevicePropertyVolumeScalar, kAudioObjectPropertyScopeInput, &1f32)
     }
 
-    /// UIDs de los subdispositivos de un agregado o salida múltiple.
+    /// UIDs of the subdevices of an aggregate or multi-output.
     pub fn subdevice_uids(id: AudioObjectID) -> Vec<String> {
         use core_foundation::array::CFArray;
         use core_foundation::base::TCFType;
@@ -298,9 +298,9 @@ pub mod macos {
         array.iter().map(|s| s.to_string()).collect()
     }
 
-    /// Crea una salida múltiple (agregado "stacked": el mismo audio va a
-    /// todas las subsalidas). `main_uid` marca el reloj; BlackHole lleva
-    /// corrección de deriva.
+    /// Creates a multi-output (a "stacked" aggregate: the same audio goes to
+    /// every sub-output). `main_uid` sets the clock; BlackHole gets drift
+    /// correction.
     pub fn create_multi_output(name: &str, uid: &str, main_uid: &str, capture_uid: &str) -> Result<AudioObjectID> {
         use core_foundation::array::CFArray;
         use core_foundation::base::{CFType, TCFType};
@@ -357,24 +357,24 @@ pub mod macos {
     }
 }
 
-/// Indica si una salida acaba en BlackHole 2ch (la captura). Reproducir ahí la voz traducida
-/// la vuelve a meter en la captura y la app se traduce a sí misma en bucle.
+/// Whether an output ends in BlackHole 2ch (the capture). Playing the translated voice there
+/// puts it back into the capture and the app translates itself in a loop.
 fn feeds_capture(name: &str) -> bool {
     let n = name.to_lowercase();
     n.contains("blackhole 2ch") || n == "lingora" || n.contains("salida múltiple") || n.contains("multi-output")
 }
 
-/// Reproduce muestras mono en una salida concreta y espera a que terminen.
-/// `volume` es una ganancia (1.0 = original); lo que pase de ±1 se recorta.
+/// Plays mono samples on a given output and waits for them to finish.
+/// `volume` is a gain (1.0 = original); whatever exceeds ±1 is clipped.
 ///
-/// Se hace en Rust y no en el WebView porque WKWebView no implementa
-/// `AudioContext.setSinkId`: todo sonaba por la salida del sistema (la salida
-/// múltiple), entraba en BlackHole y se volvía a traducir. Es bloqueante;
-/// llamarla desde `spawn_blocking`.
+/// Done in Rust and not in the WebView because WKWebView does not implement
+/// `AudioContext.setSinkId`: everything played on the system output (the
+/// multi-output), entered BlackHole and was translated again. It blocks;
+/// call it from `spawn_blocking`.
 ///
-/// La salida se mantiene abierta entre frases (ver `Output`): abrirla y
-/// cerrarla en cada frase hacía que los auriculares Bluetooth se comieran el
-/// principio de cada una y que las frases sonaran cortadas.
+/// The output stays open between sentences (see `Output`): opening and
+/// closing it for each sentence made Bluetooth headphones swallow the
+/// start of each one and the sentences sound cut off.
 pub fn play_blocking(samples: &[f32], sample_rate: u32, device_name: &str, volume: f32) -> Result<()> {
     let shared = output_for(device_name)?;
     let gain = volume.clamp(0.0, 2.0);
@@ -391,7 +391,7 @@ pub fn play_blocking(samples: &[f32], sample_rate: u32, device_name: &str, volum
         .expect("cola de audio")
         .push_back(Job { data, pos: 0, done: Some(done_tx) });
 
-    // Margen: la cola puede tener frases de otro carril delante.
+    // Margin: the queue may have sentences from another lane ahead.
     match done_rx.recv_timeout(duration * 3 + std::time::Duration::from_secs(3)) {
         Ok(()) => Ok(()),
         Err(_) if shared.dead.load(std::sync::atomic::Ordering::Relaxed) => Err(Error::Audio(format!(
@@ -401,41 +401,41 @@ pub fn play_blocking(samples: &[f32], sample_rate: u32, device_name: &str, volum
     }
 }
 
-/// Una frase en la cola de una salida.
+/// A sentence in an output's queue.
 struct Job {
     data: Vec<f32>,
     pos: usize,
-    /// Avisa a `play_blocking` cuando la frase termina de sonar.
+    /// Tells `play_blocking` when the sentence finishes playing.
     done: Option<std::sync::mpsc::Sender<()>>,
 }
 
-/// Estado compartido entre `play_blocking` y el callback de audio.
+/// State shared between `play_blocking` and the audio callback.
 struct Shared {
     queue: std::sync::Mutex<std::collections::VecDeque<Job>>,
-    /// El dispositivo falló (p. ej. se desconectaron los auriculares).
+    /// The device failed (e.g. the headphones were disconnected).
     dead: std::sync::atomic::AtomicBool,
     rate: u32,
 }
 
-/// Salida abierta. El stream de cpal vive en su propio hilo (no es `Send`);
-/// al soltar `_stop` el hilo termina y cierra el stream.
+/// An open output. The cpal stream lives in its own thread (it is not `Send`);
+/// dropping `_stop` ends the thread and closes the stream.
 struct Output {
     shared: std::sync::Arc<Shared>,
     _stop: std::sync::mpsc::Sender<()>,
 }
 
-/// Salidas abiertas por nombre de dispositivo.
+/// Open outputs by device name.
 fn outputs() -> &'static std::sync::Mutex<std::collections::HashMap<String, Output>> {
     static OUTPUTS: std::sync::OnceLock<std::sync::Mutex<std::collections::HashMap<String, Output>>> =
         std::sync::OnceLock::new();
     OUTPUTS.get_or_init(Default::default)
 }
 
-/// Devuelve la salida abierta para ese dispositivo, abriéndola si hace falta.
+/// Returns the open output for that device, opening it if needed.
 fn output_for(device_name: &str) -> Result<std::sync::Arc<Shared>> {
     use cpal::traits::{DeviceTrait, HostTrait};
 
-    // La salida del sistema se resuelve a su nombre: si cambia, se abre la nueva.
+    // The system output resolves to its name: if it changes, the new one is opened.
     let name = if device_name.is_empty() {
         cpal::default_host()
             .default_output_device()
@@ -473,7 +473,7 @@ fn open_output(name: &str) -> Result<Output> {
         .spawn(move || match start_stream(&name) {
             Ok((stream, shared)) => {
                 let _ = ready_tx.send(Ok(shared));
-                // Bloquea hasta que se suelte `_stop`; entonces se cierra el stream.
+                // Blocks until `_stop` is dropped; then the stream closes.
                 let _ = stop_rx.recv();
                 drop(stream);
             }
@@ -491,11 +491,11 @@ fn open_output(name: &str) -> Result<Output> {
 fn start_stream(name: &str) -> Result<(cpal::Stream, std::sync::Arc<Shared>)> {
     use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
-    // Se busca entre todos los dispositivos: `output_devices` descarta las
-    // bocinas integradas porque cpal no sabe leer sus formatos (ver abajo).
-    // Hay que filtrar por salida: los auriculares Bluetooth aparecen como dos
-    // dispositivos con el mismo nombre, uno de entrada y otro de salida, y el
-    // de entrada suele salir primero.
+    // It searches among all devices: `output_devices` discards the built-in
+    // speakers because cpal cannot read their formats (see below).
+    // It must filter by output: Bluetooth headphones appear as two
+    // devices with the same name, one for input and one for output, and the
+    // input one usually comes first.
     let device = cpal::default_host()
         .devices()
         .map_err(|e| Error::Audio(format!("no se pudieron listar las salidas: {e}")))?
@@ -503,11 +503,11 @@ fn start_stream(name: &str) -> Result<(cpal::Stream, std::sync::Arc<Shared>)> {
         .find(has_output)
         .ok_or_else(|| Error::Audio(format!("no se encontró la salida \"{name}\"")))?;
 
-    // En macOS reciente cpal falla al leer los formatos de las bocinas
-    // integradas y de los AirPods ("Invalid property value"). Se usa entonces
-    // la frecuencia y los canales actuales según Core Audio, en float32. Pedir
-    // otra frecuencia haría que cpal la cambiara y descuadraría la salida
-    // múltiple.
+    // On recent macOS cpal fails to read the formats of the built-in
+    // speakers and of AirPods ("Invalid property value"). It then uses
+    // the current rate and channels according to Core Audio, in float32. Asking
+    // for another rate would make cpal change it and throw the multi-output
+    // out of sync.
     let (config, format) = match device.default_output_config() {
         Ok(supported) => (supported.config(), supported.sample_format()),
         Err(e) => {
@@ -544,9 +544,9 @@ fn start_stream(name: &str) -> Result<(cpal::Stream, std::sync::Arc<Shared>)> {
     Ok((stream, shared))
 }
 
-/// Si un dispositivo tiene salida. No basta con pedir su configuración: las
-/// bocinas integradas también fallan ahí (ver `start_stream`), pero con otro
-/// error; solo `StreamTypeNotSupported` indica que no hay salida.
+/// Whether a device has output. Asking for its configuration is not enough: the
+/// built-in speakers also fail there (see `start_stream`), but with another
+/// error; only `StreamTypeNotSupported` means there is no output.
 fn has_output(device: &cpal::Device) -> bool {
     use cpal::traits::DeviceTrait;
     !matches!(
@@ -555,8 +555,8 @@ fn has_output(device: &cpal::Device) -> bool {
     )
 }
 
-/// Stream que reproduce la cola de frases una tras otra, sin huecos, y
-/// silencio cuando está vacía.
+/// A stream that plays the queue of sentences one after another, with no gaps,
+/// and silence when it is empty.
 fn build_stream<T>(device: &cpal::Device, config: &cpal::StreamConfig, shared: std::sync::Arc<Shared>) -> Result<cpal::Stream>
 where
     T: cpal::SizedSample + cpal::FromSample<f32>,
@@ -585,7 +585,7 @@ where
                         *s = T::from_sample(v);
                     }
                 }
-                // Avisa ya de las frases que acaban justo al final del búfer.
+                // Reports right away the sentences that end exactly at the end of the buffer.
                 while queue.front().is_some_and(|j| j.pos >= j.data.len()) {
                     if let Some(done) = queue.pop_front().and_then(|j| j.done) {
                         let _ = done.send(());
@@ -601,7 +601,7 @@ where
         .map_err(|e| Error::Audio(format!("no se pudo abrir la salida: {e}")))
 }
 
-/// Remuestreo lineal: suficiente para voz y sin dependencias.
+/// Linear resampling: enough for voice and with no dependencies.
 fn resample_linear(samples: &[f32], from: u32, to: u32) -> Vec<f32> {
     if from == to || samples.is_empty() {
         return samples.to_vec();

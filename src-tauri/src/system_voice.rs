@@ -1,44 +1,44 @@
-//! Voz con las voces del sistema, para los idiomas que Kokoro no tiene.
+//! Voice with the system's voices, for the languages Kokoro does not have.
 //!
-//! Qué voces hay depende de cada equipo: se elige la mejor instalada del
-//! idioma (Premium > Mejorada > normal) y del género pedido; si no hay de ese
-//! género, la del otro. En macOS las voces se listan con
-//! `AVSpeechSynthesisVoice` (da idioma, género y calidad) y se sintetizan con
-//! `say`. En Windows faltan por implementar `voices` y `synthesize` (con
-//! `Windows.Media.SpeechSynthesis`); mientras, esos idiomas quedan sin voz y
-//! solo hay subtítulos.
+//! Which voices exist depends on each computer: the best one installed for the
+//! language (Premium > Enhanced > normal) and the requested gender is chosen; if
+//! there is none of that gender, the other's. On macOS the voices are listed with
+//! `AVSpeechSynthesisVoice` (it gives language, gender and quality) and synthesized
+//! with `say`. On Windows `voices` and `synthesize` are still to be implemented
+//! (with `Windows.Media.SpeechSynthesis`); meanwhile, those languages have no
+//! voice and there are only captions.
 
 use crate::config::Lang;
 use crate::error::{Error, Result};
 use crate::tts::Gender;
 
-/// Frecuencia del audio que devuelve `synthesize`.
+/// Sample rate of the audio `synthesize` returns.
 pub const SAMPLE_RATE: u32 = 24_000;
 
-/// Una voz instalada en el sistema.
+/// A voice installed on the system.
 #[derive(Debug, Clone)]
 pub struct SystemVoice {
-    /// Lo que hay que pasar para usarla (en macOS, el identificador para `say -v`).
+    /// What has to be passed to use it (on macOS, the identifier for `say -v`).
     pub id: String,
     pub name: String,
-    /// Etiqueta BCP-47 del idioma ("ja-JP", "yue-HK", "ar-001"…).
+    /// BCP-47 tag of the language ("ja-JP", "yue-HK", "ar-001"…).
     pub tag: String,
     pub gender: Option<Gender>,
     /// 1 normal, 2 mejorada, 3 premium.
     pub quality: u8,
-    /// Voz de la familia Eloquence (Eddy, Flo…): suena más robótica que las
-    /// propias de cada idioma.
+    /// A voice of the Eloquence family (Eddy, Flo…): it sounds more robotic than
+    /// each language's own ones.
     pub eloquence: bool,
 }
 
-/// Si la etiqueta de una voz vale para la etiqueta de un idioma: "ar" incluye
-/// "ar-001" y "ar-SA"; "zh-TW" no incluye "zh-CN".
+/// Whether a voice's tag fits a language's tag: "ar" includes
+/// "ar-001" and "ar-SA"; "zh-TW" does not include "zh-CN".
 fn tag_matches(voice: &str, wanted: &str) -> bool {
     let (v, w) = (voice.to_ascii_lowercase(), wanted.to_ascii_lowercase());
     v == w || v.starts_with(&format!("{w}-"))
 }
 
-/// Las voces del sistema que valen para el idioma, en el orden de sus etiquetas.
+/// The system voices that fit the language, in the order of its tags.
 pub fn voices_for(lang: Lang, voices: &[SystemVoice]) -> Vec<&SystemVoice> {
     lang.info()
         .voice_tags
@@ -52,15 +52,15 @@ pub fn score(voice: &SystemVoice) -> u8 {
     voice.quality * 2 + u8::from(!voice.eloquence)
 }
 
-/// La mejor voz del idioma y del género; si no hay del género, la mejor del otro.
+/// The best voice of the language and gender; if there is none of the gender, the best of the other.
 fn pick(lang: Lang, gender: Gender, voices: &[SystemVoice]) -> Option<&SystemVoice> {
     let found = voices_for(lang, voices);
     let best = |g: Option<Gender>| found.iter().copied().filter(|v| v.gender == g).max_by_key(|v| score(v));
     best(Some(gender)).or_else(|| found.iter().copied().max_by_key(|v| score(v)))
 }
 
-/// Qué géneros de voz del sistema hay para el idioma (mujer, hombre). Una voz
-/// sin género conocido cuenta como de mujer.
+/// Which system voice genders exist for the language (female, male). A voice
+/// with no known gender counts as female.
 pub fn available(lang: Lang, voices: &[SystemVoice]) -> (bool, bool) {
     let found = voices_for(lang, voices);
     let male = found.iter().any(|v| v.gender == Some(Gender::Male));
@@ -68,8 +68,8 @@ pub fn available(lang: Lang, voices: &[SystemVoice]) -> (bool, bool) {
     (female, male)
 }
 
-/// Sintetiza `text` con la mejor voz del sistema. Devuelve muestras mono
-/// float32 a `SAMPLE_RATE`.
+/// Synthesizes `text` with the best system voice. Returns mono float32
+/// samples at `SAMPLE_RATE`.
 pub async fn synthesize(text: &str, lang: Lang, gender: Gender, speed: f32) -> Result<Vec<f32>> {
     let all = voices();
     let voice = pick(lang, gender, &all).ok_or_else(|| {
@@ -82,12 +82,12 @@ pub async fn synthesize(text: &str, lang: Lang, gender: Gender, speed: f32) -> R
     imp::synthesize(text, &voice.id, speed).await
 }
 
-/// Sintetiza con una voz concreta (su `id`), la que eligió quien usa la app.
+/// Synthesizes with a specific voice (its `id`), the one the user chose.
 pub async fn synthesize_with(text: &str, voice_id: &str, speed: f32) -> Result<Vec<f32>> {
     imp::synthesize(text, voice_id, speed).await
 }
 
-/// Nombre del país de una etiqueta ("es-MX" → "México"); si no se conoce, la etiqueta.
+/// Country name of a tag ("es-MX" → "México"); if unknown, the tag.
 pub fn region(tag: &str) -> String {
     let code = tag.rsplit(['-', '_']).next().unwrap_or(tag).to_ascii_uppercase();
     let name = match code.as_str() {
@@ -116,7 +116,7 @@ pub fn region(tag: &str) -> String {
     name.to_string()
 }
 
-/// Las voces instaladas en el sistema.
+/// The voices installed on the system.
 pub fn voices() -> Vec<SystemVoice> {
     imp::voices()
 }
@@ -131,10 +131,10 @@ mod imp {
     #[link(name = "AVFoundation", kind = "framework")]
     extern "C" {}
 
-    /// Palabras por minuto de `say` a velocidad normal.
+    /// Words per minute of `say` at normal speed.
     const BASE_RATE: f32 = 185.0;
 
-    /// La familia Eloquence no informa de su género.
+    /// The Eloquence family does not report its gender.
     const ELOQUENCE_FEMALE: &[&str] = &["Flo", "Sandy", "Shelley", "Grandma"];
     const ELOQUENCE_MALE: &[&str] = &["Eddy", "Reed", "Rocko", "Grandpa"];
 
@@ -194,7 +194,7 @@ mod imp {
         ));
         let data_format = format!("--data-format=LEF32@{SAMPLE_RATE}");
         let rate = format!("{:.0}", BASE_RATE * speed);
-        // El texto va por stdin: como argumento, uno que empiece por "-" se leería como opción.
+        // The text goes through stdin: as an argument, one starting with "-" would be read as an option.
         let mut child = tokio::process::Command::new("say")
             .args(["-v", voice_id, "-r", &rate, "--file-format=WAVE", &data_format, "-o"])
             .arg(&path)
@@ -256,13 +256,13 @@ mod tests {
             voice("ja-JP", Some(Gender::Female), 1, true),
         ];
         assert_eq!(pick(Lang::Ja, Gender::Female, &voices).unwrap().quality, 3);
-        // Sin voz de hombre, la mejor de mujer.
+        // With no male voice, the best female one.
         assert_eq!(pick(Lang::Ja, Gender::Male, &voices).unwrap().quality, 3);
         assert_eq!(available(Lang::Ja, &voices), (true, false));
         assert!(pick(Lang::Yue, Gender::Female, &voices).is_none());
     }
 
-    /// Lista los idiomas con voz en este equipo y habla una frase en tres.
+    /// Lists the languages with a voice on this computer and speaks a sentence in three.
     #[tokio::test]
     #[ignore]
     async fn speaks_with_system_voices() {

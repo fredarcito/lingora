@@ -1,8 +1,8 @@
 use serde::Serialize;
 
-/// Error único que cruza la frontera Tauri. Se serializa como `{ kind, message }`
-/// para que el frontend pueda distinguir, por ejemplo, un límite de cuota (429)
-/// de un fallo de red.
+/// The single error that crosses the Tauri boundary. It serializes as `{ kind, message }`
+/// so the frontend can tell apart, for example, a quota limit (429)
+/// from a network failure.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("falta la variable de entorno {0}")]
@@ -23,11 +23,11 @@ pub enum Error {
     #[error("error de audio: {0}")]
     Audio(String),
 
-    /// Descarga de un modelo; el mensaje ya está pensado para quien usa la app.
+    /// A model download; the message is already written for the app's user.
     #[error("{0}")]
     Download(String),
 
-    /// Notas guardadas; el mensaje ya está pensado para quien usa la app.
+    /// Saved notes; the message is already written for the app's user.
     #[error("{0}")]
     Notes(String),
 

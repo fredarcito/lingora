@@ -42,18 +42,18 @@ use std::num::NonZeroU32;
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Mutex, OnceLock};
 
-/// Archivo del modelo dentro de `models/`; es el nombre publicado.
+/// File of the model inside `models/`; it is the published name.
 pub const MODEL_FILE: &str = "Index-Translate-2B.Q4_K_M.gguf";
 pub const MODEL_URL: &str =
     "https://huggingface.co/IndexTeam/Index-Translate-2B-GGUF/resolve/main/Index-Translate-2B.Q4_K_M.gguf";
 
-/// Contexto en tokens, como con `llama-server -c 4096`.
+/// Context in tokens, as with `llama-server -c 4096`.
 const CONTEXT_TOKENS: u32 = 4096;
-/// Todas las capas en la GPU, como con `llama-server -ngl 99`.
+/// All the layers on the GPU, as with `llama-server -ngl 99`.
 const GPU_LAYERS: u32 = 99;
 
-/// Un término coloquial y cómo traducirlo. `find` son las formas en
-/// minúsculas que lo activan.
+/// A colloquial term and how to translate it. `find` holds the lowercase
+/// forms that trigger it.
 struct Term {
     find: &'static [&'static str],
     source: &'static str,
@@ -101,19 +101,19 @@ const GLOSSARY_EN: &[Term] = &[
 
 pub struct LocalTranslator {
     model: PathBuf,
-    /// El hilo del modelo; `None` sin modelo cargado.
+    /// The model's thread; `None` with no model loaded.
     worker: Mutex<Option<Worker>>,
-    /// Solo un arranque a la vez: dos cargarían el modelo dos veces.
+    /// Only one start at a time: two would load the model twice.
     starting: tokio::sync::Mutex<()>,
 }
 
-/// El hilo que tiene el modelo cargado. Soltar `jobs` lo cierra y libera la memoria.
+/// The thread that has the model loaded. Dropping `jobs` closes it and frees the memory.
 struct Worker {
     jobs: mpsc::Sender<Job>,
     thread: std::thread::JoinHandle<()>,
 }
 
-/// Una traducción para el hilo del modelo.
+/// A translation for the model's thread.
 struct Job {
     prompt: String,
     /// The cap by characters; `output_cap` raises it by the tokens of `source`.
@@ -124,7 +124,7 @@ struct Job {
 }
 
 enum Event {
-    /// Un trozo de la traducción, según sale.
+    /// A chunk of the translation, as it comes out.
     Delta(String),
     Done(Result<String>),
 }
@@ -134,13 +134,13 @@ impl LocalTranslator {
         Self { model, worker: Mutex::new(None), starting: tokio::sync::Mutex::new(()) }
     }
 
-    /// El modelo está descargado.
+    /// The model is downloaded.
     pub fn is_installed(model: &Path) -> bool {
         model.exists()
     }
 
-    /// El canal del hilo del modelo; lo arranca (y carga el modelo) la
-    /// primera vez o después de liberarlo.
+    /// The channel of the model's thread; it starts it (and loads the model) the
+    /// first time or after releasing it.
     async fn jobs(&self) -> Result<mpsc::Sender<Job>> {
         let _starting = self.starting.lock().await;
         if let Some(worker) = self.worker.lock().unwrap().as_ref() {
@@ -161,7 +161,7 @@ impl LocalTranslator {
         Ok(jobs)
     }
 
-    /// Carga el modelo. Devuelve si la traducción local está disponible.
+    /// Loads the model. Returns whether local translation is available.
     pub async fn warm_up(&self) -> bool {
         match self.jobs().await {
             Ok(_) => true,
@@ -172,9 +172,9 @@ impl LocalTranslator {
         }
     }
 
-    /// Libera el modelo (al salir o tras un rato sin usarlo). Espera a que el
-    /// hilo lo suelte (como mucho, lo que tarde la traducción en curso): al
-    /// salir con memoria de la GPU sin liberar, Metal aborta el proceso.
+    /// Releases the model (on exit or after a while unused). It waits for the
+    /// thread to drop it (at most, as long as the translation in progress takes): on
+    /// exit with GPU memory not freed, Metal aborts the process.
     pub fn shutdown(&self) {
         let worker = self.worker.lock().unwrap().take();
         if let Some(Worker { jobs, thread }) = worker {
@@ -183,11 +183,11 @@ impl LocalTranslator {
         }
     }
 
-    /// Traduce entre inglés y español; `on_delta` recibe la traducción a
-    /// trozos según llega.
+    /// Translates between English and Spanish; `on_delta` receives the translation
+    /// in chunks as it arrives.
     pub async fn translate(&self, text: &str, from: Lang, to: Lang, on_delta: impl FnMut(&str)) -> Result<String> {
         let text = substitute(text, from);
-        // Proporcional al texto: si el modelo se embala, no habla de más.
+        // Proportional to the text: if the model runs away, it does not say too much.
         let max_tokens = (text.chars().count() / 2 + 32).min(512);
         self.generate(chat_prompt(&prompt(&text, from, to)), &text, max_tokens, on_delta).await
     }
@@ -196,7 +196,7 @@ impl LocalTranslator {
         let jobs = self.jobs().await?;
         let (events, mut inbox) = tokio::sync::mpsc::unbounded_channel();
         if jobs.send(Job { prompt, max_tokens, source: source.to_string(), events }).is_err() {
-            // El hilo se cayó: la próxima vez se vuelve a cargar.
+            // The thread crashed: next time it is loaded again.
             self.worker.lock().unwrap().take();
             return Err(Error::Audio("la traducción local se cerró; vuelve a intentarlo".into()));
         }
@@ -216,7 +216,7 @@ impl LocalTranslator {
     }
 }
 
-/// llama.cpp se inicia una vez por proceso; sus mensajes van al registro.
+/// llama.cpp is initialized once per process; its messages go to the log.
 /// The summary (`summarizer.rs`) uses it too.
 pub(crate) fn backend() -> &'static LlamaBackend {
     static BACKEND: OnceLock<LlamaBackend> = OnceLock::new();
@@ -226,8 +226,8 @@ pub(crate) fn backend() -> &'static LlamaBackend {
     })
 }
 
-/// El hilo del modelo: lo carga, avisa por `ready` y traduce lo que llegue
-/// hasta que se suelta el canal.
+/// The model's thread: it loads it, signals through `ready` and translates what
+/// arrives until the channel is dropped.
 fn run(path: &Path, inbox: mpsc::Receiver<Job>, ready: tokio::sync::oneshot::Sender<Result<()>>) {
     let t0 = std::time::Instant::now();
     tracing::info!("traducción: GPU disponible = {}", backend().supports_gpu_offload());
@@ -270,12 +270,12 @@ fn run(path: &Path, inbox: mpsc::Receiver<Job>, ready: tokio::sync::oneshot::Sen
     tracing::info!("traducción local liberada");
 }
 
-/// Genera la respuesta a `job.prompt`, mandando cada trozo según sale.
+/// Generates the answer to `job.prompt`, sending each chunk as it comes out.
 fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<String> {
     let fail = |e: &dyn std::fmt::Display| Error::Audio(format!("falló la traducción local: {e}"));
     ctx.clear_kv_cache();
     let vocab = model.vocab();
-    // El prompt ya trae el inicio de frase como texto: sin añadir otro.
+    // The prompt already carries the start of sentence as text: without adding another.
     let tokens = vocab.tokenize(job.prompt.as_bytes(), false, true);
     let max_tokens = output_cap(job.max_tokens, vocab.tokenize(job.source.as_bytes(), false, false).len());
     if tokens.is_empty() || tokens.len() + max_tokens > ctx.n_ctx() as usize {
@@ -294,7 +294,7 @@ fn complete(model: &LlamaModel, ctx: &mut LlamaContext, job: &Job) -> Result<Str
     // always gives the same translation.
     let mut sampler = LlamaSampler::greedy();
     let mut out = String::new();
-    // Una letra puede venir partida entre dos tokens: se espera a tenerla entera.
+    // A letter can come split between two tokens: it waits to have it whole.
     let mut bytes: Vec<u8> = Vec::new();
     let mut pos = tokens.len() as i32;
     for _ in 0..max_tokens {
@@ -333,11 +333,11 @@ fn output_cap(by_chars: usize, source_tokens: usize) -> usize {
     by_chars.max(source_tokens * 2 + 32).min(512)
 }
 
-/// Lo que ya forma texto UTF-8 completo; el resto se queda esperando.
+/// What already forms complete UTF-8 text; the rest keeps waiting.
 fn take_utf8(bytes: &mut Vec<u8>) -> String {
     let valid = match std::str::from_utf8(bytes) {
         Ok(_) => bytes.len(),
-        // Bytes que nunca serán válidos: se sueltan tal cual (con �).
+        // Bytes that will never be valid: they are emitted as is (with �).
         Err(e) if e.error_len().is_some() => bytes.len(),
         Err(e) => e.valid_up_to(),
     };
@@ -378,9 +378,9 @@ fn prompt(text: &str, from: Lang, to: Lang) -> String {
     )
 }
 
-/// Cambios previos para lo que el glosario no arregla: con "Dale" en el
-/// glosario el modelo lo dejaba igual. Solo cuando va suelto ("Dale,",
-/// "dale."), no en "dale una vuelta".
+/// Changes made beforehand for what the glossary does not fix: with "Dale" in
+/// the glossary the model left it unchanged. Only when it stands alone ("Dale,",
+/// "dale."), not in "dale una vuelta".
 fn substitute(text: &str, from: Lang) -> String {
     if from != Lang::Es {
         return text.to_string();
@@ -420,7 +420,7 @@ mod tests {
         assert_eq!(substitute("Dale, perfect.", Lang::En), "Dale, perfect.");
     }
 
-    /// Lo que arma `llama-server` con la plantilla del modelo (`/apply-template`).
+    /// What `llama-server` builds with the model's template (`/apply-template`).
     #[test]
     fn chat_prompt_matches_llama_server() {
         assert_eq!(
@@ -438,8 +438,8 @@ mod tests {
         assert!(bytes.is_empty());
     }
 
-    /// Compara, sin azar, con un `llama-server` de referencia ya arrancado con
-    /// el mismo modelo: `LINGORA_REF_SERVER=http://127.0.0.1:18765 cargo test
+    /// Compares, with no randomness, against a reference `llama-server` already started
+    /// with the same model: `LINGORA_REF_SERVER=http://127.0.0.1:18765 cargo test
     /// --lib translator::tests::same_as_llama_server -- --ignored --nocapture`.
     #[test]
     #[ignore]
@@ -585,7 +585,7 @@ mod tests {
         );
     }
 
-    /// Con el modelo descargado: `cargo test --lib translator -- --ignored`.
+    /// With the model downloaded: `cargo test --lib translator -- --ignored`.
     #[test]
     #[ignore]
     fn translates_with_downloaded_model() {

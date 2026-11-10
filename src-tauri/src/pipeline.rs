@@ -1,13 +1,13 @@
-//! Pipeline de traducción bidireccional.
+//! Two-way translation pipeline.
 //!
-//! Dos direcciones independientes:
-//! - `remote_to_local`: audio del sistema (BlackHole) → Whisper → traducción → TTS
-//! - `local_to_remote`: micrófono → Whisper → traducción → TTS
+//! Two independent directions:
+//! - `remote_to_local`: system audio (BlackHole) → Whisper → translation → TTS
+//! - `local_to_remote`: microphone → Whisper → translation → TTS
 //!
-//! La traducción va por qwen en Groq o, si el carril lo pide, por
-//! Index-Translate en local (`translator.rs`).
+//! Translation goes through qwen on Groq or, if the lane asks for it, through
+//! Index-Translate locally (`translator.rs`).
 //!
-//! Cada etapa se mide por separado para que la UI muestre dónde se va el tiempo.
+//! Each stage is timed separately so the UI shows where the time goes.
 
 use crate::config::{Lang, Settings};
 use crate::error::Result;
@@ -22,9 +22,9 @@ pub enum Direction {
     LocalToRemote,
 }
 
-/// Transcripción de un trozo de audio. La traducción se pide aparte porque
-/// la UI junta el final de una frase partida con el trozo siguiente antes de
-/// traducir.
+/// Transcription of a chunk of audio. The translation is requested separately
+/// because the UI joins the end of a split sentence with the next chunk before
+/// translating.
 #[derive(Debug, Clone, Serialize)]
 pub struct Transcription {
     pub direction: Direction,
@@ -32,10 +32,10 @@ pub struct Transcription {
     pub target_lang: Lang,
     pub transcript: String,
     pub stt_ms: u64,
-    /// El audio exacto que se envió a Whisper (WAV 16 kHz mono, base64), para
-    /// que la UI permita escuchar qué se grabó.
+    /// The exact audio sent to Whisper (WAV 16 kHz mono, base64), so
+    /// the UI can let the user hear what was recorded.
     pub source_wav_base64: String,
-    /// Duración del audio enviado a Whisper, en segundos.
+    /// Duration of the audio sent to Whisper, in seconds.
     pub source_duration_secs: f64,
 }
 
@@ -45,10 +45,10 @@ pub struct Translation {
     pub translate_ms: u64,
 }
 
-/// Voz sintetizada para un fragmento de texto.
+/// Synthesized voice for a fragment of text.
 #[derive(Debug, Clone, Serialize)]
 pub struct Speech {
-    /// Muestras mono float32, listas para reproducir.
+    /// Mono float32 samples, ready to play.
     pub audio: Vec<f32>,
     pub sample_rate: u32,
     pub phonemize_ms: u64,
@@ -68,7 +68,7 @@ impl Speech {
     }
 }
 
-/// Codifica en base64 estándar (sin dependencias extra).
+/// Encodes in standard base64 (no extra dependencies).
 fn base64_encode(data: &[u8]) -> String {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity((data.len() + 2) / 3 * 4);
@@ -83,7 +83,7 @@ fn base64_encode(data: &[u8]) -> String {
     out
 }
 
-/// Devuelve (duración en segundos, pico absoluto) de un WAV PCM 16 bits.
+/// Returns (duration in seconds, absolute peak) of a 16-bit PCM WAV.
 fn wav_level(wav: &[u8]) -> Result<(f64, f32)> {
     let mut reader = hound::WavReader::new(std::io::Cursor::new(wav))
         .map_err(|e| crate::error::Error::Audio(format!("WAV inválido: {e}")))?;
@@ -121,8 +121,8 @@ impl Pipeline {
         Self { settings, groq, tts, piper, own: Default::default(), natural_last: Default::default(), local }
     }
 
-    /// Carga el modelo de voz con una frase mínima, para que la primera frase
-    /// real no pague la carga.
+    /// Loads the voice model with a minimal sentence, so the first real
+    /// sentence does not pay for the load.
     pub async fn warm_up(&self) -> Result<()> {
         // A low-end computer uses the light voice, which loads in well under a
         // second: loading the natural one would only take memory and CPU.
@@ -160,9 +160,9 @@ impl Pipeline {
         &self.local
     }
 
-    /// Transcribe un trozo. `wav` es PCM 16 bits mono 16 kHz. Los idiomas los
-    /// elige el usuario por carril; `prompt` es lo transcrito justo antes en
-    /// este carril.
+    /// Transcribes a chunk. `wav` is 16-bit PCM mono 16 kHz. The languages are
+    /// chosen by the user per lane; `prompt` is what was transcribed just before
+    /// on this lane.
     pub async fn transcribe(
         &self,
         wav: Vec<u8>,
@@ -173,8 +173,8 @@ impl Pipeline {
     ) -> Result<Transcription> {
         let t0 = std::time::Instant::now();
 
-        // Whisper alucina frases cortas ("Gracias", "Thank you") cuando recibe
-        // silencio. Se rechaza el audio sin señal antes de gastar una petición.
+        // Whisper hallucinates short phrases ("Gracias", "Thank you") when it gets
+        // silence. Audio with no signal is rejected before spending a request.
         let (duration_secs, peak) = wav_level(&wav)?;
         let source_wav_base64 = base64_encode(&wav);
         if duration_secs < 0.5 {
@@ -195,8 +195,8 @@ impl Pipeline {
             direction
         );
 
-        // Diagnóstico: se guarda el último WAV de cada dirección para poder
-        // escuchar exactamente lo que recibe Whisper.
+        // Diagnostics: the last WAV of each direction is saved to be able to
+        // hear exactly what Whisper receives.
         let dump = std::env::temp_dir().join(format!("lingora-{direction:?}.wav"));
         if let Err(e) = std::fs::write(&dump, &wav) {
             tracing::warn!("no se pudo guardar {}: {e}", dump.display());
@@ -219,10 +219,10 @@ impl Pipeline {
         })
     }
 
-    /// Traduce texto ya transcrito. `context` es el texto anterior del carril;
-    /// `concise` pide una traducción condensada (modo rápido); `local` usa
-    /// el modelo local en vez de Groq, sin contexto ni condensar (ver `translator.rs`);
-    /// `on_delta` recibe la traducción a trozos según llega.
+    /// Translates text already transcribed. `context` is the lane's previous text;
+    /// `concise` asks for a condensed translation (fast mode); `local` uses
+    /// the local model instead of Groq, with no context or condensing (see `translator.rs`);
+    /// `on_delta` receives the translation in chunks as it arrives.
     pub async fn translate(
         &self,
         text: &str,
@@ -247,11 +247,11 @@ impl Pipeline {
         })
     }
 
-    /// Sintetiza la voz de un fragmento de texto. `speed` acelera la voz
-    /// cuando la UI tiene frases en cola.
-    /// Dice `text` con la voz elegida (`voice`: "supertonic:5",
-    /// "piper:<model>:<speaker>", "system:<id>" u "own", tu voz); sin ella o si
-    /// ya no está, con la mejor del género.
+    /// Synthesizes the voice of a fragment of text. `speed` speeds up the voice
+    /// when the UI has sentences queued.
+    /// Says `text` with the chosen voice (`voice`: "supertonic:5",
+    /// "piper:<model>:<speaker>", "system:<id>" or "own", your voice); without one
+    /// or if it is gone, with the best of the gender.
     /// Old "kokoro:*" ids saved before Supertonic fall through to the default.
     /// `hq` uses more steps: a slightly slower, higher-quality voice.
     pub async fn speak(&self, text: &str, lang: Lang, gender: tts::Gender, voice: Option<&str>, speed: f32, hq: bool) -> Result<Speech> {
@@ -273,7 +273,7 @@ impl Pipeline {
             }
             Some(("system", id)) => match self.speak_system(crate::system_voice::synthesize_with(text, id, speed)).await {
                 Ok(speech) => return Ok(speech),
-                // Una voz que se desinstaló: sigue con la de por defecto.
+                // A voice that was uninstalled: it goes on with the default one.
                 Err(e) => tracing::warn!("la voz elegida no funciona, se usa la de por defecto: {e}"),
             },
             _ => {}

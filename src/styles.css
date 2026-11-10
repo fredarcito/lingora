@@ -675,13 +675,6 @@ html.view-captions body {
   display: none;
 }
 
-/* Own scale for Notes and the menu, shadcn style: neutral grays,
-   thin borders, 8 px radius and a single accent. */
-.notes-view,
-.note-toast {
-  /* The `--n-*` scale lives in `:root`. */
-}
-
 /* ---- Animations of the ☰ menu, the menus and the dialogs ---- */
 
 @keyframes drawer-in {
@@ -778,12 +771,6 @@ main.app:not([hidden]) {
 
 /* ---- List ---- */
 
-.notes-tools {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 .notes-error {
   font-size: 13px;
   color: var(--danger);
@@ -795,14 +782,6 @@ main.app:not([hidden]) {
 
 /* ---- Transcript: note page and Take notes ---- */
 
-/* Buttons like shadcn's: "outline" by default, one primary and one
-   subtle destructive. */
-.note-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .note-lines {
   list-style: none;
   margin: 0;
@@ -811,15 +790,20 @@ main.app:not([hidden]) {
   flex-direction: column;
 }
 
+/* Each paragraph carries its own separator. */
 .note-line {
   display: grid;
   grid-template-columns: 52px 1fr;
   gap: 12px;
-  padding: 10px 0;
+  padding: 16px 0;
+  border-top: 1px solid var(--n-border);
+}
+
+.note-line:first-child {
+  border-top: none;
 }
 
 .note-time {
-  padding-top: 3px;
   font-size: 12px;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -836,27 +820,30 @@ main.app:not([hidden]) {
 }
 
 .note-who {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--who, var(--accent));
 }
 
-/* When the speaker changes, a bit more air, like in a script. */
-.note-line.has-who:not(:first-child) {
-  margin-top: 8px;
+/* The person's color as a dot, as in the people cards. */
+.note-who::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--who, var(--accent));
+  flex: none;
 }
 
 .note-text small {
   font-size: 13px;
   line-height: 1.5;
   color: var(--text-3);
-}
-
-@media (max-width: 560px) {
-  .notes-tools {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -949,41 +936,4 @@ main.app:not([hidden]) {
 
 select {
   min-height: var(--control-h);
-}
-
-.note-line {
-  padding: 16px 0;
-  border-top: 1px solid var(--n-border);
-}
-
-.note-line:first-child {
-  border-top: none;
-}
-
-.note-who {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-/* The person's color as a dot, as in the people cards. */
-.note-who::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--who, var(--accent));
-  flex: none;
-}
-
-.note-time {
-  padding-top: 0;
-}
-
-/* Now each paragraph carries its own separator: without the extra air when the speaker changes. */
-.note-line.has-who:not(:first-child) {
-  margin-top: 0;
 }

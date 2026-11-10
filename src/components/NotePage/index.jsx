@@ -5,9 +5,8 @@ import Markdown from "@components/Markdown";
 import MindMap from "@components/MindMap";
 import { langName as langInSentence, useT } from "@i18n";
 import SummaryOptions from "@components/SummaryOptions";
-import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";
-import { notifySummarySource, useSummarySource } from "@hooks/useSummarySource";
-import { cloudRequest, hasConsent, providerOf, storeConsent, storeSummarySource } from "@utils/summarySource.js";
+import { useNoteSummary } from "@hooks/useNoteSummary";
+import { providerOf } from "@utils/summarySource.js";
 import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
 import { partAt } from "@utils/mindMap.js";
@@ -18,7 +17,6 @@ import {
   noteToText,
   renameActive,
   SUMMARY_TEMPLATES,
-  setActiveSummary,
   summaryLangOf,
   summaryPrompt,
   summaryTemplateOf,
@@ -73,25 +71,11 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  // Language the summary is in, if the selector was changed after summarizing.
-  const [summaryWasIn, setSummaryWasIn] = useState(/** @type {string | null} */ (null));
   const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState("");
-  const [summarizing, setSummarizing] = useState(false);
-  const [summaryError, setSummaryError] = useState("");
-  // Summarizing without the model leads to its download in the Summary tab, even if there is already a summary.
-  const [askDownload, setAskDownload] = useState(false);
-  // The service waiting for the first-time permission to send it the transcript.
-  const [askConsent, setAskConsent] = useState(/** @type {string | null} */ (null));
-  const model = useSummaryModel();
-  const summarySource = useSummarySource();
-  const cloudOn = summarySource.source !== "local";
-  const ready = cloudOn ? summarySource.hasKey === true : model.installed === true;
-  // Known not to be usable yet (not just still being checked).
-  const notReady = cloudOn ? summarySource.hasKey === false : model.installed === false;
+  const summary = useNoteSummary(id, { setNote, setTab });
+  const { summarizing, model, ready, notReady, askConsent } = summary;
   const noticeTimer = useRef(0);
-  // A summary just made appears condensing into place, once (not each time the note opens).
-  const [freshSummary, setFreshSummary] = useState(false);
   const summaryRef = useRef(/** @type {HTMLDivElement | null} */ (null));
   // What the wait for a summary shows, in turn (it can take a minute on the computer).
   const working = WORKING_PHRASES.map((key) => t(key));
@@ -125,12 +109,12 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
   // list), set before painting so none shows early; the mark goes once all ended.
   useLayoutEffect(() => {
     const md = summaryRef.current?.firstElementChild;
-    if (!freshSummary || !md) return;
+    if (!summary.fresh || !md) return;
     const blocks = [...md.children].flatMap((el) => (el.tagName === "UL" ? [...el.children] : [el]));
     blocks.forEach((el, i) => /** @type {HTMLElement} */ (el).style.setProperty("--i", String(Math.min(i, CONDENSE_STEPS))));
-    const timer = window.setTimeout(() => setFreshSummary(false), CONDENSE_STEPS * CONDENSE_STEP_MS + 1000);
+    const timer = window.setTimeout(summary.endFresh, CONDENSE_STEPS * CONDENSE_STEP_MS + 1000);
     return () => window.clearTimeout(timer);
-  }, [freshSummary, note?.summary?.created_at, tab]);
+  }, [summary.fresh, note?.summary?.created_at, tab]);
 
   // A jump to a paragraph happens once: back in the transcript later, it opens where it opens.
   useEffect(() => {
@@ -165,59 +149,6 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
     setNote(next);
     renameActive(note.id, title);
     run(() => api.noteSave(next));
-  };
-
-  /** @param {import("@utils/summarySource.js").CloudRequest | null} [cloud] */
-  const summarize = async (cloud = null) => {
-    setAskConsent(null);
-    setSummaryError("");
-    setSummarizing(true);
-    // From the Map tab the map appears there; from anywhere else, the summary.
-    setTab((current) => (current === "map" ? current : "summary"));
-    try {
-      await api.noteSummarize(id, cloud);
-      const n = await api.noteRead(id);
-      setNote((prev) => (prev ? { ...prev, summary: n.summary } : n));
-      setActiveSummary(id, n.summary);
-      setFreshSummary(true);
-      setSummaryWasIn(null);
-    } catch (e) {
-      setSummaryError(errorMessage(e));
-    } finally {
-      setSummarizing(false);
-    }
-  };
-
-  /** With a service, asks first the first time. @param {string} source "local" or a service's id */
-  const summarizeWith = (source) => {
-    if (source === "local") summarize();
-    else if (!hasConsent(source)) setAskConsent(source);
-    else summarize(cloudRequest(source));
-  };
-
-  const askSummary = () => {
-    setTab((current) => (current === "map" && ready ? current : "summary"));
-    if (!ready) setAskDownload(true);
-    else summarizeWith(summarySource.source);
-  };
-
-  /** Summarizing on the computer from the options: it becomes the way summaries are made. */
-  const summarizeHere = () => {
-    storeSummarySource("local");
-    notifySummarySource();
-    setAskDownload(false);
-    summarize();
-  };
-
-  // Once downloaded, it summarizes what was asked for.
-  const getModel = async () => {
-    if (await downloadSummaryModel()) summarizeHere();
-  };
-
-  /** @param {string} provider */
-  const keySaved = (provider) => {
-    setAskDownload(false);
-    summarizeWith(provider);
   };
 
   /** A service's name as the interface shows it. @param {string} id */
@@ -266,7 +197,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
   const summaryTemplate = summaryTemplateOf(note);
   // The summary was made with another template than the chosen one.
   const staleTemplate = !!note.summary && (note.summary.template ?? "general") !== summaryTemplate;
-  const staleLang = !!note.summary && summaryWasIn !== null && summaryWasIn !== summaryLang;
+  const staleLang = !!note.summary && summary.wasIn !== null && summary.wasIn !== summaryLang;
   const stale = staleLang || staleTemplate;
   const hasPeople = note.sentences.some((s) => s.speaker !== null && s.speaker !== undefined);
   const marks = userMarks(note);
@@ -433,7 +364,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
                   label={t("notes.summaryLang")}
                   options={languages.map((l) => ({ value: l.code, label: l.name }))}
                   onChange={(value) => {
-                    if (note.summary && summaryWasIn === null) setSummaryWasIn(summaryLang);
+                    if (note.summary) summary.langChanged(summaryLang);
                     const next = { ...note, summary_lang: value };
                     setNote(next);
                     run(() => api.noteSave(next));
@@ -471,7 +402,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
                   busy={summarizing}
                   disabled={live || summarizing || !summarizable}
                   title={live ? t("notes.waitFinish") : undefined}
-                  onClick={askSummary}
+                  onClick={summary.ask}
                 >
                   {summarizing ? (
                     t("notes.summarizing")
@@ -488,7 +419,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
             </div>
             {staleLang && !summarizing && (
               <p className={styles.noteSummaryStale} role="status">
-                {t("notes.summaryStale", { lang: langInSentence(/** @type {string} */ (summaryWasIn), langName(/** @type {string} */ (summaryWasIn)), true) })}
+                {t("notes.summaryStale", { lang: langInSentence(/** @type {string} */ (summary.wasIn), langName(/** @type {string} */ (summary.wasIn)), true) })}
               </p>
             )}
             {staleTemplate && !summarizing && (
@@ -501,24 +432,24 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
                 <Spinner small /> <RotatingText phrases={working} label={t("notes.working")} />
               </p>
             )}
-            {summaryError && (
+            {summary.error && (
               <p className="notes-error" role="alert">
-                {summaryError}
+                {summary.error}
               </p>
             )}
             {/* Above the summary: with a long one, below it would be off screen. */}
-            {((notReady && (!note.summary || askDownload)) || model.downloading) && (
+            {((notReady && (!note.summary || summary.askDownload)) || model.downloading) && (
               <SummaryOptions
                 model={model}
-                memoryGb={summarySource.memoryGb}
-                source={summarySource.source}
-                onDownload={getModel}
-                onLocal={summarizeHere}
-                onKeySaved={keySaved}
+                memoryGb={summary.source.memoryGb}
+                source={summary.source.source}
+                onDownload={summary.getModel}
+                onLocal={summary.summarizeHere}
+                onKeySaved={summary.keySaved}
               />
             )}
             {note.summary && (
-              <div ref={summaryRef} className={cx(styles.noteSummary, styles.noteSummaryCard, freshSummary && styles.summaryFresh, summarizing && styles.summaryWorking)}>
+              <div ref={summaryRef} className={cx(styles.noteSummary, styles.noteSummaryCard, summary.fresh && styles.summaryFresh, summarizing && styles.summaryWorking)}>
                 <Markdown className={styles.summaryMd} text={note.summary.text} />
                 <div className={styles.noteSummaryFoot}>
                   <span>
@@ -570,13 +501,13 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
                 <NoteIcon />
               </span>
               <p>{t(live ? "notes.waitFinish" : "notes.map.empty")}</p>
-              {summaryError && (
+              {summary.error && (
                 <p className="notes-error" role="alert">
-                  {summaryError}
+                  {summary.error}
                 </p>
               )}
               {!live && summarizable && (
-                <Button variant="primary" onClick={askSummary}>
+                <Button variant="primary" onClick={summary.ask}>
                   {t("notes.summarize")}
                 </Button>
               )}
@@ -626,11 +557,8 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
           body={t("notes.sendBody", { name: serviceName(askConsent) })}
           cancelLabel={t("notes.cancel")}
           confirmLabel={t("notes.continue")}
-          onCancel={() => setAskConsent(null)}
-          onConfirm={() => {
-            storeConsent(askConsent);
-            summarize(cloudRequest(askConsent));
-          }}
+          onCancel={summary.cancelConsent}
+          onConfirm={summary.confirmConsent}
         />
       )}
       {confirming && (

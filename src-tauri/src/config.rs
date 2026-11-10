@@ -1,31 +1,31 @@
 use serde::{Deserialize, Serialize};
 
-/// Un idioma de la app: índice en `LANGS`. Viaja a la UI como su código
+/// A language of the app: an index into `LANGS`. It travels to the UI as its code
 /// (`"es"`, `"zh-hant"`…).
 ///
-/// Son los que traducía HY-MT2 en local (todos menos el uigur) y transcribe
-/// Whisper; Index-Translate, el traductor actual, los cubre todos. Lo demás
-/// depende del idioma:
-/// - Parakeet (texto en vivo y transcripción Rápida) solo entiende idiomas
-///   europeos.
-/// - La voz es Supertonic donde tiene; si no, la del sistema (`system_voice.rs`),
-///   que cambia de un equipo a otro. Sin voz instalada, solo hay subtítulos.
+/// They are the ones HY-MT2 translated locally (all but Uyghur) and Whisper
+/// transcribes; Index-Translate, the current translator, covers them all. The
+/// rest depends on the language:
+/// - Parakeet (live text and Fast transcription) only understands European
+///   languages.
+/// - The voice is Supertonic where it has one; otherwise the system's (`system_voice.rs`),
+///   which varies from one computer to another. With no voice installed, there are only captions.
 ///
-/// Ver docs/plan-idiomas.md.
+/// See docs/plan-idiomas.md.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Lang(u8);
 
-/// Lo que cada pieza necesita saber de un idioma.
+/// What each piece needs to know about a language.
 pub struct LangInfo {
-    /// Código de la app y de la UI.
+    /// Code used by the app and the UI.
     pub code: &'static str,
-    /// Código que espera Whisper.
+    /// Code Whisper expects.
     pub whisper: &'static str,
-    /// Nombres para las instrucciones del traductor y para la UI.
+    /// Names for the translator's instructions and for the UI.
     pub english: &'static str,
     pub chinese: &'static str,
     pub spanish: &'static str,
-    /// Lo entiende Parakeet v3.
+    /// Parakeet v3 understands it.
     pub parakeet: bool,
     /// Supertonic speaks it (with the same code as `code`); if not, the
     /// system voice is used.
@@ -34,9 +34,9 @@ pub struct LangInfo {
     /// instead; the bundled espeak-ng-data has the catalogue's languages
     /// (`DICTS` in `scripts/build-espeak.sh`).
     pub espeak: &'static str,
-    /// Etiquetas BCP-47 de las voces del sistema que valen para este idioma,
-    /// por orden de preferencia ("ja-JP", "yue", "zh-HK"…). Una etiqueta vale
-    /// también para sus variantes: "ar" incluye "ar-001" y "ar-SA".
+    /// BCP-47 tags of the system voices that fit this language,
+    /// in order of preference ("ja-JP", "yue", "zh-HK"…). A tag also fits
+    /// its variants: "ar" includes "ar-001" and "ar-SA".
     pub voice_tags: &'static [&'static str],
 }
 
@@ -49,9 +49,9 @@ macro_rules! lang {
     };
 }
 
-/// Todos los idiomas; los marcados `supertonic` tienen voz de Lingora. Las
-/// constantes de `Lang` (`Lang::Es`, `Lang::Ja`…) apuntan por posición: no
-/// cambiar el orden de los nueve primeros.
+/// All the languages; the ones marked `supertonic` have a Lingora voice. The
+/// `Lang` constants (`Lang::Es`, `Lang::Ja`…) point by position: do not
+/// change the order of the first nine.
 pub static LANGS: &[LangInfo] = &[
     LangInfo { code: "en", whisper: "en", english: "English", chinese: "英语", spanish: "Inglés", parakeet: true, supertonic: true, espeak: "en-us", voice_tags: &["en-US", "en"] },
     LangInfo { code: "es", whisper: "es", english: "Spanish", chinese: "西班牙语", spanish: "Español", parakeet: true, supertonic: true, espeak: "es", voice_tags: &["es-ES", "es"] },
@@ -60,7 +60,7 @@ pub static LANGS: &[LangInfo] = &[
     LangInfo { code: "pt", whisper: "pt", english: "Portuguese", chinese: "葡萄牙语", spanish: "Portugués", parakeet: true, supertonic: true, espeak: "pt-br", voice_tags: &["pt-BR", "pt"] },
     lang!("zh", "zh", "Chinese", "中文", "Chino", parakeet: false, tags: ["zh-CN", "cmn"]),
     lang!("zh-hant", "zh", "Traditional Chinese", "繁体中文", "Chino tradicional", parakeet: false, tags: ["zh-TW"]),
-    // Whisper turbo lo entiende, pero lo escribe en mandarín.
+    // Whisper turbo understands it, but writes it in Mandarin.
     lang!("yue", "yue", "Cantonese", "粤语", "Cantonés", parakeet: false, tags: ["yue", "zh-HK"]),
     lang!("ja", "ja", "Japanese", "日语", "Japonés", parakeet: false, supertonic, tags: ["ja"]),
     lang!("ko", "ko", "Korean", "韩语", "Coreano", parakeet: false, supertonic, tags: ["ko"]),
@@ -116,22 +116,22 @@ impl Lang {
         &LANGS[self.0 as usize]
     }
 
-    /// Código que espera Whisper.
+    /// Code Whisper expects.
     pub fn iso(self) -> &'static str {
         self.info().whisper
     }
 
-    /// Locale de espeak-ng para fonemizar.
+    /// espeak-ng locale used to phonemize.
     pub fn espeak_voice(self) -> &'static str {
         self.info().espeak
     }
 
-    /// Nombre en inglés para las instrucciones del traductor.
+    /// English name for the translator's instructions.
     pub fn english_name(self) -> &'static str {
         self.info().english
     }
 
-    /// Nombre en chino: las instrucciones de Index-Translate van siempre en chino.
+    /// Chinese name: Index-Translate's instructions always go in Chinese.
     pub fn chinese_name(self) -> &'static str {
         self.info().chinese
     }
@@ -150,25 +150,25 @@ impl<'de> Deserialize<'de> for Lang {
     }
 }
 
-/// Configuración del pipeline. Todo lo que puede cambiar sin recompilar vive
-/// aquí y se puede sobrescribir con variables de entorno.
+/// Pipeline configuration. Everything that can change without recompiling lives
+/// here and can be overridden with environment variables.
 #[derive(Debug, Clone)]
 pub struct Settings {
     pub groq_api_key: String,
     pub stt_model: String,
     pub translation_model: String,
-    /// Ruta al binario de espeak-ng (para fonemizar español e inglés). Por
-    /// defecto, el que va dentro de la app.
+    /// Path to the espeak-ng binary (to phonemize Spanish and English). By
+    /// default, the one bundled inside the app.
     pub espeak_bin: String,
-    /// Carpeta del modelo de voz (Supertonic, ver `tts.rs`).
+    /// Folder of the voice model (Supertonic, see `tts.rs`).
     pub tts_model_dir: std::path::PathBuf,
-    /// Carpeta del modelo de escucha local (Parakeet, ver `listener.rs`).
+    /// Folder of the local listening model (Parakeet, see `listener.rs`).
     pub listener_model_dir: std::path::PathBuf,
-    /// Carpeta del modelo de escucha local para chino, japonés, coreano y cantonés (SenseVoice).
+    /// Folder of the local listening model for Chinese, Japanese, Korean and Cantonese (SenseVoice).
     pub sense_voice_model_dir: std::path::PathBuf,
-    /// Modelo de traducción local (Index-Translate, GGUF).
+    /// Local translation model (Index-Translate, GGUF).
     pub translator_model: std::path::PathBuf,
-    /// Modelo de huella de voz para distinguir personas en las notas (ver `speakers.rs`).
+    /// Voiceprint model that tells people apart in the notes (see `speakers.rs`).
     pub speaker_model: std::path::PathBuf,
 }
 
@@ -179,7 +179,7 @@ impl Settings {
         Ok(Self::build(groq_api_key))
     }
 
-    /// Configuración sin clave: la app arranca y la UI avisa de que falta.
+    /// Configuration without a key: the app starts and the UI warns that it is missing.
     pub fn from_env_fallback() -> Self {
         Self::build(std::env::var("GROQ_API_KEY").unwrap_or_default())
     }
@@ -188,8 +188,8 @@ impl Settings {
         Self {
             groq_api_key,
             stt_model: env_or("LINGORA_STT_MODEL", "whisper-large-v3-turbo"),
-            // qwen3.8-27b: 344 ms de media y la latencia más estable de los
-            // modelos disponibles en la cuenta (ver notas de la fase 0).
+            // qwen3.8-27b: 344 ms on average and the most stable latency of the
+            // models available on the account (see the phase 0 notes).
             translation_model: env_or("LINGORA_TRANSLATION_MODEL", "qwen/qwen3.8-27b"),
             espeak_bin: std::env::var("LINGORA_ESPEAK_BIN").unwrap_or_else(|_| bundled_espeak()),
             tts_model_dir: std::env::var("LINGORA_TTS_MODEL_DIR")
@@ -211,9 +211,9 @@ impl Settings {
     }
 }
 
-/// espeak-ng va dentro de la app, junto al ejecutable (`externalBin` en
-/// tauri.conf.json; lo compila `scripts/build-espeak.sh`). Tauri lo deja ahí
-/// también en desarrollo.
+/// espeak-ng ships inside the app, next to the executable (`externalBin` in
+/// tauri.conf.json; `scripts/build-espeak.sh` builds it). Tauri leaves it there
+/// in development too.
 fn bundled_espeak() -> String {
     std::env::current_exe()
         .ok()
@@ -222,9 +222,9 @@ fn bundled_espeak() -> String {
         .unwrap_or_else(|| "espeak-ng".into())
 }
 
-/// Modelos descargados: no van en el bundle, se bajan la primera vez.
+/// Downloaded models: they are not in the bundle, they are fetched the first time.
 pub(crate) fn models_dir() -> std::path::PathBuf {
-    // Windows no tiene HOME: la carpeta va en %LOCALAPPDATA%.
+    // Windows has no HOME: the folder goes in %LOCALAPPDATA%.
     #[cfg(windows)]
     {
         let base = std::env::var("LOCALAPPDATA").unwrap_or_default();

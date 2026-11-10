@@ -1,9 +1,9 @@
-//! Registro de la app. En Windows va a un archivo de texto en el escritorio
-//! (`Lingora-registro.txt`): quien prueba la app en otro equipo puede mandarlo
-//! tal cual. En el Mac sigue saliendo por la terminal.
+//! The app's log. On Windows it goes to a text file on the desktop
+//! (`Lingora-registro.txt`): whoever tests the app on another computer can send
+//! it as is. On the Mac it still goes to the terminal.
 
-/// Pone en marcha el registro. Los fallos de Rust cierran la app sin aviso
-/// (`panic = "abort"`), así que en Windows también quedan escritos.
+/// Starts the log. Rust failures close the app without warning
+/// (`panic = "abort"`), so on Windows they are written down too.
 pub fn init() {
     let filter = || {
         // llama.cpp's own lines say which GPU it found and how many layers it
@@ -30,19 +30,19 @@ pub fn init() {
     tracing_subscriber::fmt().with_env_filter(filter()).init();
 }
 
-/// Nombre del archivo en el escritorio.
+/// Name of the file on the desktop.
 #[cfg(windows)]
 const NAME: &str = "Lingora-registro.txt";
 
-/// Pasado este tamaño se empieza de nuevo, para que no crezca sin fin.
+/// Past this size it starts over, so it does not grow without end.
 #[cfg(windows)]
 const MAX_BYTES: u64 = 5_000_000;
 
-/// Abre el registro y escribe al final: así no se pierde lo de un cierre
-/// anterior. `None` si no hay escritorio donde escribir.
+/// Opens the log and writes at the end: that way what a previous exit left
+/// is not lost. `None` if there is no desktop to write to.
 #[cfg(windows)]
 fn open() -> Option<std::fs::File> {
-    // Con la copia de OneDrive activa, el escritorio vive dentro de OneDrive.
+    // With OneDrive backup on, the desktop lives inside OneDrive.
     let desktop = [std::env::var_os("OneDrive"), std::env::var_os("USERPROFILE")]
         .into_iter()
         .flatten()

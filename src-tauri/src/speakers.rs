@@ -1,11 +1,11 @@
-//! Huella de voz para distinguir quién habla en las notas ("Persona 1",
+//! Voiceprint to tell who is speaking in the notes ("Persona 1",
 //! "Persona 2"…).
 //!
-//! Aquí solo se calcula la huella de cada frase. Agruparlas por parecido lo
-//! hace la UI (`src/notes.js`), donde el umbral se puede ajustar sin
-//! recompilar. Modelo: ERes2Net de 3D-Speaker (~40 MB). En pruebas con 4
-//! voces en inglés y en español fue el único que las separó todas sin
-//! errores con un mismo umbral (0,5); ~80 ms por frase.
+//! Here only the voiceprint of each sentence is computed. Grouping them by
+//! similarity is done by the UI (`src/notes.js`), where the threshold can be
+//! tuned without recompiling. Model: ERes2Net from 3D-Speaker (~40 MB). In tests
+//! with 4 voices in English and in Spanish it was the only one that separated
+//! them all without errors with a single threshold (0.5); ~80 ms per sentence.
 
 use crate::error::{Error, Result};
 use sherpa_onnx::{SpeakerEmbeddingExtractor, SpeakerEmbeddingExtractorConfig};
@@ -40,7 +40,7 @@ impl Speakers {
         }
         let config = SpeakerEmbeddingExtractorConfig {
             model: Some(self.model.display().to_string()),
-            // Va fuera del camino de la traducción: con 2 hilos no le quita CPU.
+            // It runs off the translation path: with 2 threads it takes no CPU from it.
             num_threads: 2,
             debug: false,
             provider: Some("cpu".into()),
@@ -54,12 +54,12 @@ impl Speakers {
         Ok(e)
     }
 
-    /// Suelta el modelo; se vuelve a cargar con la siguiente frase.
+    /// Drops the model; it is loaded again with the next sentence.
     pub async fn release(&self) {
         self.loaded.lock().await.take();
     }
 
-    /// Huella de voz de una frase (mono, 16 kHz).
+    /// Voiceprint of a sentence (mono, 16 kHz).
     pub async fn voice_print(&self, samples: Vec<f32>) -> Result<Vec<f32>> {
         let extractor = self.extractor().await?;
         tauri::async_runtime::spawn_blocking(move || {

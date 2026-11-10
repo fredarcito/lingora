@@ -1,12 +1,12 @@
 use crate::config::Lang;
 use crate::error::{Error, Result};
 
-/// Tiempo de espera antes de lanzar una petición de respaldo a Whisper. Una
-/// transcripción normal de un trozo de 5 s tarda ~1 s.
+/// How long to wait before sending a backup request to Whisper. A normal
+/// transcription of a 5 s chunk takes ~1 s.
 const HEDGE_AFTER: std::time::Duration = std::time::Duration::from_millis(2000);
 
-/// Devuelve el primer resultado correcto de dos peticiones en paralelo; si
-/// fallan ambas, el último error.
+/// Returns the first successful result of two parallel requests; if
+/// both fail, the last error.
 async fn first_ok<T>(
     a: impl std::future::Future<Output = Result<T>>,
     b: impl std::future::Future<Output = Result<T>>,
@@ -25,8 +25,8 @@ async fn first_ok<T>(
     }
 }
 
-/// Cliente de la API de Groq. Se usa para transcripción (Whisper) y para
-/// traducción (chat). El TTS es local y no pasa por aquí.
+/// Groq API client. Used for transcription (Whisper) and for
+/// translation (chat). TTS is local and does not go through here.
 pub struct Groq {
     http: reqwest::Client,
     api_key: String,
@@ -48,7 +48,7 @@ struct TranscriptionSegment {
     text: String,
 }
 
-/// Un evento del streaming de chat (`data: {...}` en SSE).
+/// An event of the chat stream (`data: {...}` in SSE).
 #[derive(serde::Deserialize)]
 struct ChatChunk {
     choices: Vec<ChunkChoice>,
@@ -67,8 +67,8 @@ struct ChunkDelta {
 
 impl Groq {
     pub fn new(api_key: String) -> Self {
-        // Groq rechaza peticiones sin User-Agent con un 403 (comprobado en la
-        // fase 0). El cliente lo fija aquí para que ningún llamador lo olvide.
+        // Groq rejects requests without a User-Agent with a 403 (checked in
+        // phase 0). The client sets it here so no caller forgets it.
         let http = reqwest::Client::builder()
             .user_agent(concat!("lingora/", env!("CARGO_PKG_VERSION")))
             .timeout(std::time::Duration::from_secs(30))
@@ -77,12 +77,12 @@ impl Groq {
         Self { http, api_key }
     }
 
-    /// Transcribe un WAV (PCM 16 bits, mono, 16 kHz) con Whisper.
+    /// Transcribes a WAV (16-bit PCM, mono, 16 kHz) with Whisper.
     ///
-    /// La latencia de Groq varía mucho: la misma petición tarda 1 s o 8 s. En
-    /// una traducción en tiempo real eso es inaceptable, así que si no hay
-    /// respuesta en `HEDGE_AFTER` se lanza una segunda petición idéntica y se
-    /// usa la primera que llegue. Un fallo rápido se reintenta una vez.
+    /// Groq's latency varies a lot: the same request takes 1 s or 8 s. In
+    /// real-time translation that is unacceptable, so if there is no
+    /// answer within `HEDGE_AFTER` a second identical request is sent and the
+    /// first one to arrive is used. A fast failure is retried once.
     pub async fn transcribe(&self, wav: Vec<u8>, lang: Lang, model: &str, prompt: Option<&str>) -> Result<String> {
         let first = self.transcribe_once(wav.clone(), lang, model, prompt);
         tokio::pin!(first);
@@ -103,16 +103,16 @@ impl Groq {
         }
     }
 
-    /// Una petición de transcripción.
+    /// A transcription request.
     ///
-    /// Se pide `verbose_json` y se unen los segmentos. Se llegó a creer que
-    /// con `json` el campo `text` solo traía el último segmento, pero al
-    /// probarlo devuelve el texto completo: el audio llegaba ya recortado por
-    /// un enrutado mal montado (ver docs/problemas-conocidos.md). Se mantiene
-    /// porque los segmentos sirven para diagnosticar.
+    /// It asks for `verbose_json` and joins the segments. It was once believed
+    /// that with `json` the `text` field only carried the last segment, but
+    /// when tested it returns the full text: the audio arrived already cut by
+    /// badly built routing (see docs/problemas-conocidos.md). It is kept
+    /// because the segments help to diagnose.
     ///
-    /// `prompt` es lo último que se transcribió: con trozos cortos ayuda a
-    /// Whisper a mantener nombres y a no partir mal las palabras del borde.
+    /// `prompt` is the last thing transcribed: with short chunks it helps
+    /// Whisper keep names and not split the words at the edge badly.
     async fn transcribe_once(&self, wav: Vec<u8>, lang: Lang, model: &str, prompt: Option<&str>) -> Result<String> {
         let part = reqwest::multipart::Part::bytes(wav)
             .file_name("audio.wav")
@@ -160,9 +160,9 @@ impl Groq {
         Ok(text)
     }
 
-    /// Traduce texto entre inglés y español. `context` es lo dicho justo antes:
-    /// el audio se corta en trozos de pocos segundos y una frase puede quedar
-    /// partida entre dos.
+    /// Translates text between English and Spanish. `context` is what was said just
+    /// before: the audio is cut into chunks of a few seconds and a sentence can
+    /// end up split between two.
     pub async fn translate(
         &self,
         text: &str,
@@ -183,9 +183,9 @@ impl Groq {
             to.english_name()
         );
         if concise {
-            // Modo rápido: la voz en español dura más que el inglés y se queda
-            // atrás. Medido con una intro de YouTube: condensar acorta la voz
-            // un 20 % (sin efecto en habla densa, que no tiene relleno).
+            // Fast mode: the Spanish voice lasts longer than the English and falls
+            // behind. Measured with a YouTube intro: condensing shortens the voice
+            // by 20 % (no effect on dense speech, which has no filler).
             system.push_str(
                 " This will be spoken aloud while the speaker keeps talking, so be concise like a professional \
                  interpreter: drop fillers and discourse markers (honestly, you know, guys, basically, without \
@@ -201,12 +201,12 @@ impl Groq {
         }
         let payload = serde_json::json!({
             "model": model,
-            // 0.3 da traducciones más naturales que 0 sin perder fidelidad;
-            // con 0 qwen tiende a calcar el inglés ("me está volviendo a dar").
+            // 0.3 gives more natural translations than 0 without losing fidelity;
+            // with 0 qwen tends to copy the English word for word ("me está volviendo a dar").
             "temperature": 0.3,
             "max_tokens": 400,
-            // En streaming: la UI empieza la voz con la primera frase
-            // traducida, sin esperar al resto.
+            // Streaming: the UI starts the voice with the first translated
+            // sentence, without waiting for the rest.
             "stream": true,
             "messages": [
                 { "role": "system", "content": system },
@@ -228,9 +228,9 @@ impl Groq {
 
         let out = read_chat_stream(resp, &mut on_delta).await?;
         if out.is_empty() {
-            // Ocurre con modelos de razonamiento que gastan todos los tokens
-            // pensando (gpt-oss sin `reasoning_effort: low`). Mejor fallar
-            // explícitamente que devolver una traducción vacía.
+            // Happens with reasoning models that spend all their tokens
+            // thinking (gpt-oss without `reasoning_effort: low`). Better to fail
+            // explicitly than to return an empty translation.
             return Err(Error::BadResponse(
                 "la traducción llegó vacía; revisa el modelo configurado".into(),
             ));
@@ -238,8 +238,8 @@ impl Groq {
         Ok(out)
     }
 
-    /// Convierte una respuesta no-2xx en un error tipado y devuelve el cuerpo
-    /// como texto si fue correcta.
+    /// Turns a non-2xx response into a typed error and returns the body
+    /// as text if it succeeded.
     async fn check(&self, resp: reqwest::Response) -> Result<String> {
         let status = resp.status();
         if status == reqwest::StatusCode::TOO_MANY_REQUESTS {
@@ -263,9 +263,9 @@ impl Groq {
     }
 }
 
-/// Lee una respuesta de chat en streaming (SSE con el formato de OpenAI),
-/// pasa cada trozo a `on_delta` y devuelve el texto completo. La usan Groq y
-/// el traductor local, que habla el mismo formato.
+/// Reads a streamed chat response (SSE in OpenAI's format), passes
+/// each chunk to `on_delta` and returns the full text. Used by Groq and
+/// the local translator, which speaks the same format.
 pub(crate) async fn read_chat_stream(mut resp: reqwest::Response, on_delta: &mut impl FnMut(&str)) -> Result<String> {
     let mut out = String::new();
     let mut pending = String::new();

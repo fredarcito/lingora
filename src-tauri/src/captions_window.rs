@@ -1,7 +1,7 @@
-//! Ventana flotante de subtítulos: sin bordes, transparente y por encima de
-//! todo, también de un vídeo a pantalla completa. Carga la misma UI con
-//! `window.__LINGORA_VIEW = "captions"`; la ventana principal sigue haciendo
-//! todo el trabajo y le manda el texto por eventos.
+//! Floating captions window: borderless, transparent and on top of
+//! everything, including a full-screen video. It loads the same UI with
+//! `window.__LINGORA_VIEW = "captions"`; the main window keeps doing
+//! all the work and sends it the text through events.
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
@@ -9,17 +9,17 @@ pub const LABEL: &str = "captions";
 
 const WIDTH: f64 = 760.0;
 const HEIGHT: f64 = 150.0;
-/// Separación del borde inferior de la pantalla, por encima del Dock.
+/// Distance from the bottom edge of the screen, above the Dock.
 const BOTTOM_MARGIN: f64 = 110.0;
 
-/// Cierra la ventana si está abierta.
+/// Closes the window if it is open.
 pub fn close(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(LABEL) {
         let _ = window.close();
     }
 }
 
-/// Abre la ventana o, si ya existe, la muestra.
+/// Opens the window or, if it already exists, shows it.
 pub fn open(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window(LABEL) {
         window.show()?;
@@ -38,10 +38,10 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
         .visible_on_all_workspaces(true)
         .skip_taskbar(true)
         .focused(false)
-        // Los botones responden al primer clic, sin activar antes la ventana.
+        // The buttons respond to the first click, without activating the window first.
         .accept_first_mouse(true);
-    // Abajo y centrada, donde van los subtítulos. La UI recoloca la ventana
-    // donde la dejó quien la usa la última vez.
+    // At the bottom and centered, where captions go. The UI moves the window
+    // back to where the user last left it.
     if let Some(monitor) = app.primary_monitor()? {
         let scale = monitor.scale_factor();
         let size = monitor.size().to_logical::<f64>(scale);
@@ -57,9 +57,9 @@ pub fn open(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
-/// macOS pone cada app a pantalla completa en su propio escritorio, donde no
-/// llegan las ventanas "siempre encima". Una ventana auxiliar de pantalla
-/// completa, en todos los escritorios y a nivel de menú, sí aparece encima.
+/// macOS puts each full-screen app in its own desktop, where
+/// "always on top" windows do not reach. A full-screen auxiliary window,
+/// on all desktops and at menu level, does appear on top.
 #[cfg(target_os = "macos")]
 fn float_over_fullscreen(window: &tauri::WebviewWindow) -> tauri::Result<()> {
     use crate::objc::{msg, Id};
@@ -67,7 +67,7 @@ fn float_over_fullscreen(window: &tauri::WebviewWindow) -> tauri::Result<()> {
     const FULL_SCREEN_AUXILIARY: usize = 1 << 8;
     const POP_UP_MENU_LEVEL: isize = 101;
 
-    // El puntero no es Send; se pasa como número al hilo principal.
+    // The pointer is not Send; it is passed as a number to the main thread.
     let ns_window = window.ns_window()? as usize;
     window.run_on_main_thread(move || unsafe {
         let ns_window = ns_window as Id;

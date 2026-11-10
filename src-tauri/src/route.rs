@@ -1,30 +1,30 @@
-//! Lo que hay conectado para oír y hablar. Lo usa "Reunión en línea" en Tomar
-//! notas: con auriculares el micrófono solo oye a quien habla; con altavoces
-//! también oye a los demás (eco). Y unos auriculares Bluetooth que nadie usa
-//! como micrófono pasarían a modo llamada al abrirlo.
+//! What is connected for hearing and speaking. "Online meeting" in Take notes
+//! uses it: with headphones the microphone only hears the speaker; with speakers
+//! it also hears the others (echo). And Bluetooth headphones that nobody uses
+//! as a microphone would switch to call mode when it is opened.
 
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct AudioRoute {
-    /// "headphones" (auriculares con cable, USB o Bluetooth), "speakers" (las
-    /// bocinas del Mac) u "other" (monitor, altavoz externo, AirPlay…). Con las
-    /// dos últimas el micrófono puede oír a los demás.
+    /// "headphones" (wired, USB or Bluetooth headphones), "speakers" (the
+    /// Mac's speakers) or "other" (monitor, external speaker, AirPlay…). With the
+    /// last two the microphone can hear the others.
     pub output: &'static str,
     pub output_name: String,
-    /// La entrada por defecto.
+    /// The default input.
     pub input_name: String,
     pub input_bluetooth: bool,
-    /// Otra app ya usa la entrada por defecto.
+    /// Another app is already using the default input.
     pub input_busy: bool,
-    /// El micrófono del Mac, si lo hay.
+    /// The Mac's microphone, if there is one.
     pub builtin_mic: Option<String>,
 }
 
-/// Lo que hay conectado ahora. Fuera de macOS no se sabe: se trata como
-/// altavoces, que es lo prudente (el filtro de eco apenas cuesta).
-/// Fuera del hilo de la ventana: con la captura del Mac recién creada y nada
-/// sonando, Core Audio puede tardar en contestar y la congelaría.
+/// What is connected now. Outside macOS it is unknown: it is treated as
+/// speakers, which is the cautious choice (the echo filter costs very little).
+/// Off the window thread: with the Mac capture just created and nothing
+/// playing, Core Audio can take a while to answer and would freeze it.
 #[tauri::command]
 pub async fn audio_route() -> AudioRoute {
     tauri::async_runtime::spawn_blocking(route_now).await.unwrap_or_else(|_| unknown())
@@ -41,7 +41,7 @@ fn route_now() -> AudioRoute {
     }
 }
 
-/// Sin saber qué hay conectado: como altavoces.
+/// Without knowing what is connected: like speakers.
 fn unknown() -> AudioRoute {
     AudioRoute {
         output: "other",
@@ -60,12 +60,12 @@ mod imp {
     use coreaudio_sys::*;
     use std::os::raw::c_void;
 
-    /// Fuente de la salida integrada: auriculares por el conector.
+    /// Source of the built-in output: headphones on the jack.
     const DATA_SOURCE_HEADPHONES: u32 = u32::from_be_bytes(*b"hdpn");
-    /// Fuente de la salida integrada: las bocinas.
+    /// Source of the built-in output: the speakers.
     const DATA_SOURCE_SPEAKERS: u32 = u32::from_be_bytes(*b"ispk");
 
-    /// Una propiedad entera de un dispositivo.
+    /// An integer property of a device.
     fn property(id: AudioObjectID, selector: u32, scope: u32) -> Option<u32> {
         let addr = AudioObjectPropertyAddress {
             mSelector: selector,
@@ -80,17 +80,17 @@ mod imp {
         (st == 0).then_some(value)
     }
 
-    /// Si la salida son auriculares, bocinas del Mac u otra cosa.
+    /// Whether the output is headphones, the Mac's speakers or something else.
     fn output_kind(out: &Device, all: &[Device]) -> &'static str {
         if out.is_bluetooth() {
-            // Unos auriculares Bluetooth traen micrófono (macOS lo lista como otro
-            // dispositivo con el mismo nombre); un altavoz Bluetooth, no.
+            // Bluetooth headphones carry a microphone (macOS lists it as another
+            // device with the same name); a Bluetooth speaker does not.
             let has_mic = out.inputs > 0 || all.iter().any(|d| d.name == out.name && d.inputs > 0);
             return if has_mic { "headphones" } else { "other" };
         }
         if out.is_builtin() {
-            // Los Mac con Intel cambian la fuente de la misma salida; los Apple
-            // Silicon muestran los auriculares como otra salida integrada.
+            // Intel Macs switch the source of the same output; Apple
+            // Silicon ones show the headphones as another built-in output.
             match property(out.id, kAudioDevicePropertyDataSource, kAudioObjectPropertyScopeOutput) {
                 Some(DATA_SOURCE_HEADPHONES) => return "headphones",
                 Some(DATA_SOURCE_SPEAKERS) => return "speakers",
@@ -100,8 +100,8 @@ mod imp {
             let headphones = ["headphone", "auricular", "casque", "kopfhörer", "cuffie"];
             return if headphones.iter().any(|h| name.contains(h)) { "headphones" } else { "speakers" };
         }
-        // Unos auriculares USB traen micrófono; un altavoz o un monitor, no siempre
-        // se sabe: por si acaso, como altavoz.
+        // USB headphones carry a microphone; with a speaker or a monitor it is not
+        // always known: just in case, like a speaker.
         if out.transport == kAudioDeviceTransportTypeUSB && out.inputs > 0 {
             return "headphones";
         }

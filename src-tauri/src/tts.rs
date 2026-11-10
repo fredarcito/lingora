@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-/// Voz femenina o masculina; la elige el usuario por carril.
+/// Female or male voice; the user chooses it per lane.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Gender {
@@ -72,9 +72,9 @@ pub fn voices(lang: Lang) -> Vec<Voice> {
 pub struct TtsEngine {
     model_dir: PathBuf,
     loaded: tokio::sync::Mutex<Option<Arc<OfflineTts>>>,
-    /// Una frase cada vez: dos a la vez se reparten los núcleos (4 hilos cada
-    /// una, más la escucha) y la primera tarda más en sonar. El mutex de tokio
-    /// atiende por orden de llegada, que es el orden de las frases.
+    /// One sentence at a time: two at once share the cores (4 threads
+    /// each, plus the listening) and the first takes longer to play. The tokio
+    /// mutex serves in order of arrival, which is the order of the sentences.
     busy: tokio::sync::Mutex<()>,
     /// Real-time factor of the last sentences (generation only, without the
     /// queue or the load): `struggling` reads it.
@@ -98,7 +98,7 @@ impl TtsEngine {
         recent.len() >= STRUGGLE_SENTENCES && recent.iter().sum::<f32>() / recent.len() as f32 > STRUGGLE_RTF
     }
 
-    /// El modelo está descargado en `dir`.
+    /// The model is downloaded in `dir`.
     pub fn is_installed(dir: &Path) -> bool {
         FILES.iter().all(|f| dir.join(f).exists())
     }
@@ -119,7 +119,7 @@ impl TtsEngine {
         Ok(tts)
     }
 
-    /// Libera el modelo; se vuelve a cargar en la siguiente frase.
+    /// Releases the model; it is loaded again on the next sentence.
     pub async fn release(&self) {
         self.loaded.lock().await.take();
     }

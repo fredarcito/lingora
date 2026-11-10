@@ -1,7 +1,7 @@
-//! Conversaciones guardadas: un JSON por conversación en
-//! `~/Library/Application Support/lingora/notes/<id>.json` (formato en
-//! docs/plan-notas.md). La UI las escribe frase a frase; aquí solo se lee,
-//! se guarda tal cual, se borra y se exporta.
+//! Saved conversations: one JSON per conversation in
+//! `~/Library/Application Support/lingora/notes/<id>.json` (format in
+//! docs/plan-notas.md). The UI writes them sentence by sentence; here they are
+//! only read, saved as is, deleted and exported.
 
 use crate::error::{Error, Result};
 use serde::Serialize;
@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 const MONTHS: [&str; 12] = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
-/// Lo justo de una nota para listarla y buscar sin leer cada transcripción entera.
+/// Just enough of a note to list it and search without reading each whole transcript.
 #[derive(Serialize)]
 pub struct NoteSummary {
     id: String,
@@ -19,28 +19,28 @@ pub struct NoteSummary {
     ended_at: Option<String>,
     sentences: usize,
     has_summary: bool,
-    /// `"notes"` en Tomar notas; sin él (o `"translation"`), una traducción.
+    /// `"notes"` in Take notes; without it (or `"translation"`), a translation.
     kind: Option<String>,
-    /// Primeros ~200 caracteres de las traducciones (o del original).
+    /// First ~200 characters of the translations (or of the original).
     preview: String,
-    /// Idiomas de la primera frase, para ver "ES → EN" en la lista.
+    /// Languages of the first sentence, to show "ES → EN" in the list.
     source_lang: Option<String>,
     target_lang: Option<String>,
-    /// La primera frase del resumen, si hay: dice más que el principio de la transcripción.
+    /// The first sentence of the summary, if any: it says more than the start of the transcript.
     summary_line: Option<String>,
     /// The names given to the people (not "Yo", `"0"`), to suggest them when
     /// renaming someone in another note.
     speaker_names: Vec<String>,
 }
 
-/// Carpeta de notas, junto a la de modelos.
+/// Notes folder, next to the models one.
 fn notes_dir() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_default();
     Path::new(&home).join("Library/Application Support/lingora/notes")
 }
 
-/// Ruta del archivo de una nota. El id solo puede tener `[0-9A-Za-z_-]`: así
-/// nadie escribe ni lee fuera de la carpeta.
+/// Path of a note's file. The id can only contain `[0-9A-Za-z_-]`: that way
+/// nobody writes or reads outside the folder.
 fn note_path(id: &str) -> Result<PathBuf> {
     let valid = !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
     if !valid {
@@ -58,7 +58,7 @@ fn str_field<'a>(note: &'a Value, key: &str) -> &'a str {
     note.get(key).and_then(Value::as_str).unwrap_or("")
 }
 
-/// La traducción de una frase o, sin ella (modo original), el original.
+/// The translation of a sentence or, without one (original mode), the original.
 fn shown_text(sentence: &Value) -> &str {
     sentence
         .get("translation")
@@ -66,7 +66,7 @@ fn shown_text(sentence: &Value) -> &str {
         .unwrap_or_else(|| str_field(sentence, "source"))
 }
 
-/// La primera frase del texto del resumen, sin encabezados ni marcas de lista.
+/// The first sentence of the summary text, without headings or list markers.
 fn first_summary_line(text: &str) -> Option<String> {
     let line = text
         .lines()
@@ -124,7 +124,7 @@ fn speaker_names(note: &Value) -> Vec<String> {
         .collect()
 }
 
-/// Las notas, de la más nueva a la más vieja. Lo que no se pueda leer se ignora.
+/// The notes, from newest to oldest. Whatever cannot be read is ignored.
 #[tauri::command]
 pub async fn notes_list() -> Result<Vec<NoteSummary>> {
     tauri::async_runtime::spawn_blocking(|| {
@@ -150,14 +150,14 @@ pub async fn notes_list() -> Result<Vec<NoteSummary>> {
     .map_err(|e| Error::Notes(format!("no se pudo listar las notas: {e}")))?
 }
 
-/// El JSON de la nota, tal cual.
+/// The note's JSON, as is.
 #[tauri::command]
 pub fn note_read(id: String) -> Result<Value> {
     read_note(&note_path(&id)?)
 }
 
-/// Escribe la nota a un `.tmp` y lo renombra, para que un corte a medias no
-/// deje la nota a la mitad.
+/// Writes the note to a `.tmp` and renames it, so an interruption does not
+/// leave the note half written.
 fn write_note(path: &Path, note: &Value) -> Result<()> {
     std::fs::create_dir_all(notes_dir())?;
     let tmp = path.with_extension("json.tmp");
@@ -167,7 +167,7 @@ fn write_note(path: &Path, note: &Value) -> Result<()> {
     Ok(())
 }
 
-/// Crea o reemplaza la nota (`note.id` es el archivo).
+/// Creates or replaces the note (`note.id` is the file).
 #[tauri::command]
 pub fn note_save(note: Value) -> Result<()> {
     write_note(&note_path(str_field(&note, "id"))?, &note)
@@ -179,12 +179,12 @@ pub fn note_delete(id: String) -> Result<()> {
     Ok(())
 }
 
-/// Muestra el archivo en Finder (en Windows, en el Explorador).
+/// Shows the file in Finder (on Windows, in Explorer).
 fn reveal(path: &Path) -> Result<()> {
     #[cfg(windows)]
     {
         use std::os::windows::process::CommandExt;
-        // `/select,` y la ruta van juntos: el Explorador no entiende las comillas de `arg`.
+        // `/select,` and the path go together: Explorer does not understand `arg`'s quotes.
         std::process::Command::new("explorer").raw_arg(format!("/select,\"{}\"", path.display())).status()?;
     }
     #[cfg(not(windows))]
@@ -197,8 +197,8 @@ pub fn note_reveal(id: String) -> Result<()> {
     reveal(&note_path(&id)?)
 }
 
-/// Escribe la nota en Descargas (`md` o `txt`), la muestra en Finder y
-/// devuelve la ruta. Si el nombre existe, añade " (2)", " (3)"…
+/// Writes the note to Downloads (`md` or `txt`), shows it in Finder and
+/// returns the path. If the name exists, it adds " (2)", " (3)"…
 #[tauri::command]
 pub fn note_export(id: String, format: String) -> Result<String> {
     let markdown = match format.as_str() {
@@ -242,8 +242,8 @@ fn download_path(title: &str, ext: &str) -> Result<PathBuf> {
     Ok(path)
 }
 
-/// El título como nombre de archivo: sin separadores ni caracteres que
-/// Finder o Windows rechazan.
+/// The title as a file name: without separators or characters that
+/// Finder or Windows reject.
 fn file_name(title: &str) -> String {
     let clean: String = title
         .chars()
@@ -254,7 +254,7 @@ fn file_name(title: &str) -> String {
     if clean.is_empty() { "Conversación".to_string() } else { clean.to_string() }
 }
 
-/// Días desde 1970-01-01 de una fecha civil (algoritmo de H. Hinnant).
+/// Days since 1970-01-01 of a civil date (H. Hinnant's algorithm).
 fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
     let y = if m <= 2 { y - 1 } else { y };
     let era = y.div_euclid(400);
@@ -264,15 +264,15 @@ fn days_from_civil(y: i64, m: i64, d: i64) -> i64 {
     era * 146097 + doe - 719468
 }
 
-/// Segundos desde 1970 de un ISO 8601 en UTC ("2026-10-29T13:32:05.120Z").
+/// Seconds since 1970 of an ISO 8601 in UTC ("2026-10-29T13:32:05.120Z").
 fn iso_secs(iso: &str) -> Option<i64> {
     let num = |range: std::ops::Range<usize>| iso.get(range)?.parse::<i64>().ok();
     let days = days_from_civil(num(0..4)?, num(5..7)?, num(8..10)?);
     Some(days * 86400 + num(11..13)? * 3600 + num(14..16)? * 60 + num(17..19)?)
 }
 
-/// "29 oct 2026 · 10:32–11:07 · 35 min". La hora de inicio sale del `id`
-/// (fecha local) y el fin se calcula sumándole la duración, sin zonas horarias.
+/// "29 oct 2026 · 10:32–11:07 · 35 min". The start time comes from the `id`
+/// (local date) and the end is computed by adding the duration, with no time zones.
 fn span_line(note: &Value) -> String {
     let id = str_field(note, "id");
     let part = |range: std::ops::Range<usize>| id.get(range).and_then(|s| s.parse::<i64>().ok());
@@ -297,8 +297,8 @@ fn span_line(note: &Value) -> String {
     format!("{day} {month} {year} · {start}–{:02}:{:02} · {duration}", end_of_day / 3600, end_of_day % 3600 / 60)
 }
 
-/// Quién habla: nada sin personas detectadas; si no, su nombre, "Yo" (0, tu
-/// micrófono en una llamada) o "Persona n".
+/// Who is speaking: nothing without detected people; otherwise their name, "Yo" (0,
+/// your microphone in a call) or "Persona n".
 fn speaker_label(note: &Value, sentence: &Value) -> String {
     match sentence.get("speaker").and_then(Value::as_i64) {
         None => String::new(),
@@ -310,8 +310,8 @@ fn speaker_label(note: &Value, sentence: &Value) -> String {
     }
 }
 
-/// La nota como texto: título, fecha, resumen (si hay) y transcripción. En
-/// Markdown el título y los encabezados llevan `#`; en texto plano, no.
+/// The note as text: title, date, summary (if any) and transcript. In
+/// Markdown the title and the headings carry `#`; in plain text they do not.
 fn export_text(note: &Value, markdown: bool) -> String {
     let (h1, h2) = if markdown { ("# ", "## ") } else { ("", "") };
     let mut out = format!("{h1}{}\n{}\n\n", str_field(note, "title"), span_line(note));
@@ -502,16 +502,16 @@ fn summary_system(note: &Value) -> String {
     system
 }
 
-/// "Sin guardar · 2 min": la marca de un rato que no se guardó.
+/// "Sin guardar · 2 min": the mark of a stretch that was not saved.
 fn gap_line(secs: u64) -> String {
     let time = if secs < 60 { format!("{secs} s") } else { format!("{} min", (secs as f64 / 60.0).round() as u64) };
     format!("— Sin guardar · {time} —\n\n")
 }
 
-/// Una línea por frase: `[00:03] Persona 1: texto`. Con `with_original`, el
-/// original va debajo entre paréntesis (si hay traducción). Los ratos sin
-/// guardar (`gaps`) parten el párrafo en el que caen, como `transcriptParts`
-/// en `src/notes.js`.
+/// One line per sentence: `[00:03] Persona 1: texto`. With `with_original`, the
+/// original goes below in parentheses (if there is a translation). The unsaved
+/// stretches (`gaps`) split the paragraph they fall in, like `transcriptParts`
+/// in `src/notes.js`.
 fn transcript_text(note: &Value, with_original: bool) -> String {
     let mut out = String::new();
     let sentences = note.get("sentences").and_then(Value::as_array).map(Vec::as_slice).unwrap_or_default();
@@ -547,7 +547,7 @@ fn transcript_text(note: &Value, with_original: bool) -> String {
     out
 }
 
-/// Un párrafo exportado, con su hora, quién habla y, si se pide, el original.
+/// An exported paragraph, with its time, who is speaking and, if asked, the original.
 fn paragraph_text(note: &Value, block: &[&Value], with_original: bool) -> String {
     let first = block[0];
     let t = first.get("t").and_then(Value::as_f64).unwrap_or(0.0).max(0.0) as u64;
@@ -563,14 +563,14 @@ fn paragraph_text(note: &Value, block: &[&Value], with_original: bool) -> String
     out
 }
 
-/// Pausa a partir de la cual empieza otro párrafo aunque hable la misma persona.
+/// Pause after which another paragraph starts even if the same person is speaking.
 const PARAGRAPH_GAP_SECS: f64 = 12.0;
-/// Largo a partir del cual se parte un párrafo, para que se pueda leer.
+/// Length after which a paragraph is split, so it can be read.
 const PARAGRAPH_CHARS: usize = 700;
 
-/// Junta las frases seguidas de una misma persona en párrafos, igual que la
-/// vista de la nota (`paragraphs` en `src/notes.js`): otro párrafo al
-/// cambiar quien habla, tras una pausa larga o si se hace muy largo.
+/// Joins consecutive sentences of the same person into paragraphs, like the
+/// note view (`paragraphs` in `src/notes.js`): another paragraph when
+/// the speaker changes, after a long pause or if it gets very long.
 fn paragraphs(sentences: &[Value]) -> Vec<Vec<&Value>> {
     let mut out: Vec<Vec<&Value>> = Vec::new();
     let mut chars = 0;
@@ -594,9 +594,9 @@ fn paragraphs(sentences: &[Value]) -> Vec<Vec<&Value>> {
     out
 }
 
-// ---------- Resumen con IA ----------
+// ---------- AI summary ----------
 
-/// `{idioma}` es el de la traducción. The template's sections and
+/// `{idioma}` is the translation's language. The template's sections and
 /// `SUMMARY_RULES` follow.
 const SUMMARY_SYSTEM: &str = "Eres un asistente que resume conversaciones transcritas. Responde en {idioma} con Markdown \
 y solo estas secciones, omitiendo las que no tengan contenido. Lo que va entre paréntesis es una instrucción \
@@ -713,7 +713,7 @@ const MAP_MARKER: &str = "<<<MAP>>>";
 const SUMMARY_BOOKMARKS: &str = "\nHay momentos marcados por el usuario: añade al final la sección ## Momentos destacados, \
 con una línea por momento: \"- [mm:ss] qué se dijo en ese momento\" (una frase, según la transcripción).";
 
-/// Parte la transcripción en trozos de ~`max_chars` sin cortar líneas.
+/// Splits the transcript into chunks of ~`max_chars` without cutting lines.
 fn chunks(transcript: &str, max_chars: usize) -> Vec<String> {
     let mut out = vec![String::new()];
     let mut len = 0;
@@ -827,13 +827,13 @@ fn split_map(text: &str) -> (String, String) {
     }
 }
 
-/// Resume la transcripción; si no cabe de una vez, por trozos y luego el conjunto.
+/// Summarizes the transcript; if it does not fit at once, in chunks and then the whole.
 fn summarize_text(session: &mut crate::summarizer::Session, system: &str, transcript: &str) -> Result<String> {
     if session.fits(system, transcript) {
         return session.complete(system, transcript);
     }
-    // Trozos por caracteres, a la medida de lo que cabe en tokens: el texto
-    // en chino o japonés lleva muchos más tokens por carácter.
+    // Chunks by characters, sized to what fits in tokens: text in
+    // Chinese or Japanese takes many more tokens per character.
     let per_token = transcript.chars().count() as f64 / session.count(transcript).max(1) as f64;
     let max_chars = (session.room(system) as f64 * per_token * 0.9) as usize;
     let mut parts = Vec::new();
@@ -847,8 +847,8 @@ fn summarize_text(session: &mut crate::summarizer::Session, system: &str, transc
     session.complete(system, &joined)
 }
 
-/// El idioma del resumen: `summary_lang` si la nota lo trae (Tomar notas); si
-/// no, el de la traducción de la primera frase y, sin él, español.
+/// The summary's language: `summary_lang` if the note has it (Take notes);
+/// otherwise that of the first sentence's translation and, without it, Spanish.
 fn summary_language(note: &Value) -> &'static str {
     summary_lang_info(note).map_or("español", |l| l.spanish)
 }
@@ -866,8 +866,8 @@ fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
 /// large (an hour is ~60K characters), but not all of them equally.
 const CLOUD_MAX_CHARS: usize = 300_000;
 
-/// Resume la transcripción con el servicio del usuario; si es enorme, por
-/// trozos y luego el conjunto, como `summarize_text`.
+/// Summarizes the transcript with the user's service; if it is huge, in
+/// chunks and then the whole, like `summarize_text`.
 async fn summarize_cloud(cloud: &crate::summary_cloud::Cloud, key: &str, system: &str, transcript: &str) -> Result<String> {
     use crate::summary_cloud::complete;
     if transcript.chars().count() <= CLOUD_MAX_CHARS {
@@ -884,8 +884,8 @@ async fn summarize_cloud(cloud: &crate::summary_cloud::Cloud, key: &str, system:
     complete(cloud, key, system, &joined).await
 }
 
-/// Resume la nota (en el equipo o, con `cloud`, con la clave del usuario),
-/// guarda el resumen en ella y lo devuelve.
+/// Summarizes the note (on the computer or, with `cloud`, with the user's key),
+/// saves the summary in it and returns it.
 #[tauri::command]
 pub async fn note_summarize(
     state: tauri::State<'_, crate::AppState>,
@@ -922,7 +922,7 @@ pub async fn note_summarize(
     let map = without_repeat(&map);
     let text = with_user_notes(&text, &notes);
 
-    // Se vuelve a leer: el título puede haber cambiado mientras se resumía.
+    // It is read again: the title may have changed while summarizing.
     let mut note = read_note(&path)?;
     // `source`: where it was made, "local" or the service's id.
     note["summary"] = if map.is_empty() {
@@ -934,7 +934,7 @@ pub async fn note_summarize(
     Ok(text)
 }
 
-/// Fecha civil de un día desde 1970-01-01 (algoritmo de H. Hinnant).
+/// Civil date of a day since 1970-01-01 (H. Hinnant's algorithm).
 fn civil_from_days(days: i64) -> (i64, i64, i64) {
     let z = days + 719468;
     let era = z.div_euclid(146097);
@@ -947,7 +947,7 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
     (yoe + era * 400 + i64::from(m <= 2), m, d)
 }
 
-/// Ahora en ISO 8601 UTC ("2026-10-29T13:32:05.120Z"), sin dependencias.
+/// Now in ISO 8601 UTC ("2026-10-29T13:32:05.120Z"), with no dependencies.
 fn now_iso() -> String {
     let since = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
     let secs = since.as_secs() as i64;
@@ -1048,7 +1048,7 @@ mod tests {
     fn summary_language_prefers_summary_lang() {
         let en = serde_json::json!({ "summary_lang": "en", "sentences": [{ "target_lang": "auto" }] });
         assert_eq!(summary_language(&en), crate::config::Lang::from_code("en").unwrap().info().spanish);
-        // Sin `summary_lang`, el de la traducción; sin nada, español.
+        // Without `summary_lang`, the translation's; with nothing, Spanish.
         let fr = serde_json::json!({ "sentences": [{ "target_lang": "fr" }] });
         assert_eq!(summary_language(&fr), crate::config::Lang::from_code("fr").unwrap().info().spanish);
         assert_eq!(summary_language(&serde_json::json!({ "sentences": [] })), "español");

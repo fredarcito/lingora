@@ -1,22 +1,22 @@
-//! Captura del audio del Mac sin BlackHole, con las "process taps" de Core
-//! Audio (macOS 14.2+).
+//! Capture of the Mac's audio without BlackHole, with Core Audio's
+//! "process taps" (macOS 14.2+).
 //!
-//! Una tap global copia lo que suena en el Mac, salvo los procesos excluidos:
-//! se excluye a la propia Lingora, así su voz traducida nunca vuelve a entrar
-//! en la captura. La tap se lee a través de un dispositivo agregado privado
-//! (solo lo ve esta app) y quien usa la app sigue oyendo por su salida de
-//! siempre. La primera vez macOS pide el permiso "Grabación de audio del
-//! sistema"; sin él la tap entrega silencio, no un error.
+//! A global tap copies what plays on the Mac, except the excluded processes:
+//! Lingora itself is excluded, so its translated voice never gets back into
+//! the capture. The tap is read through a private aggregate device
+//! (only this app sees it) and the user keeps hearing through their usual
+//! output. The first time macOS asks for the "System Audio Recording"
+//! permission; without it the tap delivers silence, not an error.
 //!
-//! `AudioHardwareCreateProcessTap` y `CATapDescription` se buscan en tiempo de
-//! ejecución: enlazarlos directamente impediría abrir la app en macOS 14.0/14.1.
+//! `AudioHardwareCreateProcessTap` and `CATapDescription` are looked up at run
+//! time: linking them directly would keep the app from opening on macOS 14.0/14.1.
 
 use crate::error::{Error, Result};
 
-/// Muestras por bloque entregado a la UI: lo mismo que su ScriptProcessor.
+/// Samples per block delivered to the UI: the same as its ScriptProcessor.
 pub const BLOCK_FRAMES: usize = 4096;
 
-/// Si este Mac permite capturar el audio del sistema sin BlackHole.
+/// Whether this Mac allows capturing the system audio without BlackHole.
 pub fn supported() -> bool {
     #[cfg(target_os = "macos")]
     {
@@ -32,15 +32,15 @@ pub fn supported() -> bool {
     }
 }
 
-/// Captura en curso; se detiene al soltarla.
+/// A capture in progress; it stops when dropped.
 pub struct Capture {
     #[cfg(any(target_os = "macos", windows))]
     _inner: imp::Tap,
     pub sample_rate: u32,
 }
 
-/// Empieza a capturar. `on_block` recibe bloques mono de `BLOCK_FRAMES`
-/// muestras a `sample_rate`, desde un hilo propio.
+/// Starts capturing. `on_block` receives mono blocks of `BLOCK_FRAMES`
+/// samples at `sample_rate`, from a thread of its own.
 pub fn start(on_block: impl Fn(Vec<f32>) + Send + 'static) -> Result<Capture> {
     #[cfg(any(target_os = "macos", windows))]
     {
@@ -116,7 +116,7 @@ mod imp {
         (st == 0).then_some(value)
     }
 
-    /// El objeto de Core Audio de este proceso, para excluirlo de la tap.
+    /// The Core Audio object of this process, to exclude it from the tap.
     fn own_process_object() -> Option<AudioObjectID> {
         let addr = address(kAudioHardwarePropertyTranslatePIDToProcessObject);
         let pid = std::process::id() as i32;
@@ -135,8 +135,8 @@ mod imp {
         (st == 0 && object != kAudioObjectUnknown).then_some(object)
     }
 
-    /// Crea la tap global estéreo, sin este proceso si `exclude_self`.
-    /// Devuelve su ID y su UUID.
+    /// Creates the global stereo tap, without this process if `exclude_self`.
+    /// Returns its ID and its UUID.
     fn create_tap(exclude_self: bool) -> Result<(AudioObjectID, String)> {
         let create = symbol("AudioHardwareCreateProcessTap");
         if create.is_null() {
@@ -162,7 +162,7 @@ mod imp {
                 Err(Error::Audio("no se pudo describir la captura del sistema".into()))
             } else {
                 msg!(desc, "setPrivate:", true => bool);
-                // NSUUID → NSString, puente sin coste con CFString.
+                // NSUUID → NSString, toll-free bridged with CFString.
                 let uuid = msg!(msg!(desc, "UUID"), "UUIDString");
                 let uuid = CFString::wrap_under_get_rule(uuid as _).to_string();
                 let mut tap: AudioObjectID = kAudioObjectUnknown;
@@ -187,7 +187,7 @@ mod imp {
         }
     }
 
-    /// Agregado privado cuya única entrada es la tap.
+    /// Private aggregate whose only input is the tap.
     fn create_aggregate(tap_uuid: &str) -> Result<AudioObjectID> {
         let key = |k: &str| CFString::new(k).as_CFType();
         let text = |v: &str| CFString::new(v).as_CFType();
@@ -209,12 +209,12 @@ mod imp {
         Ok(id)
     }
 
-    /// Lo que comparte el hilo de audio con el resto: solo un canal.
+    /// What the audio thread shares with the rest: only a channel.
     struct Shared {
         tx: mpsc::Sender<Vec<f32>>,
     }
 
-    /// Callback de Core Audio: mezcla a mono y lo pasa al hilo de entrega.
+    /// Core Audio callback: mixes down to mono and passes it to the delivery thread.
     unsafe extern "C" fn io_proc(
         _device: AudioObjectID,
         _now: *const AudioTimeStamp,
@@ -248,7 +248,7 @@ mod imp {
                 .map(|frame| frame.iter().sum::<f32>() / channels as f32)
                 .collect()
         } else {
-            // Un búfer por canal.
+            // One buffer per channel.
             let frames = buffers.iter().map(|b| data(b).len()).min().unwrap_or(0);
             (0..frames)
                 .map(|i| buffers.iter().map(|b| data(b)[i]).sum::<f32>() / n as f32)
@@ -265,7 +265,7 @@ mod imp {
         shared: *mut Shared,
     }
 
-    // Los IDs son números de Core Audio y `shared` solo se libera en Drop.
+    // The IDs are Core Audio numbers and `shared` is only freed in Drop.
     unsafe impl Send for Tap {}
 
     impl Tap {
@@ -299,7 +299,7 @@ mod imp {
                 }
             }
 
-            // Se agrupa en bloques fijos fuera del hilo de audio.
+            // It is grouped into fixed blocks off the audio thread.
             let (tx, rx) = mpsc::channel::<Vec<f32>>();
             std::thread::Builder::new()
                 .name("lingora-system-audio".into())
@@ -345,16 +345,16 @@ mod imp {
                 }
                 AudioHardwareDestroyAggregateDevice(self.aggregate);
                 destroy_tap(self.tap);
-                // Al soltar el emisor termina el hilo de entrega.
+                // Dropping the sender ends the delivery thread.
                 drop(Box::from_raw(self.shared));
             }
         }
     }
 }
 
-/// Windows: captura de proceso de WASAPI (Windows 10 2004+). Excluye el árbol
-/// de procesos de Lingora, igual que la tap de Mac, y rellena con ceros los
-/// huecos en silencio, porque WASAPI no entrega nada cuando no suena.
+/// Windows: WASAPI process capture (Windows 10 2004+). It excludes Lingora's
+/// process tree, like the Mac tap, and fills the silent gaps with
+/// zeros, because WASAPI delivers nothing when nothing is playing.
 #[cfg(windows)]
 mod imp {
     use super::*;
@@ -381,14 +381,14 @@ mod imp {
     use windows::Win32::System::Threading::{CreateEventW, WaitForSingleObject};
     use windows::Win32::System::Variant::VT_BLOB;
 
-    /// Frecuencia y canales que pide la captura de proceso (no hay mezcla del sistema).
+    /// Sample rate and channels the process capture asks for (there is no system mix).
     const RATE: u32 = 48_000;
     const CHANNELS: usize = 2;
 
-    /// Avisa de que `ActivateAudioInterfaceAsync`, que es asíncrono, terminó. El
-    /// resultado se lee después en el hilo de la captura, no aquí: Windows llama
-    /// a esto desde otro hilo y conviene hacer lo mínimo. Tiene que ser «agile»
-    /// (lo pide su documentación).
+    /// Signals that `ActivateAudioInterfaceAsync`, which is asynchronous, finished. The
+    /// result is read later on the capture thread, not here: Windows calls
+    /// this from another thread and it is best to do the minimum. It has to be "agile"
+    /// (its documentation requires it).
     #[implement(IActivateAudioInterfaceCompletionHandler, IAgileObject)]
     struct Activated {
         tx: mpsc::Sender<()>,
@@ -403,21 +403,21 @@ mod imp {
         }
     }
 
-    /// Los errores de Windows llegan con su propio tipo: se pasan a texto.
+    /// Windows errors come with their own type: they are turned into text.
     fn win(e: windows::core::Error) -> Error {
         Error::Audio(format!("captura del sistema: {e}"))
     }
 
-    /// Lo que devuelve la activación. La operación y el aviso se guardan mientras
-    /// dure la captura, como en el ejemplo de Microsoft, en vez de soltarlos
-    /// nada más activar.
+    /// What the activation returns. The operation and the signal are kept for as
+    /// long as the capture lasts, as in Microsoft's sample, instead of dropping
+    /// them right after activating.
     struct Activation {
         client: IAudioClient,
         operation: IActivateAudioInterfaceAsyncOperation,
         handler: IActivateAudioInterfaceCompletionHandler,
     }
 
-    /// Activa el cliente de captura de este proceso, con su árbol excluido.
+    /// Activates the capture client of this process, with its tree excluded.
     unsafe fn activate_client() -> Result<Activation> {
         let mut params = AUDIOCLIENT_ACTIVATION_PARAMS {
             ActivationType: AUDIOCLIENT_ACTIVATION_TYPE_PROCESS_LOOPBACK,
@@ -428,15 +428,15 @@ mod imp {
                 },
             },
         };
-        // Los parámetros viajan dentro de un PROPVARIANT de tipo blob.
+        // The parameters travel inside a PROPVARIANT of blob type.
         let blob = windows::Win32::System::Com::BLOB {
             cbSize: std::mem::size_of::<AUDIOCLIENT_ACTIVATION_PARAMS>() as u32,
             pBlobData: &mut params as *mut AUDIOCLIENT_ACTIVATION_PARAMS as *mut u8,
         };
-        // `ManuallyDrop`: el PROPVARIANT de windows-rs llama a `PropVariantClear` al
-        // soltarse, que libera el blob con `CoTaskMemFree`. Aquí el blob apunta a
-        // `params`, en la pila: liberarlo corrompe la memoria (0xc0000374). Lo mismo
-        // hace el crate `wasapi`.
+        // `ManuallyDrop`: windows-rs's PROPVARIANT calls `PropVariantClear` when
+        // dropped, which frees the blob with `CoTaskMemFree`. Here the blob points to
+        // `params`, on the stack: freeing it corrupts memory (0xc0000374). The
+        // `wasapi` crate does the same.
         let prop = std::mem::ManuallyDrop::new(PROPVARIANT {
             Anonymous: PROPVARIANT_0 {
                 Anonymous: std::mem::ManuallyDrop::new(PROPVARIANT_0_0 {
@@ -450,7 +450,7 @@ mod imp {
         let (tx, rx) = mpsc::channel();
         let handler: IActivateAudioInterfaceCompletionHandler = Activated { tx }.into();
         tracing::info!("captura del sistema: pidiendo la captura a Windows");
-        // La operación se guarda hasta leer el resultado: soltarla antes no es seguro.
+        // The operation is kept until the result is read: dropping it earlier is not safe.
         let operation = ActivateAudioInterfaceAsync(
             windows::core::w!("VAD\\Process_Loopback"),
             &IAudioClient::IID,
@@ -475,7 +475,7 @@ mod imp {
         Ok(Activation { client, operation, handler })
     }
 
-    /// El aviso de Windows cuando llega audio; se cierra al soltarlo.
+    /// Windows's signal when audio arrives; it closes when dropped.
     struct Event(HANDLE);
 
     impl Drop for Event {
@@ -486,9 +486,9 @@ mod imp {
         }
     }
 
-    /// Lo necesario para leer la captura; se libera al soltarlo. El orden de
-    /// los campos importa: el aviso se cierra después de soltar el cliente, y
-    /// la activación se suelta la última.
+    /// What is needed to read the capture; it is freed when dropped. The order of
+    /// the fields matters: the signal closes after the client is dropped, and
+    /// the activation is dropped last.
     struct Session {
         client: IAudioClient,
         capture: IAudioCaptureClient,
@@ -506,13 +506,13 @@ mod imp {
     }
 
     unsafe fn open() -> Result<Session> {
-        // Cada hilo de captura necesita COM; si ya estaba iniciado, da igual.
+        // Each capture thread needs COM; if it was already started, it does not matter.
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
-        // Cada paso deja una línea en el registro: si la app se cae, dice hasta dónde llegó.
+        // Each step leaves a line in the log: if the app crashes, it says how far it got.
         tracing::info!("captura del sistema: activando");
         let Activation { client, operation, handler } = activate_client()?;
         tracing::info!("captura del sistema: activada");
-        // En captura de proceso no vale GetMixFormat: hay que pedir el formato.
+        // GetMixFormat does not work in process capture: the format has to be requested.
         let format = WAVEFORMATEX {
             wFormatTag: WAVE_FORMAT_IEEE_FLOAT as u16,
             nChannels: CHANNELS as u16,
@@ -525,8 +525,8 @@ mod imp {
         let event = Event(CreateEventW(None, false, false, None).map_err(win)?);
         tracing::info!("captura del sistema: aviso creado");
         let flags = AUDCLNT_STREAMFLAGS_LOOPBACK | AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM;
-        // Búfer de 20 ms (en unidades de 100 ns), como el ejemplo de Microsoft: esta
-        // captura no tiene periodo propio y con 0 Windows no puede calcular uno.
+        // A 20 ms buffer (in 100 ns units), like Microsoft's sample: this
+        // capture has no period of its own and with 0 Windows cannot compute one.
         client.Initialize(AUDCLNT_SHAREMODE_SHARED, flags, 200_000, 0, &format, None).map_err(win)?;
         tracing::info!("captura del sistema: formato aceptado");
         client.SetEventHandle(event.0).map_err(win)?;
@@ -536,7 +536,7 @@ mod imp {
         Ok(Session { client, capture, event, _operation: operation, _handler: handler })
     }
 
-    /// Lee lo que llega y entrega bloques mono hasta que `stop` se active.
+    /// Reads what arrives and delivers mono blocks until `stop` is set.
     unsafe fn pump(session: &Session, on_block: &dyn Fn(Vec<f32>), stop: &AtomicBool) {
         let started = Instant::now();
         let mut delivered: u64 = 0;
@@ -567,7 +567,7 @@ mod imp {
                 delivered += frames as u64;
                 let _ = session.capture.ReleaseBuffer(frames);
             }
-            // Si el reloj va por delante de lo recibido, ese tramo fue silencio.
+            // If the clock runs ahead of what was received, that stretch was silence.
             let expected = (started.elapsed().as_secs_f64() * RATE as f64) as u64;
             if expected > delivered {
                 pending.extend(std::iter::repeat(0.0).take((expected - delivered) as usize));
@@ -579,7 +579,7 @@ mod imp {
         }
     }
 
-    /// Si la versión de Windows no admite la captura, `start` lo dice con un error.
+    /// If the Windows version does not support the capture, `start` says so with an error.
     pub fn supported() -> bool {
         true
     }
@@ -631,8 +631,8 @@ mod imp {
 mod tests {
     use super::*;
 
-    /// Captura mientras `say` habla y comprueba que llega sonido. Necesita el
-    /// permiso de grabación de audio del sistema.
+    /// Captures while `say` speaks and checks that sound arrives. It needs the
+    /// system audio recording permission.
     #[test]
     #[ignore]
     fn captures_system_audio() {

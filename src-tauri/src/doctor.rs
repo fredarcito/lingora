@@ -1,9 +1,9 @@
-//! Diagnóstico del entorno.
+//! Environment diagnostics.
 //!
-//! Comprueba lo que, en la práctica, impide que Lingora funcione en un Mac
-//! recién configurado: dependencias que faltan y un enrutado de audio mal
-//! montado. Cada comprobación explica el síntoma en lenguaje llano y, cuando se
-//! puede, ofrece un arreglo automático. Ver `docs/problemas-conocidos.md`.
+//! Checks what, in practice, keeps Lingora from working on a freshly set up
+//! Mac: missing dependencies and badly built audio routing. Each check
+//! explains the symptom in plain language and, when it can, offers an
+//! automatic fix. See `docs/problemas-conocidos.md`.
 
 use crate::config::Settings;
 use crate::error::{Error, Result};
@@ -19,12 +19,12 @@ pub enum Status {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Check {
-    /// Identificador estable; es el que recibe `fix`.
+    /// Stable identifier; it is the one `fix` receives.
     pub id: &'static str,
     pub status: Status,
     pub title: String,
     pub detail: String,
-    /// Texto del botón de arreglo automático, si lo hay.
+    /// Text of the automatic fix button, if there is one.
     pub fix: Option<&'static str>,
 }
 
@@ -44,34 +44,34 @@ impl Check {
     }
 }
 
-/// Id de la comprobación del modelo de escucha local; su arreglo (descargar)
-/// es asíncrono y lo atiende `lib.rs`.
+/// Id of the local listening model check; its fix (downloading)
+/// is asynchronous and `lib.rs` handles it.
 pub const LISTENER_CHECK: &str = "listener";
 
-/// Id de la comprobación del modelo de escucha para chino, japonés, coreano y
-/// cantonés (SenseVoice); su arreglo también lo atiende `lib.rs`.
+/// Id of the listening model check for Chinese, Japanese, Korean and
+/// Cantonese (SenseVoice); `lib.rs` handles its fix too.
 pub const SENSE_VOICE_CHECK: &str = "sense_voice";
 
-/// Id de la comprobación del modelo de voz (Supertonic); su arreglo (descargar)
-/// también lo atiende `lib.rs`.
+/// Id of the voice model check (Supertonic); `lib.rs` handles its fix
+/// (downloading) too.
 pub const VOICE_CHECK: &str = "voice_model";
 
-/// Id de la comprobación de la traducción local; su arreglo (descargar)
-/// también lo atiende `lib.rs`.
+/// Id of the local translation check; `lib.rs` handles its fix
+/// (downloading) too.
 pub const TRANSLATOR_CHECK: &str = "translator";
 
-/// Id de la comprobación del modelo que distingue personas en las notas; su
-/// arreglo (descargar) también lo atiende `lib.rs`.
+/// Id of the check for the model that tells people apart in the notes;
+/// `lib.rs` handles its fix (downloading) too.
 pub const SPEAKERS_CHECK: &str = "speakers";
 
-/// UID de BlackHole 2ch: es fijo en el driver.
+/// UID of BlackHole 2ch: it is fixed in the driver.
 const CAPTURE_UID: &str = "BlackHole2ch_UID";
 const MULTI_OUTPUT_NAME: &str = "Lingora";
 const MULTI_OUTPUT_UID: &str = "lingora-multi-output";
 
-/// `full` incluye las dependencias (lanza procesos); sin él solo se revisa
-/// el audio, que es barato y la UI repite cada pocos segundos para detectar,
-/// por ejemplo, que se conectaron unos auriculares y macOS cambió la salida.
+/// `full` includes the dependencies (it spawns processes); without it only the
+/// audio is checked, which is cheap and the UI repeats every few seconds to detect,
+/// for example, that headphones were connected and macOS changed the output.
 pub async fn run(settings: &Settings, full: bool) -> Vec<Check> {
     let mut checks = if full { dependency_checks(settings).await } else { Vec::new() };
     #[cfg(target_os = "macos")]
@@ -96,7 +96,7 @@ async fn command_works(bin: &str, arg: &str) -> bool {
 async fn dependency_checks(settings: &Settings) -> Vec<Check> {
     let mut out = Vec::new();
 
-    // Va dentro de la app: si falla, la app está incompleta (no hay nada que instalar).
+    // It ships inside the app: if it fails, the app is incomplete (there is nothing to install).
     out.push(if command_works(&settings.espeak_bin, "--version").await {
         Check::ok("espeak", "Pronunciación", "Lista; prepara lo que dice la voz.")
     } else {
@@ -140,7 +140,7 @@ async fn dependency_checks(settings: &Settings) -> Vec<Check> {
     });
 
     use crate::listener::Engine;
-    // Todo se hace en el equipo: sin estos dos modelos no se puede traducir.
+    // Everything is done on the computer: without these two models it cannot translate.
     out.push(if Engine::Parakeet.is_installed(&settings.listener_model_dir) {
         Check::ok(LISTENER_CHECK, "Escuchar", "Descargado.")
     } else {
@@ -277,9 +277,9 @@ fn audio_checks() -> Vec<Check> {
         ),
     });
 
-    // Frecuencias: dentro de la salida múltiple, si BlackHole no va a la misma
-    // que la salida principal, la corrección de deriva no basta y el audio se
-    // corta. Fuera de ella no aplica: el problema es el enrutado.
+    // Sample rates: inside the multi-output, if BlackHole does not run at the same
+    // one as the main output, drift correction is not enough and the audio cuts
+    // out. Outside it this does not apply: the problem is the routing.
     let main = default_out
         .filter(|d| d.is_aggregate() && macos::subdevice_uids(d.id).iter().any(|u| u == CAPTURE_UID))
         .and_then(|d| {
@@ -343,7 +343,7 @@ fn audio_checks() -> Vec<Check> {
     out
 }
 
-/// Aplica el arreglo automático de una comprobación.
+/// Applies the automatic fix of a check.
 pub fn fix(id: &str) -> Result<()> {
     #[cfg(target_os = "macos")]
     {
@@ -355,8 +355,8 @@ pub fn fix(id: &str) -> Result<()> {
             .find(|d| d.uid == CAPTURE_UID)
             .ok_or_else(|| Error::Audio("BlackHole 2ch no está instalado".into()))?;
 
-        // Salida real a la que acompañar BlackHole: la actual si es un
-        // dispositivo físico; si no, las bocinas integradas.
+        // The real output to pair BlackHole with: the current one if it is a
+        // physical device; otherwise, the built-in speakers.
         let main_output = || {
             let current = macos::default_device(true).and_then(|id| devices.iter().find(|d| d.id == id));
             current
@@ -369,8 +369,8 @@ pub fn fix(id: &str) -> Result<()> {
         match id {
             "routing" => {
                 let main = main_output()?;
-                // Se sustituye cualquier "Lingora" anterior (agregado mal
-                // montado o salida múltiple incompleta).
+                // Any previous "Lingora" is replaced (a badly built aggregate
+                // or an incomplete multi-output).
                 for d in devices.iter().filter(|d| {
                     d.is_aggregate() && (d.uid == MULTI_OUTPUT_UID || d.name == MULTI_OUTPUT_NAME)
                 }) {
