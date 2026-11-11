@@ -3,7 +3,7 @@ import { useState } from "react";
 /**
  * A setting kept in `localStorage`: read once when the app opens and saved on
  * every change. `load` and `store` are the pair from `@utils/prefs.js` or
- * `@utils/notes.js`, which own the keys.
+ * `@utils/notePrefs.js`, which own the keys.
  * @template T
  * @param {() => T} load
  * @param {(value: T) => void} store

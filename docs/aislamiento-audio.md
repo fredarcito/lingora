@@ -148,7 +148,7 @@ it is not used in "Speak" (see section 7).
 ## 6. Who is speaking (notes)
 
 Each sentence gets a **voice print** (a speaker embedding computed on the
-device). `createSpeakerTracker` in `src/utils/notes.js` groups them into
+device). `createSpeakerTracker` in `src/utils/speakers.js` groups them into
 people:
 
 - **Live:** each sentence goes to the most similar person if the similarity
@@ -249,5 +249,5 @@ only for real microphones ("Speak", and the microphone in Take notes).
 | 3. Voice detection | Background noise, clicks, coughs, silences | `audio.js` (`VAD`) | Pauses of 0.2–0.4 s |
 | 4. Text filters | "Mm", "Uh", lone "Yeah" from noise | `audio.js` (`FILLER`, `LONE_NOD`) | None |
 | 5. Echo filter | The meeting heard by the microphone (notes only) | `echo.js` | Up to 8 s (notes only) |
-| 6. Voice prints | Mixing up people | `notes.js` | None (refined at the end) |
+| 6. Voice prints | Mixing up people | `speakers.js` | None (refined at the end) |
 | 7. Echo cancellation | The meeting and Lingora's voice heard by the microphone | `echo_cancel.rs` (`sonora`) | ~10 ms |

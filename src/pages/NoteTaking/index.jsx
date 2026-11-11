@@ -20,17 +20,9 @@ import {
 import LiveStatus from "@components/LiveStatus";
 import MyNotes from "@components/MyNotes";
 import { useT } from "@i18n";
-import {
-  NOTE_CHANGED_EVENT,
-  getActiveNote,
-  loadNotesConsent,
-  loadNotesLang,
-  formatClock,
-  notesTitle,
-  paragraphs,
-  storeNotesConsent,
-  userMarks,
-} from "@utils/notes.js";
+import { NOTE_CHANGED_EVENT, getActiveNote } from "@utils/noteRecorder.js";
+import { loadNotesConsent, loadNotesLang, storeNotesConsent } from "@utils/notePrefs.js";
+import { formatClock, notesTitle, paragraphs, userMarks } from "@utils/notes.js";
 import { echoPossible, prefersMacMic, prefersRoomMic } from "@utils/route.js";
 import { splitWords, wordDelayMs } from "@utils/words.js";
 import styles from "./styles.module.css";
@@ -54,18 +46,18 @@ function elapsedLabel(secs) {
 /**
  * The Take notes screen: before starting, its options; while recording,
  * the live transcript as a document. The recorder writes the note
- * (`notes.js`); here its in-memory copy is only read when it reports a change.
+ * (`noteRecorder.js`); here its in-memory copy is only read when it reports a change.
  * @param {{
  *   running: boolean, starting: boolean, closing: boolean, error: string | null,
  *   micError: string | null,
  *   heard: Array<{ key: number, text: string }>, partial: string, noSignal: boolean,
- *   input: import("@utils/notes.js").NotesInput,
- *   onInput: (value: import("@utils/notes.js").NotesInput) => void,
+ *   input: import("@utils/notePrefs.js").NotesInput,
+ *   onInput: (value: import("@utils/notePrefs.js").NotesInput) => void,
  *   listen: "EN" | "ZH", onListen: (value: "EN" | "ZH") => void,
  *   systemAudio: boolean, languages: import("@utils/api").LanguageInfo[],
  *   route: import("@utils/api").AudioRoute | null,
- *   captions: import("@utils/notes.js").NotesCaptions,
- *   onCaptions: (value: import("@utils/notes.js").NotesCaptions) => void,
+ *   captions: import("@utils/notePrefs.js").NotesCaptions,
+ *   onCaptions: (value: import("@utils/notePrefs.js").NotesCaptions) => void,
  *   floating: boolean, onFloating: () => void,
  *   onOpenSettings: () => void, onStart: () => void, onStop: () => void,
  *   notesActions: import("@components/MyNotes").MyNotesActions & { addBookmark: () => void },
@@ -295,7 +287,7 @@ export default function NoteTaking({
               <h3 className={styles.setupLabel}>{t("noteTaking.whatToListen")}</h3>
               <ChoiceCards
                 value={effectiveInput}
-                onChange={(v) => onInput(/** @type {import("@utils/notes.js").NotesInput} */ (v))}
+                onChange={(v) => onInput(/** @type {import("@utils/notePrefs.js").NotesInput} */ (v))}
                 options={[
                   {
                     value: "meeting",

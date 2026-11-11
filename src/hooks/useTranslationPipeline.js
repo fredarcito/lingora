@@ -4,7 +4,7 @@ import { api, errorMessage } from "@utils/api";
 import { FILLER, SYSTEM_AUDIO, joinWords, startAutoCapture } from "@utils/audio";
 import { EMPTY_STATE, addToHistory, apiLang } from "@utils/lanes";
 import { logEvent } from "@utils/log";
-import { loadSpeakers } from "@utils/notes.js";
+import { loadSpeakers } from "@utils/notePrefs.js";
 import { phraseQueue, phraseSplitter, splitAtSentenceEnd } from "@utils/phrases";
 import { echoPossible, readRoute } from "@utils/route";
 import { createSpeechQueue } from "@utils/speechQueue";
@@ -70,7 +70,7 @@ const EMPTY_RUNTIME = {
  * @param {{
  *   lanesRef: React.MutableRefObject<Lane[]>,
  *   languagesRef: React.MutableRefObject<import("@utils/api").LanguageInfo[]>,
- *   recorderRef: React.MutableRefObject<ReturnType<typeof import("@utils/notes.js").createRecorder> | null>,
+ *   recorderRef: React.MutableRefObject<ReturnType<typeof import("@utils/noteRecorder.js").createRecorder> | null>,
  * }} options
  */
 export function useTranslationPipeline({ lanesRef, languagesRef, recorderRef }) {

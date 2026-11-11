@@ -10,7 +10,7 @@ import Notes from "@pages/Notes";
 import { cx } from "@components/shared";
 import Settings from "@pages/Settings";
 import Sidebar from "@components/Sidebar";
-import { loadNotesCaptions, loadNotesConsent, loadNotesInput, loadNotesListen, storeNotesCaptions, storeNotesInput, storeNotesListen } from "@utils/notes.js";
+import { loadNotesCaptions, loadNotesConsent, loadNotesInput, loadNotesListen, storeNotesCaptions, storeNotesInput, storeNotesListen } from "@utils/notePrefs.js";
 import { t, useT } from "@i18n";
 import { useAudioRoute } from "@hooks/useAudioRoute.js";
 import { useDevices } from "@hooks/useDevices.js";
@@ -66,8 +66,8 @@ export default function App() {
   // El modo rápido se lee en cada trozo: se puede comparar sin detener el carril.
   const lanesRef = useRef(lanes);
   lanesRef.current = lanes;
-  // La conversación que se está guardando (ver notes.js).
-  const recorderRef = useRef(/** @type {ReturnType<typeof import("@utils/notes.js").createRecorder> | null} */ (null));
+  // La conversación que se está guardando (ver noteRecorder.js).
+  const recorderRef = useRef(/** @type {ReturnType<typeof import("@utils/noteRecorder.js").createRecorder> | null} */ (null));
   const [modeRef, modeWidth] = useWidth();
   const { view, setView, home, goTo, openRequest, openNote, menuOpen, openMenu, closeMenu } = useNavigation();
   // Al terminar Tomar notas se abre la nota; `stopping` es la parada en curso.

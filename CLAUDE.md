@@ -32,13 +32,13 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
   - el flujo `enqueue` / `texted` / `playback`, `start` y `stop`, en
     `src/hooks/useTranslationPipeline.js`;
   - las claves de `localStorage` que ya existen (`lingora.*`, casi todas en
-    `src/utils/prefs.js` y `src/utils/notes.js`): no las renombres, se
+    `src/utils/prefs.js` y `src/utils/notePrefs.js`): no las renombres, se
     perderían los ajustes de quien ya usa la app (`prefs.test.js` lo vigila).
 - **«No tocar» protege el comportamiento, no el sitio.** Lo que no se cambia
   son los valores, los tiempos y la lógica afinados. Mover ese código a otro
   archivo para ordenar está permitido si queda idéntico (compruébalo con un
   diff) y se avisa de que hay que probarlo con audio real.
-- **En `src/utils/notes.js`:** `createSpeakerTracker` y sus constantes
+- **En `src/utils/speakers.js`:** `createSpeakerTracker` y sus constantes
   (`SAME_SPEAKER = 0.5`, `SHORT_SECS`, `NEW_SPEAKER_SECS`, `MIN_SHARE`,
   `MERGE`, el repaso `refine()`). Se afinaron con una entrevista real de
   55 min (2 personas: 94 % bien) y voces sintéticas (100 %).
@@ -130,7 +130,7 @@ documentación o su código).
   `src/styles.css` es solo para lo general.
 - **Carpetas:** `src/pages/` (pantallas; `Home` es la que abre la app), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
-  `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
+  `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes` (la nota como datos), `notePrefs`, `noteRecorder`, `speakers`, `words`,
   `lanes`, `voice`, `phrases`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`, `summarySource`), `src/hooks/` (hooks propios de React,
   `useAlgo.js`) y `src/App/` (el armazón y Traducir, solo une las piezas: la
   traducción en vivo está en `hooks/useTranslationPipeline`, la nota en curso en

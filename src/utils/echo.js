@@ -24,7 +24,7 @@ const KEEP_MS = 60_000;
 const ECHO_SHARE = 0.5;
 /** What remains after removing the echo needs at least these words. */
 const MIN_LEFT_WORDS = 3;
-/** Minimum similarity (cosine) to a person on the Mac; the same threshold that separates speakers in notes.js. */
+/** Minimum similarity (cosine) to a person on the Mac; the same threshold that separates speakers in speakers.js. */
 const SAME_VOICE = 0.5;
 /** How much more it has to sound like that person than like you. */
 const VOICE_MARGIN = 0.1;
@@ -131,7 +131,7 @@ function cosine(a, b) {
  * @typedef {Omit<import("./api").NoteSentence, "t" | "speaker">} Sentence
  * @typedef {{ print: Promise<number[]>, secs: number } | null} Voice
  * @typedef {import("./audio").SegmentInfo} Info
- * @typedef {ReturnType<typeof import("./notes.js").createRecorder>} Recorder
+ * @typedef {ReturnType<typeof import("./noteRecorder.js").createRecorder>} Recorder
  */
 
 /**

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@utils/api";
-import { createSpeakerTracker } from "@utils/notes";
+import { createSpeakerTracker } from "@utils/speakers.js";
 import { addToMean, closest, estimatePitch, genderFromPitch, nextVoice } from "@utils/multiVoice";
 
 /** Seconds someone must have spoken before getting their own voice: a single

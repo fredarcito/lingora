@@ -11,18 +11,8 @@ import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
 import { partAt } from "@utils/mindMap.js";
 import { NOTES_REFRESH_MS } from "@utils/noteList.js";
-import {
-  discardActive,
-  formatSpan,
-  noteToText,
-  renameActive,
-  SUMMARY_TEMPLATES,
-  summaryLangOf,
-  summaryPrompt,
-  summaryTemplateOf,
-  transcriptParts,
-  userMarks,
-} from "@utils/notes.js";
+import { discardActive, renameActive } from "@utils/noteRecorder.js";
+import { formatSpan, noteToText, SUMMARY_TEMPLATES, summaryLangOf, summaryPrompt, summaryTemplateOf, transcriptParts, userMarks } from "@utils/notes.js";
 import {
   ArrowIcon,
   BookmarkIcon,

@@ -75,7 +75,7 @@ export function mapTree(text, short) {
 /**
  * The paragraph of the transcript (index of `transcriptParts`) that was being
  * heard at that second: the last one that started before it. Null without paragraphs.
- * @param {ReturnType<typeof import("./notes").transcriptParts>} parts
+ * @param {ReturnType<typeof import("./notes.js").transcriptParts>} parts
  * @param {number} secs
  */
 export function partAt(parts, secs) {

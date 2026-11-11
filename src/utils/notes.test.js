@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import cases from "../../tests/fixtures/paragraphs.json";
-import { createSpeakerTracker, marksByPart, paragraphs, speakerShares, summaryTemplateOf, tidyNote, transcriptParts, userMarks } from "./notes";
+import { createSpeakerTracker } from "./speakers.js";
+import { marksByPart, paragraphs, speakerShares, summaryTemplateOf, tidyNote, transcriptParts, userMarks } from "./notes.js";
 
 describe("paragraphs", () => {
   // Same fixture as `paragraphs_match_shared_fixture` in src-tauri/src/notes.rs:

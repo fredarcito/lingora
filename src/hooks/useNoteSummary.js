@@ -2,7 +2,7 @@ import { useState } from "react";
 import { api, errorMessage } from "@utils/api";
 import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";
 import { notifySummarySource, useSummarySource } from "@hooks/useSummarySource";
-import { setActiveSummary } from "@utils/notes.js";
+import { setActiveSummary } from "@utils/noteRecorder.js";
 import { cloudRequest, hasConsent, storeConsent, storeSummarySource } from "@utils/summarySource.js";
 
 /**

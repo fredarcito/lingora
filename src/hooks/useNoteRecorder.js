@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
-import { createRecorder, loadNotesLang, loadSaveNotes, storeSaveNotes } from "@utils/notes.js";
+import { createRecorder } from "@utils/noteRecorder.js";
+import { loadNotesLang, loadSaveNotes, storeSaveNotes } from "@utils/notePrefs.js";
 
 /** @typedef {ReturnType<typeof createRecorder>} Recorder */
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, errorMessage } from "@utils/api";
-import { ensureSpeakers, loadSpeakers } from "@utils/notes";
+import { ensureSpeakers, loadSpeakers } from "@utils/notePrefs.js";
 import { t, useLang, useT } from "@i18n";
 import { LinkButton, Spinner, cx } from "@components/shared";
 import { downloadSummaryModel, useSummaryModel } from "@hooks/useSummaryModel";

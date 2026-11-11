@@ -8,7 +8,7 @@ import Welcome, { WelcomeBoundary, needsWelcome } from "./pages/Welcome";
 import { ErrorBoundary } from "./components/shared";
 import { I18nProvider, t } from "./i18n";
 import { captureErrors } from "./utils/log";
-import { ensureSpeakers } from "./utils/notes";
+import { ensureSpeakers } from "./utils/notePrefs.js";
 import { applyTheme } from "./hooks/useTheme";
 import { TITLEBAR_OVERLAY } from "./utils/windowChrome";
 import { loadTheme } from "./utils/prefs";

@@ -7,7 +7,7 @@ import { ROUTE_CHECK_MS, echoPossible, meetingMic, readRoute, roomMic } from "@u
 /**
  * @typedef {import("@app/types").Lane} Lane
  * @typedef {import("@app/types").LaneState} LaneState
- * @typedef {ReturnType<typeof import("@utils/notes.js").createRecorder>} Recorder
+ * @typedef {ReturnType<typeof import("@utils/noteRecorder.js").createRecorder>} Recorder
  */
 
 /**

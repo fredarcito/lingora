@@ -5,7 +5,7 @@ import Diagnostics from "@components/Diagnostics";
 import { MenuButton } from "@components/Sidebar";
 import ThemeToggle from "@components/ThemeToggle";
 import { api } from "@utils/api";
-import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notes.js";
+import { ensureSpeakers, loadMyName, loadNotesLang, loadSaveNotes, loadSpeakers, storeMyName, storeNotesLang, storeSaveNotes, storeSpeakers } from "@utils/notePrefs.js";
 import LanguagePicker from "@components/LanguagePicker";
 import Storage from "@components/Storage";
 import SummarySource from "@components/SummarySource";
