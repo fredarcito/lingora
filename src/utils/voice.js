@@ -1,4 +1,5 @@
-// La voz que sale por los altavoces: lo comparten la reproducción (App) y la
+// La voz que sale por los altavoces: lo comparten la reproducción
+// (`useTranslationPipeline`) y la
 // prueba de voz de la tarjeta del carril.
 
 /** Nivel por debajo del cual el principio y el final de la voz son silencio. */
@@ -68,3 +69,24 @@ export function speedMode(value) {
   const distance = (/** @type {(typeof SPEED_MODES)[number]} */ m) => (value < m.from ? m.from - value : value > m.to ? value - m.to : 0);
   return SPEED_MODES.reduce((best, m) => (distance(m) < distance(best) ? m : best)).id;
 }
+
+/**
+ * Velocidad de la voz según el retraso. Un vídeo no espera a la traducción, y
+ * el español dura un 15-25 % más que el inglés: si la voz no acelera, el
+ * retraso crece sin límite. `lag` es el retraso medido en la última frase
+ * que sonó; `pending`, los trozos en cola; `max`, el tope que elige el
+ * usuario (más rápido alcanza antes, pero suena menos natural).
+ * @param {number} pending @param {number} lag @param {number} max
+ */
+export function speedFor(pending, lag, max) {
+  // Acelerar con poco retraso solo deja silencios esperando al trozo siguiente.
+  const byLag = lag > 6 ? 1 : lag > 4.5 ? 0.7 : lag > 3.5 ? 0.4 : lag > 2.5 ? 0.2 : 0;
+  const byQueue = pending >= 4 ? 1 : pending === 3 ? 0.5 : 0;
+  return 1 + (max - 1) * Math.max(byLag, byQueue);
+}
+
+/**
+ * Con más retraso que esto la voz ya no sirve en una conversación: se omite
+ * y solo se muestra el texto, para alcanzar al original.
+ */
+export const MAX_VOICE_LAG_SECS = 10;

@@ -23,13 +23,21 @@ reorganices ni renombres nada de esto, aunque parezca mejorable:
   flotante es su variante `floating`, App cambia el tamaño con
   `--captions-size` y LaneCard la coloca con `className`. El pie de lo que
   se oye es `components/LiveStatus` (también en Tomar notas).
-- **En `src/App/index.jsx`:**
-  - `speedFor`, `MAX_VOICE_LAG_SECS` y `trimSilence` (este, en
-    `src/utils/voice.js`: lo comparte con la prueba de voz);
-  - el flujo `enqueue` / `texted` / `playback`, `start` y `stop`;
+- **El flujo de la traducción en vivo** (antes en `src/App/index.jsx`; se
+  movió tal cual, sin cambiar la lógica):
+  - `speedFor`, `MAX_VOICE_LAG_SECS` y `trimSilence`, en `src/utils/voice.js`
+    (este último lo comparte con la prueba de voz);
+  - el corte en frases para la voz (`phraseSplitter`, `splitAtSentenceEnd`,
+    sus largos y separadores), en `src/utils/phrases.js`;
+  - el flujo `enqueue` / `texted` / `playback`, `start` y `stop`, en
+    `src/hooks/useTranslationPipeline.js`;
   - las claves de `localStorage` que ya existen (`lingora.*`, casi todas en
     `src/utils/prefs.js` y `src/utils/notes.js`): no las renombres, se
     perderían los ajustes de quien ya usa la app (`prefs.test.js` lo vigila).
+- **«No tocar» protege el comportamiento, no el sitio.** Lo que no se cambia
+  son los valores, los tiempos y la lógica afinados. Mover ese código a otro
+  archivo para ordenar está permitido si queda idéntico (compruébalo con un
+  diff) y se avisa de que hay que probarlo con audio real.
 - **En `src/utils/notes.js`:** `createSpeakerTracker` y sus constantes
   (`SAME_SPEAKER = 0.5`, `SHORT_SECS`, `NEW_SPEAKER_SECS`, `MIN_SHARE`,
   `MERGE`, el repaso `refine()`). Se afinaron con una entrevista real de
@@ -123,8 +131,10 @@ documentación o su código).
 - **Carpetas:** `src/pages/` (pantallas; `Home` es la que abre la app), `src/components/` (piezas de una
   pantalla o de varias) y `src/components/shared/` (las básicas),
   `src/utils/` (lo que no es interfaz: `api`, `audio`, `notes`, `words`,
-  `lanes`, `voice`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`, `summarySource`), `src/hooks/` (hooks propios de React,
-  `useAlgo.js`) y `src/App/` (el armazón y Traducir; la cabecera y la
+  `lanes`, `voice`, `phrases`, `echo`, `route`, `prefs`, `noteList`, `multiVoice`, `speechQueue`, `summarySource`), `src/hooks/` (hooks propios de React,
+  `useAlgo.js`) y `src/App/` (el armazón y Traducir, solo une las piezas: la
+  traducción en vivo está en `hooks/useTranslationPipeline`, la nota en curso en
+  `hooks/useNoteRecorder` y los carriles en `resolveLanes` de `utils/lanes`; la cabecera y la
   tarjeta de cada carril están en `components/TopBar` y
   `components/LaneCard`, y los tipos en `App/types.js`).
 - **Imports:** nada de `../`. Entre carpetas se usan los alias `@app`,

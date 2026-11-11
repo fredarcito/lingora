@@ -1,5 +1,8 @@
 // What the Translate screen (App) and the pieces of each lane share.
 
+import { t } from "@i18n";
+import { SYSTEM_AUDIO } from "./audio";
+
 /** @param {string} code @returns {import("./api").Lang} */
 export const apiLang = (code) => /** @type {import("./api").Lang} */ (code.toLowerCase());
 
@@ -124,5 +127,67 @@ export function needsSenseVoice(lanes, languages) {
   return lanes.some((l) => {
     const info = languages.find((x) => x.code === apiLang(l.sourceLang));
     return Boolean(info?.can_listen && !info.parakeet);
+  });
+}
+
+/**
+ * The lanes as they run now: each saved lane with the languages of the pair
+ * and what the mode changes (Take notes neither translates nor speaks,
+ * "Original" captions, the voices this device has for the language).
+ * @param {ReturnType<typeof import("./prefs.js").loadLaneSettings>} laneSettings
+ * @param {{
+ *   pair: import("@app/types").LangPair,
+ *   mode: import("@app/types").Mode,
+ *   meeting: boolean,
+ *   notesInput: import("./notes.js").NotesInput,
+ *   notesListen: "EN" | "ZH",
+ *   notesCaptions: import("./notes.js").NotesCaptions,
+ *   floating: boolean,
+ *   noTranslate: boolean,
+ *   systemAudio: boolean,
+ *   langInfo: (code: string) => import("./api").LanguageInfo | undefined,
+ * }} options `meeting`: Take notes in an online meeting (the Mac audio and your microphone);
+ *   `floating`: the floating captions window is open.
+ * @returns {import("@app/types").Lane[]}
+ */
+export function resolveLanes(laneSettings, { pair, mode, meeting, notesInput, notesListen, notesCaptions, floating, noTranslate, systemAudio, langInfo }) {
+  return laneSettings.map((l) => {
+    const langs = langsFor(l.direction, pair);
+    // Tomar notas: Escuchar sin traducir ni hablar, con la entrada que se eligió
+    // allí. En una reunión en línea, Hablar también: es tu micrófono ("Yo").
+    const taking = mode === "notes" && (l.direction === "remote_to_local" || meeting);
+    if (taking) langs.sourceLang = langs.targetLang = notesListen;
+    // Captions in a language, with the floating window open: only the others are
+    // translated; "Yo" stays as said. Each sentence reads it, so it can change while recording.
+    if (taking && l.direction === "remote_to_local" && floating && notesCaptions !== "original") {
+      langs.targetLang = notesCaptions.toUpperCase();
+      langs.sourceLang = notesListenCode(notesListen, langs.targetLang);
+    }
+    // Local por defecto, pero solo si el modelo está instalado; si no, la nube.
+    const source = langInfo(langs.sourceLang);
+    const target = langInfo(langs.targetLang);
+    const voices = { female: target?.female_voice ?? true, male: target?.male_voice ?? true };
+    // Sin voz del sistema para el idioma, solo hay subtítulos.
+    const speak = !taking && l.speak && (voices.female || voices.male);
+    // "Original" captions (Translate audio): what is said, as said. Without voice
+    // nothing is translated (the target is the same language, no lag); with it,
+    // it still translates for the voice and only the captions show the original.
+    const original = mode === "video" && noTranslate;
+    if (original && !speak) langs.targetLang = langs.sourceLang;
+    return {
+      ...l,
+      title: t(`lanes.${l.direction}.title`),
+      subtitle: t(`lanes.${l.direction}.subtitle`),
+      ...langs,
+      ...(taking && {
+        notes: true,
+        // El micrófono de la reunión se elige al empezar (ver `meetingMic` en utils/route.js).
+        inputDeviceId: l.direction === "local_to_remote" || notesInput === "mic" || !systemAudio ? "" : SYSTEM_AUDIO,
+      }),
+      canListen: source?.can_listen ?? true,
+      voices,
+      speak,
+      captionsOriginal: original && speak,
+    };
   });
 }
