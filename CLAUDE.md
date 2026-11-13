@@ -180,7 +180,11 @@ documentación o su código).
   reutiliza lo leído, nube con streaming): úsalo tal cual. Fase 1 (chat con
   una nota: pestaña «Chat» de la nota, `chat/prompt.rs`, `chat/search.rs`,
   `chat/commands.rs`, banco de preguntas en `chat/bench.rs`) hecha; falta
-  probarla a mano y ampliar el banco. La fase 2 (con todas las notas) no.
+  probarla a mano y ampliar el banco. Fase 2 (página «Chat» con todas las
+  notas: `chat/all.rs`, `chat/query.rs`, el índice en `chat/search.rs`, chats
+  guardados en `chat/store.rs`; `pages/Chat`, `hooks/useNotesChat`) hecha;
+  falta probarla a mano. Premisa: el usuario nombra persona, tema o fecha; si
+  la pregunta es ambigua, el chat pregunta en vez de adivinar.
 - `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
 - `docs/plan-inicio.md`: pantalla de inicio y modo claro (hechos, con la fila «Apariencia» en Ajustes). Los colores son variables (`:root` oscuro, claro bajo `data-theme`): no escribas colores literales en los CSS.
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera

@@ -177,5 +177,270 @@
   "kind": "unanswerable",
   "answerable": false,
   "lang": "en"
+ },
+ {
+  "id": "all-budget-luis",
+  "note": null,
+  "q": "¿Qué presupuesto propuso Luis para la campaña de lanzamiento?",
+  "kind": "multi_note",
+  "must": [
+   [
+    "15.000",
+    "15000",
+    "quince mil",
+    "15 mil"
+   ]
+  ],
+  "sources": [
+   "reunion-presupuesto"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "all-atlas-date",
+  "note": null,
+  "q": "¿Cuándo sale la primera versión de Atlas?",
+  "kind": "multi_note",
+  "must": [
+   [
+    "15 de enero",
+    "quince de enero",
+    "15 enero"
+   ]
+  ],
+  "sources": [
+   "atlas-cierre"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "all-atlas-who",
+  "note": null,
+  "q": "¿Y quién confirmó esa fecha?",
+  "kind": "multi_note",
+  "must": [
+   "Jeff"
+  ],
+  "lang": "es",
+  "today": "2026-11-13",
+  "after": "all-atlas-date"
+ },
+ {
+  "id": "all-atlas-why",
+  "note": null,
+  "q": "¿Por qué se retrasó Atlas?",
+  "kind": "multi_note",
+  "must": [
+   [
+    "proveedor",
+    "supplier",
+    "api"
+   ]
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "all-api-en",
+  "note": null,
+  "q": "When will the supplier's stable API be ready?",
+  "kind": "cross_lang",
+  "must": [
+   [
+    "november 5",
+    "5 november",
+    "november fifth",
+    "5th of november",
+    "nov 5"
+   ]
+  ],
+  "sources": [
+   "atlas-proveedor"
+  ],
+  "lang": "en",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "all-move",
+  "note": null,
+  "q": "¿Cuándo es la mudanza de la oficina?",
+  "kind": "multi_note",
+  "must": [
+   [
+    "27",
+    "veintisiete"
+   ]
+  ],
+  "sources": [
+   "oficina-jeff-ruiz"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "all-marta-tasks",
+  "note": null,
+  "q": "¿Qué tareas tiene Marta?",
+  "kind": "tasks",
+  "must": [
+   [
+    "diseño",
+    "bocetos",
+    "facturas"
+   ]
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "ov-jeff-chen",
+  "note": null,
+  "q": "Dame un resumen de las reuniones con Jeff Chen",
+  "kind": "overview",
+  "must": [
+   [
+    "40.000",
+    "40000",
+    "cuarenta mil"
+   ],
+   [
+    "retraso",
+    "retras"
+   ],
+   [
+    "15 de enero",
+    "quince de enero"
+   ]
+  ],
+  "sources": [
+   "atlas-kickoff",
+   "atlas-revision",
+   "atlas-cierre"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "ov-atlas",
+  "note": null,
+  "q": "Resume lo que se habló del proyecto Atlas",
+  "kind": "overview",
+  "must": [
+   [
+    "40.000",
+    "40000",
+    "cuarenta mil"
+   ],
+   [
+    "retraso",
+    "retras"
+   ],
+   [
+    "15 de enero",
+    "quince de enero"
+   ]
+  ],
+  "sources": [
+   "atlas-kickoff",
+   "atlas-revision",
+   "atlas-cierre"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "date-week",
+  "note": null,
+  "q": "¿Qué reuniones tuve esta semana?",
+  "kind": "date",
+  "must": [
+   [
+    "atlas",
+    "seguimiento"
+   ],
+   [
+    "mudanza",
+    "oficina"
+   ]
+  ],
+  "sources": [
+   "atlas-cierre",
+   "oficina-jeff-ruiz"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "date-october",
+  "note": null,
+  "q": "¿De qué hablé con Ana en octubre?",
+  "kind": "date",
+  "must": [
+   [
+    "atlas",
+    "retraso"
+   ]
+  ],
+  "sources": [
+   "atlas-revision"
+  ],
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "ask-two-jeffs",
+  "note": null,
+  "q": "¿Qué me dijo Jeff la última vez?",
+  "kind": "clarify",
+  "asks_back": true,
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "ask-vague",
+  "note": null,
+  "q": "Resume mis reuniones",
+  "kind": "clarify",
+  "asks_back": true,
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "ask-this",
+  "note": null,
+  "q": "¿Cómo va este proyecto?",
+  "kind": "clarify",
+  "asks_back": true,
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "no-license",
+  "note": null,
+  "q": "¿Cuánto cuesta la licencia de Pagalia?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "no-person",
+  "note": null,
+  "q": "¿Qué dijo Roberto del presupuesto?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "es",
+  "today": "2026-11-13"
+ },
+ {
+  "id": "no-holidays",
+  "note": null,
+  "q": "¿Qué dijo Marta de sus vacaciones?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "es",
+  "today": "2026-11-13"
  }
 ]

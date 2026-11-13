@@ -1,0 +1,46 @@
+{
+ "version": 1,
+ "id": "2025-11-05_10-00-00",
+ "title": "Campaña de Navidad 2025",
+ "created_at": "2025-11-05T10:00:00.000Z",
+ "ended_at": "2025-11-05T10:01:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Ana",
+  "2": "Luis"
+ },
+ "sentences": [
+  {
+   "t": 5,
+   "speaker": 1,
+   "source": "Cerramos la campaña de Navidad.",
+   "translation": "Cerramos la campaña de Navidad.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 14,
+   "speaker": 2,
+   "source": "El presupuesto de este año es de doce mil euros.",
+   "translation": "El presupuesto de este año es de doce mil euros.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 30,
+   "speaker": 1,
+   "source": "Que la mitad vaya a carteles en el metro.",
+   "translation": "Que la mitad vaya a carteles en el metro.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 48,
+   "speaker": 2,
+   "source": "De acuerdo. El vídeo lo hacemos nosotros sin agencia.",
+   "translation": "De acuerdo. El vídeo lo hacemos nosotros sin agencia.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ]
+}

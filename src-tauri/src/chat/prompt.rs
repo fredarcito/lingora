@@ -128,7 +128,7 @@ pub fn pick_units(cost: &[usize], scores: &[f32], budget: usize) -> Vec<usize> {
 }
 
 /// The last message of `turns` must be the question.
-fn question(turns: &[Turn]) -> Result<&str> {
+pub(super) fn question(turns: &[Turn]) -> Result<&str> {
     match turns.last() {
         Some(t) if t.role == Role::User && !t.text.trim().is_empty() => Ok(&t.text),
         _ => Err(Error::Notes("Escribe una pregunta.".into())),

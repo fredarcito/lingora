@@ -1,0 +1,61 @@
+{
+ "version": 1,
+ "id": "2026-10-15_16-00-00",
+ "title": "Call with the payments supplier",
+ "created_at": "2026-10-15T16:00:00.000Z",
+ "ended_at": "2026-10-15T16:02:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Tom"
+ },
+ "sentences": [
+  {
+   "t": 3,
+   "speaker": 1,
+   "source": "Hi, thanks for the call. I'm calling about the payments integration for Atlas.",
+   "translation": "Hola, gracias por la llamada. Os llamo por la integración de pagos de Atlas.",
+   "source_lang": "en",
+   "target_lang": "es"
+  },
+  {
+   "t": 14,
+   "speaker": 0,
+   "source": "Yes, is there any problem?",
+   "translation": "Sí, ¿hay algún problema?",
+   "source_lang": "en",
+   "target_lang": "es"
+  },
+  {
+   "t": 20,
+   "speaker": 1,
+   "source": "Unfortunately, our new API is delayed by three weeks.",
+   "translation": "Por desgracia, nuestra nueva API se retrasa tres semanas.",
+   "source_lang": "en",
+   "target_lang": "es"
+  },
+  {
+   "t": 35,
+   "speaker": 1,
+   "source": "The stable version will be ready on November fifth.",
+   "translation": "La versión estable estará lista el cinco de noviembre.",
+   "source_lang": "en",
+   "target_lang": "es"
+  },
+  {
+   "t": 52,
+   "speaker": 0,
+   "source": "That makes the December date harder for us.",
+   "translation": "Eso nos complica la fecha de diciembre.",
+   "source_lang": "en",
+   "target_lang": "es"
+  },
+  {
+   "t": 66,
+   "speaker": 1,
+   "source": "I understand. We'll give you a test environment tomorrow so you don't have to stop.",
+   "translation": "Lo entiendo. Os damos un entorno de pruebas mañana mismo para que no os paréis.",
+   "source_lang": "en",
+   "target_lang": "es"
+  }
+ ]
+}

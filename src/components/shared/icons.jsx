@@ -115,6 +115,15 @@ export function SparkleIcon() {
   );
 }
 
+/** A speech bubble: a saved chat. */
+export function ChatIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z" />
+    </svg>
+  );
+}
+
 /** An arrow up: send. */
 export function SendIcon() {
   return (

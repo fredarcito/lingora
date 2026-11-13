@@ -5,14 +5,17 @@
 //! This file has what both share: the messages, stopping an answer and
 //! streaming it in whole characters.
 
+pub mod all;
 #[cfg(test)]
 mod bench;
 pub mod cloud;
 pub mod commands;
 pub mod local;
 mod prompt;
+mod query;
 mod search;
 mod session;
+pub mod store;
 
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};

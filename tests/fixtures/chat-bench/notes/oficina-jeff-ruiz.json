@@ -1,0 +1,45 @@
+{
+ "version": 1,
+ "id": "2026-11-11_12-00-00",
+ "title": "Mudanza de la oficina",
+ "created_at": "2026-11-11T12:00:00.000Z",
+ "ended_at": "2026-11-11T12:01:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Jeff Ruiz"
+ },
+ "sentences": [
+  {
+   "t": 4,
+   "speaker": 1,
+   "source": "Te llamo por la mudanza. Nos cambiamos a la oficina de la calle Colón.",
+   "translation": "Te llamo por la mudanza. Nos cambiamos a la oficina de la calle Colón.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 18,
+   "speaker": 0,
+   "source": "¿Cuándo es la mudanza?",
+   "translation": "¿Cuándo es la mudanza?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 24,
+   "speaker": 1,
+   "source": "El viernes veintisiete de noviembre. Necesito que cada uno empaquete su mesa el jueves.",
+   "translation": "El viernes veintisiete de noviembre. Necesito que cada uno empaquete su mesa el jueves.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 50,
+   "speaker": 1,
+   "source": "Yo contrato la empresa de mudanzas esta semana.",
+   "translation": "Yo contrato la empresa de mudanzas esta semana.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ]
+}

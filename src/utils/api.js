@@ -195,6 +195,14 @@ export function errorMessage(e) {
   return String(e);
 }
 
+/**
+ * The answer of `notesChat`.
+ * @typedef {{ text: string, overview: boolean, notes: import("@utils/chat.js").UsedNote[],
+ *   citations: import("@utils/chat.js").Citation[], invented: number, basis: { shown: number, total: number } | null,
+ *   notice: { kind: "clarify", ask: string } | { kind: "ambiguous", person: string, names: string[] }
+ *     | { kind: "no_person", person: string } | { kind: "vague" | "nothing_found" | "no_notes" } | null }} NotesAnswer
+ */
+
 export const api = {
   /**
    * Transcribes a piece of audio.
@@ -492,6 +500,30 @@ export const api = {
   },
   /** Stops the chat answer in progress; `noteChat` resolves with what was written. @returns {Promise<void>} */
   chatStop: () => invoke("chat_stop"),
+  /**
+   * Answers the last message of `messages` from all the notes (the Chat
+   * page): it picks the notes, and the answer arrives in pieces through
+   * `onToken`. `today` is the local date (`localDate()`); `noteIds`, the notes
+   * the user chose for this question (they skip the choosing). With a
+   * `notice` nothing was asked to the model (the interface says why).
+   * @param {{ role: "user" | "assistant", text: string }[]} messages @param {string} today
+   * @param {import("@utils/summarySource.js").CloudRequest | null} cloud @param {string[] | null} noteIds
+   * @param {(piece: string) => void} onToken
+   * @returns {Promise<NotesAnswer>}
+   */
+  notesChat: (messages, today, cloud, noteIds, onToken) => {
+    const channel = new Channel();
+    channel.onmessage = onToken;
+    return invoke("notes_chat", { messages, today, cloud, noteIds, onToken: channel });
+  },
+  /** The saved all-notes chats, most recently used first. @returns {Promise<{ id: string, title: string, updated_at: string }[]>} */
+  chatsList: () => invoke("chats_list"),
+  /** @param {string} id @returns {Promise<import("@utils/chat.js").SavedChat>} */
+  chatRead: (id) => invoke("chat_read", { id }),
+  /** Creates or replaces a saved chat (`chat.id` is its file). @param {import("@utils/chat.js").SavedChat} chat @returns {Promise<void>} */
+  chatSave: (chat) => invoke("chat_save", { chat }),
+  /** @param {string} id @returns {Promise<void>} */
+  chatDelete: (id) => invoke("chat_delete", { id }),
   /**
    * Where a service's key is: in the keychain, in the development environment or nowhere.
    * @param {string} provider @returns {Promise<"keychain" | "env" | "none">}

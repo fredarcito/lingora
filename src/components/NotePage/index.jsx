@@ -48,11 +48,14 @@ const WORKING_PHRASES = Array.from({ length: 9 }, (_, i) => `notes.working${i + 
 
 /**
  * A note's page: editable title, actions and tabs.
- * @param {{ id: string, live: boolean, translating?: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void, topSlot?: HTMLElement | null }} props
+ * @param {{ id: string, live: boolean, translating?: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void,
+ *   topSlot?: HTMLElement | null, jump?: { secs: number, nonce: number } | null, onBackToChat?: () => void }} props
  * `translating`: a lane is translating now (the Chat tab on the computer waits for it to end).
  * `topSlot`: where «← All notes» and the day go (the page header, level with the ☰); without it they stay at the top of the page.
+ * `jump`: open on the transcript at that second (a source of a chat answer), once per `nonce`.
+ * `onBackToChat`: the note was opened from the Chat page; a link next to «← All notes» goes back to it.
  */
-export default function NotePage({ id, live, translating = false, languages, onBack, topSlot }) {
+export default function NotePage({ id, live, translating = false, languages, onBack, topSlot, jump = null, onBackToChat }) {
   const t = useT();
   const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [error, setError] = useState("");
@@ -114,6 +117,18 @@ export default function NotePage({ id, live, translating = false, languages, onB
   useEffect(() => {
     if (tab !== "transcript") setFocus(null);
   }, [tab]);
+
+  // A chat source's moment: the transcript there, once the note is loaded (as `jumpTo`).
+  const jumped = useRef(0);
+  useEffect(() => {
+    if (!note || !jump || jumped.current === jump.nonce) return;
+    jumped.current = jump.nonce;
+    const part = partAt(transcriptParts(note), jump.secs);
+    if (part === null) return;
+    setTab("transcript");
+    setMarkFilter("all");
+    setFocus({ part, nonce: Date.now() });
+  }, [note, jump]);
 
   // The ⋯ menu closes when clicking anywhere else or with Escape.
   useDismiss(menuOpen, () => setMenuOpen(false));
@@ -223,6 +238,11 @@ export default function NotePage({ id, live, translating = false, languages, onB
             <LinkButton className={styles.notesBack} onClick={onBack}>
               {t("notes.back")}
             </LinkButton>
+            {onBackToChat && (
+              <LinkButton className={styles.notesBack} onClick={onBackToChat}>
+                {t("chat.all.backToChat")}
+              </LinkButton>
+            )}
             <span className={styles.noteDay}>{day}</span>
           </div>,
         )}

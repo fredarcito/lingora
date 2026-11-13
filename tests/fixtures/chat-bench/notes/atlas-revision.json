@@ -1,0 +1,70 @@
+{
+ "version": 1,
+ "id": "2026-10-20_11-00-00",
+ "title": "Revisión semanal",
+ "created_at": "2026-10-20T11:00:00.000Z",
+ "ended_at": "2026-10-20T11:02:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Jeff Chen",
+  "2": "Ana"
+ },
+ "sentences": [
+  {
+   "t": 5,
+   "speaker": 1,
+   "source": "Repasemos Atlas. Vamos con retraso por culpa del proveedor de pagos.",
+   "translation": "Repasemos Atlas. Vamos con retraso por culpa del proveedor de pagos.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 18,
+   "speaker": 2,
+   "source": "¿Cuánto retraso?",
+   "translation": "¿Cuánto retraso?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 24,
+   "speaker": 1,
+   "source": "Unas tres semanas. La primera versión pasa al quince de enero.",
+   "translation": "Unas tres semanas. La primera versión pasa al quince de enero.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 45,
+   "speaker": 2,
+   "source": "Entonces necesitaremos más dinero para el equipo.",
+   "translation": "Entonces necesitaremos más dinero para el equipo.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 52,
+   "speaker": 1,
+   "source": "Sí, pediré al cliente diez mil euros más. El presupuesto quedaría en cincuenta mil.",
+   "translation": "Sí, pediré al cliente diez mil euros más. El presupuesto quedaría en cincuenta mil.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 80,
+   "speaker": 0,
+   "source": "Los bocetos de Marta ya están aprobados.",
+   "translation": "Los bocetos de Marta ya están aprobados.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 95,
+   "speaker": 2,
+   "source": "Bien. Yo me ocupo de hablar con las clínicas piloto para avisar del cambio de fecha.",
+   "translation": "Bien. Yo me ocupo de hablar con las clínicas piloto para avisar del cambio de fecha.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ]
+}

@@ -34,7 +34,7 @@ pub struct NoteSummary {
 }
 
 /// Notes folder, next to the models one.
-fn notes_dir() -> PathBuf {
+pub(crate) fn notes_dir() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_default();
     Path::new(&home).join("Library/Application Support/lingora/notes")
 }
@@ -42,11 +42,16 @@ fn notes_dir() -> PathBuf {
 /// Path of a note's file. The id can only contain `[0-9A-Za-z_-]`: that way
 /// nobody writes or reads outside the folder.
 pub(crate) fn note_path(id: &str) -> Result<PathBuf> {
-    let valid = !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
-    if !valid {
+    if !valid_id(id) {
         return Err(Error::Notes(format!("id de nota no válido: {id}")));
     }
     Ok(notes_dir().join(format!("{id}.json")))
+}
+
+/// Only `[0-9A-Za-z_-]`, up to 64: an id that is a file name and nothing else
+/// (notes and saved chats).
+pub(crate) fn valid_id(id: &str) -> bool {
+    !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
 }
 
 pub(crate) fn read_note(path: &Path) -> Result<Value> {
@@ -157,9 +162,11 @@ pub fn note_read(id: String) -> Result<Value> {
 }
 
 /// Writes the note to a `.tmp` and renames it, so an interruption does not
-/// leave the note half written.
-fn write_note(path: &Path, note: &Value) -> Result<()> {
-    std::fs::create_dir_all(notes_dir())?;
+/// leave the note half written. The saved chats are written here too.
+pub(crate) fn write_note(path: &Path, note: &Value) -> Result<()> {
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
     let tmp = path.with_extension("json.tmp");
     let json = serde_json::to_string_pretty(note).map_err(|e| Error::Notes(e.to_string()))?;
     std::fs::write(&tmp, json)?;

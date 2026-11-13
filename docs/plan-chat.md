@@ -4,7 +4,8 @@ Status: **in progress** (2026-11-13). Phases 1 and 2 approved; phase 3 (chat
 with the session in progress) stays out. **The engine is done** (§0.1, branch
 `chat`): the rest builds on it. **Phase 1 is built** (§1.2–1.3, bench code in
 §1.5); what is left of it is the by-hand check (§1.4) and the bench's remaining
-notes and questions (§1.5).
+notes and questions (§1.5). **Phase 2 is built** (§2.6 says how it ended up and
+what changed from this plan); what is left is the by-hand check (§2.5).
 
 Ask questions about one note («¿qué tareas quedaron pendientes?») or about
 all of them («¿qué dijo Ana del presupuesto?»), on the computer with the
@@ -271,26 +272,108 @@ first; only if that is not enough, consider the chat LoRA in «Pending».
 
 ## 2. Phase 2: chat with all the notes
 
+### 2.0 What phase 1 left to build on (checked 2026-11-13, commit `508f1cd`)
+
+Reuse these; do not write second versions of them.
+
+- `chat/search.rs` already exists: `fold`, `words`, `rank(docs, query)`
+  (BM25). `rank` tokenizes every document on each call: fine inside one
+  note, too slow for every note on every question. Phase 2 adds beside it an
+  **inverted** `Index`: a dictionary word → id (`u32`), and per word a list
+  of `(unit, count)`; per unit only its note id, start time and length. No
+  text is kept in memory: the text of the units picked is read back from
+  their note files (a few notes per question). Scored with the same BM25
+  (move the formula into one helper that both use, so the numbers are the
+  same; the existing tests must still pass). Sized for **1,000 notes**
+  (~30 MB of JSON at today's average of 31 KB per note, ~200 MB if they
+  were 30-minute calls): built on a background thread when the app starts
+  (not on the first question), refreshed per note by modification time;
+  a question only touches the lists of its own words (milliseconds).
+  `cargo test` includes a timing test with 1,000 synthetic notes (build
+  and query, `#[ignore]`, printed, not asserted).
+- `chat/prompt.rs`: `search_query(turns)` (question + the one before, for
+  follow-ups), `pick_units(cost, scores, budget)`, `question(turns)`,
+  `load(id)`. **Careful:** `pick_units` fills the leftover budget with
+  paragraphs that share no word with the question, which is right inside one
+  note but wrong across all notes (it would stuff unrelated notes in). Phase
+  2 keeps only units with score > 0 (plus the summaries of the notes that
+  have one); add that as a separate function, don't change `pick_units`.
+- `chat/commands.rs`: `note_chat`, `chat_stop`. `notes_chat` goes beside
+  them, with the same shape (free the translator before a local answer,
+  `key_for` before a cloud one, `Channel<String>` for the pieces).
+- `notes.rs`: `notes_dir()` is private; make it `pub(crate)` (body
+  unchanged). The index takes a folder (`&Path`) so the bench can point it
+  at `tests/fixtures/chat-bench/notes/`; the command passes `notes_dir()`.
+  `paragraphs`, `paragraph_text`, `shown_text`, `speaker_label`, `clock`,
+  `str_field` are already `pub(crate)`.
+- `chat/bench.rs` and `tests/fixtures/chat-bench/` exist (one note so
+  far). Phase 2 questions go in the same `questions.json` with
+  `"note": null`; the bench calls the same function `notes_chat` uses
+  (search + system), without Tauri.
+- Frontend: `ChatThread`, `ChatInput`, `SuggestionChips` (shared),
+  `useNoteChat` (the pattern for `useNotesChat`: streaming, stop, consent),
+  `utils/chat.js` (`[mm:ss]` parsing), `noteChat`/`chatStop` in `api.js`.
+- **Consent:** `utils/summarySource.js` stores one consent per service
+  (`lingora.summaryConsent.<id>`), shared by the summary and the note chat.
+  The all-notes chat needs its own (it sends parts of several notes): a new
+  key `lingora.notesChatConsent.<id>` with `hasNotesChatConsent` /
+  `storeNotesChatConsent` beside the existing ones. Existing keys are not
+  renamed.
+- **Opening a note at a time:** `useNavigation.openNote(id)` sets
+  `openRequest = { id, nonce }`; `NotePage` already has `jumpTo(secs)`
+  (Transcript tab + focus) used by the map and the note chat. Add an
+  optional `at` (seconds) to `openNote` / `openRequest` and have `NotePage`
+  call `jumpTo(at)` once the note is loaded. Small: do it, don't defer it.
+- `Home` (`src/pages/Home/index.jsx`): the chat card is a placeholder
+  (`disabled` input and button, `home.chat.soon` badge).
+
 ### 2.1 What the user sees
 
 - The Home card turns on: input + «Abrir chat». Typing a question and
   pressing it opens the **Chat** page with that question already asked.
 - New page `src/pages/Chat` (and a «Chat» entry in the sidebar): the same
-  thread and input as the note tab, plus a scope selector at the top:
-  «Todas mis notas» (default) or one note (opens that note's Chat tab
-  instead).
+  thread and input as the note tab. It always asks about all the notes: no
+  scope selector (user's decision, 2026-11-13); to ask about one note,
+  that note's Chat tab.
 - Answers cite their sources as chips under the message: note title, date
   and time («Reunión con Ana · 3 nov · 12:40»). A chip opens the note at
   that time (`openNote` + time).
-- The all-notes chat is **not saved** (only for the session); a «Nuevo
-  chat» button clears it. Simpler and avoids a second store of note text.
+- Opening a source leaves the Chat page for the note; **coming back finds
+  the chat as it was** (thread, scroll, a half-written question, an answer
+  still being written). So `useNotesChat` lives above the pages (in `App`,
+  like the navigation), not inside `pages/Chat`, and the note shows a
+  «Volver al chat» link when it was opened from a source.
+- **Saved conversations, as in ChatGPT (user's decision, 2026-11-13).**
+  The Chat page has its own left column: «Nuevo chat» on top, then the
+  saved conversations grouped «Hoy», «Ayer», «Últimos 7 días»,
+  «Anteriores», each with rename and delete (with confirmation). It is
+  part of the Chat page, not the app's sidebar (that one stays
+  navigation); on a narrow window it folds behind a button (`useWidth`).
+  - Stored on the Mac like the notes: one JSON per chat in
+    `~/Library/Application Support/lingora/chats/<id>.json`:
+    `{ id, title, created_at, updated_at, messages: [{ role, text, at,
+    sources?, note_ids? }] }`. Saved when an answer ends (and on rename).
+    Commands `chats_list`, `chat_read`, `chat_save`, `chat_delete` in a
+    new `chat/store.rs`, following `notes.rs` (same id and atomic-write
+    approach). **Reads and writes go through the same two helpers as the
+    notes** (`read_note` / `write_note`, made `pub(crate)`, bodies
+    unchanged), never their own `fs::read`/`fs::write`: encrypting the
+    files later (see «Pending») must be a change in one place.
+  - Title: the first question, trimmed to ~60 characters; no model call.
+  - Reopening an old chat and asking again works like any follow-up: the
+    history is sent back and the context is built for the new question.
+  - Sources pointing to a note that was deleted show as a disabled chip
+    («Nota borrada»). Deleting a note does not touch the chats; deleting a
+    chat does not touch the notes.
+  - The chat in progress lives above the pages (point above), so leaving
+    and coming back keeps it even before it is saved.
 - With a key, the first all-notes question asks for consent once per
   service, with its own wording: it sends parts of **several** notes, not
   one.
 
 ### 2.2 Backend: search without new dependencies
 
-`src-tauri/src/chat/search.rs` (new), pure and tested:
+`src-tauri/src/chat/search.rs` (extended, see §2.0), pure and tested:
 
 - **Units:** the paragraphs of each note, from the existing `paragraphs()`
   in `notes.rs` (same rules as the transcript; not changed, only made
@@ -308,19 +391,115 @@ first; only if that is not enough, consider the chat LoRA in «Pending».
   same prompt with a key). Dates in the question («la semana pasada»,
   «en octubre») become a date range: the model is given today's date and
   answers in a fixed format, parsed in Rust; if parsing fails, no filter.
-- **Context:** the best units until ~14K tokens, grouped by note and in
-  time order, each with a header `[Nota: «título» · fecha · mm:ss · persona]`.
-  The instructions ask to cite with that header's note and time; the
-  command returns the units used, so the UI shows sources even if the model
-  forgets to cite.
+  Build it as a step that can be switched off (a constant, plus an env var
+  for the bench), and run the bench with and without it: it costs a model
+  call per question, and searching the translation already covers most
+  questions in another language. Keep it only if the bench shows it helps.
+  The search query is `search_query(turns)`, so follow-ups work.
+- **Empty search:** if no unit scores above 0 (and no date filter applies),
+  don't call the model to answer: return a fixed «No encontré nada sobre
+  eso en tus notas» (i18n on the frontend from an error code or an empty
+  `sources` + empty `text`), so it can never invent.
+- **Precision first (user's decision, 2026-11-13):** the all-notes chat
+  must be as reliable as the one-note chat, which worked well. What makes
+  the one-note chat good is that the model sees whole, continuous
+  conversation; loose paragraphs from 20 notes is where a small model
+  mixes things up. So the context is built to look like the one-note case:
+  1. **Pick notes, then paragraphs.** Score each note (best paragraph
+     scores plus its summary, after the date filter) and keep the top few
+     (start with 3–5; the bench decides). Unrelated notes never get in.
+  2. **Paragraphs with their neighbours.** Inside each chosen note, the
+     matching paragraphs plus the one before and after (who asked and what
+     was answered), merged when they touch, in time order. A note that
+     fits whole goes in whole, like the one-note chat.
+  3. **Each note as its own block**, with its summary first (if it has
+     one), then a header per excerpt
+     `[Nota «título» · 3 nov 2026 · 12:40 · Ana]`. Same instructions as
+     the one-note chat (answer only from this; say when it is not there;
+     language of the question; cite), plus: name the note for each fact,
+     never merge facts from different notes into one unless asked to
+     compare, and say «en varias reuniones» explicitly when it does.
+- **Two kinds of question, two ways to build the context.** The search
+  above is for **detail** questions («¿qué presupuesto propuso Ana?»). It
+  fails on **overview** questions across notes («dame un resumen de las
+  últimas reuniones con Jeff», «¿qué tengo pendiente esta semana?»): Jeff
+  may never say his own name, and the answer needs every meeting, not the
+  best paragraphs. So:
+  - The query step (the model's short completion, ~300 tokens in, a small
+    fixed JSON out, parsed in Rust) returns `kind` (`detail` | `overview`),
+    `terms`, `people`, `from`/`to`, `latest` (a number, for «las últimas»).
+    Here it is not optional: overview questions need it.
+  - `people` are matched against the notes' speaker names (folded, as
+    `useKnownNames` / `speaker_names` see them) and against the title; dates
+    against `created_at`. These are **filters on notes**, not BM25 words.
+  - **Overview:** the notes that pass the filters, newest first (`latest`,
+    or 5 when «últimas» has no number), each as its **summary** (already in
+    the note, ~300–600 tokens) with title and date, oldest to newest so the
+    model can tell what changed. A note without a summary goes in as its
+    best paragraphs with neighbours, marked «sin resumen». If more notes
+    pass than fit, keep the newest and **say it in the answer's sources
+    line** («Basado en las 8 reuniones más recientes con Jeff de 14»), from
+    Rust, not from the model.
+  - **Overview by topic** («resumen de las reuniones sobre el proyecto
+    Atlas»), with no person or date to filter on: notes are chosen by BM25
+    over the topic `terms` only. Built: every note where they appear gets
+    in, the newest 12 (the share-of-the-best rule planned here left out
+    meetings that named the topic once; see §2.6). Then as above:
+    summaries, oldest to newest.
+  - **The notes used are shown and can be changed.** For overview answers,
+    the sources line lists the chosen notes as chips with «×», plus
+    «Añadir nota» (picker over the notes list). Changing them asks the same
+    question again with exactly those notes (`notes_chat` takes an optional
+    `note_ids` that skips the choosing). A meeting about Atlas that never
+    names it can't be found by words; this is how the user fixes it in one
+    click instead of getting a silently partial summary.
+  - **Premise (user's decision, 2026-11-13): the user names things; when a
+    question is ambiguous, the chat asks for more context instead of
+    guessing.** `clarify` covers any question that can't pick its notes:
+    no name, topic or date to go on («resume mis reuniones» → «¿De qué
+    periodo, o con quién?»), a name that matches several people or
+    projects («Hay dos Jeff: …»), a referent with nothing to point to
+    (below). The question back is short, says what is missing, and
+    the user's reply is read together with the first question. The line
+    between asking and answering: ask when a guess would change **which
+    notes** are used and nothing sensible decides it (two Jeffs, no name
+    at all). When a sensible default exists, use it and say it, don't ask
+    («las últimas» → the last 5, shown in the sources line; «esta semana»
+    → Monday to today). Asking about everything is a failure too. The bench
+    has `clarify` entries: ambiguous questions must ask back, clear ones
+    must not.
+  - **«Este proyecto», «eso», «ella»** with nothing to point to: the query
+    step reads the conversation so far (as `search_query` does); if there
+    is still no referent, it returns `kind: "clarify"` and the chat asks
+    back («¿Qué proyecto? Dime su nombre o el de alguien de esas reuniones»)
+    without searching. Asked from a note's Chat tab, «este proyecto» is
+    that note's topic: the one-note chat already covers it.
+  - **Detail:** the steps 1–3 above, with the filters applied first.
+  - If the filters leave no note («Jeff» matches nobody), the fixed «No
+    encontré reuniones con Jeff» without calling the model.
+- **Budget:** precise by default, ~14K tokens locally (as the plan had).
+  That means ~20–40 s per question on the computer (to measure); with the
+  user's key it is fast. A faster mode (~5K tokens, fewer notes) only
+  behind the existing Precisa/Rápida idea, never the default, and only if
+  the bench shows it stays good enough.
+- **Citations are checked in Rust.** After the answer, each `[mm:ss]` /
+  note cited must match an excerpt that was given; the `sources` returned
+  are those that match. A citation to something not given is dropped from
+  `sources` and logged (the bench counts them: «citas inventadas», target
+  0). The UI shows sources even if the model forgets to cite.
 
 ### 2.3 Commands
 
 - `notes_chat(messages, cloud, on_token) -> { text, sources }`: search,
   then answer with `chat::local::chat` or `chat::cloud::chat`. Reuse of
   what was read helps less here (the context changes per question), which
-  is expected.
+  is expected. `sources`: `[{ id, title, date, at }]` (`at` in seconds),
+  one per note and time actually put in the context, in the order shown.
+  Local budget: system + last question within `local::ROOM` (use
+  `count_tokens`, as `system_for` does); with a key, `CLOUD_MAX_CHARS`.
 - `chat_stop()` is shared.
+- Registered in `lib.rs` next to `note_chat`. All Rust changes of the
+  phase in one block (it restarts `pnpm tauri dev`).
 
 ### 2.4 Frontend
 
@@ -329,8 +508,9 @@ first; only if that is not enough, consider the chat LoRA in «Pending».
   (suggestions: «¿Qué tengo pendiente esta semana?», «¿De qué hablé con…?»,
   «Resume mis reuniones de ayer») and a `SourceChips` shared component.
 - `useNavigation`: a `chat` view, an initial question passed from Home,
-  and `openNote(id, time)` to open a note at a time (if the time part is
-  more than trivial, open the note only and leave it in «Pending»).
+  and `openNote(id, at)` to open a note at a time (§2.0).
+- Texts in the existing `src/i18n/{es,en}/chat.json` (new keys), sidebar
+  entry in `sidebar.json`; Home's `home.chat.soon` is no longer shown.
 - `Sidebar`: «Chat» entry. Home: the card loses `disabled` and the «Pronto»
   badge.
 
@@ -345,6 +525,46 @@ first; only if that is not enough, consider the chat LoRA in «Pending».
   with a key and locally.
 - The bench (§1.5) with the phase 2 questions (`multi_note`, `date`,
   sources) passes the agreed bar, and the phase 1 questions don't get worse.
+- **Precision bar:** the phase 1 questions asked through the all-notes chat
+  (`"note": null`, with the bench folder holding all the fixture notes)
+  must score about the same as through the one-note chat: that is the
+  proof the all-notes chat is as reliable. Plus «citas inventadas» = 0 and
+  sources pointing at the expected notes. Overview questions get their own
+  `kind` (`overview`) in the bench: «resumen de las reuniones con X»,
+  «¿qué quedó pendiente esta semana?», where `must` lists one fact from
+  each expected note and `sources` all of them. Add 2–3 decoy notes to the
+  fixtures (same people or topic, different facts) so mixing notes shows up.
+
+### 2.6 As built (2026-11-13)
+
+- **Backend:** `chat/search.rs` (`Index`: inverted, per-note postings,
+  refreshed by modification time; 1,000 half-hour notes build in ~1.2 s,
+  a question searches in ~1 ms, `index_timing` test), `chat/query.rs` (the
+  query step: prompt with examples, `parse_query`, `refine`), `chat/all.rs`
+  (choosing notes, blocks with neighbours, citations checked), `chat/store.rs`
+  (saved chats), command `notes_chat` in `chat/commands.rs`. The index is
+  built on a thread when the app starts (`all::warm`).
+- **Citations** are `[Nota 2, 12:40]`; Rust returns the checked ones and the
+  notes used; the UI links only those.
+- **Changed from the plan after the bench:**
+  - The model asked back far too often (9 of 17 questions). Fixed with
+    examples in the query prompt plus `query::refine`: it only asks back
+    when nothing is named (no person, date, count or non-generic topic) or,
+    with no conversation before, the question points at something («este
+    proyecto», «ella»).
+  - Overview by topic takes every note where the topic's words appear (the
+    newest 12), searched with the topic words only; the 40 % share and «at
+    least two paragraphs» both left out meetings that named the topic once.
+    A note too many is visible and can be removed from the chips.
+  - When the question has dates, the instructions say the notes are already
+    those of that period (the model was recomputing «esta semana»).
+- **Frontend:** `pages/Chat` (with `components/ChatList` and
+  `components/AnswerSources`), `hooks/useNotesChat` (in `App`, above the
+  pages), shared `SourceChips`, `Markdown` `cite` prop, `openNote(id, { at,
+  fromChat })` + «Volver al chat», Home card and sidebar entry on.
+- **Bench fixtures:** six synthetic notes added (Atlas meetings with changing
+  facts, a call in English with Spanish translation, a second «Jeff», a decoy
+  campaign from 2025) and 17 phase 2 questions.
 
 ---
 
@@ -363,7 +583,17 @@ first; only if that is not enough, consider the chat LoRA in «Pending».
   room for both models).
 - Search by meaning (embeddings): better recall, but another model to
   download; only if keyword search falls short in real use.
-- Saving all-notes chats.
+- Encrypting notes and chats on disk (raised by the user 2026-11-13; a
+  plan of its own, after Apple signing). Today they are plain JSON,
+  protected by the macOS account (`~/Library` is 700) and FileVault, like
+  most apps; not protected from other programs run by the same user or
+  from unencrypted backups. Idea: key in the Keychain (`keyring`, already
+  used), files encrypted through `read_note`/`write_note`, plain files
+  migrated on first read. Needs a crypto crate (ask) and the signed app
+  (an unsigned build changes identity and the Keychain asks every time).
+- Projects or tags on notes (the user groups them): the exact answer to
+  «resumen de las reuniones del proyecto X» when meetings don't name it.
+  Until then, the editable list of notes used (§2.2) covers it.
 - **A chat LoRA (distillation), only if the bench (1.5) shows clear
   failures** that prompt and fitting cannot fix (wrong citations, invented
   answers, bad search terms or date ranges in phase 2).

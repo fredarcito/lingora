@@ -14,17 +14,22 @@ import styles from "./styles.module.css";
  * Notes view: the list of saved conversations and, when one is pressed, its
  * full-width page. It stays mounted even when Translate is shown (the search box
  * is kept), but it only reads from disk while it is visible.
- * `openRequest` opens a specific note (when Take notes finishes): the `nonce`
- * tells apart two consecutive requests for the same note. `home` changes each
- * time Notes is picked in the side menu: back to the list, from the top.
+ * `openRequest` opens a specific note (when Take notes finishes, or a source
+ * of a chat answer): the `nonce` tells apart two consecutive requests for the
+ * same note; `at` opens it on the transcript at that second; `fromChat` shows
+ * «Volver al chat» (`onBackToChat`). `home` changes each time Notes is picked
+ * in the side menu: back to the list, from the top.
  * @param {{ visible: boolean, recording: boolean, languages: import("@utils/api").LanguageInfo[], onMenu: () => void,
- *   openRequest?: { id: string, nonce: number } | null, home?: number }} props
+ *   openRequest?: import("@hooks/useNavigation.js").OpenRequest | null, home?: number, onBackToChat?: () => void }} props
  */
-export default function Notes({ visible, recording, languages, onMenu, openRequest = null, home = 0 }) {
+export default function Notes({ visible, recording, languages, onMenu, openRequest = null, home = 0, onBackToChat }) {
   const t = useT();
   const { lang } = useLang();
   const formats = useMemo(() => dateFormats(lang), [lang]);
   const [openId, setOpenId] = useState(/** @type {string | null} */ (null));
+  // Where the open note starts (a chat source's moment) and whether it came from the chat.
+  const [jump, setJump] = useState(/** @type {{ secs: number, nonce: number } | null} */ (null));
+  const [fromChat, setFromChat] = useState(false);
   const live = recording ? activeNoteId() : null;
   const { notes, loaded, error, load, query, setQuery, period, setPeriod, order, setOrder, months, shown, groups } = useNotesList({
     active: visible && !openId,
@@ -54,6 +59,8 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
   /** @param {string} id */
   const open = (id) => {
     scrollTop.current = scroller.current?.scrollTop ?? 0;
+    setJump(null);
+    setFromChat(false);
     setOpenId(id);
   };
 
@@ -61,11 +68,15 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
     if (!home) return;
     scrollTop.current = 0;
     setOpenId(null);
+    setFromChat(false);
   }, [home]);
 
   // Before painting: otherwise the list shows for a frame on the way from Take notes to the note.
   useLayoutEffect(() => {
-    if (openRequest) setOpenId(openRequest.id);
+    if (!openRequest) return;
+    setOpenId(openRequest.id);
+    setJump(openRequest.at !== undefined ? { secs: openRequest.at, nonce: openRequest.nonce } : null);
+    setFromChat(Boolean(openRequest.fromChat));
   }, [openRequest]);
 
   // ⌘K: to the search box, also from an open note.
@@ -122,8 +133,11 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
           translating={recording}
           topSlot={topSlot}
           languages={languages}
+          jump={jump}
+          onBackToChat={fromChat ? onBackToChat : undefined}
           onBack={() => {
             setOpenId(null);
+            setFromChat(false);
             load();
           }}
         />

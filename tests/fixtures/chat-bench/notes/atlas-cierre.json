@@ -1,0 +1,65 @@
+{
+ "version": 1,
+ "id": "2026-11-10_09-30-00",
+ "title": "Seguimiento Atlas",
+ "created_at": "2026-11-10T09:30:00.000Z",
+ "ended_at": "2026-11-10T09:32:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Jeff Chen",
+  "2": "Marta"
+ },
+ "sentences": [
+  {
+   "t": 6,
+   "speaker": 1,
+   "source": "Buenas noticias: el proveedor ya entregó la API estable y los pagos funcionan.",
+   "translation": "Buenas noticias: el proveedor ya entregó la API estable y los pagos funcionan.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 20,
+   "speaker": 2,
+   "source": "Genial. Yo termino los diseños de la parte de facturas el treinta de noviembre.",
+   "translation": "Genial. Yo termino los diseños de la parte de facturas el treinta de noviembre.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 41,
+   "speaker": 1,
+   "source": "El cliente aprobó los diez mil euros adicionales.",
+   "translation": "El cliente aprobó los diez mil euros adicionales.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 60,
+   "speaker": 0,
+   "source": "¿Mantenemos el quince de enero?",
+   "translation": "¿Mantenemos el quince de enero?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 66,
+   "speaker": 1,
+   "source": "Sí, la fecha de lanzamiento del quince de enero está confirmada.",
+   "translation": "Sí, la fecha de lanzamiento del quince de enero está confirmada.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 90,
+   "speaker": 2,
+   "source": "Falta decidir el nombre comercial. El cliente no quiere llamarla Atlas en las tiendas.",
+   "translation": "Falta decidir el nombre comercial. El cliente no quiere llamarla Atlas en las tiendas.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ],
+ "summary": {
+  "text": "## Resumen\nEl proveedor entregó la API estable y los pagos funcionan. El cliente aprobó 10.000 euros más. Lanzamiento confirmado el 15 de enero.\n## Tareas\n- [ ] Diseños de facturas — Marta (30 de noviembre)\n- [ ] Decidir el nombre comercial"
+ }
+}

@@ -17,6 +17,7 @@ export { default as ModeCard } from "./ModeCard";
 export { default as PageHeader } from "./PageHeader";
 export { default as RotatingText } from "./RotatingText";
 export { default as SearchBox } from "./SearchBox";
+export { default as SourceChips } from "./SourceChips";
 export { default as Segmented } from "./Segmented";
 export { default as Select } from "./Select";
 export { default as Spinner } from "./Spinner";

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { cloudRequest, hasConsent, isLowMemory, loadSummarySource, modelFor, modelOrder, pickModel, storeBaseUrl, storeConsent, storeModel, storeSummarySource } from "./summarySource.js";
+import { cloudRequest, hasConsent, hasNotesChatConsent, isLowMemory, loadSummarySource, modelFor, modelOrder, pickModel, storeBaseUrl, storeConsent, storeModel, storeNotesChatConsent, storeSummarySource } from "./summarySource.js";
 
 /** @type {Map<string, string>} */
 let store;
@@ -42,6 +42,11 @@ describe("summary source", () => {
     expect(hasConsent("openai")).toBe(true);
     expect(hasConsent("anthropic")).toBe(false);
     expect([...store.keys()]).toEqual(["lingora.summaryConsent.openai"]);
+    // The chat with all the notes asks its own: it sends parts of several notes.
+    expect(hasNotesChatConsent("openai")).toBe(false);
+    storeNotesChatConsent("openai");
+    expect(hasNotesChatConsent("openai")).toBe(true);
+    expect(store.get("lingora.notesChatConsent.openai")).toBe("true");
   });
 
   it("recommends a key below 8 GB, not when unknown", () => {

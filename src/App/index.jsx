@@ -4,6 +4,7 @@ import LaneCard from "@components/LaneCard";
 import SaveNotesBar from "@components/SaveNotesBar";
 import LaneSettings from "@components/LaneSettings";
 import TopBar from "@components/TopBar";
+import Chat from "@pages/Chat";
 import Home from "@pages/Home";
 import NoteTaking from "@pages/NoteTaking";
 import Notes from "@pages/Notes";
@@ -20,6 +21,7 @@ import { useLanguages } from "@hooks/useLanguages.js";
 import { useMeetingNotes } from "@hooks/useMeetingNotes.js";
 import { useModelRelease } from "@hooks/useModelRelease.js";
 import { useNavigation } from "@hooks/useNavigation.js";
+import { useNotesChat } from "@hooks/useNotesChat.js";
 import { useNoteRecorder } from "@hooks/useNoteRecorder.js";
 import { useStoredPref } from "@hooks/useStoredPref.js";
 import { useTranslationPipeline } from "@hooks/useTranslationPipeline.js";
@@ -69,7 +71,7 @@ export default function App() {
   // La conversación que se está guardando (ver noteRecorder.js).
   const recorderRef = useRef(/** @type {ReturnType<typeof import("@utils/noteRecorder.js").createRecorder> | null} */ (null));
   const [modeRef, modeWidth] = useWidth();
-  const { view, setView, home, goTo, openRequest, openNote, menuOpen, openMenu, closeMenu } = useNavigation();
+  const { view, setView, home, goTo, openRequest, openNote, chatRequest, openChat, menuOpen, openMenu, closeMenu } = useNavigation();
   // Al terminar Tomar notas se abre la nota; `stopping` es la parada en curso.
   const stopping = useRef(/** @type {Promise<void> | null} */ (null));
 
@@ -133,6 +135,8 @@ export default function App() {
     onSaved: openNote,
   });
   useModelRelease(anyRunning);
+  // The chat with all the notes lives here, above the pages: opening a source and coming back keeps it.
+  const notesChat = useNotesChat({ translating: anyRunning });
   // Con un solo carril en marcha, ese ocupa casi todo el ancho y el otro se
   // queda en su control: los subtítulos necesitan el espacio.
   const focused = mode === "call" && running.length === 1 ? running[0].direction : null;
@@ -158,6 +162,7 @@ export default function App() {
       onMenu={openMenu}
       onOpenNote={openNote}
       onSeeAll={() => goTo("notes")}
+      onChat={openChat}
     />
     <main className="app" hidden={view !== "translate"}>
       <TopBar
@@ -243,7 +248,23 @@ export default function App() {
         )}
       </div>
     </main>
-    <Notes visible={view === "notes"} recording={anyRunning} languages={shownLanguages} onMenu={openMenu} openRequest={openRequest} home={home} />
+    <Notes
+      visible={view === "notes"}
+      recording={anyRunning}
+      languages={shownLanguages}
+      onMenu={openMenu}
+      openRequest={openRequest}
+      home={home}
+      onBackToChat={() => setView("chat")}
+    />
+    <Chat
+      visible={view === "chat"}
+      recording={anyRunning}
+      chat={notesChat}
+      request={chatRequest}
+      onMenu={openMenu}
+      onOpenNote={(id, at) => openNote(id, { at: at ?? undefined, fromChat: true })}
+    />
     {view === "settings" && (
       <Settings
         key={home}

@@ -93,6 +93,15 @@ export const hasConsent = (id) => read(CONSENT_KEY + id) === "true";
 /** @param {string} id */
 export const storeConsent = (id) => save(CONSENT_KEY + id, "true");
 
+/** The chat with all the notes asks its own permission: it sends parts of several notes, not one. */
+const NOTES_CHAT_CONSENT_KEY = "lingora.notesChatConsent.";
+
+/** @param {string} id */
+export const hasNotesChatConsent = (id) => read(NOTES_CHAT_CONSENT_KEY + id) === "true";
+
+/** @param {string} id */
+export const storeNotesChatConsent = (id) => save(NOTES_CHAT_CONSENT_KEY + id, "true");
+
 /**
  * What `api.noteSummarize` takes to summarize with a key, or null for local.
  * @param {string} source @returns {CloudRequest | null}

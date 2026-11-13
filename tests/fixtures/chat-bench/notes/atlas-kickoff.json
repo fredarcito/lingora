@@ -1,0 +1,105 @@
+{
+ "version": 1,
+ "id": "2026-10-01_10-00-00",
+ "title": "Kickoff del proyecto Atlas",
+ "created_at": "2026-10-01T10:00:00.000Z",
+ "ended_at": "2026-10-01T10:04:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Jeff Chen",
+  "2": "Marta"
+ },
+ "sentences": [
+  {
+   "t": 4,
+   "speaker": 1,
+   "source": "Bienvenidos. Hoy arrancamos el proyecto Atlas, la nueva app de reservas para clínicas.",
+   "translation": "Bienvenidos. Hoy arrancamos el proyecto Atlas, la nueva app de reservas para clínicas.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 15,
+   "speaker": 2,
+   "source": "Perfecto. ¿Cuál es el plazo que nos da el cliente?",
+   "translation": "Perfecto. ¿Cuál es el plazo que nos da el cliente?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 22,
+   "speaker": 1,
+   "source": "El cliente quiere la primera versión de Atlas en diciembre, el día quince.",
+   "translation": "El cliente quiere la primera versión de Atlas en diciembre, el día quince.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 40,
+   "speaker": 0,
+   "source": "¿Y el presupuesto total?",
+   "translation": "¿Y el presupuesto total?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 46,
+   "speaker": 1,
+   "source": "Cuarenta mil euros para todo el proyecto, incluido el diseño.",
+   "translation": "Cuarenta mil euros para todo el proyecto, incluido el diseño.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 70,
+   "speaker": 2,
+   "source": "Yo me encargo del diseño de las pantallas. Necesito dos semanas para los bocetos.",
+   "translation": "Yo me encargo del diseño de las pantallas. Necesito dos semanas para los bocetos.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 95,
+   "speaker": 1,
+   "source": "Bien. Marta entrega los bocetos el quince de octubre.",
+   "translation": "Bien. Marta entrega los bocetos el quince de octubre.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 130,
+   "speaker": 0,
+   "source": "Yo preparo el plan de pruebas con las clínicas piloto.",
+   "translation": "Yo preparo el plan de pruebas con las clínicas piloto.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 160,
+   "speaker": 1,
+   "source": "Las clínicas piloto son tres, en Valencia. Las elige el cliente.",
+   "translation": "Las clínicas piloto son tres, en Valencia. Las elige el cliente.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 200,
+   "speaker": 2,
+   "source": "¿Usamos el proveedor de siempre para los pagos?",
+   "translation": "¿Usamos el proveedor de siempre para los pagos?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 210,
+   "speaker": 1,
+   "source": "Sí, el proveedor de pagos será Pagalia, como en el proyecto anterior.",
+   "translation": "Sí, el proveedor de pagos será Pagalia, como en el proyecto anterior.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ],
+ "summary": {
+  "text": "## Resumen\nArranca el proyecto Atlas, una app de reservas para clínicas. Primera versión el 15 de diciembre; presupuesto de 40.000 euros.\n## Decisiones\n- Proveedor de pagos: Pagalia.\n## Tareas\n- [ ] Bocetos de las pantallas — Marta (15 de octubre)\n- [ ] Plan de pruebas con las clínicas piloto — Yo"
+ }
+}

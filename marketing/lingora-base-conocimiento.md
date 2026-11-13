@@ -57,7 +57,7 @@ descargado, funciona sin internet.
 
 La app tiene tres modos y una biblioteca de notas. Se abre en una pantalla de
 Inicio que explica cada modo en una línea, deja elegirlo y muestra las notas
-recientes (con una tarjeta «Chat con Lingora» marcada como próximamente). La
+recientes, con una tarjeta «Chat con Lingora» para preguntar sobre todas las notas. La
 interfaz tiene modo claro y oscuro y sigue el del Mac.
 
 ### 3.1 Modo "Traducir audio" (funciona)
@@ -177,8 +177,23 @@ pruebas. **No prometerlo como disponible.**
   servicio, con permiso la primera vez con cada uno). La conversación se guarda
   en la nota; las notas muy largas (más de ~1 h) se responden con los fragmentos
   más relacionados con la pregunta. En el Mac, el chat espera a que termine la
-  traducción en curso. Recién hecho, sin probar aún con usuarios. Pendiente: chat
-  con todas las notas (la tarjeta «Chat con Lingora» de inicio sigue como próximamente).
+  traducción en curso. Recién hecho, sin probar aún con usuarios.
+- **Chat con todas las notas** (página «Chat», en el menú y desde la tarjeta de
+  Inicio): se pregunta sobre todas las reuniones a la vez, nombrando a la persona,
+  el tema o la fecha («¿qué dijo Ana del presupuesto?», «resume las reuniones con
+  Jeff», «¿qué tengo pendiente esta semana?»). Lingora elige las reuniones que
+  tocan, responde en directo y muestra debajo de qué reuniones sale cada dato; un
+  clic abre la nota en ese momento, con «Volver al chat». En los resúmenes de
+  varias reuniones se ven las notas usadas y se pueden quitar o añadir. Si la
+  pregunta es ambigua (dos personas con el mismo nombre, «este proyecto» sin decir
+  cuál, ninguna persona ni fecha) pregunta en vez de adivinar, y si no encuentra
+  nada lo dice. Las conversaciones se guardan en el Mac, en una lista lateral como
+  la de ChatGPT (renombrar, borrar). Mismo modelo y mismas opciones que el resumen:
+  en el Mac sin enviar nada, o con la clave del usuario (se envían partes de varias
+  notas; pide permiso propio la primera vez con cada servicio). En el Mac cada
+  respuesta tarda más que en el chat de una nota (relee las reuniones elegidas en
+  cada pregunta); con la clave es casi inmediato. Recién hecho, sin probar aún con
+  usuarios.
 - **Exportar** a Markdown (.md) o texto (.txt).
 - **"Copiar para tu chat de IA":** copia la nota con instrucciones para pegarla
   en ChatGPT, Claude, etc. y resumirla allí.
@@ -457,6 +472,7 @@ sin cuotas ni configuración**.
 | Varias (voces) | Una voz traducida distinta para cada persona |
 | Diagnóstico y descargas | Pantalla que comprueba y arregla la configuración |
 | Copiar para tu chat de IA | Copia la nota para resumirla en otra IA |
+| Chat | Página para preguntar sobre todas las notas, con chats guardados |
 | Marcar momento (⌘B) | Marcador dentro de la transcripción |
 
 ---

@@ -5,9 +5,14 @@
 //! `cargo test --release chat_bench -- --ignored --nocapture`
 //! (with `LINGORA_BENCH_CLOUD=openai|anthropic`, `LINGORA_BENCH_MODEL` and
 //! `LINGORA_SUMMARY_KEY`, with a service instead of the computer's model).
+//! Questions with `"note": null` go through the chat with all the notes
+//! (`all::answer`, over every note of the fixtures). With
+//! `LINGORA_BENCH_ALL=1` the one-note questions are asked that way too: the
+//! all-notes chat must score about the same (docs/plan-chat.md §2.5).
 
 use super::search::fold;
-use super::{cloud, local, prompt, Role, Turn};
+use super::all::{AllAnswer, Notice};
+use super::{all, cloud, local, prompt, Role, Turn};
 use crate::notes::read_note;
 use crate::summary_cloud::Cloud;
 use serde::Deserialize;
@@ -39,6 +44,15 @@ struct Question {
     /// Asked in the same chat, after this question.
     #[serde(default)]
     after: Option<String>,
+    /// All notes: the notes (file names) the answer must come from.
+    #[serde(default)]
+    sources: Vec<String>,
+    /// All notes: the user's date when asking (`2026-11-13`).
+    #[serde(default)]
+    today: Option<String>,
+    /// All notes: the question is ambiguous and the chat must ask back.
+    #[serde(default)]
+    asks_back: bool,
 }
 
 fn yes() -> bool {
@@ -61,7 +75,10 @@ fn cited_secs(text: &str) -> Vec<u64> {
     let mut rest = text;
     while let Some(open) = rest.find('[') {
         let Some(close) = rest[open..].find(']') else { break };
-        let parts: Option<Vec<u64>> = rest[open + 1..open + close].split(':').map(|p| p.parse().ok()).collect();
+        // `[12:40]`, or the time at the end of `[Nota 2, 12:40]`.
+        let inside = &rest[open + 1..open + close];
+        let clock = inside.rsplit([' ', ',']).next().unwrap_or(inside);
+        let parts: Option<Vec<u64>> = clock.split(':').map(|p| p.parse().ok()).collect();
         if let Some(p) = parts.filter(|p| (2..=3).contains(&p.len())) {
             out.push(p.iter().fold(0, |total, n| total * 60 + n));
         }
@@ -115,6 +132,10 @@ const NOT_FOUND: &[&str] = &[
     "not discussed",
     "not in the conversation",
     "not in the transcript",
+    "no encontre",
+    "couldn't find",
+    "could not find",
+    "didn't find",
 ];
 
 fn honesty(answer: &str) -> Honesty {
@@ -152,6 +173,12 @@ struct Score {
     /// `Some(true)` said it is not there, `Some(false)` did not (to review).
     no_invention: Option<bool>,
     language: bool,
+    /// All notes: the expected notes were among those given.
+    sources: Option<bool>,
+    /// All notes: it asked back exactly when it should have.
+    asks_back: Option<bool>,
+    /// All notes: citations to something it was not given.
+    invented: usize,
 }
 
 fn score(q: &Question, answer: &str) -> Score {
@@ -164,7 +191,38 @@ fn score(q: &Question, answer: &str) -> Score {
         cites: (!q.time.is_empty()).then(|| cites(answer, &q.time)),
         no_invention: (!q.answerable).then(|| honesty(answer) == Honesty::Said),
         language: language_of(answer) == q.lang,
+        sources: None,
+        asks_back: None,
+        invented: 0,
     }
+}
+
+/// What the interface would show for a notice (it writes it, not the model).
+fn notice_text(notice: &Notice) -> String {
+    match notice {
+        Notice::Clarify { ask } => ask.clone(),
+        Notice::Ambiguous { person, names } => format!("¿A qué {person} te refieres? Hay varios: {}.", names.join(", ")),
+        Notice::NoPerson { person } => format!("No encontré reuniones con {person}."),
+        Notice::Vague => "¿De qué periodo, o con quién?".into(),
+        Notice::NothingFound => "No encontré nada sobre eso en tus notas.".into(),
+        Notice::NoNotes => "Aún no tienes notas.".into(),
+    }
+}
+
+/// The score of an all-notes answer: the same, plus its sources and whether it asked back.
+fn score_all(q: &Question, answer: &AllAnswer, shown: &str) -> Score {
+    let asked = matches!(answer.notice, Some(Notice::Clarify { .. } | Notice::Ambiguous { .. } | Notice::Vague));
+    let used: Vec<&str> = answer.notes.iter().map(|n| n.id.as_str()).collect();
+    let mut s = score(q, shown);
+    if asked && q.asks_back {
+        // Asking back was the right answer: nothing else to score.
+        s.correct = None;
+        s.cites = None;
+    }
+    s.sources = (!q.sources.is_empty()).then(|| q.sources.iter().all(|id| used.contains(&id.as_str())));
+    s.asks_back = Some(asked == q.asks_back);
+    s.invented = answer.invented;
+    s
 }
 
 fn fixtures() -> PathBuf {
@@ -184,21 +242,30 @@ fn summary_line(scores: &[&Score]) -> String {
     let (c, cn) = of(|s| s.correct);
     let (ci, cin) = of(|s| s.cites);
     let (ni, nin) = of(|s| s.no_invention);
+    let (so, son) = of(|s| s.sources);
+    let (ab, abn) = of(|s| s.asks_back);
     let langs = scores.iter().filter(|s| s.language).count();
-    format!(
+    let mut line = format!(
         "Correct {} · Cites {} · No invention {} ({} review) · Language {}",
         ratio(c, cn),
         ratio(ci, cin),
         ratio(ni, nin),
         nin - ni,
         ratio(langs, scores.len())
-    )
+    );
+    if abn > 0 {
+        let invented: usize = scores.iter().map(|s| s.invented).sum();
+        line.push_str(&format!(" · Sources {} · Asks back {} · Invented citations {invented}", ratio(so, son), ratio(ab, abn)));
+    }
+    line
 }
 
 /// Asks every question through the same path as `note_chat` and scores the answers.
 #[tokio::test]
 #[ignore]
 async fn chat_bench() {
+    // The chat's own lines (how each question was read, how many notes went in).
+    let _ = tracing_subscriber::fmt().with_test_writer().with_env_filter("lingora_lib::chat=info").without_time().try_init();
     let dir = fixtures();
     let questions: Vec<Question> = serde_json::from_str(&std::fs::read_to_string(dir.join("questions.json")).expect("questions.json")).expect("questions.json");
     let service = std::env::var("LINGORA_BENCH_CLOUD").ok();
@@ -214,7 +281,25 @@ async fn chat_bench() {
 
     let mut answers: HashMap<String, String> = HashMap::new();
     let mut scores: Vec<Score> = Vec::new();
+    let through_all = std::env::var("LINGORA_BENCH_ALL").is_ok_and(|v| v == "1");
     for q in &questions {
+        if q.note.is_none() || through_all {
+            let mut turns: Vec<Turn> = Vec::new();
+            if let Some(before) = q.after.as_ref().and_then(|id| questions.iter().find(|b| &b.id == id)) {
+                turns.push(Turn { role: Role::User, text: before.q.clone() });
+                turns.push(Turn { role: Role::Assistant, text: answers.get(&before.id).cloned().unwrap_or_default() });
+            }
+            turns.push(Turn { role: Role::User, text: q.q.clone() });
+            let today = q.today.clone().unwrap_or_else(|| "2026-11-13".into());
+            let target = cloud_target.as_ref().map(|c| (c, key.as_str()));
+            let answer = all::answer(dir.join("notes"), turns, &today, target, None, Box::new(|_| {})).await.unwrap();
+            let shown = answer.notice.as_ref().map_or_else(|| answer.text.clone(), notice_text);
+            let used: Vec<&str> = answer.notes.iter().map(|n| n.id.as_str()).collect();
+            println!("{} [{}] → {}", q.id, used.join(", "), shown.replace('\n', " "));
+            answers.insert(q.id.clone(), shown.clone());
+            scores.push(score_all(q, &answer, &shown));
+            continue;
+        }
         let Some(note_name) = &q.note else { continue };
         let note = read_note(&dir.join("notes").join(format!("{note_name}.json"))).expect("note");
         // A follow-up goes in the chat of the question it follows.
@@ -247,14 +332,16 @@ async fn chat_bench() {
         println!("  {kind:<12} {}", summary_line(&scores.iter().filter(|s| s.kind == kind).collect::<Vec<_>>()));
     }
     println!("\nTo read by hand:");
-    for s in scores.iter().filter(|s| s.correct == Some(false) || s.cites == Some(false) || s.no_invention == Some(false) || !s.language) {
+    for s in scores.iter().filter(|s| {
+        s.correct == Some(false) || s.cites == Some(false) || s.no_invention == Some(false) || !s.language || s.sources == Some(false) || s.asks_back == Some(false) || s.invented > 0
+    }) {
         println!("- {} [{}] {}\n  {}", s.id, s.kind, s.q, s.answer.replace('\n', "\n  "));
     }
 
     let out = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/chat-bench");
     std::fs::create_dir_all(&out).unwrap();
     let day = crate::notes::now_iso()[..10].to_string();
-    let file = out.join(format!("{day}-{}.json", service.as_deref().unwrap_or("local")));
+    let file = out.join(format!("{day}-{}{}.json", service.as_deref().unwrap_or("local"), if through_all { "-all" } else { "" }));
     std::fs::write(&file, serde_json::to_string_pretty(&scores).unwrap()).unwrap();
     println!("\nRun saved in {}", file.display());
     // Frees the model before the process ends, as the app does when it quits (otherwise Metal aborts).

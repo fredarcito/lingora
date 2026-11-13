@@ -64,30 +64,9 @@
   border-top: 1px solid var(--n-border);
 }
 
-/* The chat card looks locked: it is not available yet. */
-.chat {
-  opacity: 0.7;
-}
-
-.chat-input {
-  padding: 9px 12px;
-  border-radius: var(--n-radius);
-  border: 1px solid var(--n-input);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-}
-
-.chat-button {
-  align-self: flex-end;
+/* The message box sits at the bottom of the card, like in a chat. */
+.chat-composer {
   margin-top: auto;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--accent-ink);
-  background: var(--mode-call);
 }
 
 @media (max-width: 760px) {

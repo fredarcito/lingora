@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useLang, useT } from "@i18n";
 import { MenuButton } from "@components/Sidebar";
 import PairBar from "@components/PairBar";
 import ThemeToggle from "@components/ThemeToggle";
-import { ActivityRow, Badge, CallIcon, LinkButton, ModeCard, PageHeader, PenIcon, SwapIcon, cx } from "@components/shared";
+import { ActivityRow, Badge, CallIcon, ChatInput, LinkButton, ModeCard, PageHeader, PenIcon, SwapIcon, cx } from "@components/shared";
 import { useNotesList } from "@hooks/useNotesList.js";
 import { dateFormats, relativeDay } from "@utils/noteList.js";
 import styles from "./styles.module.css";
@@ -13,7 +13,8 @@ const RECENT = 5;
 
 /**
  * The first screen: the three modes in one line each, the latest notes and
- * a placeholder for the future chat. Picking a mode only calls `onPick`; the
+ * the chat with all the notes (a question typed there opens the Chat page
+ * with it asked: `onChat`). Picking a mode only calls `onPick`; the
  * wiring (changing mode, going to Translate) lives in `App`. With a lane
  * running (`running`) only the running mode (`mode`) can be picked: it goes
  * back to it, and its card is the one highlighted. Nothing runs: all cards look alike.
@@ -22,11 +23,16 @@ const RECENT = 5;
  *   pair: import("@app/types").LangPair, languages: import("@utils/api").LanguageInfo[],
  *   onPair: (pair: import("@app/types").LangPair) => void, noTranslate: boolean,
  *   onPick: (mode: import("@app/types").Mode) => void, onMenu: () => void,
- *   onOpenNote: (id: string) => void, onSeeAll: () => void,
+ *   onOpenNote: (id: string) => void, onSeeAll: () => void, onChat: (question?: string) => void,
  * }} props
  */
-export default function Home({ visible, mode, running, callMode, pair, languages, onPair, noTranslate, onPick, onMenu, onOpenNote, onSeeAll }) {
+export default function Home({ visible, mode, running, callMode, pair, languages, onPair, noTranslate, onPick, onMenu, onOpenNote, onSeeAll, onChat }) {
   const t = useT();
+  const [question, setQuestion] = useState("");
+  const startChat = () => {
+    onChat(question);
+    setQuestion("");
+  };
   const { lang } = useLang();
   const formats = useMemo(() => dateFormats(lang), [lang]);
   const { notes, loaded } = useNotesList({ active: visible, live: null, formats, t });
@@ -96,17 +102,22 @@ export default function Home({ visible, mode, running, callMode, pair, languages
                 ))}
               </ul>
             </section>
-            {/* Placeholder: the chat is a separate future plan. No state, no handlers. */}
             <section className={cx(styles.panel, styles.chat)} aria-labelledby="home-chat">
               <div className={styles.panelHead}>
                 <h2 id="home-chat">{t("home.chat.title")}</h2>
-                <Badge muted>{t("home.chat.soon")}</Badge>
               </div>
               <p className="muted">{t("home.chat.desc")}</p>
-              <input className={styles.chatInput} disabled placeholder={t("home.chat.placeholder")} aria-label={t("home.chat.title")} />
-              <button type="button" className={styles.chatButton} disabled>
-                {t("home.chat.action")}
-              </button>
+              <ChatInput
+                className={styles.chatComposer}
+                value={question}
+                onChange={setQuestion}
+                onSend={startChat}
+                onStop={() => {}}
+                busy={false}
+                placeholder={t("home.chat.placeholder")}
+                sendLabel={t("home.chat.action")}
+                stopLabel={t("home.chat.action")}
+              />
             </section>
           </div>
         </div>

@@ -20,8 +20,23 @@ export default function ChatInput({ value, onChange, onSend, onStop, busy, disab
   useLayoutEffect(() => {
     const el = field.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`;
+    const fit = () => {
+      el.style.height = "auto";
+      // Empty: keep the one-row height. Measuring then would count the
+      // placeholder, and a wrong width before the first layout inflates it.
+      if (!el.value) return;
+      el.style.height = `${Math.min(el.scrollHeight, MAX_HEIGHT)}px`;
+    };
+    fit();
+    // The width can settle after the first paint (layout, fonts, resizes).
+    let width = el.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fit();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [value]);
 
   const canSend = !disabled && !busy && value.trim().length > 0;

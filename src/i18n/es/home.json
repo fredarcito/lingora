@@ -20,10 +20,9 @@
   "today": "Hoy",
   "yesterday": "Ayer",
   "chat.title": "Chat con Lingora",
-  "chat.desc": "Pregunta sobre una transcripción, traducción o tus notas.",
-  "chat.placeholder": "«Resume los puntos clave…»",
+  "chat.desc": "Pregunta sobre tus notas: con quién, de qué o cuándo.",
+  "chat.placeholder": "«¿Qué dijo Ana del presupuesto?»",
   "chat.action": "Abrir chat",
-  "chat.soon": "Próximamente",
   "theme.light": "Cambiar a tema claro",
   "theme.dark": "Cambiar a tema oscuro"
 }

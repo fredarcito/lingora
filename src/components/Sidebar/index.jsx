@@ -6,7 +6,7 @@ import { providerOf } from "@utils/summarySource.js";
 import styles from "./styles.module.css";
 
 /**
- * @typedef {"home" | "translate" | "notes" | "settings"} View
+ * @typedef {"home" | "translate" | "notes" | "chat" | "settings"} View
  */
 
 /**
@@ -39,7 +39,7 @@ const SECTIONS = [
     { id: "notesMode", icon: PenIcon, mode: "notes" },
     { id: "call", icon: CallIcon, mode: "call" },
     { id: "notes", icon: NoteIcon, view: "notes" },
-    { id: "chat", icon: SparkIcon, soon: true },
+    { id: "chat", icon: SparkIcon, view: "chat" },
   ],
   [{ id: "settings", icon: SettingsIcon, view: "settings" }],
 ];

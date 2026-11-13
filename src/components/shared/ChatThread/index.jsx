@@ -8,7 +8,9 @@ import styles from "./styles.module.css";
 /**
  * The messages of a chat: yours on the right, the answers on the left with
  * the assistant's mark and name (`assistantLabel`), drawn by `renderAnswer`
- * so this stays independent of how they are formatted. Each message shows
+ * so this stays independent of how they are formatted (a finished answer
+ * also gets its message, `renderAnswer(text, false, message)`, for what it
+ * keeps besides the text). Each message shows
  * its time of day (`timeOf(message)`, nothing if empty); `renderActions`
  * adds a row under a finished answer (copy…).
  * It fills the height it is given and scrolls inside itself, with `footer`
@@ -17,13 +19,13 @@ import styles from "./styles.module.css";
  * offers to go back to the end.
  * `streaming` is the answer in progress: its text so far, shown at a steady
  * pace (`renderAnswer(text, true)`, which can fade its end in),
- * or an empty string while the model is still reading (three dots that
- * pulse; `readingLabel` is what a screen reader says).
+ * or an empty string while the model is still reading (`readingLabel`, three dots that
+ * pulse and two bars that shimmer).
  * `null` when no answer is in progress. `children` is the empty state (shown
  * with no messages). An answer stopped before it wrote anything shows `stoppedLabel`.
  * @template {{ role: "user" | "assistant", text: string }} M
  * @param {{ messages: M[], streaming: string | null,
- *   renderAnswer: (text: string, writing?: boolean) => import("react").ReactNode, renderActions?: (message: M) => import("react").ReactNode,
+ *   renderAnswer: (text: string, writing?: boolean, message?: M) => import("react").ReactNode, renderActions?: (message: M) => import("react").ReactNode,
  *   timeOf?: (message: M) => string, assistantLabel: string, readingLabel: string, stoppedLabel: string,
  *   latestLabel: string, footer?: import("react").ReactNode, className?: string, children?: import("react").ReactNode }} props
  */
@@ -116,7 +118,7 @@ export default function ChatThread({
                 i,
                 time,
                 <>
-                  {written ? renderAnswer(m.text) : <span className="muted">{stoppedLabel}</span>}
+                  {written ? renderAnswer(m.text, false, m) : <span className="muted">{stoppedLabel}</span>}
                   {actions && <div className={styles.chatActions}>{actions}</div>}
                 </>,
               );
@@ -128,11 +130,18 @@ export default function ChatThread({
                 smooth ? (
                   renderAnswer(smooth, true)
                 ) : (
-                  <span className={styles.chatTyping} role="status" aria-label={readingLabel}>
-                    <i />
-                    <i />
-                    <i />
-                  </span>
+                  <div role="status" className={styles.chatReading}>
+                    <p className={styles.chatReadingLabel}>
+                      {readingLabel}
+                      <span className={styles.chatTyping} aria-hidden="true">
+                        <i />
+                        <i />
+                        <i />
+                      </span>
+                    </p>
+                    <span className={styles.chatSkeleton} aria-hidden="true" />
+                    <span className={cx(styles.chatSkeleton, styles.isShort)} aria-hidden="true" />
+                  </div>
                 ),
                 !!smooth,
                 !smooth,

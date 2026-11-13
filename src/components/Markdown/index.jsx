@@ -1,6 +1,6 @@
 import { ArrowIcon, cx } from "@components/shared";
 import { TIME_AT_END } from "@utils/mindMap.js";
-import { splitTimes, trailingTimes } from "@utils/chat.js";
+import { splitCitations, splitTimes, trailingCitations, trailingTimes } from "@utils/chat.js";
 import styles from "./styles.module.css";
 
 /**
@@ -17,9 +17,15 @@ import styles from "./styles.module.css";
  * and an item that starts with `**Title**:` shows the title over the rest.
  * `writing`: the text is still arriving; its end fades in (a short trail
  * that fades to `--md-fade-bg`, the background under the text).
- * @param {{ text: string, className?: string, onTime?: (secs: number) => void, writing?: boolean }} props
+ * With `cite` (the chat with all the notes), the citations `[Nota 2, 12:40]`
+ * and `[Nota 2]` are buttons labelled `cite.label(n, clock)` that call
+ * `cite.open(n, seconds | null)`; a citation whose `label` is null (one that
+ * was not checked) stays as text. It draws the answer like `onTime` does.
+ * @param {{ text: string, className?: string, onTime?: (secs: number) => void, writing?: boolean, cite?: Cite }} props
  */
-export default function Markdown({ text, className, onTime, writing = false }) {
+export default function Markdown({ text, className, onTime, writing = false, cite }) {
+  /** @type {Links | undefined} */
+  const links = onTime || cite ? { onTime, cite } : undefined;
   /** @type {import("react").ReactNode[]} */
   const blocks = [];
   /** @type {import("react").ReactNode[] | null} */
@@ -38,24 +44,24 @@ export default function Markdown({ text, className, onTime, writing = false }) {
     const heading = line.match(/^#{1,4}\s+(.*)/);
     const task = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(.*)/);
     const item = line.match(/^\s*[-*]\s+(.*)/);
-    const ordered = onTime ? line.match(/^\s*(\d{1,3})[.)]\s+(.*)/) : null;
+    const ordered = links ? line.match(/^\s*(\d{1,3})[.)]\s+(.*)/) : null;
     if ((task || item || ordered) && list && numbered !== !!ordered) flush();
     if (heading) {
       flush();
       blocks.push(<h3 key={blocks.length}>
-          {inline(heading[1], onTime)}
+          {inline(heading[1], links)}
           {tail}
         </h3>);
     } else if (task || item || ordered) {
       list ??= [];
       numbered = !!ordered;
-      if (ordered && onTime) {
+      if (ordered && links) {
         list.push(
           <li key={list.length} className={styles.mdPoint}>
             <span className={styles.mdNumber} aria-hidden>
               {ordered[1]}
             </span>
-            {chatItem(ordered[2], onTime, tail)}
+            {chatItem(ordered[2], links, tail)}
           </li>,
         );
       } else if (task) {
@@ -64,7 +70,7 @@ export default function Markdown({ text, className, onTime, writing = false }) {
           <li key={list.length} className={styles.mdTask} data-task>
             <span className={cx(styles.mdCheck, done && styles.isDone)} aria-hidden />
             <span>
-              {onTime ? inline(task[2], onTime) : endTime(task[2])}
+              {links ? inline(task[2], links) : endTime(task[2])}
               {tail}
             </span>
           </li>,
@@ -72,14 +78,14 @@ export default function Markdown({ text, className, onTime, writing = false }) {
       } else {
         // In one span: bold and text stay together even if the item is laid out as a grid.
         list.push(
-          onTime ? (
+          links ? (
             <li key={list.length} className={styles.mdPoint}>
-              {chatItem(/** @type {RegExpMatchArray} */ (item)[1], onTime, tail)}
+              {chatItem(/** @type {RegExpMatchArray} */ (item)[1], links, tail)}
             </li>
           ) : (
             <li key={list.length}>
               <span>
-                {onTime ? inline(/** @type {RegExpMatchArray} */ (item)[1], onTime) : timed(/** @type {RegExpMatchArray} */ (item)[1])}
+                {timed(/** @type {RegExpMatchArray} */ (item)[1])}
                 {tail}
               </span>
             </li>
@@ -90,7 +96,7 @@ export default function Markdown({ text, className, onTime, writing = false }) {
       flush();
       // The model sometimes puts a time on a paragraph too.
       blocks.push(<p key={blocks.length}>
-          {onTime ? inline(line, onTime) : endTime(line)}
+          {links ? inline(line, links) : endTime(line)}
           {tail}
         </p>);
     } else {
@@ -102,36 +108,58 @@ export default function Markdown({ text, className, onTime, writing = false }) {
 }
 
 /**
+ * What the times and citations of a chat answer link to.
+ * @typedef {{ label: (n: number, clock: string | null) => string | null, open: (n: number, secs: number | null) => void }} Cite
+ * @typedef {{ onTime?: (secs: number) => void, cite?: Cite }} Links
+ */
+
+/**
  * A list item of a chat answer: `**Title**: rest` as a title over the rest,
  * and the times that close it as buttons on the right. `tail` goes at the end of the text.
- * @param {string} text @param {(secs: number) => void} onTime @param {import("react").ReactNode} [tail]
+ * @param {string} text @param {Links} links @param {import("react").ReactNode} [tail]
  */
-function chatItem(text, onTime, tail = null) {
-  const { text: body, times } = trailingTimes(text);
+function chatItem(text, links, tail = null) {
+  const { onTime, cite } = links;
+  // All notes: the checked citations that close the line go to the right, as the times do.
+  const closing = cite ? trailingCitations(text) : { text, cites: [] };
+  const linked = closing.cites.filter((c) => c.n !== null && cite?.label(c.n, c.clock) !== null);
+  const unlinked = closing.cites.filter((c) => !linked.includes(c)).map((c) => c.raw);
+  const rest = cite ? [closing.text, ...unlinked].join(" ") : text;
+  const { text: body, times } = onTime && !cite ? trailingTimes(rest) : { text: rest, times: [] };
   const titled = body.match(/^\*\*([^*]+)\*\*\s*(?:[:.—–-]\s*)?(.+)$/);
   return (
     <>
       <span className={styles.mdPointBody}>
         {titled ? (
           <>
-            <strong className={styles.mdPointTitle}>{withTimes(titled[1], onTime)}</strong>
+            <strong className={styles.mdPointTitle}>{withTimes(titled[1], links)}</strong>
             <span className={styles.mdPointText}>
-              {inline(titled[2], onTime)}
+              {inline(titled[2], links)}
               {tail}
             </span>
           </>
         ) : (
           <>
-            {inline(body, onTime)}
+            {inline(body, links)}
             {tail}
           </>
         )}
       </span>
-      {times.length > 0 && (
+      {onTime && times.length > 0 && (
         <span className={styles.mdPointTimes}>
           {times.map((at, i) => (
             <button key={i} type="button" className={cx(styles.mdJump, styles.isPill)} onClick={() => onTime(at.secs)}>
               {at.clock}
+              <ArrowIcon />
+            </button>
+          ))}
+        </span>
+      )}
+      {cite && linked.length > 0 && (
+        <span className={styles.mdPointTimes}>
+          {linked.map((c, i) => (
+            <button key={i} type="button" className={cx(styles.mdJump, styles.isPill)} onClick={() => cite.open(/** @type {number} */ (c.n), c.secs)}>
+              {cite.label(/** @type {number} */ (c.n), c.clock)}
               <ArrowIcon />
             </button>
           ))}
@@ -172,23 +200,52 @@ function endTime(text) {
 }
 
 /**
- * Turns `**bold**` into <strong>; the rest stays as text. With `onTime`, the
- * `[mm:ss]` in it are buttons. @param {string} text @param {(secs: number) => void} [onTime]
+ * Turns `**bold**` into <strong>; the rest stays as text. With `links`, the
+ * times and citations in it are buttons. @param {string} text @param {Links} [links]
  */
-function inline(text, onTime) {
+function inline(text, links) {
   return text
     .split(/(\*\*[^*]+\*\*)/)
     .map((part, i) =>
       part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
-        <strong key={i}>{withTimes(part.slice(2, -2), onTime)}</strong>
+        <strong key={i}>{withTimes(part.slice(2, -2), links)}</strong>
       ) : (
-        withTimes(part, onTime, i)
+        withTimes(part, links, i)
       ),
     );
 }
 
-/** The times in `text` as buttons, if asked for. @param {string} text @param {((secs: number) => void) | undefined} onTime @param {number} [key] */
-function withTimes(text, onTime, key) {
+/** The times (and citations) in `text` as buttons, if asked for. @param {string} text @param {Links | undefined} links @param {number} [key] */
+function withTimes(text, links, key) {
+  if (!links) return text;
+  const { onTime, cite } = links;
+  if (cite) {
+    return (
+      <span key={key}>
+        {splitCitations(text).map((piece, i) => {
+          if (typeof piece === "string") return piece;
+          if (piece.n === null) {
+            return onTime && piece.secs !== null ? (
+              <button key={i} type="button" className={styles.mdJump} onClick={() => onTime(/** @type {number} */ (piece.secs))}>
+                {piece.clock}
+              </button>
+            ) : (
+              piece.raw
+            );
+          }
+          const n = piece.n;
+          const label = cite.label(n, piece.clock);
+          return label === null ? (
+            piece.raw
+          ) : (
+            <button key={i} type="button" className={styles.mdJump} onClick={() => cite.open(n, piece.secs)}>
+              {label}
+            </button>
+          );
+        })}
+      </span>
+    );
+  }
   if (!onTime) return text;
   return (
     <span key={key}>

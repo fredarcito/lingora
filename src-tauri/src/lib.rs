@@ -610,6 +610,8 @@ pub fn run() {
             // No Dock icon: the app accompanies the video call.
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
+            // The chat's index of all the notes, so the first question doesn't build it.
+            std::thread::spawn(chat::all::warm);
             Ok(())
         })
         // Without the main window no text arrives: the captions close with it.
@@ -678,6 +680,11 @@ pub fn run() {
             notes::note_summarize,
             chat::commands::note_chat,
             chat::commands::chat_stop,
+            chat::commands::notes_chat,
+            chat::store::chats_list,
+            chat::store::chat_read,
+            chat::store::chat_save,
+            chat::store::chat_delete,
             summary_cloud::summary_key_status,
             summary_cloud::summary_key_set,
             summary_cloud::summary_models,
