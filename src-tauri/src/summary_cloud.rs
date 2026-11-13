@@ -51,7 +51,7 @@ impl Provider {
     }
 
     /// Proper names, for the messages.
-    fn name(self) -> &'static str {
+    pub(crate) fn name(self) -> &'static str {
         match self {
             Self::OpenAi => "OpenAI",
             Self::Anthropic => "Claude",
@@ -91,13 +91,19 @@ impl Provider {
         }
     }
 
+    /// OpenAI's own API names the answer's cap `max_completion_tokens`; the
+    /// compatible ones still read `max_tokens`.
+    pub(crate) fn token_cap(self) -> &'static str {
+        if self == Self::OpenAi { "max_completion_tokens" } else { "max_tokens" }
+    }
+
     /// A local server (LM Studio, Ollama) usually has no key.
     fn key_optional(self) -> bool {
         self == Self::Custom
     }
 }
 
-/// What the interface sends to summarize with a key.
+/// What the interface sends to summarize (or chat) with a key.
 #[derive(Debug, Deserialize)]
 pub struct Cloud {
     pub provider: String,
@@ -107,7 +113,7 @@ pub struct Cloud {
 }
 
 /// Room for the answer: some models think before writing, and that counts.
-const MAX_TOKENS: u32 = 16_000;
+pub(crate) const MAX_TOKENS: u32 = 16_000;
 /// A summary takes longer than a sentence; an hour of transcript, well under this.
 const TIMEOUT_SECS: u64 = 300;
 /// Anthropic's API version (`anthropic-version`).
@@ -124,24 +130,12 @@ fn http() -> Result<reqwest::Client> {
 
 /// The service's answer to `user` with the instructions `system`.
 pub async fn complete(cloud: &Cloud, key: &str, system: &str, user: &str) -> Result<String> {
-    let provider = provider(&cloud.provider)?;
-    let base = provider.base_url(cloud.base_url.as_deref())?;
-    let model = cloud.model.trim();
-    if model.is_empty() {
-        return Err(Error::Notes("Escribe el modelo que quieres usar.".into()));
-    }
-    let request = match provider {
-        Provider::Anthropic => http()?
-            .post(format!("{base}/messages"))
-            .header("x-api-key", key)
-            .header("anthropic-version", ANTHROPIC_VERSION)
-            .json(&anthropic_body(model, system, user)),
-        _ => {
-            let req = http()?.post(format!("{base}/chat/completions")).json(&openai_body(provider, model, system, user));
-            if key.is_empty() { req } else { req.bearer_auth(key) }
-        }
+    let (provider, model) = target(cloud)?;
+    let body = match provider {
+        Provider::Anthropic => anthropic_body(model, system, user),
+        _ => openai_body(provider, model, system, user),
     };
-    let resp = request.send().await?;
+    let resp = request(cloud, key, &body)?.send().await?;
     let status = resp.status().as_u16();
     let body = resp.text().await?;
     if !(200..300).contains(&status) {
@@ -158,11 +152,37 @@ pub async fn complete(cloud: &Cloud, key: &str, system: &str, user: &str) -> Res
     Ok(text)
 }
 
+/// The service and the model `cloud` asks for.
+pub(crate) fn target(cloud: &Cloud) -> Result<(Provider, &str)> {
+    let provider = provider(&cloud.provider)?;
+    let model = cloud.model.trim();
+    if model.is_empty() {
+        return Err(Error::Notes("Escribe el modelo que quieres usar.".into()));
+    }
+    Ok((provider, model))
+}
+
+/// The request with `body` to the service's endpoint, with its key: Anthropic's
+/// Messages API or OpenAI's chat completions (all the others).
+pub(crate) fn request(cloud: &Cloud, key: &str, body: &Value) -> Result<reqwest::RequestBuilder> {
+    let provider = provider(&cloud.provider)?;
+    let base = provider.base_url(cloud.base_url.as_deref())?;
+    Ok(match provider {
+        Provider::Anthropic => http()?
+            .post(format!("{base}/messages"))
+            .header("x-api-key", key)
+            .header("anthropic-version", ANTHROPIC_VERSION)
+            .json(body),
+        _ => {
+            let req = http()?.post(format!("{base}/chat/completions")).json(body);
+            if key.is_empty() { req } else { req.bearer_auth(key) }
+        }
+    })
+}
+
 /// Chat completions. No `temperature`: some models only take the default.
-/// OpenAI's own API names the cap `max_completion_tokens`; the compatible ones
-/// still read `max_tokens`.
 fn openai_body(provider: Provider, model: &str, system: &str, user: &str) -> Value {
-    let cap = if provider == Provider::OpenAi { "max_completion_tokens" } else { "max_tokens" };
+    let cap = provider.token_cap();
     let mut body = serde_json::json!({
         "model": model,
         "messages": [
@@ -184,12 +204,12 @@ fn anthropic_body(model: &str, system: &str, user: &str) -> Value {
     })
 }
 
-fn openai_text(json: &Value) -> String {
+pub(crate) fn openai_text(json: &Value) -> String {
     json.pointer("/choices/0/message/content").and_then(Value::as_str).unwrap_or_default().to_string()
 }
 
 /// The text blocks, in order (thinking blocks, if any, are left out).
-fn anthropic_text(json: &Value) -> Result<String> {
+pub(crate) fn anthropic_text(json: &Value) -> Result<String> {
     if json.get("stop_reason").and_then(Value::as_str) == Some("refusal") {
         return Err(Error::Notes("Claude no quiso resumir esta conversación. Prueba con otro servicio o en tu equipo.".into()));
     }
@@ -203,7 +223,7 @@ fn anthropic_text(json: &Value) -> Result<String> {
 }
 
 /// A non-2xx answer, in words for whoever uses the app.
-fn api_error(provider: Provider, status: u16, body: &str) -> Error {
+pub(crate) fn api_error(provider: Provider, status: u16, body: &str) -> Error {
     let name = provider.name();
     match status {
         401 | 403 => Error::Notes(format!("La clave de {name} no es válida. Cámbiala en Ajustes.")),

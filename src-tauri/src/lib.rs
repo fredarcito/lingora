@@ -1,5 +1,9 @@
 mod audio;
 mod captions_window;
+// The chat's engine is ready; its commands come next (docs/plan-chat.md).
+// Remove this `allow` once they use it.
+#[allow(dead_code)]
+mod chat;
 mod config;
 mod doctor;
 mod echo_cancel;

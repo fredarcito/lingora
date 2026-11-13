@@ -11,6 +11,11 @@
 //! after: summaries are rare, loading takes a second or two next to the half
 //! minute of writing, and it frees the memory without an idle timer. One
 //! summary at a time, so two notes never load it twice.
+//!
+//! The chat with the notes (`chat::local`) uses the same model, but keeps it
+//! loaded between questions on a thread of its own, freed after 3 minutes
+//! without questions. Only one of the two holds the model (`BUSY`): a summary
+//! first frees the chat's.
 
 use crate::error::{Error, Result};
 use llama_cpp_2::context::params::LlamaContextParams;
@@ -32,19 +37,19 @@ pub const MODEL_BYTES: u64 = 2_740_937_888;
 
 /// Context in tokens: an hour of conversation (~16K) fits in one go with room
 /// for the instructions and the answer. Longer notes go by parts (`notes.rs`).
-const CONTEXT_TOKENS: u32 = 24_576;
+pub(crate) const CONTEXT_TOKENS: u32 = 24_576;
 /// Longest answer, summary plus the short version for the map. The longest
 /// one in the tests was ~1,700 tokens.
 const MAX_TOKENS: usize = 2_500;
 /// All layers on the GPU, like the translator.
-const GPU_LAYERS: u32 = 99;
+pub(crate) const GPU_LAYERS: u32 = 99;
 /// Sampling as tested: llama-server's defaults with Groq's temperature.
-const TEMPERATURE: f32 = 0.3;
+pub(crate) const TEMPERATURE: f32 = 0.3;
 
-/// Only one summary at a time.
-static BUSY: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
-/// Set when the app quits: the summary in progress stops at the next token.
-static CANCEL: AtomicBool = AtomicBool::new(false);
+/// Only one summary at a time, and the chat holds it while it has the model.
+pub(crate) static BUSY: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+/// Set when the app quits: the summary or chat answer in progress stops at the next token.
+pub(crate) static CANCEL: AtomicBool = AtomicBool::new(false);
 
 /// Where the model goes.
 pub fn model_path() -> PathBuf {
@@ -55,10 +60,11 @@ pub fn is_installed(model: &Path) -> bool {
     model.exists()
 }
 
-/// Stops the summary in progress and waits for it to let go of the model.
-/// Called when the app quits: with GPU memory still held, Metal aborts.
+/// Stops the summary or chat answer in progress and waits for it to let go of
+/// the model. Called when the app quits: with GPU memory still held, Metal aborts.
 pub fn shutdown() {
     CANCEL.store(true, Ordering::SeqCst);
+    crate::chat::local::stop();
     drop(BUSY.blocking_lock());
 }
 
@@ -78,6 +84,8 @@ pub(crate) async fn with_model_at<T: Send + 'static>(
     if !is_installed(&path) {
         return Err(Error::Notes("Falta descargar el resumen.".into()));
     }
+    // The chat's model goes first (after its answer in progress, if any).
+    crate::chat::local::stop();
     let _busy = BUSY.lock().await;
     tauri::async_runtime::spawn_blocking(move || {
         let t0 = std::time::Instant::now();
@@ -200,6 +208,6 @@ impl Session<'_> {
 }
 
 /// A different seed each time, so "Summarize again" can give another wording.
-fn rand_seed() -> u32 {
+pub(crate) fn rand_seed() -> u32 {
     std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.subsec_nanos())
 }
