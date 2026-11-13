@@ -177,7 +177,10 @@ documentación o su código).
   (opcional; recomendado en equipos con poca RAM). Hecho; falta probar cada servicio.
 - `docs/plan-chat.md`: chat con una nota y con todas (fases 1 y 2). El motor
   está hecho en `src-tauri/src/chat/` (modelo cargado, respuesta en directo,
-  reutiliza lo leído, nube con streaming): úsalo tal cual; falta el resto.
+  reutiliza lo leído, nube con streaming): úsalo tal cual. Fase 1 (chat con
+  una nota: pestaña «Chat» de la nota, `chat/prompt.rs`, `chat/search.rs`,
+  `chat/commands.rs`, banco de preguntas en `chat/bench.rs`) hecha; falta
+  probarla a mano y ampliar el banco. La fase 2 (con todas las notas) no.
 - `docs/plan-creditos.md`: la pantalla de licencias de terceros (hecho; lo que quedó, en su «Pending»).
 - `docs/plan-inicio.md`: pantalla de inicio y modo claro (hechos, con la fila «Apariencia» en Ajustes). Los colores son variables (`:root` oscuro, claro bajo `data-theme`): no escribas colores literales en los CSS.
 - `docs/i18n.md`: la interfaz multilingüe (es/en incluidos, el resto se genera

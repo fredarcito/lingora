@@ -6,6 +6,8 @@ import MindMap from "@components/MindMap";
 import { langName as langInSentence, useT } from "@i18n";
 import SummaryOptions from "@components/SummaryOptions";
 import { useNoteSummary } from "@hooks/useNoteSummary";
+import { useNoteChat } from "@hooks/useNoteChat";
+import NoteChat from "@components/NoteChat";
 import { providerOf } from "@utils/summarySource.js";
 import SpeakerBar from "@components/SpeakerBar";
 import Transcript, { UserMarks } from "@components/Transcript";
@@ -46,14 +48,15 @@ const WORKING_PHRASES = Array.from({ length: 9 }, (_, i) => `notes.working${i + 
 
 /**
  * A note's page: editable title, actions and tabs.
- * @param {{ id: string, live: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void, topSlot?: HTMLElement | null }} props
+ * @param {{ id: string, live: boolean, translating?: boolean, languages: import("@utils/api").LanguageInfo[], onBack: () => void, topSlot?: HTMLElement | null }} props
+ * `translating`: a lane is translating now (the Chat tab on the computer waits for it to end).
  * `topSlot`: where «← All notes» and the day go (the page header, level with the ☰); without it they stay at the top of the page.
  */
-export default function NotePage({ id, live, languages, onBack, topSlot }) {
+export default function NotePage({ id, live, translating = false, languages, onBack, topSlot }) {
   const t = useT();
   const [note, setNote] = useState(/** @type {import("@utils/api").Note | null} */ (null));
   const [error, setError] = useState("");
-  const [tab, setTab] = useState(/** @type {"summary" | "map" | "transcript" | null} */ (null));
+  const [tab, setTab] = useState(/** @type {"summary" | "map" | "chat" | "transcript" | null} */ (null));
   const [showSource, setShowSource] = useState(false);
   // Transcript tab: all of it, or only the paragraphs with your notes or bookmarks.
   const [markFilter, setMarkFilter] = useState(/** @type {"all" | "note" | "bookmark"} */ ("all"));
@@ -65,6 +68,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
   const [notice, setNotice] = useState("");
   const summary = useNoteSummary(id, { setNote, setTab });
   const { summarizing, model, ready, notReady, askConsent } = summary;
+  const chat = useNoteChat(id, { note, setNote, live });
   const noticeTimer = useRef(0);
   const summaryRef = useRef(/** @type {HTMLDivElement | null} */ (null));
   // What the wait for a summary shows, in turn (it can take a minute on the computer).
@@ -201,6 +205,14 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
       <LinkButton onClick={() => setTab("summary")}>{t("notes.goSummary")}</LinkButton>
     </p>
   );
+  /** Goes to the transcript at that second (the map's boxes and the times an answer cites). @param {number} secs */
+  const jumpTo = (secs) => {
+    const part = partAt(transcriptParts(note), secs);
+    if (part === null) return;
+    setTab("transcript");
+    setMarkFilter("all");
+    setFocus({ part, nonce: Date.now() });
+  };
   const copyForChat = () => run(() => navigator.clipboard.writeText(`${summaryPrompt(note, languages)}\n\n${noteToText(note)}`), t("notes.copied"));
 
   return (
@@ -296,6 +308,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
               ["summary", t("notes.tab.summary")],
               ["map", t("notes.tab.map")],
               ["transcript", t("notes.tab.transcript")],
+              ["chat", t("notes.tab.chat")],
             ].map(([value, label]) => (
               <button key={value} role="tab" aria-selected={tab === value} className={tab === value ? styles.isSelected : ""} onClick={() => setTab(/** @type {any} */ (value))}>
                 {label}
@@ -472,13 +485,7 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
               title={note.title}
               summary={note.summary.text}
               short={note.summary.map}
-              onJump={(secs) => {
-                const part = partAt(transcriptParts(note), secs);
-                if (part === null) return;
-                setTab("transcript");
-                setMarkFilter("all");
-                setFocus({ part, nonce: Date.now() });
-              }}
+              onJump={jumpTo}
               onExport={(png) => run(() => api.noteExportImage(id, png), t("notes.savedDownloads"))}
             />
           ) : summarizing ? (
@@ -503,6 +510,10 @@ export default function NotePage({ id, live, languages, onBack, topSlot }) {
               )}
             </div>
           ))}
+
+        {tab === "chat" && (
+          <NoteChat chat={chat} hasText={note.sentences.length > 0} translating={translating} serviceName={serviceName} onJump={jumpTo} />
+        )}
 
         {/* With people, the hint goes on the right of their row; without them, on its own. */}
         {tab === "transcript" && !hasPeople && summaryHint}

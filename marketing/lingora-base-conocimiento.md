@@ -167,6 +167,18 @@ pruebas. **No prometerlo como disponible.**
   hora llevan a ese momento de la transcripción. Se exporta como imagen (PNG).
   Sale del mismo resumen, que trae una versión corta de cada punto para el
   mapa (no hace otra petición). Recién hecho, sin probar aún con usuarios.
+- **Chat con una nota** (pestaña «Chat» de cada nota): se le pregunta lo que
+  se quiera sobre esa conversación («¿qué tareas quedaron pendientes?», «¿qué
+  dijo cada persona?») y responde en directo, citando la hora de lo que se dijo
+  (un clic lleva a ese momento de la transcripción). Responde en el idioma de la
+  pregunta y, si la respuesta no está en la nota, lo dice. Funciona igual que el
+  resumen: en el propio Mac (mismo modelo del resumen, sin enviar nada fuera) o
+  con la clave de IA del usuario (se envía la transcripción y las preguntas a ese
+  servicio, con permiso la primera vez con cada uno). La conversación se guarda
+  en la nota; las notas muy largas (más de ~1 h) se responden con los fragmentos
+  más relacionados con la pregunta. En el Mac, el chat espera a que termine la
+  traducción en curso. Recién hecho, sin probar aún con usuarios. Pendiente: chat
+  con todas las notas (la tarjeta «Chat con Lingora» de inicio sigue como próximamente).
 - **Exportar** a Markdown (.md) o texto (.txt).
 - **"Copiar para tu chat de IA":** copia la nota con instrucciones para pegarla
   en ChatGPT, Claude, etc. y resumirla allí.

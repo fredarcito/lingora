@@ -105,6 +105,25 @@ export function ArrowIcon() {
   );
 }
 
+/** A four-point star with two small ones: the chat's assistant. */
+export function SparkleIcon() {
+  return (
+    <svg {...svgProps}>
+      <path d="M12 4l1.8 4.7L18.5 10.5l-4.7 1.8L12 17l-1.8-4.7L5.5 10.5l4.7-1.8z" />
+      <path d="M19 3v3M17.5 4.5h3M5 17v3M3.5 18.5h3" />
+    </svg>
+  );
+}
+
+/** An arrow up: send. */
+export function SendIcon() {
+  return (
+    <svg {...svgProps} width={14} height={14}>
+      <path d="M12 19V5M6 11l6-6 6 6" />
+    </svg>
+  );
+}
+
 /** A window with a small one floating on top: picture-in-picture. */
 export function FloatIcon() {
   return (

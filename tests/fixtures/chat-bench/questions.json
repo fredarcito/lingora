@@ -1,0 +1,181 @@
+[
+ {
+  "id": "budget",
+  "note": "reunion-presupuesto",
+  "q": "¿Qué presupuesto propuso Luis?",
+  "kind": "fact",
+  "must": [
+   [
+    "15.000",
+    "15000",
+    "quince mil",
+    "15 mil"
+   ],
+   "Luis"
+  ],
+  "time": [
+   "00:24"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "budget-split",
+  "note": "reunion-presupuesto",
+  "q": "¿Cómo se reparte ese presupuesto?",
+  "kind": "fact",
+  "must": [
+   [
+    "10.000",
+    "10000",
+    "diez mil"
+   ],
+   [
+    "5.000",
+    "5000",
+    "cinco mil"
+   ]
+  ],
+  "lang": "es",
+  "after": "budget"
+ },
+ {
+  "id": "launch-date",
+  "note": "reunion-presupuesto",
+  "q": "¿Cuándo es el lanzamiento?",
+  "kind": "fact",
+  "must": [
+   [
+    "12 de marzo",
+    "12/03",
+    "12 marzo"
+   ]
+  ],
+  "time": [
+   "01:15"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "who-video",
+  "note": "reunion-presupuesto",
+  "q": "¿Quién hace el vídeo y para cuándo?",
+  "kind": "who",
+  "must": [
+   "Marta",
+   [
+    "28 de febrero",
+    "28/02",
+    "28 febrero"
+   ]
+  ],
+  "time": [
+   "02:00"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "who-web",
+  "note": "reunion-presupuesto",
+  "q": "¿Quién se encarga de la página web?",
+  "kind": "who",
+  "must": [
+   "Sofía"
+  ],
+  "time": [
+   "03:58"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "tasks-luis",
+  "note": "reunion-presupuesto",
+  "q": "¿Qué tareas tiene Luis?",
+  "kind": "tasks",
+  "must": [
+   "locutor",
+   [
+    "agencia",
+    "prensa"
+   ],
+   [
+    "informe",
+    "gastos"
+   ]
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "tasks-all",
+  "note": "reunion-presupuesto",
+  "q": "¿Qué tareas quedaron pendientes?",
+  "kind": "tasks",
+  "must": [
+   "Marta",
+   "Sofía",
+   "locutor"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "cross-budget",
+  "note": "reunion-presupuesto",
+  "q": "How much budget was proposed for the campaign?",
+  "kind": "cross_lang",
+  "must": [
+   [
+    "15,000",
+    "15.000",
+    "15000",
+    "fifteen thousand"
+   ]
+  ],
+  "lang": "en"
+ },
+ {
+  "id": "cross-web",
+  "note": "reunion-presupuesto",
+  "q": "Who is redoing the website?",
+  "kind": "cross_lang",
+  "must": [
+   "Sofía"
+  ],
+  "lang": "en"
+ },
+ {
+  "id": "late-report",
+  "note": "reunion-presupuesto",
+  "q": "¿Para cuándo es el informe de gastos?",
+  "kind": "late",
+  "must": [
+   "viernes"
+  ],
+  "time": [
+   "05:05"
+  ],
+  "lang": "es"
+ },
+ {
+  "id": "no-salary",
+  "note": "reunion-presupuesto",
+  "q": "¿Cuánto cobra el locutor?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "es"
+ },
+ {
+  "id": "no-venue",
+  "note": "reunion-presupuesto",
+  "q": "¿Dónde será el evento de lanzamiento?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "es"
+ },
+ {
+  "id": "no-english",
+  "note": "reunion-presupuesto",
+  "q": "Did they decide on a logo?",
+  "kind": "unanswerable",
+  "answerable": false,
+  "lang": "en"
+ }
+]

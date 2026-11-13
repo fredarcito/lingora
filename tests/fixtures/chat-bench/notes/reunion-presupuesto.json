@@ -1,0 +1,151 @@
+{
+ "version": 1,
+ "id": "2026-11-03_10-32-00",
+ "title": "Reunión de presupuesto",
+ "created_at": "2026-11-03T10:32:00.000Z",
+ "ended_at": "2026-11-03T10:38:00.000Z",
+ "mode": "call",
+ "speakers": {
+  "1": "Ana",
+  "2": "Luis"
+ },
+ "sentences": [
+  {
+   "t": 3,
+   "speaker": 1,
+   "source": "Buenos días a todos. Hoy toca cerrar el plan de la campaña de lanzamiento.",
+   "translation": "Buenos días a todos. Hoy toca cerrar el plan de la campaña de lanzamiento.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 9,
+   "speaker": 2,
+   "source": "Buenos días. Yo traigo los números del presupuesto.",
+   "translation": "Buenos días. Yo traigo los números del presupuesto.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 20,
+   "speaker": 1,
+   "source": "Adelante, Luis.",
+   "translation": "Adelante, Luis.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 24,
+   "speaker": 2,
+   "source": "Propongo un presupuesto de quince mil euros para toda la campaña.",
+   "translation": "Propongo un presupuesto de quince mil euros para toda la campaña.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 35,
+   "speaker": 1,
+   "source": "Me parece razonable, pero cinco mil deberían ir a publicidad en redes.",
+   "translation": "Me parece razonable, pero cinco mil deberían ir a publicidad en redes.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 48,
+   "speaker": 2,
+   "source": "De acuerdo. Entonces diez mil para producción y cinco mil para redes.",
+   "translation": "De acuerdo. Entonces diez mil para producción y cinco mil para redes.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 75,
+   "speaker": 1,
+   "source": "La fecha de lanzamiento sería el 12 de marzo.",
+   "translation": "La fecha de lanzamiento sería el 12 de marzo.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 84,
+   "speaker": 2,
+   "source": "Marzo me parece justo para tener el vídeo listo.",
+   "translation": "Marzo me parece justo para tener el vídeo listo.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 120,
+   "speaker": 1,
+   "source": "Marta se encarga del vídeo, y tiene que entregarlo antes del 28 de febrero.",
+   "translation": "Marta se encarga del vídeo, y tiene que entregarlo antes del 28 de febrero.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 131,
+   "speaker": 2,
+   "source": "Se lo digo yo hoy mismo. Yo me ocupo de contratar al locutor.",
+   "translation": "Se lo digo yo hoy mismo. Yo me ocupo de contratar al locutor.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 170,
+   "speaker": 1,
+   "source": "Otra cosa: la agencia de prensa nos pide una respuesta esta semana.",
+   "translation": "Otra cosa: la agencia de prensa nos pide una respuesta esta semana.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 180,
+   "speaker": 2,
+   "source": "Les escribo mañana por la mañana y les confirmo que vamos con ellos.",
+   "translation": "Les escribo mañana por la mañana y les confirmo que vamos con ellos.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 230,
+   "speaker": 1,
+   "source": "¿Y qué hacemos con la página web?",
+   "translation": "¿Y qué hacemos con la página web?",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 238,
+   "speaker": 2,
+   "source": "Sofía está rehaciendo la página de inicio. La tendrá lista la semana antes del lanzamiento.",
+   "translation": "Sofía está rehaciendo la página de inicio. La tendrá lista la semana antes del lanzamiento.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 290,
+   "speaker": 1,
+   "source": "Perfecto. Pues Luis contrata al locutor y escribe a la agencia, Marta entrega el vídeo y Sofía la web.",
+   "translation": "Perfecto. Pues Luis contrata al locutor y escribe a la agencia, Marta entrega el vídeo y Sofía la web.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 305,
+   "speaker": 2,
+   "source": "Correcto. Y yo preparo el informe de gastos para el viernes.",
+   "translation": "Correcto. Y yo preparo el informe de gastos para el viernes.",
+   "source_lang": "es",
+   "target_lang": "es"
+  },
+  {
+   "t": 330,
+   "speaker": 1,
+   "source": "Genial. Pues lo dejamos aquí. Gracias a todos.",
+   "translation": "Genial. Pues lo dejamos aquí. Gracias a todos.",
+   "source_lang": "es",
+   "target_lang": "es"
+  }
+ ],
+ "summary": null
+}

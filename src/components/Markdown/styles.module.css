@@ -64,3 +64,131 @@
   line-height: 1.5;
   color: var(--text-3);
 }
+
+/* A time cited in a chat answer: it goes to that moment of the transcript. */
+.md-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  margin: 0 1px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font: inherit;
+  font-size: 0.86em;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  vertical-align: baseline;
+  cursor: pointer;
+}
+
+.md-jump:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.md-jump:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 1px;
+}
+
+/* The ones that close a point: a pill on the right, the arrow after the time. */
+.md-jump.is-pill {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.md-jump svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+/* A point of a chat answer: (number) text, and its times on the right. */
+.md li.md-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.md ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.md ol li.md-point {
+  margin: 0;
+}
+
+.md-number {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+
+.md-point-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.md-point-title {
+  display: block;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.md-point-text {
+  display: block;
+  color: var(--text-2);
+}
+
+.md-point-times {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 40%;
+  padding-top: 1px;
+}
+
+/* A list item drawn as a row loses its marker: the dot is drawn here. */
+.md ul li.md-point {
+  margin-left: -14px;
+}
+
+.md ul li.md-point::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin-top: 0.7em;
+  border-radius: 50%;
+  background: var(--text-2);
+}
+
+/* The end of a text still arriving: the last letters fade in, as a trail
+   that moves with the text. It paints over them with the background. */
+.md-tail {
+  display: inline-block;
+  width: 2.6em;
+  height: 1.3em;
+  margin-left: -2.6em;
+  vertical-align: text-bottom;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--md-fade-bg, var(--bg)));
+}

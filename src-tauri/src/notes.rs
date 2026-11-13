@@ -41,7 +41,7 @@ fn notes_dir() -> PathBuf {
 
 /// Path of a note's file. The id can only contain `[0-9A-Za-z_-]`: that way
 /// nobody writes or reads outside the folder.
-fn note_path(id: &str) -> Result<PathBuf> {
+pub(crate) fn note_path(id: &str) -> Result<PathBuf> {
     let valid = !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
     if !valid {
         return Err(Error::Notes(format!("id de nota no válido: {id}")));
@@ -49,17 +49,17 @@ fn note_path(id: &str) -> Result<PathBuf> {
     Ok(notes_dir().join(format!("{id}.json")))
 }
 
-fn read_note(path: &Path) -> Result<Value> {
+pub(crate) fn read_note(path: &Path) -> Result<Value> {
     let text = std::fs::read_to_string(path)?;
     serde_json::from_str(&text).map_err(|e| Error::Notes(format!("la nota no se puede leer: {e}")))
 }
 
-fn str_field<'a>(note: &'a Value, key: &str) -> &'a str {
+pub(crate) fn str_field<'a>(note: &'a Value, key: &str) -> &'a str {
     note.get(key).and_then(Value::as_str).unwrap_or("")
 }
 
 /// The translation of a sentence or, without one (original mode), the original.
-fn shown_text(sentence: &Value) -> &str {
+pub(crate) fn shown_text(sentence: &Value) -> &str {
     sentence
         .get("translation")
         .and_then(Value::as_str)
@@ -113,7 +113,7 @@ fn summarize(id: &str, note: &Value) -> NoteSummary {
 }
 
 /// The names in `speakers`, without the user's own (`"0"`) or empty ones.
-fn speaker_names(note: &Value) -> Vec<String> {
+pub(crate) fn speaker_names(note: &Value) -> Vec<String> {
     let Some(speakers) = note.get("speakers").and_then(Value::as_object) else {
         return Vec::new();
     };
@@ -273,7 +273,7 @@ fn iso_secs(iso: &str) -> Option<i64> {
 
 /// "29 oct 2026 · 10:32–11:07 · 35 min". The start time comes from the `id`
 /// (local date) and the end is computed by adding the duration, with no time zones.
-fn span_line(note: &Value) -> String {
+pub(crate) fn span_line(note: &Value) -> String {
     let id = str_field(note, "id");
     let part = |range: std::ops::Range<usize>| id.get(range).and_then(|s| s.parse::<i64>().ok());
     let (Some(year), Some(month), Some(day), Some(hour), Some(minute)) =
@@ -299,7 +299,7 @@ fn span_line(note: &Value) -> String {
 
 /// Who is speaking: nothing without detected people; otherwise their name, "Yo" (0,
 /// your microphone in a call) or "Persona n".
-fn speaker_label(note: &Value, sentence: &Value) -> String {
+pub(crate) fn speaker_label(note: &Value, sentence: &Value) -> String {
     match sentence.get("speaker").and_then(Value::as_i64) {
         None => String::new(),
         Some(n) => note
@@ -362,7 +362,7 @@ fn marks_text(note: &Value, notes: bool, bookmarks: bool) -> String {
 
 /// Whether the summary also uses the user's notes: only if they turned it on
 /// for this note (`summary_with_notes`), since notes may be private.
-fn summary_with_notes(note: &Value) -> bool {
+pub(crate) fn summary_with_notes(note: &Value) -> bool {
     note.get("summary_with_notes").and_then(Value::as_bool).unwrap_or(false)
 }
 
@@ -389,7 +389,7 @@ fn summary_input(note: &Value) -> String {
 }
 
 /// The user's notes in time order, each on one line, without the empty ones.
-fn user_notes(note: &Value) -> Vec<(f64, String)> {
+pub(crate) fn user_notes(note: &Value) -> Vec<(f64, String)> {
     let mut notes: Vec<(f64, String)> = note
         .get("my_notes")
         .and_then(Value::as_array)
@@ -407,7 +407,7 @@ fn user_notes(note: &Value) -> Vec<(f64, String)> {
 }
 
 /// "[01:52]".
-fn clock(t: f64) -> String {
+pub(crate) fn clock(t: f64) -> String {
     let secs = t as u64;
     format!("[{:02}:{:02}]", secs / 60, secs % 60)
 }
@@ -512,7 +512,7 @@ fn gap_line(secs: u64) -> String {
 /// original goes below in parentheses (if there is a translation). The unsaved
 /// stretches (`gaps`) split the paragraph they fall in, like `transcriptParts`
 /// in `src/notes.js`.
-fn transcript_text(note: &Value, with_original: bool) -> String {
+pub(crate) fn transcript_text(note: &Value, with_original: bool) -> String {
     let mut out = String::new();
     let sentences = note.get("sentences").and_then(Value::as_array).map(Vec::as_slice).unwrap_or_default();
     let mut gaps: Vec<(usize, u64)> = Vec::new();
@@ -548,7 +548,7 @@ fn transcript_text(note: &Value, with_original: bool) -> String {
 }
 
 /// An exported paragraph, with its time, who is speaking and, if asked, the original.
-fn paragraph_text(note: &Value, block: &[&Value], with_original: bool) -> String {
+pub(crate) fn paragraph_text(note: &Value, block: &[&Value], with_original: bool) -> String {
     let first = block[0];
     let t = first.get("t").and_then(Value::as_f64).unwrap_or(0.0).max(0.0) as u64;
     let who = speaker_label(note, first);
@@ -571,7 +571,7 @@ const PARAGRAPH_CHARS: usize = 700;
 /// Joins consecutive sentences of the same person into paragraphs, like the
 /// note view (`paragraphs` in `src/notes.js`): another paragraph when
 /// the speaker changes, after a long pause or if it gets very long.
-fn paragraphs(sentences: &[Value]) -> Vec<Vec<&Value>> {
+pub(crate) fn paragraphs(sentences: &[Value]) -> Vec<Vec<&Value>> {
     let mut out: Vec<Vec<&Value>> = Vec::new();
     let mut chars = 0;
     let t = |s: &Value| s.get("t").and_then(Value::as_f64).unwrap_or(0.0);
@@ -854,7 +854,7 @@ fn summary_language(note: &Value) -> &'static str {
 }
 
 /// The summary language's entry, as `summary_language` chooses it.
-fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
+pub(crate) fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
     ["/summary_lang", "/sentences/0/target_lang"]
         .iter()
         .filter_map(|p| note.pointer(p).and_then(Value::as_str))
@@ -864,7 +864,7 @@ fn summary_lang_info(note: &Value) -> Option<&'static crate::config::LangInfo> {
 
 /// Above this, a transcript goes to a service by parts: their contexts are
 /// large (an hour is ~60K characters), but not all of them equally.
-const CLOUD_MAX_CHARS: usize = 300_000;
+pub(crate) const CLOUD_MAX_CHARS: usize = 300_000;
 
 /// Summarizes the transcript with the user's service; if it is huge, in
 /// chunks and then the whole, like `summarize_text`.
@@ -948,7 +948,7 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
 }
 
 /// Now in ISO 8601 UTC ("2026-10-29T13:32:05.120Z"), with no dependencies.
-fn now_iso() -> String {
+pub(crate) fn now_iso() -> String {
     let since = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
     let secs = since.as_secs() as i64;
     let (y, m, d) = civil_from_days(secs.div_euclid(86400));

@@ -2,7 +2,9 @@
 
 Status: **in progress** (2026-11-13). Phases 1 and 2 approved; phase 3 (chat
 with the session in progress) stays out. **The engine is done** (§0.1, branch
-`chat`): the rest builds on it.
+`chat`): the rest builds on it. **Phase 1 is built** (§1.2–1.3, bench code in
+§1.5); what is left of it is the by-hand check (§1.4) and the bench's remaining
+notes and questions (§1.5).
 
 Ask questions about one note («¿qué tareas quedaron pendientes?») or about
 all of them («¿qué dijo Ana del presupuesto?»), on the computer with the

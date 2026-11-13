@@ -12,9 +12,10 @@ import styles from "./styles.module.css";
  * memory the key goes first, as the recommended one.
  * @param {{ model: import("@hooks/useSummaryModel").SummaryModelState, memoryGb: number | null,
  *   source: string, onDownload: () => void, onLocal: () => void,
- *   onKeySaved: (provider: string) => void }} props
+ *   onKeySaved: (provider: string) => void, submitLabel?: string, intro?: string }} props `submitLabel`: the key form's button, `intro`: the line above
+ *   the options (by default those of the summary).
  */
-export default function SummaryOptions({ model, memoryGb, source, onDownload, onLocal, onKeySaved }) {
+export default function SummaryOptions({ model, memoryGb, source, onDownload, onLocal, onKeySaved, submitLabel, intro }) {
   const t = useT();
   const low = isLowMemory(memoryGb);
   // Open right away if a service was chosen and its key is missing.
@@ -31,7 +32,7 @@ export default function SummaryOptions({ model, memoryGb, source, onDownload, on
         <SummaryKeyForm
           provider={source !== "local" ? source : undefined}
           active={source}
-          submitLabel={t("summarySource.saveAndSummarize")}
+          submitLabel={submitLabel ?? t("summarySource.saveAndSummarize")}
           onSaved={onKeySaved}
         />
       ) : (
@@ -45,7 +46,7 @@ export default function SummaryOptions({ model, memoryGb, source, onDownload, on
   return (
     <div className={styles.summaryOptions}>
       {low && <p className={styles.summaryOptionsLow}>{t("summarySource.lowMemory")}</p>}
-      <p>{t("summarySource.chooseHow")}</p>
+      <p>{intro ?? t("summarySource.chooseHow")}</p>
       {low ? [key, local] : [local, key]}
     </div>
   );

@@ -1,0 +1,200 @@
+/* It fills the height it is given (flex: 1); only the messages scroll, the footer stays under them. */
+.chat-thread-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  min-height: 160px;
+  overflow-y: auto;
+  padding: 4px 2px 16px;
+}
+
+.chat-thread.is-empty {
+  justify-content: center;
+}
+
+/* The input, under the messages. */
+.chat-footer {
+  position: relative;
+  flex: none;
+  padding: 10px 0 4px;
+}
+
+.chat-message {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Your question: a tinted bubble on the right, its time beside it. */
+.chat-question {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 80%;
+}
+
+.chat-message.is-user {
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.chat-question-time,
+.chat-meta time {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* An answer: the assistant's mark, then its name, time and the text. */
+.chat-answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 88%;
+}
+
+.chat-avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+
+.chat-answer-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 6px 0 6px;
+}
+
+.chat-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+/* No border: a soft background keeps long chats light. It is solid, so the
+   fade at the end of an answer being written (--md-fade-bg) matches it. */
+.chat-message.is-answer {
+  --md-fade-bg: color-mix(in srgb, var(--text) 4%, var(--bg));
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--md-fade-bg);
+  color: var(--text);
+}
+
+/* While the model reads: a small bubble with three pulsing dots, no text. */
+.chat-message.is-answer.is-reading {
+  width: fit-content;
+  padding: 12px 14px;
+}
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 8px;
+}
+
+.chat-typing i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: typing 1.2s ease-in-out infinite;
+}
+
+.chat-typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing i {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+.chat-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--n-border);
+}
+
+.chat-latest {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid var(--n-input);
+  background: var(--bg);
+  box-shadow: 0 2px 8px var(--shadow-1);
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.chat-latest:hover {
+  color: var(--text);
+  background: var(--n-hover);
+}
+
+.chat-latest:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 2px;
+}
+
+.chat-latest-arrow {
+  display: inline-flex;
+  transform: rotate(90deg);
+}

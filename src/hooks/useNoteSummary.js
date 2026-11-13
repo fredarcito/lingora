@@ -12,7 +12,7 @@ import { cloudRequest, hasConsent, storeConsent, storeSummarySource } from "@uti
  * @param {string} id The note's id.
  * @param {{
  *   setNote: (update: (prev: import("@utils/api").Note | null) => import("@utils/api").Note | null) => void,
- *   setTab: (update: (current: "summary" | "map" | "transcript" | null) => "summary" | "map" | "transcript" | null) => void,
+ *   setTab: (update: (current: "summary" | "map" | "chat" | "transcript" | null) => "summary" | "map" | "chat" | "transcript" | null) => void,
  * }} page
  */
 export function useNoteSummary(id, { setNote, setTab }) {

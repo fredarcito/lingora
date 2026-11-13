@@ -1,0 +1,80 @@
+/* On the Chat tab the page does not scroll: the chat takes the rest of the
+   window's height and scrolls inside itself, with the input at the bottom. */
+:global(.notes-scroll):has(.note-chat) {
+  overflow-y: hidden;
+}
+
+:global(.notes-column):has(> .note-chat) {
+  height: 100%;
+  padding-bottom: 0;
+}
+
+.note-chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* One slim row on the right: where it answers and the ⋯ menu. */
+.note-chat-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: -8px;
+}
+
+.note-chat-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.note-chat-menu {
+  position: relative;
+}
+
+.note-chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-2);
+  font-size: 14px;
+  text-align: center;
+}
+
+.note-chat-empty p {
+  margin: 0;
+}
+
+.note-chat-follow-ups {
+  margin-bottom: 10px;
+}
+
+.note-chat-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.note-chat-copy svg {
+  width: 13px;
+  height: 13px;
+}
+
+.note-chat-copy:hover {
+  color: var(--text);
+  background: var(--n-hover);
+}
+
+.note-chat-copy:focus-visible {
+  outline: 2px solid var(--n-ring);
+  outline-offset: 1px;
+}

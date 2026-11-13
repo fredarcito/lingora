@@ -14,7 +14,7 @@ src/
   pages/                    Home, Notes, NoteTaking, Settings, Welcome, FloatingCaptions
   components/               Captions, Diagnostics, LaneCard (con VoiceControls),
                             LaneSettings, LangOffer, LanguagePicker, LiveStatus,
-                            Markdown, PairBar, SaveNotesBar, Sidebar, SummaryDownload,
+                            Markdown, NoteChat, PairBar, SaveNotesBar, Sidebar, SummaryDownload,
                             SummaryKeyForm, SummaryOptions, SummarySource, TopBar
   components/shared/        las piezas básicas (esta tabla) e icons.jsx
   utils/                    api, audio, notes, words, lanes, voice: lo que no
@@ -48,6 +48,9 @@ Texts arrive as props, already translated with `t()`.
 | `Badge` | Small label next to a title | `children`, `icon` (in front of the text), `muted` (gray instead of the accent, to tell kinds apart) | `<Badge icon={<NoteIcon />}>{t("notes.badge.notes")}</Badge>` |
 | `ModeCard` | Card that starts a mode (Home): icon tile, title, one line and an action button | `icon`, `title`, `description`, `action`, `tone` (`"audio"` \| `"call"` \| `"notes"`, picks `--mode-*`), `highlighted` (outline and filled button: last mode used), `disabled`, `hint` (tooltip, why it is locked), `onClick` | `<ModeCard tone="audio" icon={<SwapIcon />} title={…} description={…} action={…} onClick={pick} />` |
 | `ActivityRow` | Row of a short list: icon, title, one line below, optional `meta` and `action` label at the end; the whole row is one button | `icon`, `title`, `subtitle`, `meta`, `action`, `onClick`, `className` | `<ActivityRow icon={<NoteIcon />} title={n.title} subtitle={n.summary_line} meta={day} action={t("home.open")} onClick={open} />` |
+| `ChatThread` | The messages of a chat: yours on the right, answers on the left with the assistant's mark and name (drawn by `renderAnswer`), each with its time. It fills the height it is given and scrolls inside itself, with `footer` under the messages; it follows the answer being written unless the user scrolled up (then «go to the end», over the footer) | `messages: {role, text}[]`, `streaming` (answer in progress: its text, `""` while reading, `null` if none), `renderAnswer(text, writing)` (the answer being written comes at a steady pace, `writing` true), `renderActions(message)` (row under a finished answer), `timeOf(message)`, `assistantLabel`, `readingLabel`, `stoppedLabel`, `latestLabel`, `footer` (the input), `children` (the empty state), `className` | `<ChatThread messages={m} streaming={s} renderAnswer={(x) => <Markdown text={x} />} assistantLabel={…} readingLabel={…} stoppedLabel={…} latestLabel={…} footer={<ChatInput … />}>{empty}</ChatThread>` |
+| `ChatInput` | Where a chat message is written: grows with the text, Enter sends, Shift+Enter new line; its button sends or, while an answer is written, stops it | `value`, `onChange(value)`, `onSend()`, `onStop()`, `busy`, `disabled`, `placeholder`, `sendLabel`, `stopLabel`, `className` | `<ChatInput value={draft} onChange={setDraft} onSend={send} onStop={stop} busy={busy} placeholder={…} sendLabel={…} stopLabel={…} />` |
+| `SuggestionChips` | Ready-made questions for a chat (empty state, and the ones not asked yet over the input); each button sends its own text | `options: {id, label}[]`, `onPick(label)`, `disabled`, `className` | `<SuggestionChips options={tips} onPick={ask} />` |
 | `Spinner` | Wait indicator | `small` | `<Spinner small />` |
 | `RotatingText` | A line for long waits that changes every few seconds with a fade ("Summarizing…"); screen readers hear only `label`, once; no fade with reduced motion | `phrases` (translated), `label`, `everyMs` (default 3500), `className` | `<RotatingText phrases={working} label={t("notes.working")} />` |
 | `SearchBox` | Search field with a magnifying glass | `value`, `onChange(value)`, `placeholder` (also `aria-label`), `shortcut`, `inputRef`, `className`. Escape clears it | `<SearchBox value={q} onChange={setQ} placeholder={t("notes.search")} shortcut="⌘K" />` |
@@ -61,7 +64,7 @@ Icons: `WaveIcon`, `NoteIcon`, `MenuIcon`, `CloseIcon`, `SettingsIcon`,
 `ArrowIcon`, `FloatIcon`, `SlidersIcon`, `PlayIcon`, `StopIcon`,
 `VolumeIcon`, `BookmarkIcon` (a marked moment), `PenIcon` (a note of the
 user), `PlusIcon`, `MinusIcon` and `FitIcon` (zoom), `ExpandIcon` and
-`CollapseIcon` (unfold or fold everything), `DownloadIcon`. The diagnostics status marks (✓, ✕, !) are specific to
+`CollapseIcon` (unfold or fold everything), `DownloadIcon`, `SendIcon` (the chat's send button). The diagnostics status marks (✓, ✕, !) are specific to
 `Diagnostics`.
 
 ## CSS

@@ -156,6 +156,7 @@ import { Channel, invoke } from "@tauri-apps/api/core";
  * @property {MyNote[]} [my_notes] What the user wrote while recording (Take notes), ordered by `t`.
  * @property {{ t: number }[]} [bookmarks] Moments the user marked while recording, ordered by `t`.
  * @property {boolean} [summary_with_notes] The summary also uses `my_notes` (off by default: they may be private).
+ * @property {{ role: "user" | "assistant", text: string, at: string }[]} [chat] The conversation with the note (Chat tab).
  * @property {{ text: string, map?: string, template?: string, created_at: string } | null} summary `map`: the same lists in short,
  *   for the mind map (summaries made before it have none). `template`: the one it was made with; without it, "general".
  *
@@ -475,6 +476,22 @@ export const api = {
    * @returns {Promise<string>} The summary in Markdown.
    */
   noteSummarize: (id, cloud = null) => invoke("note_summarize", { id, cloud }),
+  /**
+   * Answers the last message of `messages` about the note: on the computer or,
+   * with `cloud`, with the user's key. The answer arrives in pieces through
+   * `onToken`; the promise resolves with all of it (also if it was stopped).
+   * Pass the history exactly as it was returned (`requestTurns`).
+   * @param {string} id @param {{ role: "user" | "assistant", text: string }[]} messages
+   * @param {import("@utils/summarySource.js").CloudRequest | null} cloud @param {(piece: string) => void} onToken
+   * @returns {Promise<string>}
+   */
+  noteChat: (id, messages, cloud, onToken) => {
+    const channel = new Channel();
+    channel.onmessage = onToken;
+    return invoke("note_chat", { id, messages, cloud, onToken: channel });
+  },
+  /** Stops the chat answer in progress; `noteChat` resolves with what was written. @returns {Promise<void>} */
+  chatStop: () => invoke("chat_stop"),
   /**
    * Where a service's key is: in the keychain, in the development environment or nowhere.
    * @param {string} provider @returns {Promise<"keychain" | "env" | "none">}

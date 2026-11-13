@@ -1,5 +1,6 @@
-import { cx } from "@components/shared";
+import { ArrowIcon, cx } from "@components/shared";
 import { TIME_AT_END } from "@utils/mindMap.js";
+import { splitTimes, trailingTimes } from "@utils/chat.js";
 import styles from "./styles.module.css";
 
 /**
@@ -10,55 +11,134 @@ import styles from "./styles.module.css";
  * and the context goes below, quieter. A time at the end (`point [12:40]`,
  * where it was said) is for the mind map: here it is left out. Everything comes out as React
  * elements, so the text is never interpreted as HTML. `className`, so that
- * the caller can place it.
- * @param {{ text: string, className?: string }} props
+ * the caller can place it. With `onTime` (the chat's answers) every `[mm:ss]`
+ * is a button that calls `onTime(seconds)`: in its place, or at the end of
+ * the line when it closes a list item; numbered lists (`1.`) are drawn too,
+ * and an item that starts with `**Title**:` shows the title over the rest.
+ * `writing`: the text is still arriving; its end fades in (a short trail
+ * that fades to `--md-fade-bg`, the background under the text).
+ * @param {{ text: string, className?: string, onTime?: (secs: number) => void, writing?: boolean }} props
  */
-export default function Markdown({ text, className }) {
+export default function Markdown({ text, className, onTime, writing = false }) {
   /** @type {import("react").ReactNode[]} */
   const blocks = [];
   /** @type {import("react").ReactNode[] | null} */
   let list = null;
+  let numbered = false;
   const flush = () => {
-    if (list) blocks.push(<ul key={blocks.length}>{list}</ul>);
+    if (list) blocks.push(numbered ? <ol key={blocks.length}>{list}</ol> : <ul key={blocks.length}>{list}</ul>);
     list = null;
   };
 
-  for (const raw of text.split("\n")) {
+  const lines = text.split("\n");
+  const lastLine = lines.findLastIndex((l) => l.trim());
+  for (const [index, raw] of lines.entries()) {
     const line = raw.trimEnd();
+    const tail = writing && index === lastLine ? <span key="tail" className={styles.mdTail} aria-hidden /> : null;
     const heading = line.match(/^#{1,4}\s+(.*)/);
     const task = line.match(/^\s*[-*]\s+\[([ xX])\]\s+(.*)/);
     const item = line.match(/^\s*[-*]\s+(.*)/);
+    const ordered = onTime ? line.match(/^\s*(\d{1,3})[.)]\s+(.*)/) : null;
+    if ((task || item || ordered) && list && numbered !== !!ordered) flush();
     if (heading) {
       flush();
-      blocks.push(<h3 key={blocks.length}>{inline(heading[1])}</h3>);
-    } else if (task || item) {
+      blocks.push(<h3 key={blocks.length}>
+          {inline(heading[1], onTime)}
+          {tail}
+        </h3>);
+    } else if (task || item || ordered) {
       list ??= [];
-      if (task) {
+      numbered = !!ordered;
+      if (ordered && onTime) {
+        list.push(
+          <li key={list.length} className={styles.mdPoint}>
+            <span className={styles.mdNumber} aria-hidden>
+              {ordered[1]}
+            </span>
+            {chatItem(ordered[2], onTime, tail)}
+          </li>,
+        );
+      } else if (task) {
         const done = task[1] !== " ";
         list.push(
           <li key={list.length} className={styles.mdTask} data-task>
             <span className={cx(styles.mdCheck, done && styles.isDone)} aria-hidden />
-            <span>{endTime(task[2])}</span>
+            <span>
+              {onTime ? inline(task[2], onTime) : endTime(task[2])}
+              {tail}
+            </span>
           </li>,
         );
       } else {
         // In one span: bold and text stay together even if the item is laid out as a grid.
         list.push(
-          <li key={list.length}>
-            <span>{timed(/** @type {RegExpMatchArray} */ (item)[1])}</span>
-          </li>,
+          onTime ? (
+            <li key={list.length} className={styles.mdPoint}>
+              {chatItem(/** @type {RegExpMatchArray} */ (item)[1], onTime, tail)}
+            </li>
+          ) : (
+            <li key={list.length}>
+              <span>
+                {onTime ? inline(/** @type {RegExpMatchArray} */ (item)[1], onTime) : timed(/** @type {RegExpMatchArray} */ (item)[1])}
+                {tail}
+              </span>
+            </li>
+          ),
         );
       }
     } else if (line.trim()) {
       flush();
       // The model sometimes puts a time on a paragraph too.
-      blocks.push(<p key={blocks.length}>{endTime(line)}</p>);
+      blocks.push(<p key={blocks.length}>
+          {onTime ? inline(line, onTime) : endTime(line)}
+          {tail}
+        </p>);
     } else {
       flush();
     }
   }
   flush();
   return <div className={cx(styles.md, className)}>{blocks}</div>;
+}
+
+/**
+ * A list item of a chat answer: `**Title**: rest` as a title over the rest,
+ * and the times that close it as buttons on the right. `tail` goes at the end of the text.
+ * @param {string} text @param {(secs: number) => void} onTime @param {import("react").ReactNode} [tail]
+ */
+function chatItem(text, onTime, tail = null) {
+  const { text: body, times } = trailingTimes(text);
+  const titled = body.match(/^\*\*([^*]+)\*\*\s*(?:[:.—–-]\s*)?(.+)$/);
+  return (
+    <>
+      <span className={styles.mdPointBody}>
+        {titled ? (
+          <>
+            <strong className={styles.mdPointTitle}>{withTimes(titled[1], onTime)}</strong>
+            <span className={styles.mdPointText}>
+              {inline(titled[2], onTime)}
+              {tail}
+            </span>
+          </>
+        ) : (
+          <>
+            {inline(body, onTime)}
+            {tail}
+          </>
+        )}
+      </span>
+      {times.length > 0 && (
+        <span className={styles.mdPointTimes}>
+          {times.map((at, i) => (
+            <button key={i} type="button" className={cx(styles.mdJump, styles.isPill)} onClick={() => onTime(at.secs)}>
+              {at.clock}
+              <ArrowIcon />
+            </button>
+          ))}
+        </span>
+      )}
+    </>
+  );
 }
 
 /**
@@ -91,9 +171,36 @@ function endTime(text) {
   return inline(text.replace(TIME_AT_END, "$2"));
 }
 
-/** Turns `**bold**` into <strong>; the rest stays as text. @param {string} text */
-function inline(text) {
-  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-    part.startsWith("**") && part.endsWith("**") && part.length > 4 ? <strong key={i}>{part.slice(2, -2)}</strong> : part,
+/**
+ * Turns `**bold**` into <strong>; the rest stays as text. With `onTime`, the
+ * `[mm:ss]` in it are buttons. @param {string} text @param {(secs: number) => void} [onTime]
+ */
+function inline(text, onTime) {
+  return text
+    .split(/(\*\*[^*]+\*\*)/)
+    .map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") && part.length > 4 ? (
+        <strong key={i}>{withTimes(part.slice(2, -2), onTime)}</strong>
+      ) : (
+        withTimes(part, onTime, i)
+      ),
+    );
+}
+
+/** The times in `text` as buttons, if asked for. @param {string} text @param {((secs: number) => void) | undefined} onTime @param {number} [key] */
+function withTimes(text, onTime, key) {
+  if (!onTime) return text;
+  return (
+    <span key={key}>
+      {splitTimes(text).map((piece, i) =>
+        typeof piece === "string" ? (
+          piece
+        ) : (
+          <button key={i} type="button" className={styles.mdJump} onClick={() => onTime(piece.secs)}>
+            {piece.clock}
+          </button>
+        ),
+      )}
+    </span>
   );
 }

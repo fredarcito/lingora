@@ -1,8 +1,5 @@
 mod audio;
 mod captions_window;
-// The chat's engine is ready; its commands come next (docs/plan-chat.md).
-// Remove this `allow` once they use it.
-#[allow(dead_code)]
 mod chat;
 mod config;
 mod doctor;
@@ -679,6 +676,8 @@ pub fn run() {
             notes::note_export,
             notes::note_export_image,
             notes::note_summarize,
+            chat::commands::note_chat,
+            chat::commands::chat_stop,
             summary_cloud::summary_key_status,
             summary_cloud::summary_key_set,
             summary_cloud::summary_models,

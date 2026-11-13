@@ -119,6 +119,7 @@ export default function Notes({ visible, recording, languages, onMenu, openReque
           key={openId}
           id={openId}
           live={live === openId}
+          translating={recording}
           topSlot={topSlot}
           languages={languages}
           onBack={() => {

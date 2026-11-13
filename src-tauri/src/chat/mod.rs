@@ -5,8 +5,13 @@
 //! This file has what both share: the messages, stopping an answer and
 //! streaming it in whole characters.
 
+#[cfg(test)]
+mod bench;
 pub mod cloud;
+pub mod commands;
 pub mod local;
+mod prompt;
+mod search;
 mod session;
 
 use serde::{Deserialize, Serialize};
